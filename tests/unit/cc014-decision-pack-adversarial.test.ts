@@ -479,7 +479,10 @@ describe('CC-014 Phase 8 — ReportFactoryService stays outside the canonical do
   it('the known divergence (admin metadata pages -> ReportFactoryService -> synthetic seed) is still present, unfixed, and now scoped to exactly one real caller', () => {
     const factory = src('services/report-factory/ReportFactoryService.ts');
     expect(factory).toContain('data/synthetic/decision-pack-versions.json');
-    const pipeline = src('app/admin/pipeline/page.tsx');
+    // B-TRUTH TenantService Canonical Migration (2026-09-04) moved this call
+    // from app/admin/pipeline/page.tsx into the new client component it
+    // renders — see tests/unit/b-truth-tenantservice-canonical-migration.test.ts.
+    const pipeline = src('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
     const companies = src('app/admin/companies/[companyId]/page.tsx');
     expect(pipeline).toContain('reportFactoryService');
     // B-TRUTH Root Control Room Wave 3 Hardening (2026-08-30): root Control

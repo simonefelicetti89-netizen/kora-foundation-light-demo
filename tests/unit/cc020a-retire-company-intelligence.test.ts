@@ -179,31 +179,30 @@ describe('CC-020A — no canonical Gen3 surface ever depended on either service'
 });
 
 describe("CC-020A — CompanyIntelligenceService's other 4 former dependencies were left untouched", () => {
-  it('TenantService.ts still exists with its other callers intact', () => {
-    expect(existsSync(resolve(root, 'services/tenant/TenantService.ts'))).toBe(true);
-    // app/admin/companies/workforce-baseline/page.tsx is NOT listed here —
-    // B-TRUTH's first canonical seed group (2026-09-01) migrated it off
-    // tenantService entirely. See lib/architecture/registry.ts
-    // svc.workforce-baseline.
-    for (const file of [
-      'app/admin/pipeline/page.tsx',
-      'components/admin/WorkforceQuickAccessPanel.tsx',
-      'services/report-factory/ReportFactoryService.ts',
-    ]) {
-      expect(read(file)).toContain('tenantService');
-    }
+  // TenantService.ts was accurately untouched at the time this test was
+  // written. B-TRUTH TenantService Canonical Migration (2026-09-04) later,
+  // separately, retired it entirely (all 3 real callers migrated to
+  // canonical analytics.tenant reads) — see
+  // tests/unit/b-truth-tenantservice-canonical-migration.test.ts. That same
+  // migration split app/admin/pipeline/page.tsx into a thin Server
+  // Component (page.tsx) plus a new client component
+  // (_components/PilotLifecycleClient.tsx) that now holds the
+  // still-unmigrated companyDataIntakeService/workerProvisioningService
+  // calls checked below — page.tsx itself no longer contains them.
+  it('TenantService.ts has been retired (historical note, not a live assertion of this test)', () => {
+    expect(existsSync(resolve(root, 'services/tenant/TenantService.ts'))).toBe(false);
   });
 
   it('CompanyDataIntakeService.ts still exists with its other callers intact', () => {
     expect(existsSync(resolve(root, 'services/company-data-intake/CompanyDataIntakeService.ts'))).toBe(true);
-    for (const file of ['app/admin/pipeline/page.tsx', 'services/report-factory/ReportFactoryService.ts']) {
+    for (const file of ['app/admin/pipeline/_components/PilotLifecycleClient.tsx', 'services/report-factory/ReportFactoryService.ts']) {
       expect(read(file)).toContain('companyDataIntakeService');
     }
   });
 
   it('WorkerProvisioningService.ts still exists with its other callers intact', () => {
     expect(existsSync(resolve(root, 'services/worker-provisioning/WorkerProvisioningService.ts'))).toBe(true);
-    for (const file of ['app/admin/pipeline/page.tsx', 'components/admin/WorkforceQuickAccessPanel.tsx']) {
+    for (const file of ['app/admin/pipeline/_components/PilotLifecycleClient.tsx', 'components/admin/WorkforceQuickAccessPanel.tsx']) {
       expect(read(file)).toContain('workerProvisioningService');
     }
   });

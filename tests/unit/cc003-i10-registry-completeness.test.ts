@@ -77,7 +77,7 @@ describe('I10 — Architecture Registry completeness (B-REG / CC-003)', () => {
       .map((e) => e.name);
 
     it('the live services/* directory listing has the expected count (sanity — catches silent additions/removals)', () => {
-      expect(serviceDirs.length).toBeGreaterThanOrEqual(43); // loose bound: catches drastic drift, not exact churn — lowered from 50 by ReportGeneratorService (2026-09-02), FinancialGovernanceService (2026-09-02), DynamicScoringPreviewService (2026-09-03, B-TRUTH Preview Scoring Retirement), UEFReviewService (2026-09-03, B-TRUTH UEFReview Retirement), IngestionPipelineService (2026-09-03, B-TRUTH Ingestion Pipeline Retirement), IngestionNormalizerService (2026-09-03, B-TRUTH Ingestion Normalizer Retirement), and EligibilityGateService (2026-09-03, B-TRUTH Eligibility Gate Retirement) deliberate retirements
+      expect(serviceDirs.length).toBeGreaterThanOrEqual(42); // loose bound: catches drastic drift, not exact churn — lowered from 50 by ReportGeneratorService (2026-09-02), FinancialGovernanceService (2026-09-02), DynamicScoringPreviewService (2026-09-03, B-TRUTH Preview Scoring Retirement), UEFReviewService (2026-09-03, B-TRUTH UEFReview Retirement), IngestionPipelineService (2026-09-03, B-TRUTH Ingestion Pipeline Retirement), IngestionNormalizerService (2026-09-03, B-TRUTH Ingestion Normalizer Retirement), EligibilityGateService (2026-09-03, B-TRUTH Eligibility Gate Retirement), and TenantService (2026-09-04, B-TRUTH TenantService Canonical Migration) deliberate retirements
     });
 
     for (const dir of serviceDirs) {

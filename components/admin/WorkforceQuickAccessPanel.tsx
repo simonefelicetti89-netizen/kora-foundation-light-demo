@@ -1,18 +1,31 @@
 'use client';
 // components/admin/WorkforceQuickAccessPanel.tsx
 // B95-C Task 2 — Workforce Management CTA panel on /admin/companies.
-// Shows demo companies with worker count, My KORA enabled count, Gestisci workforce CTA.
-// Uses demo services — clearly labeled as DEMO/Foundation Light.
+// Shows companies with worker count, My KORA enabled count, Gestisci workforce CTA.
 // No individual PIB. No employer-visible worker data. Aggregate only.
+//
+// B-TRUTH TenantService Canonical Migration (2026-09-04): the company list
+// is now fetched canonically (analytics.tenant, all tenant_kind values, no
+// hidden test tenants) by the parent Server Component
+// (app/admin/companies/page.tsx) and passed in as a prop — this component no
+// longer reads the synthetic tenant fixture itself. worker-count/My-KORA/
+// Worker-Space sub-values below still come from
+// workerProvisioningService/workerSpaceCapabilityService, which remain
+// unmigrated (their own separate, later, B-WORKER-territory slice) — for a
+// canonical tenant not yet present in their still-synthetic roster, these
+// honestly read 0/not-enabled rather than fabricating a count.
 
 import Link from 'next/link';
-import { tenantService } from '@/services/tenant/TenantService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 import { workerSpaceCapabilityService } from '@/services/worker-space/WorkerSpaceCapabilityService';
 
-export function WorkforceQuickAccessPanel() {
-  const tenants = tenantService.getTenants();
+export interface WorkforcePanelTenant {
+  id: string;
+  tenant_code: string;
+  company_name: string;
+}
 
+export function WorkforceQuickAccessPanel({ tenants }: { tenants: WorkforcePanelTenant[] }) {
   return (
     <div
       data-testid="workforce-quick-access-panel"
@@ -30,12 +43,12 @@ export function WorkforceQuickAccessPanel() {
               Workforce Management
             </h2>
             <p className="text-[10.5px] text-[rgba(6,3,43,0.52)] mt-0.5">
-              Gestisci il roster dei lavoratori per ogni azienda. Dati sintetici — Foundation Light.
+              Gestisci il roster dei lavoratori per ogni azienda. Elenco aziende reale — conteggio lavoratori in fase di migrazione verso dati live.
             </p>
           </div>
           <div className="ml-auto shrink-0">
             <span className="rounded border border-[rgba(199,111,61,0.30)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#C76F3D]">
-              DEMO · dati sintetici
+              Foundation Light · migrazione in corso
             </span>
           </div>
         </div>
@@ -43,15 +56,15 @@ export function WorkforceQuickAccessPanel() {
         {/* Company cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {tenants.map((tenant) => {
-            const summary = workerProvisioningService.getWorkerProvisioningSummary(tenant.company_id);
-            const capability = workerSpaceCapabilityService.getCapabilityByCompanyId(tenant.company_id);
-            const roster = workerProvisioningService.getWorkersForCompany(tenant.company_id);
+            const summary = workerProvisioningService.getWorkerProvisioningSummary(tenant.tenant_code);
+            const capability = workerSpaceCapabilityService.getCapabilityByCompanyId(tenant.tenant_code);
+            const roster = workerProvisioningService.getWorkersForCompany(tenant.tenant_code);
             const myKoraEnabled = roster.filter((w) => w.my_kora_enabled).length;
 
             return (
               <div
-                key={tenant.company_id}
-                data-testid={`workforce-card-${tenant.company_id}`}
+                key={tenant.id}
+                data-testid={`workforce-card-${tenant.tenant_code}`}
                 className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-white p-4 flex flex-col gap-3"
               >
                 {/* Company name */}
@@ -60,7 +73,7 @@ export function WorkforceQuickAccessPanel() {
                     {tenant.company_name}
                   </p>
                   <p className="text-[9px] font-mono text-[rgba(6,3,43,0.35)] mt-0.5">
-                    {tenant.company_id}
+                    {tenant.tenant_code}
                   </p>
                 </div>
 
@@ -96,7 +109,7 @@ export function WorkforceQuickAccessPanel() {
                     (not tenant-scoped) worker provisioning admin surface. */}
                 <Link
                   href="/admin/workers"
-                  data-testid={`gestisci-workforce-${tenant.company_id}`}
+                  data-testid={`gestisci-workforce-${tenant.tenant_code}`}
                   className="mt-auto block rounded-md bg-[#06032B] px-3 py-2 text-center text-[11px] font-semibold text-white hover:bg-[rgba(6,3,43,0.82)] transition-colors"
                 >
                   Worker Provisioning (live) →

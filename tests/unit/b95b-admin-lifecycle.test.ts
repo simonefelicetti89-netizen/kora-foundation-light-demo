@@ -438,6 +438,11 @@ describe('company users page — file structure', () => {
 
 // ── Pipeline orchestrator structure ──────────────────────────────────────────
 
+// B-TRUTH TenantService Canonical Migration (2026-09-04): app/admin/pipeline/
+// page.tsx became a thin async Server Component (canonical tenant fetch
+// only, ~30 lines); the step-rendering content checked below moved,
+// unchanged, into the new app/admin/pipeline/_components/
+// PilotLifecycleClient.tsx it renders.
 describe('pipeline orchestrator page — file structure', () => {
   it('file exists', () => {
     const path = join(process.cwd(), 'app', 'admin', 'pipeline', 'page.tsx');
@@ -446,32 +451,32 @@ describe('pipeline orchestrator page — file structure', () => {
   });
 
   it('uses LIFECYCLE_STEPS from lifecycle-rules', () => {
-    const path = join(process.cwd(), 'app', 'admin', 'pipeline', 'page.tsx');
+    const path = join(process.cwd(), 'app', 'admin', 'pipeline', '_components', 'PilotLifecycleClient.tsx');
     const content = readFileSync(path, 'utf-8');
     expect(content).toContain('LIFECYCLE_STEPS');
   });
 
   it('uses deriveAllStepStatuses from lifecycle-rules', () => {
-    const path = join(process.cwd(), 'app', 'admin', 'pipeline', 'page.tsx');
+    const path = join(process.cwd(), 'app', 'admin', 'pipeline', '_components', 'PilotLifecycleClient.tsx');
     const content = readFileSync(path, 'utf-8');
     expect(content).toContain('deriveAllStepStatuses');
   });
 
   it('includes DemoFlowBanner', () => {
-    const path = join(process.cwd(), 'app', 'admin', 'pipeline', 'page.tsx');
+    const path = join(process.cwd(), 'app', 'admin', 'pipeline', '_components', 'PilotLifecycleClient.tsx');
     const content = readFileSync(path, 'utf-8');
     expect(content).toContain('DemoFlowBanner');
   });
 
   it('includes role transition links (Company Workspace and My KORA)', () => {
-    const path = join(process.cwd(), 'app', 'admin', 'pipeline', 'page.tsx');
+    const path = join(process.cwd(), 'app', 'admin', 'pipeline', '_components', 'PilotLifecycleClient.tsx');
     const content = readFileSync(path, 'utf-8');
     expect(content).toContain('/company');
     expect(content).toContain('/my-kora');
   });
 
   it('includes privacy invariant footer comment', () => {
-    const path = join(process.cwd(), 'app', 'admin', 'pipeline', 'page.tsx');
+    const path = join(process.cwd(), 'app', 'admin', 'pipeline', '_components', 'PilotLifecycleClient.tsx');
     const content = readFileSync(path, 'utf-8');
     expect(content).toContain('no_worker_pib');
     expect(content).toContain('no_auth_changes');

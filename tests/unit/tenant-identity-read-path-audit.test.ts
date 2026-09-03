@@ -32,48 +32,23 @@ function read(relPath: string): string {
   return readFileSync(resolve(root, relPath), 'utf-8');
 }
 
-describe('B-TRUTH Tenant Identity — TenantService remains synthetic (Phase 1 not implemented)', () => {
-  const svc = read('services/tenant/TenantService.ts');
-
-  it('still imports data/synthetic/tenants.json (unmigrated, as decided)', () => {
-    expect(svc).toMatch(/^\s*import\s+.+\s+from\s+['"][^'"]*\/data\/synthetic\/tenants\.json['"]/m);
-  });
-
-  it('is still listed in the I9 synthetic import allowlist', async () => {
-    const { SYNTHETIC_IMPORT_ALLOWLIST } = await import('@/lib/security/synthetic-import-allowlist');
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.some((e) => e.file === 'services/tenant/TenantService.ts')).toBe(true);
-  });
-
-  it('contains zero Supabase/DB calls anywhere (reads are 100% synthetic today)', () => {
-    expect(svc).not.toContain('supabase');
-    expect(svc).not.toContain('getSupabaseServerClient');
-    expect(svc).not.toContain('getSupabaseServiceClient');
-    expect(svc).not.toContain(".schema('analytics')");
-  });
-});
-
-describe('B-TRUTH Tenant Identity — mutation methods remain pure demo stubs (Phase 2 not authorized)', () => {
-  const svc = read('services/tenant/TenantService.ts');
-  const MUTATION_METHODS = ['activateTenant', 'suspendTenant', 'archiveTenant', 'restoreTenant', 'deleteDemoTenant'];
-
-  for (const method of MUTATION_METHODS) {
-    it(`${method} is not backed by any real database call`, () => {
-      // Isolate the method body: from its declaration to the next method/closing brace.
-      const start = svc.indexOf(`${method}(`);
-      expect(start, `${method} not found in TenantService.ts`).toBeGreaterThan(-1);
-      const body = svc.slice(start, start + 600);
-      expect(body).toContain('simulato');
-      expect(body).not.toContain('supabase');
-      expect(body).not.toContain(".schema('analytics')");
-    });
-  }
-
-  it('analytics.tenant has no lifecycle state machine column for these actions (only is_active + deleted_at + tenant_kind)', () => {
-    const migration = read('supabase/migrations/001_live_v1_foundation.sql');
-    expect(migration).toContain('is_active');
-    expect(migration).toContain('deleted_at');
-    // No canonical target to migrate mutations onto today.
-    expect(migration).not.toContain('tenant_status');
+// The two describe blocks that used to live here ('TenantService remains
+// synthetic (Phase 1 not implemented)' and 'mutation methods remain pure
+// demo stubs (Phase 2 not authorized)') documented services/tenant/
+// TenantService.ts's own synthetic implementation — accurately, at the
+// time. B-TRUTH TenantService Canonical Migration (2026-09-04) retired that
+// file entirely (zero-caller after its 3 real callers — app/admin/pipeline,
+// WorkforceQuickAccessPanel, ReportFactoryService — were migrated to
+// canonical analytics.tenant reads). Its mutation stubs (activateTenant,
+// suspendTenant, archiveTenant, restoreTenant, deleteDemoTenant) no longer
+// exist anywhere — they were never migrated, only removed alongside the
+// rest of the file (no canonical lifecycle state machine existed to migrate
+// them onto, per this file's own original finding, still true). See
+// tests/unit/b-truth-tenantservice-canonical-migration.test.ts for the
+// current regression guard.
+describe('B-TRUTH Tenant Identity — TenantService no longer exists (historical note, not a live assertion)', () => {
+  it('services/tenant/TenantService.ts is gone', () => {
+    expect(existsSync(resolve(root, 'services/tenant/TenantService.ts'))).toBe(false);
   });
 });
 
@@ -95,19 +70,12 @@ describe('B-TRUTH Tenant Identity — remaining Gen 0/1 TenantService callers ar
   // resolved (founder: RETIRE, no future canonical role) and it was removed
   // entirely — no longer entangled, no longer exists. See
   // tests/unit/cc020a-retire-company-intelligence.test.ts. ReportFactoryService
-  // remains entangled pending its own separate decision. See
-  // lib/architecture/registry.ts svc.tenant notes.
-  const ENTANGLED_CALLERS = [
-    'services/report-factory/ReportFactoryService.ts',
-  ];
-
-  for (const file of ENTANGLED_CALLERS) {
-    it(`${file} exists and still calls tenantService`, () => {
-      expect(existsSync(resolve(root, file))).toBe(true);
-      expect(read(file)).toContain('tenantService');
-    });
-  }
-
+  // was the other entangled caller at the time this test was written —
+  // B-TRUTH TenantService Canonical Migration (2026-09-04) migrated its
+  // tenant-lookup dependency to a canonical CanonicalTenantStatus parameter
+  // supplied by its one real caller (app/admin/pipeline), removing the
+  // TenantService dependency entirely. See
+  // tests/unit/b-truth-tenantservice-canonical-migration.test.ts.
   it('services/company-intelligence/CompanyIntelligenceService.ts no longer exists (CC-020A)', () => {
     expect(existsSync(resolve(root, 'services/company-intelligence/CompanyIntelligenceService.ts'))).toBe(false);
   });
@@ -118,10 +86,11 @@ describe('B-TRUTH Tenant Identity — remaining Gen 0/1 TenantService callers ar
     expect(code).toContain("redirect(`/admin/companies/${companyId}/workspace`)");
   });
 
-  it('app/admin/pipeline/page.tsx still resolves tenant identity via a hardcoded DEMO_COMPANY_ID, not a real tenant id', () => {
+  it('app/admin/pipeline/page.tsx now resolves tenant identity via a canonical analytics.tenant lookup, not TenantService (B-TRUTH, 2026-09-04)', () => {
     const code = read('app/admin/pipeline/page.tsx');
-    expect(code).toContain("DEMO_COMPANY_ID = 'meridiana-group'");
-    expect(code).toContain('tenantService.getTenant(DEMO_COMPANY_ID)');
+    expect(code).toContain("PILOT_LIFECYCLE_TENANT_CODE = 'KORATEST-01'");
+    expect(code).toContain(".schema('analytics').from('tenant')");
+    expect(code).not.toContain('tenantService');
   });
 
   it('the retired data-intake, onboarding, and workforce pages no longer exist', () => {
@@ -235,12 +204,13 @@ describe('B-TRUTH Tenant Identity — the real canonical analytics.tenant read p
   });
 });
 
-describe('B-TRUTH Tenant Identity — registry reflects the corrected status', () => {
-  it('svc.tenant is CONSOLIDATE, not CANONICAL', () => {
+describe('B-TRUTH Tenant Identity — registry reflects the retirement', () => {
+  it('svc.tenant is DEAD (retired 2026-09-04), not CANONICAL/CONSOLIDATE', () => {
     const registry = read('lib/architecture/registry.ts');
     const idx = registry.indexOf("id: 'svc.tenant'");
     expect(idx).toBeGreaterThan(-1);
-    const entry = registry.slice(idx, idx + 200);
-    expect(entry).toContain("status: 'CONSOLIDATE'");
+    const nextIdx = registry.indexOf("{ id:", idx + 10);
+    const entry = registry.slice(idx, nextIdx);
+    expect(entry).toContain("status: 'DEAD'");
   });
 });

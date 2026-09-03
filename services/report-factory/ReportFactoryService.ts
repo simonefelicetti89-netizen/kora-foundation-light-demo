@@ -5,7 +5,6 @@ import type {
   CalibrationStatus,
   ScenarioId,
 } from '@/lib/types';
-import { tenantService } from '@/services/tenant/TenantService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
 import { getMethodologyVersion } from '@/lib/methodology-config/v0.1';
@@ -96,8 +95,23 @@ function mapSeedToVersion(s: SeedVersion): DecisionPackVersion {
 // demo status check for a synthetic tenant with no live analytics.tenant row
 // (getDecisionPackFactoryStatus.latest_status, feeding pipeline's own
 // "hasDecisionPack" lifecycle-step flag).
+// B-TRUTH TenantService Canonical Migration (2026-09-04): CanonicalTenantStatus
+// replaces the internal tenantService.getTenant() lookup this service used to
+// perform itself. The caller now supplies the already-fetched canonical
+// analytics.tenant status (id, is_active) — the same canonical read
+// mechanism app/admin/pipeline/page.tsx already performs for its own tenant
+// header, reused here rather than duplicated. null means no canonical
+// tenant was found for the identity this call represents. This eliminates
+// ReportFactoryService's TenantService dependency without changing
+// companyId's role for the still-synthetic hasKoraIndex/getIntakeStatus/
+// getLatestDecisionPackVersion checks below (unrelated, unmigrated in this PR).
+export interface CanonicalTenantStatus {
+  id: string;
+  isActive: boolean;
+}
+
 export interface IReportFactoryService {
-  getDecisionPackFactoryStatus(companyId: string): DecisionPackFactoryStatus;
+  getDecisionPackFactoryStatus(companyId: string, canonicalTenant: CanonicalTenantStatus | null): DecisionPackFactoryStatus;
   getLatestDecisionPackVersion(companyId: string): DecisionPackVersion | null;
 }
 
@@ -116,16 +130,15 @@ export class ReportFactoryService implements IReportFactoryService {
     return companyDataIntakeService.getDataReadinessSummary(companyId).intake_status;
   }
 
-  private computeBlockingReasons(companyId: string): string[] {
+  private computeBlockingReasons(companyId: string, canonicalTenant: CanonicalTenantStatus | null): string[] {
     const reasons: string[] = [];
-    const tenant = tenantService.getTenant(companyId);
 
-    if (!tenant) {
+    if (!canonicalTenant) {
       reasons.push('Tenant non trovato nel portfolio KORA.');
       return reasons;
     }
-    if (tenant.tenant_status !== 'active') {
-      reasons.push(`Tenant non attivo (stato: ${tenant.tenant_status}) — attivare il tenant per sbloccare il Decision Pack.`);
+    if (!canonicalTenant.isActive) {
+      reasons.push('Tenant non attivo — attivare il tenant per sbloccare il Decision Pack.');
     }
     if (!this.hasKoraIndex(companyId)) {
       reasons.push('KORA Index non disponibile — completare il pipeline di scoring prima di generare il Decision Pack.');
@@ -148,10 +161,9 @@ export class ReportFactoryService implements IReportFactoryService {
 
   // ── Public methods ─────────────────────────────────────────────────────────
 
-  getDecisionPackFactoryStatus(companyId: string): DecisionPackFactoryStatus {
-    const tenant = tenantService.getTenant(companyId);
-    const tenantId = tenant?.tenant_id ?? '';
-    const blockingReasons = this.computeBlockingReasons(companyId);
+  getDecisionPackFactoryStatus(companyId: string, canonicalTenant: CanonicalTenantStatus | null): DecisionPackFactoryStatus {
+    const tenantId = canonicalTenant?.id ?? '';
+    const blockingReasons = this.computeBlockingReasons(companyId, canonicalTenant);
     const canGenerate = blockingReasons.length === 0;
 
     const latestVersion = this.getLatestDecisionPackVersion(companyId);

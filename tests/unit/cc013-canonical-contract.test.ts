@@ -151,7 +151,10 @@ describe('CC-013 — ReportFactoryService remains explicitly non-canonical, synt
   });
 
   it('exactly one real caller remains — pipeline (root Control Room was retired by B-TRUTH Root Control Room Wave 3 Hardening, 2026-08-30 — no new callers introduced elsewhere)', () => {
-    const pipeline = src('app/admin/pipeline/page.tsx');
+    // B-TRUTH TenantService Canonical Migration (2026-09-04) moved this call
+    // from app/admin/pipeline/page.tsx into the new client component it
+    // renders — see tests/unit/b-truth-tenantservice-canonical-migration.test.ts.
+    const pipeline = src('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
     const companies = src('app/admin/companies/[companyId]/page.tsx');
     expect(pipeline).toContain('reportFactoryService');
     expect(companies).not.toContain('reportFactoryService');

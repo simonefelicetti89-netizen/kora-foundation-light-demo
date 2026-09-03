@@ -240,9 +240,15 @@ describe('B-TRUTH — idempotency and scope safety', () => {
 });
 
 describe('B-TRUTH — this PR touches ONLY foundation, not the B95-B/B95-C cluster (one PR = one bounded step)', () => {
-  it('TenantService, AccountProvisioningService, CompanyDataIntakeService, ReportFactoryService, and AdminPreviewService are untouched — still exist, unmodified in role', () => {
+  // TenantService.ts was accurately untouched by THIS PR (KoraTest
+  // Canonical Foundation) at the time this test was written. B-TRUTH
+  // TenantService Canonical Migration (2026-09-04) — a later, separate,
+  // bounded PR (PR 2 of the same plan) — migrated its 3 real callers to
+  // canonical reads and retired it entirely. See
+  // tests/unit/b-truth-tenantservice-canonical-migration.test.ts. The other
+  // 4 services in this cluster remain untouched by that later PR too.
+  it('AccountProvisioningService, CompanyDataIntakeService, ReportFactoryService, and AdminPreviewService still exist — TenantService has since been separately retired (historical note)', () => {
     for (const file of [
-      'services/tenant/TenantService.ts',
       'services/account/AccountProvisioningService.ts',
       'services/company-data-intake/CompanyDataIntakeService.ts',
       'services/report-factory/ReportFactoryService.ts',
@@ -250,6 +256,7 @@ describe('B-TRUTH — this PR touches ONLY foundation, not the B95-B/B95-C clust
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
     }
+    expect(existsSync(resolve(root, 'services/tenant/TenantService.ts'))).toBe(false);
   });
 
   it('app/admin/pipeline/page.tsx, WorkforceQuickAccessPanel.tsx, and app/admin/page.tsx are untouched — no UI/label change in this PR', () => {

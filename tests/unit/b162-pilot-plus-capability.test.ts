@@ -345,23 +345,15 @@ describe('B162 Route promote-to-pilot — invarianti strutturali', () => {
 // ── 6. Invariante — nessun tenant Foundation Light diventa Pilot+ per default ──
 
 describe('B162 Invariante — default safe per tenant Foundation Light', () => {
-  it('seed sintetico ha production_ready: false per tutti i tenant', () => {
-    const seed = JSON.parse(read('data/synthetic/tenants.json'));
-    const tenants: Array<Record<string, unknown>> = seed.data ?? seed;
-    for (const t of tenants) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((t as any).production_ready).toBe(false);
-    }
-  });
-
-  it('TenantService.createTenantDraft hardcoda production_ready: false', () => {
-    const src = read('services/tenant/TenantService.ts');
-    // Nel corpo di createTenantDraft
-    const draftFn = src.slice(src.indexOf('createTenantDraft'));
-    const end     = draftFn.indexOf('\n  }');
-    expect(draftFn.slice(0, end)).toContain('production_ready: false');
-  });
-
+  // The two tests that used to live here checked the synthetic
+  // data/synthetic/tenants.json fixture and services/tenant/
+  // TenantService.ts's createTenantDraft() for production_ready: false —
+  // accurately, at the time. B-TRUTH TenantService Canonical Migration
+  // (2026-09-04) retired TenantService.ts and its fixture entirely
+  // (zero-caller). The real, canonical safety net for this invariant —
+  // migration 021's DEFAULT false with no backfill to true — is unaffected
+  // and remains the authoritative check below. See
+  // tests/unit/b-truth-tenantservice-canonical-migration.test.ts.
   it('migrazione 021 DEFAULT false (nessun backfill a true)', () => {
     const sql = read('supabase/migrations/021_tenant_pilot_ready.sql');
     expect(sql).toContain('DEFAULT false');

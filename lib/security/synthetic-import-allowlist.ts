@@ -14,11 +14,69 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 15 files / 25 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 14 files / 24 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// B-TRUTH TenantService Canonical Migration (2026-09-04): deleted
+// services/tenant/TenantService.ts and its sole seed file,
+// data/synthetic/tenants.json (confirmed, by direct repo-wide grep before
+// deletion, zero remaining real consumers of the JSON — the 3 remaining
+// text hits were all governance-comment prose, not imports). This is PR 2
+// of the founder-ratified ONE_PRODUCT_CANONICAL_MIGRATION plan (PR 1 =
+// B-TRUTH KoraTest Canonical Foundation, 2026-09-03/04). Independently
+// re-verified before deletion (not trusted from any prior audit alone): all
+// 3 real runtime callers (app/admin/pipeline/page.tsx,
+// components/admin/WorkforceQuickAccessPanel.tsx,
+// services/report-factory/ReportFactoryService.ts) individually confirmed,
+// zero type-only callers (TenantService.ts exported no types of its own —
+// its KoraTenant/KoraTenantStatus/TenantReadiness/ReadinessItemStatus type
+// family lives in @/lib/types, imported FROM there, not exported by this
+// file — that type family was deliberately NOT deleted, no opportunistic
+// cleanup, since services/worker-space/WorkerSpaceCapabilityService.ts
+// still legitimately imports it, unrelated to this migration, explicitly
+// out of scope, B-WORKER territory). Each of the 3 callers migrated onto a
+// canonical analytics.tenant read: app/admin/pipeline/page.tsx became a
+// thin async Server Component reading the tenant by tenant_code
+// (PILOT_LIFECYCLE_TENANT_CODE = 'KORATEST-01', an ordinary lookup — no
+// special-case branching on this or any tenant_code anywhere), passing the
+// result down to the new app/admin/pipeline/_components/
+// PilotLifecycleClient.tsx (everything else on that page — worker
+// provisioning, account provisioning, scoring, data intake — is UNCHANGED,
+// still keyed by the pre-existing DEMO_COMPANY_ID = 'meridiana-group'
+// constant, a separate, later migration slice); WorkforceQuickAccessPanel.tsx
+// now receives its tenant list as a prop from its already-async parent
+// (app/admin/companies/page.tsx), which queries analytics.tenant directly
+// with no tenant_kind filter (no hidden test tenants — KoraTest Srl appears
+// alongside any LIVE tenant, uniformly); ReportFactoryService.ts's
+// getDecisionPackFactoryStatus/computeBlockingReasons now accept an
+// already-fetched CanonicalTenantStatus ({ id, isActive } | null) parameter
+// instead of calling tenantService.getTenant() themselves — avoiding a
+// duplicate canonical read of the same data app/admin/pipeline already
+// fetches, and avoiding making a previously-synchronous method async merely
+// to satisfy an internal dependency; ReportFactoryService's own still-
+// synthetic hasKoraIndex/getIntakeStatus/getLatestDecisionPackVersion checks
+// (companyId-keyed) are UNCHANGED, unmigrated, explicitly out of scope. No
+// tenant_kind product branch was introduced anywhere in this migration —
+// the only tenant_kind-conditioned code in this entire pipeline remains the
+// pre-existing app/api/admin/companies/provision/route.ts email-invite
+// skip (operational safety only, unchanged, unrelated to this PR).
+// WorkforceQuickAccessPanel's header copy was corrected in two places
+// (a sentence and a badge that both claimed "dati sintetici" for the
+// company roster) since that claim became factually false once the roster
+// itself became canonical — the worker-count/My-KORA/Worker-Space
+// sub-values shown per company remain honestly sourced from
+// WorkerProvisioningService/WorkerSpaceCapabilityService, both still
+// unmigrated, both explicitly out of scope (their own separate, later,
+// B-WORKER-territory slice) — for a canonical tenant not yet present in
+// their still-synthetic roster, these honestly read 0/not-enabled rather
+// than fabricating a count. See
+// tests/unit/b-truth-tenantservice-canonical-migration.test.ts for the
+// regression guard proving both the deletion and the scope boundary.
+// TenantService.ts was an I9 allowlist entry — eleventh genuine I9
+// reduction via a real caller migration: 15->14 files (25->24 imports).
 //
 // B-TRUTH Eligibility Gate Retirement (2026-09-03): deleted
 // services/eligibility-gate/EligibilityGateService.ts and its sole seed
@@ -395,7 +453,6 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/founder-validation/FounderValidationService.ts', reason: 'Internal/admin-only founder validation leads seed.' },
   { file: 'services/report-factory/ReportFactoryService.ts', reason: 'Reads synthetic Decision Pack version seed alongside live orchestration.' },
   { file: 'services/scoring-simulator/ScoringSimulatorService.ts', reason: 'Demo scoring path — KORA Index outputs, company aggregates, confidence records. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
-  { file: 'services/tenant/TenantService.ts', reason: 'Reads synthetic tenant records for the demo tenant list.' },
   { file: 'services/worker-achievements/WorkerAchievementService.ts', reason: 'Worker-private demo achievements seed.' },
   { file: 'services/worker-provisioning/WorkerProvisioningService.ts', reason: 'Demo worker roster seed for provisioning flows.' },
 ];

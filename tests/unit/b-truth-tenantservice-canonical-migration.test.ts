@@ -1,0 +1,256 @@
+/**
+ * B-TRUTH — TenantService Canonical Migration (2026-09-04).
+ *
+ * PR 2 of the founder-ratified ONE_PRODUCT_CANONICAL_MIGRATION plan (PR 1 =
+ * B-TRUTH KoraTest Canonical Foundation, 2026-09-03/04). Migrates the 3 real
+ * runtime callers of services/tenant/TenantService.ts to canonical
+ * analytics.tenant reads, then retires the now-zero-caller service and its
+ * sole seed file, data/synthetic/tenants.json.
+ *
+ * Re-verified independently before deletion (not trusted from any prior
+ * audit alone): all 3 real callers (app/admin/pipeline/page.tsx,
+ * components/admin/WorkforceQuickAccessPanel.tsx,
+ * services/report-factory/ReportFactoryService.ts) individually confirmed,
+ * zero type-only callers.
+ *
+ * app/admin/pipeline/page.tsx was split into a thin async Server Component
+ * (canonical tenant fetch only) plus a new client component,
+ * app/admin/pipeline/_components/PilotLifecycleClient.tsx, which holds
+ * every OTHER, still-unmigrated step's data source (worker provisioning,
+ * account provisioning, scoring, data intake — all still keyed by the
+ * pre-existing DEMO_COMPANY_ID = 'meridiana-group' constant, a separate,
+ * later migration slice). PILOT_LIFECYCLE_TENANT_CODE = 'KORATEST-01' is a
+ * temporary single-tenant default, an ordinary canonical lookup with no
+ * special-case branching.
+ *
+ * WorkforceQuickAccessPanel.tsx now receives its tenant list as a prop from
+ * its already-async parent (app/admin/companies/page.tsx), which queries
+ * analytics.tenant with no tenant_kind filter (no hidden test tenants).
+ *
+ * ReportFactoryService.getDecisionPackFactoryStatus/computeBlockingReasons
+ * now accept an already-fetched CanonicalTenantStatus parameter instead of
+ * calling tenantService.getTenant() themselves — reusing the same canonical
+ * read its one real caller already performs, rather than duplicating it.
+ * Its own still-synthetic hasKoraIndex/getIntakeStatus/
+ * getLatestDecisionPackVersion checks are UNCHANGED, unmigrated, explicitly
+ * out of scope.
+ *
+ * NOT touched by this PR (separate, later, bounded slices):
+ * CompanyDataIntakeService, AccountProvisioningService's remaining
+ * (non-pipeline) role, AdminPreviewService, final scoring, B-WORKER.
+ *
+ * If any of these assertions start failing, the underlying situation has
+ * changed — re-run the audit rather than "fixing" this test to match.
+ */
+
+import { describe, it, expect } from 'vitest';
+import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
+import { resolve, join } from 'path';
+
+const root = resolve(process.cwd());
+function read(relPath: string): string {
+  return readFileSync(resolve(root, relPath), 'utf-8');
+}
+
+function walkTs(dir: string): string[] {
+  const out: string[] = [];
+  let entries: string[];
+  try { entries = readdirSync(dir); } catch { return out; }
+  for (const entry of entries) {
+    const p = join(dir, entry);
+    let st;
+    try { st = statSync(p); } catch { continue; }
+    if (st.isDirectory()) out.push(...walkTs(p));
+    else if (/\.(ts|tsx)$/.test(entry)) out.push(p);
+  }
+  return out;
+}
+
+const RUNTIME_DIRS = ['app', 'services', 'lib', 'components'];
+const EXCLUDED_DOCS = new Set(['lib/architecture/registry.ts', 'lib/security/synthetic-import-allowlist.ts']);
+
+describe('B-TRUTH — TenantService no longer exists', () => {
+  it('the service file is gone', () => {
+    expect(existsSync(resolve(root, 'services/tenant/TenantService.ts'))).toBe(false);
+  });
+
+  it('its directory is gone (no leftover empty dir)', () => {
+    expect(existsSync(resolve(root, 'services/tenant'))).toBe(false);
+  });
+
+  it('its sole synthetic seed file is gone', () => {
+    expect(existsSync(resolve(root, 'data/synthetic/tenants.json'))).toBe(false);
+  });
+
+  it('no runtime file (app/services/lib/components), excluding governance docs and tests, imports, instantiates, or calls it', () => {
+    const offenders: string[] = [];
+    const REAL_USAGE = /(?:^|\s)import\s[^;]*TenantService[^;]*from|from\s*['"][^'"]*tenant\/TenantService['"]|new\s+TenantService\s*\(/m;
+    for (const dir of RUNTIME_DIRS) {
+      for (const file of walkTs(resolve(root, dir))) {
+        const relative = file.replace(root + '/', '');
+        if (EXCLUDED_DOCS.has(relative)) continue;
+        if (relative.endsWith('.test.ts')) continue; // test files legitimately assert non-usage by string
+        const content = read(relative);
+        // tenantService. calls only count outside of `//` comment lines —
+        // several migrated files legitimately document the removed
+        // dependency in prose (e.g. "replaces the internal
+        // tenantService.getTenant() lookup").
+        const codeOnly = content.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+        if (REAL_USAGE.test(content) || /tenantService\s*\./.test(codeOnly)) offenders.push(relative);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe('B-TRUTH — migrated consumers use a canonical tenant source', () => {
+  it('app/admin/pipeline/page.tsx is a thin Server Component reading analytics.tenant', () => {
+    const src = read('app/admin/pipeline/page.tsx');
+    expect(src).toContain(".schema('analytics').from('tenant')");
+    expect(src).toContain(".eq('tenant_code', PILOT_LIFECYCLE_TENANT_CODE)");
+    expect(src).not.toContain('tenantService');
+    expect(src).not.toMatch(/from\s+['"][^'"]*data\/synthetic\//);
+  });
+
+  it('app/admin/pipeline/_components/PilotLifecycleClient.tsx receives tenant as a prop, no self-fetch', () => {
+    const src = read('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
+    expect(src).toContain('tenant: CanonicalPilotTenant | null');
+    expect(src).not.toContain('tenantService');
+    expect(src).not.toMatch(/from\s+['"][^'"]*data\/synthetic\//);
+  });
+
+  it('app/admin/companies/page.tsx fetches canonical tenants with no tenant_kind filter and passes them to the panel', () => {
+    const src = read('app/admin/companies/page.tsx');
+    expect(src).toContain(".schema('analytics').from('tenant')");
+    expect(src).not.toContain(".eq('tenant_kind'");
+    expect(src).toContain('<WorkforceQuickAccessPanel tenants={tenants} />');
+  });
+
+  it('components/admin/WorkforceQuickAccessPanel.tsx accepts tenants as a prop, no self-fetch', () => {
+    const src = read('components/admin/WorkforceQuickAccessPanel.tsx');
+    expect(src).toContain('tenants: WorkforcePanelTenant[]');
+    expect(src).not.toContain('tenantService');
+    expect(src).not.toMatch(/from\s+['"][^'"]*data\/synthetic\//);
+  });
+
+  it('services/report-factory/ReportFactoryService.ts accepts a canonicalTenant parameter, no real TenantService import or call', () => {
+    const src = read('services/report-factory/ReportFactoryService.ts');
+    expect(src).toContain('canonicalTenant: CanonicalTenantStatus | null');
+    expect(src).not.toMatch(/from\s+['"][^'"]*services\/tenant\/TenantService['"]/);
+    const codeOnly = src.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+    expect(codeOnly).not.toContain('tenantService');
+  });
+
+  it('no data/synthetic/** tenant import remains in any of the 4 migrated files', () => {
+    for (const file of [
+      'app/admin/pipeline/page.tsx',
+      'app/admin/pipeline/_components/PilotLifecycleClient.tsx',
+      'app/admin/companies/page.tsx',
+      'components/admin/WorkforceQuickAccessPanel.tsx',
+    ]) {
+      expect(read(file)).not.toMatch(/from\s+['"][^'"]*data\/synthetic\//);
+    }
+  });
+});
+
+describe('B-TRUTH — KORATEST-01 is an ordinary lookup, not a methodology/runtime branch', () => {
+  it('PILOT_LIFECYCLE_TENANT_CODE is a plain constant, used in exactly one ordinary .eq() query, no conditional branch on its value', () => {
+    const src = read('app/admin/pipeline/page.tsx');
+    expect(src).toContain("const PILOT_LIFECYCLE_TENANT_CODE = 'KORATEST-01'");
+    expect(src).not.toMatch(/if\s*\(\s*(tenant_code|tenantCode|PILOT_LIFECYCLE_TENANT_CODE)\s*===\s*['"]KORATEST-01['"]/);
+  });
+
+  it('no runtime file anywhere special-cases the literal string KORATEST-01 (excluding this migration\'s own governance/seed files and tests)', () => {
+    const ALLOWED = new Set([
+      'app/admin/pipeline/page.tsx',
+      'scripts/koratest-canonical-seed.ts',
+      'data/koratest/koratest_input_fixture.json',
+    ]);
+    const offenders: string[] = [];
+    for (const dir of RUNTIME_DIRS) {
+      for (const file of walkTs(resolve(root, dir))) {
+        const relative = file.replace(root + '/', '');
+        if (ALLOWED.has(relative)) continue;
+        if (EXCLUDED_DOCS.has(relative)) continue;
+        if (relative.endsWith('.test.ts')) continue;
+        if (read(relative).includes('KORATEST-01')) offenders.push(relative);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe('B-TRUTH — no new tenant_kind product branch introduced', () => {
+  it('the only tenant_kind-conditioned code in the whole ingestion/onboarding pipeline remains the pre-existing, unmodified email-invite skip', () => {
+    const src = read('app/api/admin/companies/provision/route.ts');
+    expect(src).toContain("if (tenantKind !== 'LIVE')");
+    expect(src).toContain('Operational safety');
+  });
+
+  it('none of the 4 migrated files reads or filters on tenant_kind in actual code (a documentation comment noting its deliberate absence is fine)', () => {
+    for (const file of [
+      'app/admin/pipeline/page.tsx',
+      'app/admin/pipeline/_components/PilotLifecycleClient.tsx',
+      'app/admin/companies/page.tsx',
+      'components/admin/WorkforceQuickAccessPanel.tsx',
+    ]) {
+      const src = read(file);
+      const codeOnly = src.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+      expect(codeOnly).not.toContain('tenant_kind');
+    }
+  });
+});
+
+describe('B-TRUTH — this PR touched ONLY the TenantService migration (one PR = one bounded step)', () => {
+  it('CompanyDataIntakeService, AdminPreviewService still exist, untouched in role', () => {
+    for (const file of [
+      'services/company-data-intake/CompanyDataIntakeService.ts',
+      'services/admin-preview/AdminPreviewService.ts',
+    ]) {
+      expect(existsSync(resolve(root, file))).toBe(true);
+    }
+  });
+
+  it('AccountProvisioningService still exists — its own migration is a separate, later slice', () => {
+    expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(true);
+    const src = read('services/account/AccountProvisioningService.ts');
+    expect(src).toMatch(/from\s+['"][^'"]*data\/synthetic\//);
+  });
+
+  it('the final scoring group and B-WORKER members remain untouched — still exist', () => {
+    for (const file of [
+      'services/scoring-simulator/ScoringSimulatorService.ts',
+      'services/demo-data/DemoDataService.ts',
+      'services/worker-provisioning/WorkerProvisioningService.ts',
+      'services/worker-achievements/WorkerAchievementService.ts',
+    ]) {
+      expect(existsSync(resolve(root, file))).toBe(true);
+    }
+  });
+
+  it('KoraTest canonical foundation (PR 1, #140) is untouched — script and fixture still exist', () => {
+    expect(existsSync(resolve(root, 'scripts/koratest-canonical-seed.ts'))).toBe(true);
+    expect(existsSync(resolve(root, 'data/koratest/koratest_input_fixture.json'))).toBe(true);
+  });
+});
+
+describe('B-TRUTH — registry and I9 reflect the migration', () => {
+  it('registry svc.tenant entry reflects DEAD, not CANONICAL/CONSOLIDATE', () => {
+    const registry = read('lib/architecture/registry.ts');
+    const idx = registry.indexOf("id: 'svc.tenant'");
+    expect(idx).toBeGreaterThan(-1);
+    const nextIdx = registry.indexOf("{ id:", idx + 10);
+    const entry = registry.slice(idx, nextIdx);
+    expect(entry).toContain("status: 'DEAD'");
+  });
+
+  it('allowlist no longer lists TenantService', () => {
+    const allowlist = read('lib/security/synthetic-import-allowlist.ts');
+    expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/tenant\/TenantService\.ts'/);
+  });
+
+  it('allowlist header reflects the reduced count, 14 files / 24 imports', () => {
+    const allowlist = read('lib/security/synthetic-import-allowlist.ts');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 14 files / 24 import statements');
+  });
+});

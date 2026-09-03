@@ -212,8 +212,11 @@ describe('B-TRUTH — registry and I9 reflect the retirement', () => {
     expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/eligibility-gate\/EligibilityGateService\.ts'/);
   });
 
-  it('allowlist header reflects the reduced count, 15 files / 25 imports', () => {
+  it('allowlist header reflects a count at or below the level this PR left it at, 15 files / 25 imports (a later PR may reduce it further — see B-TRUTH TenantService Canonical Migration, 2026-09-04)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 15 files / 25 import statements');
+    const match = allowlist.match(/CURRENT_SYNTHETIC_RUNTIME_IMPORTS = (\d+) files \/ (\d+) import statements/);
+    expect(match).not.toBeNull();
+    expect(Number(match![1])).toBeLessThanOrEqual(15);
+    expect(Number(match![2])).toBeLessThanOrEqual(25);
   });
 });
