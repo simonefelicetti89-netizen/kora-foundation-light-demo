@@ -160,7 +160,10 @@ describe('KORA-LINK-MIGRATION-FORMALIZATION-12 — golden-path services never im
     // (B-TRUTH Ingestion/UEF PR2, 2026-09-02) — zero real callers, confirmed
     // before deletion. See lib/security/synthetic-import-allowlist.ts.
     'services/ingestion-normalizer/IngestionNormalizerService.ts',
-    'services/ingestion-pipeline/IngestionPipelineService.ts',
+    // services/ingestion-pipeline/IngestionPipelineService.ts retired
+    // (B-TRUTH Ingestion Pipeline Retirement, 2026-09-03) — zero real
+    // callers, confirmed before deletion. See lib/architecture/registry.ts
+    // svc.ingestion-pipeline.
     // services/dynamic-scoring/DynamicScoringPreviewService.ts retired
     // (B-TRUTH Preview Scoring Retirement, 2026-09-03) — zero real callers,
     // confirmed before deletion. See lib/architecture/registry.ts svc.dynamic-scoring.

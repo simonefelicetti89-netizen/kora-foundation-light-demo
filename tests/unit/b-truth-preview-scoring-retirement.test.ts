@@ -141,16 +141,16 @@ describe('B-TRUTH — b89b architecture contract updated, remaining adapters sti
   });
 });
 
-// UEFReviewService was documented here as untouched (accurately, at that
-// time) — it was later, separately retired by B-TRUTH UEFReview Retirement
-// (2026-09-03, its own bounded PR). Its real-caller drop from this PR was
-// exactly the documented-but-not-acted-on evidence that later slice acted
-// on. See tests/unit/b-truth-uef-review-retirement.test.ts.
+// UEFReviewService and IngestionPipelineService were documented here as
+// untouched (accurately, at that time) — each was later, separately
+// retired by its own bounded PR (B-TRUTH UEFReview Retirement, 2026-09-03;
+// B-TRUTH Ingestion Pipeline Retirement, 2026-09-03). See
+// tests/unit/b-truth-uef-review-retirement.test.ts and
+// tests/unit/b-truth-ingestion-pipeline-retirement.test.ts.
 describe('B-TRUTH — this PR retired ONLY the Preview pair (one PR = one bounded retirement)', () => {
   it('ReportFactoryService, the Ingestion/UEF legacy chain untouched — still exist', () => {
     for (const file of [
       'services/report-factory/ReportFactoryService.ts',
-      'services/ingestion-pipeline/IngestionPipelineService.ts',
       'services/eligibility-gate/EligibilityGateService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);

@@ -171,13 +171,14 @@ describe('B-TRUTH — this PR retired ONLY the synthetic branch (one PR = one bo
     expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(true);
   });
 
-  // UEFReviewService was in this "untouched" list originally (accurately, at
-  // that time) — it was later, separately retired by B-TRUTH UEFReview
-  // Retirement (2026-09-03, its own bounded PR). See
-  // tests/unit/b-truth-uef-review-retirement.test.ts.
+  // UEFReviewService and IngestionPipelineService were in this "untouched"
+  // list originally (accurately, at that time) — each was later, separately
+  // retired by its own bounded PR (B-TRUTH UEFReview Retirement, 2026-09-03;
+  // B-TRUTH Ingestion Pipeline Retirement, 2026-09-03). See
+  // tests/unit/b-truth-uef-review-retirement.test.ts and
+  // tests/unit/b-truth-ingestion-pipeline-retirement.test.ts.
   it('the Ingestion/UEF legacy chain untouched — still exists', () => {
     for (const file of [
-      'services/ingestion-pipeline/IngestionPipelineService.ts',
       'services/eligibility-gate/EligibilityGateService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);

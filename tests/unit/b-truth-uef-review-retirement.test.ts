@@ -137,16 +137,15 @@ describe('B-TRUTH — demo-guard-01 fallback prohibition preserved, unweakened',
   });
 });
 
+// IngestionPipelineService, and data/synthetic/ingestion-samples.json were
+// documented here as untouched (accurately, at that time) — IngestionPipelineService
+// was later, separately retired by B-TRUTH Ingestion Pipeline Retirement
+// (2026-09-03, its own bounded PR), which also deleted ingestion-samples.json
+// (confirmed zero other real consumers at that time). See
+// tests/unit/b-truth-ingestion-pipeline-retirement.test.ts.
 describe('B-TRUTH — this PR retired ONLY UEFReviewService (one PR = one bounded retirement)', () => {
-  it('IngestionPipelineService and EligibilityGateService untouched — still exist, unmodified', () => {
-    expect(existsSync(resolve(root, 'services/ingestion-pipeline/IngestionPipelineService.ts'))).toBe(true);
+  it('EligibilityGateService untouched — still exists, unmodified', () => {
     expect(existsSync(resolve(root, 'services/eligibility-gate/EligibilityGateService.ts'))).toBe(true);
-  });
-
-  it('data/synthetic/ingestion-samples.json untouched — still consumed by IngestionPipelineService', () => {
-    expect(existsSync(resolve(root, 'data/synthetic/ingestion-samples.json'))).toBe(true);
-    const src = read('services/ingestion-pipeline/IngestionPipelineService.ts');
-    expect(src).toContain('ingestion-samples');
   });
 
   it('ReportFactoryService and the live methodology glossary untouched', () => {

@@ -71,8 +71,14 @@ describe('DEMO-GUARD-01 — no data/synthetic/ingestion-samples.json fallback re
     expect(src).not.toContain('IngestionPipelineService');
   });
 
-  it('data/synthetic/ingestion-samples.json still exists (not deleted — demo data preserved)', () => {
-    expect(fs.existsSync(path.join(ROOT, 'data/synthetic/ingestion-samples.json'))).toBe(true);
+  // Preservation was conditional on IngestionPipelineService still needing
+  // it (its only real consumer, confirmed before this note was written).
+  // That service was retired by B-TRUTH Ingestion Pipeline Retirement
+  // (2026-09-03, its own bounded PR), which deleted this fixture alongside
+  // it after confirming zero other real consumers. See
+  // tests/unit/b-truth-ingestion-pipeline-retirement.test.ts.
+  it('data/synthetic/ingestion-samples.json no longer exists (retired with its sole consumer)', () => {
+    expect(fs.existsSync(path.join(ROOT, 'data/synthetic/ingestion-samples.json'))).toBe(false);
   });
 });
 
@@ -140,14 +146,14 @@ describe('DEMO-GUARD-01 — canonical Decision Pack authority has zero dependenc
     expect(pdfData).toContain('D-B resolved');
   });
 
-  it('ReportGeneratorService, FinancialGovernanceService, PreviewScoringAdapter, DynamicScoringPreviewService, and UEFReviewService retired (2026-09-02/03, separate bounded PRs) — the rest of the legacy chain is untouched, one-PR-one-service discipline', () => {
+  it('ReportGeneratorService, FinancialGovernanceService, PreviewScoringAdapter, DynamicScoringPreviewService, UEFReviewService, and IngestionPipelineService retired (2026-09-02/03, separate bounded PRs) — the rest of the legacy chain is untouched, one-PR-one-service discipline', () => {
     expect(fs.existsSync(path.join(ROOT, 'services/report-generator/ReportGeneratorService.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/financial-governance/FinancialGovernanceService.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/scoring/PreviewScoringAdapter.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/dynamic-scoring/DynamicScoringPreviewService.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/uef-review/UEFReviewService.ts'))).toBe(false);
+    expect(fs.existsSync(path.join(ROOT, 'services/ingestion-pipeline/IngestionPipelineService.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/report-factory/ReportFactoryService.ts'))).toBe(true);
-    expect(fs.existsSync(path.join(ROOT, 'services/ingestion-pipeline/IngestionPipelineService.ts'))).toBe(true);
     expect(fs.existsSync(path.join(ROOT, 'services/eligibility-gate/EligibilityGateService.ts'))).toBe(true);
     expect(fs.existsSync(path.join(ROOT, 'services/explainability/ExplainabilityService.ts'))).toBe(true);
   });
