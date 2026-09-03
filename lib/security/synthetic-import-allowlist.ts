@@ -20,6 +20,29 @@
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
 //
+// B-TRUTH Ingestion Normalizer Retirement (2026-09-03): deleted
+// services/ingestion-normalizer/IngestionNormalizerService.ts. This file was
+// NEVER an allowlist entry — it had no direct data/synthetic/** import of
+// its own (it consumed only the already-synthetic RawIngestionRow shape via
+// its sole real caller, IngestionPipelineService.ts, itself retired
+// immediately before this PR) — so this retirement does NOT change
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS; still 16 files / 26 imports.
+// Independently re-verified reachability: all 6 IIngestionNormalizerService
+// methods individually confirmed zero real callers, zero type-only
+// callers. No unique live data semantics: the real, canonical live
+// ingestion/data-intake path (MappingConfidenceService,
+// lib/data-intake/missing-field-analysis.ts, classifyEligibilityBatch,
+// operating on the canonical RawUploadedRecord type family) is confirmed
+// entirely independent, solving related problems via its own separate
+// implementation. Its type family (RawIngestionRow, NormalizedIngestionRow)
+// was confirmed to have zero other real consumers and was deliberately NOT
+// deleted (no opportunistic cleanup — harmless data contracts in
+// @/lib/types). EligibilityGateService is explicitly untouched by this
+// PR — remains its own separately-authorized future slice. See
+// tests/unit/b-truth-ingestion-normalizer-retirement.test.ts and
+// lib/architecture/registry.ts svc.ingestion-normalizer for the full
+// record.
+//
 // B-TRUTH Ingestion Pipeline Retirement (2026-09-03): deleted
 // services/ingestion-pipeline/IngestionPipelineService.ts and its sole
 // seed file, data/synthetic/ingestion-samples.json (confirmed, by direct
