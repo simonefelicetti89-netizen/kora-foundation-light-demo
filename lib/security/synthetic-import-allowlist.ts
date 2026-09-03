@@ -14,11 +14,59 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 16 files / 26 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 15 files / 25 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// B-TRUTH Eligibility Gate Retirement (2026-09-03): deleted
+// services/eligibility-gate/EligibilityGateService.ts and its sole seed
+// file, data/synthetic/action-taxonomy.json (confirmed, by direct repo-wide
+// grep before deletion, exactly ONE real, value-level consumer of the JSON —
+// the service itself; the other apparent hits — a UI step-label string in
+// app/admin/kora-activation-layer/page.tsx, a code comment in
+// lib/partner-activities/catalog.ts, and this task's own prior-retirement
+// test's non-usage assertion — are non-functional). Independently
+// re-verified reachability (not trusted from the prior B-TRUTH Zero-Caller
+// Comparison audit alone): all 4 public methods (classifyAction,
+// classifyActions, getActionTaxonomy, getEligibilitySummary) individually
+// confirmed zero real callers, zero type-only callers. CORRECTION to this
+// file's own prior `reason` text and the service's own header comment
+// (recorded here, not silently dropped): both claimed real usage by "Admin
+// BCM Mapping Review (AI Upload Studio)", "Pre-ingestion operator
+// classification UI", and "Taxonomy exploration" — tracing the actual live
+// routes found this stale; no such UI exists anywhere, and the real,
+// scoring-authoritative eligibility engine, lib/kora-engine/eligibility-gate.ts
+// (classifyEligibilityBatch), is used directly, with its own explicit
+// "no duplication" comment, by all 3 real admin data-intake routes
+// (upload-preview, preview, accept). A dedicated pre-existing test,
+// tests/unit/eligibility-gate.test.ts's "B71 regression guard", independently
+// corroborates that the live scoring pipeline routes through the canonical
+// file, never through this one. Legacy rule nuances present only in the
+// retired file (CCNL/contractual_mandatory override, Academy/Operations
+// ambiguity detection, keyword-matching against action-taxonomy.json) were
+// inventoried and classified: none qualify as MUST_MIGRATE_BEFORE_RETIREMENT
+// — the service's own header already disclaimed scoring authority
+// ("IT DOES NOT CONTROL SCORING"), and canonical was always the sole
+// scoring-authoritative engine regardless of this file's existence, with
+// zero live callers currently exercising any of this file's own rules. Its
+// two re-exported data contracts, EligibilityClassificationInput and
+// EligibilityClassificationResult, are defined in @/lib/types (not by this
+// file) and are kept unchanged — no opportunistic cleanup; their prior real
+// importers, IngestionPipelineService.ts and IngestionSimulatorService.ts,
+// were both already independently retired by earlier PRs, leaving zero
+// remaining type-only importers of this file specifically. This is a
+// stale-claim correction and zero-caller cleanup, NOT a canonical
+// methodology deletion — classifyEligibilityBatch and its full
+// BLOCKED/LIMITED/ELIGIBLE keyword tables, INDIVIDUAL_SENSITIVE_SIGNALS
+// privacy-priority check, and B15 UEF-reviewed passthrough logic are
+// entirely unaffected. See
+// tests/unit/b-truth-eligibility-gate-retirement.test.ts and
+// lib/architecture/registry.ts svc.eligibility-gate for the full record.
+// ReportFactoryService, ExplainabilityService, and the final scoring group
+// are explicitly untouched — one PR = one bounded retirement. Tenth genuine
+// I9 reduction via a real caller migration: 16->15 files (26->25 imports).
 //
 // B-TRUTH Ingestion Normalizer Retirement (2026-09-03): deleted
 // services/ingestion-normalizer/IngestionNormalizerService.ts. This file was
@@ -344,7 +392,6 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/admin-preview/AdminPreviewService.ts', reason: 'Admin demo preview shaping — companies, KORA Index outputs, source batches.' },
   { file: 'services/company-data-intake/CompanyDataIntakeService.ts', reason: 'Company raw-data batch/row intake demo seed (fiscal plans, batches, rows).' },
   { file: 'services/demo-data/DemoDataService.ts', reason: 'Central synthetic seed reader — companies, departments/sites, programs, aggregates. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
-  { file: 'services/eligibility-gate/EligibilityGateService.ts', reason: 'Taxonomy/preprocessing classifier reads synthetic action taxonomy.' },
   { file: 'services/founder-validation/FounderValidationService.ts', reason: 'Internal/admin-only founder validation leads seed.' },
   { file: 'services/report-factory/ReportFactoryService.ts', reason: 'Reads synthetic Decision Pack version seed alongside live orchestration.' },
   { file: 'services/scoring-simulator/ScoringSimulatorService.ts', reason: 'Demo scoring path — KORA Index outputs, company aggregates, confidence records. Master Plan §32: scheduled for removal at end of B-TRUTH.' },

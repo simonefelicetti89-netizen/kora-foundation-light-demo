@@ -86,21 +86,23 @@ describe('B-TRUTH — this PR retired ONLY ReportGeneratorService (one PR = one 
   // FinancialGovernance Retirement (2026-09-02, its own bounded PR). PreviewScoringAdapter
   // and DynamicScoringPreviewService were also in this list originally — later,
   // separately retired by B-TRUTH Preview Scoring Retirement (2026-09-03).
-  // UEFReviewService and IngestionPipelineService were also in this list
-  // originally — each later, separately retired by its own bounded PR
-  // (B-TRUTH UEFReview Retirement, 2026-09-03; B-TRUTH Ingestion Pipeline
-  // Retirement, 2026-09-03). Each is deliberately removed from this list
-  // rather than left to falsely assert continued existence. See
-  // tests/unit/b-truth-financial-governance-retirement.test.ts,
-  // tests/unit/b-truth-preview-scoring-retirement.test.ts,
-  // tests/unit/b-truth-uef-review-retirement.test.ts, and
-  // tests/unit/b-truth-ingestion-pipeline-retirement.test.ts.
-  it('the Ingestion/UEF legacy chain untouched — still exists', () => {
+  // UEFReviewService, IngestionPipelineService, and EligibilityGateService
+  // were also in this list originally — each later, separately retired by
+  // its own bounded PR. Each is deliberately removed from the "still
+  // exists" assertion rather than left to falsely assert continued
+  // existence; ExplainabilityService remains genuinely untouched. See each
+  // retirement's own dedicated regression guard for current proofs.
+  it('ExplainabilityService untouched — still exists', () => {
+    expect(existsSync(resolve(root, 'services/explainability/ExplainabilityService.ts'))).toBe(true);
+  });
+
+  it('the Ingestion/UEF legacy chain has been fully, independently retired by later PRs (historical note, not a live assertion)', () => {
     for (const file of [
       'services/eligibility-gate/EligibilityGateService.ts',
-      'services/explainability/ExplainabilityService.ts',
+      'services/ingestion-pipeline/IngestionPipelineService.ts',
+      'services/uef-review/UEFReviewService.ts',
     ]) {
-      expect(existsSync(resolve(root, file))).toBe(true);
+      expect(existsSync(resolve(root, file))).toBe(false);
     }
   });
 

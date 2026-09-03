@@ -139,15 +139,13 @@ describe('B-TRUTH — demo-guard-01 fallback prohibition preserved, unweakened',
   });
 });
 
-// IngestionNormalizerService was in this "untouched" list originally
-// (accurately, at that time) — it was later, separately retired by B-TRUTH
-// Ingestion Normalizer Retirement (2026-09-03, its own bounded PR). See
-// tests/unit/b-truth-ingestion-normalizer-retirement.test.ts.
+// IngestionNormalizerService and EligibilityGateService were in this
+// "untouched" list originally (accurately, at that time) — each was later,
+// separately retired by its own bounded PR (B-TRUTH Ingestion Normalizer
+// Retirement, 2026-09-03; B-TRUTH Eligibility Gate Retirement, 2026-09-03).
+// See tests/unit/b-truth-ingestion-normalizer-retirement.test.ts and
+// tests/unit/b-truth-eligibility-gate-retirement.test.ts.
 describe('B-TRUTH — this PR retired ONLY IngestionPipelineService (one PR = one bounded retirement)', () => {
-  it('EligibilityGateService untouched — still exists, unmodified', () => {
-    expect(existsSync(resolve(root, 'services/eligibility-gate/EligibilityGateService.ts'))).toBe(true);
-  });
-
   it('ReportFactoryService and the live methodology glossary untouched', () => {
     expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(true);
     const glossary = read('services/explainability/ExplainabilityService.ts');
@@ -176,17 +174,19 @@ describe('B-TRUTH — registry and I9 reflect the retirement', () => {
     expect(entry).toContain("status: 'DEAD'");
   });
 
-  // IngestionNormalizerService was checked here as remaining CANONICAL
-  // originally (accurately, at that time) — it was later, separately
-  // retired. See tests/unit/b-truth-ingestion-normalizer-retirement.test.ts
-  // for its own registry-status regression guard.
-  it('EligibilityGateService remains CANONICAL, not retired', () => {
+  // IngestionNormalizerService and EligibilityGateService were both checked
+  // here as remaining CANONICAL originally (accurately, at that time) —
+  // each was later, separately retired. See
+  // tests/unit/b-truth-ingestion-normalizer-retirement.test.ts and
+  // tests/unit/b-truth-eligibility-gate-retirement.test.ts for their own
+  // registry-status regression guards.
+  it('registry svc.eligibility-gate entry reflects DEAD, not CANONICAL (historical note, not a live assertion of this PR)', () => {
     const registry = read('lib/architecture/registry.ts');
     const idx = registry.indexOf("id: 'svc.eligibility-gate'");
     expect(idx).toBeGreaterThan(-1);
     const nextIdx = registry.indexOf("{ id:", idx + 10);
     const entry = registry.slice(idx, nextIdx);
-    expect(entry).toContain("status: 'CANONICAL'");
+    expect(entry).toContain("status: 'DEAD'");
   });
 
   it('allowlist no longer lists the retired service', () => {

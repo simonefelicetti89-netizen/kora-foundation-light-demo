@@ -107,17 +107,20 @@ describe('B-TRUTH — this PR retired ONLY FinancialGovernanceService (one PR = 
   // (2026-09-03, its own bounded PR). See
   // tests/unit/b-truth-preview-scoring-retirement.test.ts.
 
-  // UEFReviewService and IngestionPipelineService were in this "untouched"
-  // list originally (accurately, at that time) — each was later, separately
-  // retired by its own bounded PR (B-TRUTH UEFReview Retirement, 2026-09-03;
-  // B-TRUTH Ingestion Pipeline Retirement, 2026-09-03). See
-  // tests/unit/b-truth-uef-review-retirement.test.ts and
-  // tests/unit/b-truth-ingestion-pipeline-retirement.test.ts.
-  it('the Ingestion/UEF legacy chain untouched — still exists', () => {
+  // Every member of the original "Ingestion/UEF legacy chain untouched" list
+  // this PR asserted has since been independently, separately retired by its
+  // own later bounded PR. See each retirement's own dedicated regression
+  // guard (tests/unit/b-truth-uef-review-retirement.test.ts,
+  // tests/unit/b-truth-ingestion-pipeline-retirement.test.ts,
+  // tests/unit/b-truth-eligibility-gate-retirement.test.ts) for the current
+  // scope-boundary proofs.
+  it('the Ingestion/UEF legacy chain has been fully, independently retired by later PRs (historical note, not a live assertion)', () => {
     for (const file of [
       'services/eligibility-gate/EligibilityGateService.ts',
+      'services/ingestion-pipeline/IngestionPipelineService.ts',
+      'services/uef-review/UEFReviewService.ts',
     ]) {
-      expect(existsSync(resolve(root, file))).toBe(true);
+      expect(existsSync(resolve(root, file))).toBe(false);
     }
   });
 
