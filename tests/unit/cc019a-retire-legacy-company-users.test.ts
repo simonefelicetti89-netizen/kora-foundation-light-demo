@@ -117,11 +117,23 @@ describe('CC-019A — TenantService and AccountProvisioningService implementatio
     expect(existsSync(resolve(root, 'services/tenant/TenantService.ts'))).toBe(false);
   });
 
-  it('AccountProvisioningService.ts still exists with its other callers intact', () => {
+  // PilotLifecycleClient.tsx was accurately a real caller of
+  // accountProvisioningService at the time this test was written. B-TRUTH
+  // AccountProvisioningService Pipeline Role Migration (2026-09-06) later,
+  // separately, migrated that one pipeline-only call
+  // (getAccountsForCompany()) to a canonical Supabase Auth read — see
+  // lib/live/account-provisioning-status-view.ts. The service itself
+  // remains alive (NARROWED, not retired) solely for its other real caller,
+  // app/my-kora/page.tsx's My KORA/session-identity role
+  // (getCurrentDemoUser()), which is untouched. See
+  // tests/unit/b-truth-accountprovisioning-pipeline-role-migration.test.ts
+  // for the current, correct state.
+  it('AccountProvisioningService.ts still exists, narrowed to its My KORA/session-identity role only (historical note: pipeline was also a real caller when this test was written)', () => {
     expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(true);
-    for (const file of ['app/admin/pipeline/_components/PilotLifecycleClient.tsx', 'app/my-kora/page.tsx']) {
-      expect(read(file)).toContain('accountProvisioningService');
-    }
+    expect(read('app/my-kora/page.tsx')).toContain('accountProvisioningService');
+    const pipelineSrc = read('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
+    const pipelineCodeOnly = pipelineSrc.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+    expect(pipelineCodeOnly).not.toMatch(/accountProvisioningService\s*\./);
   });
 });
 

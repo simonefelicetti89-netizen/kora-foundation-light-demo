@@ -13,15 +13,25 @@
 // provisioning, account provisioning, scoring, data intake) remains
 // UNCHANGED, still keyed by DEMO_COMPANY_ID — those are separate, later
 // migration slices, not touched here.
+//
+// B-TRUTH AccountProvisioningService Pipeline Role Migration (2026-09-06):
+// the "Crea utente" step's hasCompanyUser flag is now read from a
+// canonical accountProvisioning prop (fetched server-side by page.tsx via
+// Supabase Auth) instead of calling
+// accountProvisioningService.getAccountsForCompany() here.
+// AccountProvisioningService.getCurrentDemoUser() — a SEPARATE, My
+// KORA/session-identity responsibility, called only from
+// app/my-kora/page.tsx — is untouched; that is why
+// AccountProvisioningService.ts still exists (narrowed, not retired).
 
 import Link from 'next/link';
 import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
-import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { workerSpaceCapabilityService } from '@/services/worker-space/WorkerSpaceCapabilityService';
 import type { CanonicalDataIntakeStatus } from '@/lib/live/data-intake-status-view';
 import type { CanonicalDecisionPackStatus } from '@/lib/live/decision-pack-status-view';
+import type { CanonicalAccountProvisioningStatus } from '@/lib/live/account-provisioning-status-view';
 import {
   LIFECYCLE_STEPS,
   deriveAllStepStatuses,
@@ -32,8 +42,8 @@ import {
 } from '@/lib/admin-lifecycle/lifecycle-rules';
 
 // Still-synthetic identity for every service NOT migrated by this PR
-// (worker provisioning, account provisioning, scoring, data intake) —
-// unchanged from before this migration.
+// (worker provisioning, scoring, data intake) — unchanged from before this
+// migration.
 const DEMO_COMPANY_ID = 'meridiana-group';
 
 export interface CanonicalPilotTenant {
@@ -213,8 +223,7 @@ function RoleContextLinks() {
 
 // ── Main client component ───────────────────────────────────────────────────────
 
-export function PilotLifecycleClient({ tenant, dataIntake, decisionPack }: { tenant: CanonicalPilotTenant | null; dataIntake: CanonicalDataIntakeStatus; decisionPack: CanonicalDecisionPackStatus }) {
-  const accounts     = accountProvisioningService.getAccountsForCompany(DEMO_COMPANY_ID);
+export function PilotLifecycleClient({ tenant, dataIntake, decisionPack, accountProvisioning }: { tenant: CanonicalPilotTenant | null; dataIntake: CanonicalDataIntakeStatus; decisionPack: CanonicalDecisionPackStatus; accountProvisioning: CanonicalAccountProvisioningStatus }) {
   const workerSumm   = workerProvisioningService.getWorkerProvisioningSummary(DEMO_COMPANY_ID);
   const koraIndex    = scoringSimulatorService.getKoraIndexOutput(DEMO_COMPANY_ID, 'S1')
                        ?? scoringSimulatorService.getKoraIndexOutput(DEMO_COMPANY_ID, 'S2');
@@ -222,7 +231,7 @@ export function PilotLifecycleClient({ tenant, dataIntake, decisionPack }: { ten
 
   const inputs: LifecycleStatusInputs = {
     tenantExists:       !!tenant,
-    hasCompanyUser:     accounts.length > 0,
+    hasCompanyUser:     accountProvisioning.hasCompanyUser,
     totalWorkers:       workerSumm.total_workers,
     hasSubmission:      dataIntake.batchCount > 0 || (tenant?.onboarding_status !== 'not_started'),
     submissionPending:  dataIntake.intakeStatus === 'validation_required',

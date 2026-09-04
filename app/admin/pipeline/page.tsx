@@ -20,10 +20,19 @@
 // (the service that used to own this read) has been retired entirely — its
 // only real caller now reads this canonical view directly.
 //
-// Every OTHER step's data source (worker provisioning, account
-// provisioning, scoring) is UNCHANGED — those remain separate, later
-// migration slices, still keyed by the DEMO_COMPANY_ID constant inside
-// PilotLifecycleClient.tsx.
+// B-TRUTH AccountProvisioningService Pipeline Role Migration (2026-09-06):
+// the "Crea utente" step's account-existence signal is now read directly
+// from Supabase Auth (auth.users + app_metadata) instead of the synthetic
+// data/synthetic/user-accounts.json fixture, via the shared pure view
+// builder lib/live/account-provisioning-status-view.ts. This migrates ONLY
+// AccountProvisioningService's pipeline/admin role — its separate My
+// KORA/session role (getCurrentDemoUser(), used by app/my-kora/page.tsx) is
+// untouched, out of scope, and the service remains alive (NARROWED, not
+// retired) for that reason.
+//
+// Every OTHER step's data source (worker provisioning, scoring) is
+// UNCHANGED — those remain separate, later migration slices, still keyed by
+// the DEMO_COMPANY_ID constant inside PilotLifecycleClient.tsx.
 //
 // PILOT_LIFECYCLE_TENANT_CODE is a temporary single-tenant default for this
 // still-single-company B95-B UI (see PR #140's KoraTest canonical
@@ -37,6 +46,7 @@ import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { PilotLifecycleClient, type CanonicalPilotTenant } from './_components/PilotLifecycleClient';
 import { buildDataIntakeStatusView, type CanonicalDataIntakeStatus, type SourceBatchStatusRow } from '@/lib/live/data-intake-status-view';
 import { buildDecisionPackStatusView, type CanonicalDecisionPackStatus, type DecisionPackVersionStatusRow } from '@/lib/live/decision-pack-status-view';
+import { buildAccountProvisioningStatusView, type CanonicalAccountProvisioningStatus, type AuthUserAppMetadataRow } from '@/lib/live/account-provisioning-status-view';
 
 const PILOT_LIFECYCLE_TENANT_CODE = 'KORATEST-01';
 
@@ -81,5 +91,23 @@ export default async function PilotLifecyclePage() {
     decisionPack = buildDecisionPackStatusView((versionRows ?? []) as DecisionPackVersionStatusRow[]);
   }
 
-  return <PilotLifecycleClient tenant={tenant} dataIntake={dataIntake} decisionPack={decisionPack} />;
+  let accountProvisioning: CanonicalAccountProvisioningStatus = { hasCompanyUser: false };
+  if (tenant) {
+    const { data: usersData, error: usersErr } = await db.auth.admin.listUsers({ perPage: 1000 });
+    if (usersErr) throw new Error(`[KORA] auth.users lookup failed: ${usersErr.message}`);
+
+    accountProvisioning = buildAccountProvisioningStatusView(
+      tenant.id,
+      (usersData?.users ?? []) as AuthUserAppMetadataRow[],
+    );
+  }
+
+  return (
+    <PilotLifecycleClient
+      tenant={tenant}
+      dataIntake={dataIntake}
+      decisionPack={decisionPack}
+      accountProvisioning={accountProvisioning}
+    />
+  );
 }
