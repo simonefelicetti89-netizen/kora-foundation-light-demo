@@ -146,7 +146,12 @@ describe('DEMO-GUARD-01 — canonical Decision Pack authority has zero dependenc
     expect(pdfData).toContain('D-B resolved');
   });
 
-  it('ReportGeneratorService, FinancialGovernanceService, PreviewScoringAdapter, DynamicScoringPreviewService, UEFReviewService, IngestionPipelineService, and EligibilityGateService retired (2026-09-02/03, separate bounded PRs) — the rest of the legacy chain is untouched, one-PR-one-service discipline', () => {
+  // ReportFactoryService.ts was accurately still-existing at the time this
+  // test was written. B-TRUTH ReportFactoryService Canonical Decision Pack
+  // Status Migration (2026-09-06) later, separately, retired it too. See
+  // tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts
+  // for the current, correct state.
+  it('ReportGeneratorService, FinancialGovernanceService, PreviewScoringAdapter, DynamicScoringPreviewService, UEFReviewService, IngestionPipelineService, EligibilityGateService, and ReportFactoryService retired (2026-09-02/03/06, separate bounded PRs) — the rest of the legacy chain is untouched, one-PR-one-service discipline', () => {
     expect(fs.existsSync(path.join(ROOT, 'services/report-generator/ReportGeneratorService.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/financial-governance/FinancialGovernanceService.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/scoring/PreviewScoringAdapter.ts'))).toBe(false);
@@ -154,7 +159,7 @@ describe('DEMO-GUARD-01 — canonical Decision Pack authority has zero dependenc
     expect(fs.existsSync(path.join(ROOT, 'services/uef-review/UEFReviewService.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/ingestion-pipeline/IngestionPipelineService.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/eligibility-gate/EligibilityGateService.ts'))).toBe(false);
-    expect(fs.existsSync(path.join(ROOT, 'services/report-factory/ReportFactoryService.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(ROOT, 'services/report-factory/ReportFactoryService.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/explainability/ExplainabilityService.ts'))).toBe(true);
   });
 });

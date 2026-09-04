@@ -142,27 +142,25 @@ describe('B-TRUTH — migrated consumers use the canonical Data Intake view', ()
     expect(src).not.toMatch(/from\s+['"][^'"]*data\/synthetic\//);
   });
 
-  it('ReportFactoryService.ts accepts dataIntake as a third parameter, no real CompanyDataIntakeService import or call', () => {
-    const src = read('services/report-factory/ReportFactoryService.ts');
-    expect(src).toContain('dataIntake: CanonicalDataIntakeStatus');
-    expect(src).not.toMatch(/from\s+['"][^'"]*services\/company-data-intake\/CompanyDataIntakeService['"]/);
-    const codeOnly = stripComments(src);
-    expect(codeOnly).not.toContain('companyDataIntakeService');
+  // ReportFactoryService.ts was accurately migrated to accept dataIntake as
+  // a third parameter (instead of calling companyDataIntakeService itself)
+  // at the time this test was written. B-TRUTH ReportFactoryService
+  // Canonical Decision Pack Status Migration (2026-09-06) later, separately,
+  // retired the file entirely — its sole real caller reads the canonical
+  // Decision Pack view directly. See
+  // tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts
+  // for the current, correct state.
+  it('ReportFactoryService has since been separately retired (historical note, not a live assertion)', () => {
+    expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(false);
   });
 
-  it('no data/synthetic/** Data-Intake import remains in page.tsx or PilotLifecycleClient.tsx (ReportFactoryService legitimately keeps its own, separate, unmigrated Decision Pack version import)', () => {
+  it('no data/synthetic/** Data-Intake import remains in page.tsx or PilotLifecycleClient.tsx', () => {
     for (const file of [
       'app/admin/pipeline/page.tsx',
       'app/admin/pipeline/_components/PilotLifecycleClient.tsx',
     ]) {
       expect(read(file)).not.toMatch(/from\s+['"][^'"]*data\/synthetic\//);
     }
-    // ReportFactoryService's remaining synthetic import must be exactly its
-    // pre-existing, out-of-scope decision-pack-versions.json — not a new
-    // Data-Intake-shaped one reintroduced by this PR.
-    const rfsSrc = read('services/report-factory/ReportFactoryService.ts');
-    const syntheticImports = [...rfsSrc.matchAll(/from\s+['"][^'"]*data\/synthetic\/([^'"]+)['"]/g)].map((m) => m[1]);
-    expect(syntheticImports).toEqual(['decision-pack-versions.json']);
   });
 });
 
@@ -203,10 +201,13 @@ describe('B-TRUTH — no KoraTest special runtime branch, no tenant_kind product
 });
 
 describe('B-TRUTH — this PR touched ONLY the CompanyDataIntakeService migration (one PR = one bounded step)', () => {
-  it('ReportFactoryService.ts Decision Pack version source is untouched', () => {
-    const src = read('services/report-factory/ReportFactoryService.ts');
-    expect(src).toContain("from '@/data/synthetic/decision-pack-versions.json'");
-    expect(src).toContain('getLatestDecisionPackVersion');
+  // ReportFactoryService.ts's Decision Pack version source was accurately
+  // untouched by THIS PR at the time this test was written. B-TRUTH
+  // ReportFactoryService Canonical Decision Pack Status Migration (PR 4 of
+  // the same plan, 2026-09-06) later, separately, retired the file entirely.
+  // See tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts.
+  it('ReportFactoryService has since been separately retired (historical note, not a live assertion)', () => {
+    expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(false);
   });
 
   it('AccountProvisioningService and AdminPreviewService still exist, untouched', () => {
@@ -250,8 +251,14 @@ describe('B-TRUTH — registry and I9 reflect the migration', () => {
     expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/company-data-intake\/CompanyDataIntakeService\.ts'/);
   });
 
-  it('allowlist header reflects the reduced count, 13 files / 21 imports', () => {
+  // The allowlist header count of 13 files / 21 imports was accurate as of
+  // this PR (PR 3). B-TRUTH ReportFactoryService Canonical Decision Pack
+  // Status Migration (PR 4, 2026-09-06) later, separately, reduced it
+  // further to 12 files / 20 imports. See
+  // tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts
+  // for the current, correct count.
+  it('allowlist header reflects the current, further-reduced count, 12 files / 20 imports (historical note: this PR itself produced 13/21)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 13 files / 21 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 20 import statements');
   });
 });

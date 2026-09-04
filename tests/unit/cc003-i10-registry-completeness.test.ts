@@ -77,7 +77,7 @@ describe('I10 — Architecture Registry completeness (B-REG / CC-003)', () => {
       .map((e) => e.name);
 
     it('the live services/* directory listing has the expected count (sanity — catches silent additions/removals)', () => {
-      expect(serviceDirs.length).toBeGreaterThanOrEqual(41); // loose bound: catches drastic drift, not exact churn — lowered from 50 by ReportGeneratorService (2026-09-02), FinancialGovernanceService (2026-09-02), DynamicScoringPreviewService (2026-09-03, B-TRUTH Preview Scoring Retirement), UEFReviewService (2026-09-03, B-TRUTH UEFReview Retirement), IngestionPipelineService (2026-09-03, B-TRUTH Ingestion Pipeline Retirement), IngestionNormalizerService (2026-09-03, B-TRUTH Ingestion Normalizer Retirement), EligibilityGateService (2026-09-03, B-TRUTH Eligibility Gate Retirement), TenantService (2026-09-04, B-TRUTH TenantService Canonical Migration), and CompanyDataIntakeService (2026-09-05, B-TRUTH CompanyDataIntakeService Canonical Migration) deliberate retirements
+      expect(serviceDirs.length).toBeGreaterThanOrEqual(40); // loose bound: catches drastic drift, not exact churn — lowered from 50 by ReportGeneratorService (2026-09-02), FinancialGovernanceService (2026-09-02), DynamicScoringPreviewService (2026-09-03, B-TRUTH Preview Scoring Retirement), UEFReviewService (2026-09-03, B-TRUTH UEFReview Retirement), IngestionPipelineService (2026-09-03, B-TRUTH Ingestion Pipeline Retirement), IngestionNormalizerService (2026-09-03, B-TRUTH Ingestion Normalizer Retirement), EligibilityGateService (2026-09-03, B-TRUTH Eligibility Gate Retirement), TenantService (2026-09-04, B-TRUTH TenantService Canonical Migration), CompanyDataIntakeService (2026-09-05, B-TRUTH CompanyDataIntakeService Canonical Migration), and ReportFactoryService (2026-09-06, B-TRUTH ReportFactoryService Canonical Decision Pack Status Migration) deliberate retirements
     });
 
     for (const dir of serviceDirs) {
@@ -168,13 +168,18 @@ describe('I10 — Architecture Registry completeness (B-REG / CC-003)', () => {
       expect(service?.decisionRef).toBe('CC-011 / D-A');
     });
 
-    it('D-B resolved (CC-013): lib.decision-pack is canonical; report-factory retained, not DEAD (pending its own retirement decision)', () => {
+    // B-TRUTH ReportFactoryService Canonical Decision Pack Status Migration
+    // (2026-09-06): report-factory moved from "not DEAD" (pending decision)
+    // to actually DEAD — a founder-authorized retirement (PR 4 of the
+    // ONE_PRODUCT_CANONICAL_MIGRATION plan), not an anticipated/assumed one.
+    // See lib/architecture/registry.ts svc.report-factory and
+    // tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts.
+    it('D-B ReportFactory disposition executed: svc.report-factory is DEAD, not merely non-canonical; lib.decision-pack remains canonical', () => {
       const factory = ARCHITECTURE_REGISTRY.find((c) => c.id === 'svc.report-factory');
       const pack = ARCHITECTURE_REGISTRY.find((c) => c.id === 'lib.decision-pack');
       expect(pack?.status).toBe('CANONICAL');
-      expect(factory?.status).not.toBe('CANONICAL');
-      expect(factory?.status).not.toBe('DEAD');
-      expect(factory?.decisionRef).toBe('CC-013 / D-B');
+      expect(factory?.status).toBe('DEAD');
+      expect(factory?.decisionRef).toBe('B-TRUTH ReportFactoryService Canonical Decision Pack Status Migration (2026-09-06)');
       expect(pack?.decisionRef).toBe('CC-013 / D-B');
     });
 

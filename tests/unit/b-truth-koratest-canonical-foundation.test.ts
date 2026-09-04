@@ -254,10 +254,14 @@ describe('B-TRUTH — this PR touches ONLY foundation, not the B95-B/B95-C clust
   // separate, bounded PRs of the same plan — retired each in turn. See
   // tests/unit/b-truth-tenantservice-canonical-migration.test.ts and
   // tests/unit/b-truth-company-data-intake-canonical-migration.test.ts.
-  it('AccountProvisioningService, ReportFactoryService, and AdminPreviewService still exist — TenantService and CompanyDataIntakeService have since been separately retired (historical note)', () => {
+  // ReportFactoryService.ts was accurately untouched by THIS PR at the time
+  // this test was written. B-TRUTH ReportFactoryService Canonical Decision
+  // Pack Status Migration (PR 4 of the same plan, 2026-09-06) later,
+  // separately, retired it entirely. See
+  // tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts.
+  it('AccountProvisioningService and AdminPreviewService still exist — TenantService, CompanyDataIntakeService, and ReportFactoryService have since been separately retired (historical note)', () => {
     for (const file of [
       'services/account/AccountProvisioningService.ts',
-      'services/report-factory/ReportFactoryService.ts',
       'services/admin-preview/AdminPreviewService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
@@ -265,6 +269,7 @@ describe('B-TRUTH — this PR touches ONLY foundation, not the B95-B/B95-C clust
     for (const file of [
       'services/tenant/TenantService.ts',
       'services/company-data-intake/CompanyDataIntakeService.ts',
+      'services/report-factory/ReportFactoryService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(false);
     }
