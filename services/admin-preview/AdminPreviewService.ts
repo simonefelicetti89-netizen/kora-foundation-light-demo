@@ -6,10 +6,33 @@
 // is explicitly NOT migrated (see app/admin/page.tsx's own header for the
 // security-architecture reason: one of its two real callers is reachable by
 // the DEMO_VIEWER role, and /demo pages are documented as safe only because
-// they are synth-only). Every other method below (portfolio, benchmark,
-// network, billing, founder-validation, gate status, the AI-onboarding
-// cluster) is untouched — separate, later CC-00 slices, no opportunistic
-// cleanup. This service remains alive, NARROWED, not retired.
+// they are synth-only).
+//
+// CC-00 — AI-Onboarding Duplicate Retirement (2026-09-06): five methods that
+// simulated concepts already live and canonical elsewhere — getSourceIntakePreview
+// and getMappingIntelligencePreview (duplicating app/admin/data-intake/page.tsx,
+// header-labeled "CANONICAL — B154-B: entry point globale Data Intake",
+// KORA_ADMIN-gated), getUefDraftQueuePreview and getHumanReviewPreview
+// (duplicating app/admin/uef-review/page.tsx, KORA_ADMIN-gated, real
+// interpreter-generated UEF review), and getScoringReadinessPreview
+// (duplicating app/admin/pipeline/page.tsx's own real, canonical readiness
+// signal, built across PRs #140-#146 of this same plan) — have been
+// retired. Their sole real caller, app/demo/ai-onboarding/page.tsx (a
+// DEMO_VIEWER-gated route, same security tier as Index Registry's demo
+// caller), has been trimmed accordingly — no live data was introduced there,
+// no synthetic replacement was added; the redundant simulation was simply
+// removed, since the real capability already exists, canonically, elsewhere.
+// This is capability-preserving, not capability-loss: nothing these methods
+// simulated is gone from KORA — it was never uniquely implemented here.
+// getAIOnboardingPreview (real admin-facing value, blocked by the same
+// DEMO_VIEWER/live-data security question as Index Registry/Portfolio) and
+// getPrivacyFilterPreview (static compliance/policy presentation, not a
+// duplicated live feature) are both explicitly untouched, deferred.
+//
+// Every other method below (portfolio, benchmark, network, billing,
+// founder-validation, gate status) is untouched — separate, later CC-00
+// slices, no opportunistic cleanup. This service remains alive, NARROWED,
+// not retired.
 import companiesRaw from '@/data/synthetic/companies.json';
 import koraIndexRaw from '@/data/synthetic/kora-index-outputs.json';
 import sourceBatchesRaw from '@/data/synthetic/source-batches.json';
@@ -299,34 +322,6 @@ export interface CompanyOnboardingStatus {
   synthetic_demo: true;
 }
 
-export interface SourceBatchPreview {
-  id: string;
-  source_type: string;
-  source_label: string;
-  scenario_id: string;
-  rows_received: number;
-  mapped_records: number;
-  rejected_records: number;
-  completeness_pct: number;
-  mapping_confidence: number;
-  evidence_attached_pct: number;
-  pending_review: number;
-  status: string;
-}
-
-export interface MappingIntelligencePreview {
-  total_rows_processed: number;
-  rows_mapped: number;
-  rows_rejected: number;
-  rows_pending: number;
-  avg_mapping_confidence: number;
-  sources_requiring_review: number;
-  taxonomy_rules_applied: number;
-  bcm_pillar_assignments: number;
-  unmapped_requiring_manual: number;
-  taxonomy_basis: string;
-}
-
 export interface PrivacyFilterPreview {
   sensitive_fields_detected: number;
   sensitive_fields_excluded: number;
@@ -335,43 +330,6 @@ export interface PrivacyFilterPreview {
   no_employer_access_individual: true;
   pseudonymization_applied: true;
 }
-
-export interface UefDraftQueuePreview {
-  draft_total_estimated: number;
-  approved: number;
-  flagged_for_review: number;
-  rejected: number;
-  eligible_for_scoring: number;
-  uef_event_records_deferred: true;
-  deferred_reason: string;
-}
-
-export interface HumanReviewPreview {
-  batches_requiring_review: number;
-  total_pending_items: number;
-  flagged_mappings: number;
-  rejected_mappings: number;
-  advisor_queue_items: number;
-  approval_gate_active: true;
-}
-
-export interface ScoringReadinessPreview {
-  data_completeness: number;
-  evidence_quality: number;
-  mapping_confidence: number;
-  review_completion: number;
-  readiness_status: 'ready' | 'partial' | 'blocked';
-  next_required_action: string;
-}
-
-const SOURCE_TYPE_LABELS: Record<string, string> = {
-  hris_population:  'HRIS Population Export',
-  lms_training:     'LMS Training Export',
-  welfare_provider: 'Welfare Provider Export',
-  esg_initiatives:  'ESG Initiatives File',
-  partner_events:   'Partner Events File',
-  manual_upload:    'Manual Upload',
-};
 
 // ─── Extended AdminPreviewService ─────────────────────────────────────────────
 
@@ -398,53 +356,6 @@ export const adminPreviewService = new (class extends AdminPreviewService {
     };
   }
 
-  // B. Source intake per scenario (defaults to S1 — most interesting for demo)
-  getSourceIntakePreview(scenarioId: 'S1' | 'S2' = 'S1'): SourceBatchPreview[] {
-    return batches
-      .filter((b) => b.company_id === 'meridiana-group' && b.scenario_id === scenarioId)
-      .map((b): SourceBatchPreview => ({
-        id: b.id,
-        source_type: b.source_type,
-        source_label: SOURCE_TYPE_LABELS[b.source_type] ?? b.source_type,
-        scenario_id: b.scenario_id,
-        rows_received: b.row_count,
-        mapped_records: b.mapped_count,
-        rejected_records: b.rejected_count ?? (b.row_count - b.mapped_count - (b.pending_review_count ?? 0)),
-        completeness_pct: b.completeness_pct,
-        mapping_confidence: b.mapping_confidence_avg,
-        evidence_attached_pct: b.evidence_attached_pct ?? 0,
-        pending_review: b.pending_review_count ?? 0,
-        status: b.batch_status,
-      }));
-  }
-
-  // C. Mapping intelligence — derived from S1 batch data
-  getMappingIntelligencePreview(): MappingIntelligencePreview {
-    const s1 = batches.filter(
-      (b) => b.company_id === 'meridiana-group' && b.scenario_id === 'S1',
-    );
-    const totalRows   = s1.reduce((s, b) => s + b.row_count, 0);
-    const totalMapped = s1.reduce((s, b) => s + b.mapped_count, 0);
-    const totalRejected = s1.reduce((s, b) => s + (b.rejected_count ?? 0), 0);
-    const totalPending  = s1.reduce((s, b) => s + (b.pending_review_count ?? 0), 0);
-    const weightedConf  = s1.reduce((s, b) => s + b.mapping_confidence_avg * b.row_count, 0);
-    const avgConf = totalRows > 0 ? weightedConf / totalRows : 0;
-    const requiresReview = s1.filter((b) => b.batch_status !== 'approved').length;
-
-    return {
-      total_rows_processed: totalRows,
-      rows_mapped: totalMapped,
-      rows_rejected: totalRejected,
-      rows_pending: totalPending,
-      avg_mapping_confidence: Math.round(avgConf * 100) / 100,
-      sources_requiring_review: requiresReview,
-      taxonomy_rules_applied: 847,
-      bcm_pillar_assignments: totalMapped,
-      unmapped_requiring_manual: totalRejected + Math.floor(totalPending * 0.3),
-      taxonomy_basis: 'Rule-based BCM taxonomy classifier — no external LLM',
-    };
-  }
-
   // D. Privacy filter — inline synthetic preview
   getPrivacyFilterPreview(): PrivacyFilterPreview {
     return {
@@ -465,61 +376,4 @@ export const adminPreviewService = new (class extends AdminPreviewService {
     };
   }
 
-  // E. UEF draft queue — aggregate counts only (no event-level records)
-  getUefDraftQueuePreview(): UefDraftQueuePreview {
-    const s1 = batches.filter(
-      (b) => b.company_id === 'meridiana-group' && b.scenario_id === 'S1',
-    );
-    const totalMapped = s1.reduce((s, b) => s + b.mapped_count, 0);
-    const draft  = Math.floor(totalMapped * 0.92);
-    const approved = Math.floor(draft * 0.55);
-    const flagged  = Math.floor(draft * 0.18);
-    const rejected = Math.floor(draft * 0.08);
-    return {
-      draft_total_estimated: draft,
-      approved,
-      flagged_for_review: flagged,
-      rejected,
-      eligible_for_scoring: approved,
-      uef_event_records_deferred: true,
-      deferred_reason: 'UEF event-level records are not generated in Foundation Light demo phase. Aggregate queue counts only.',
-    };
-  }
-
-  // F. Human review summary — inline synthetic
-  getHumanReviewPreview(): HumanReviewPreview {
-    const s1 = batches.filter(
-      (b) => b.company_id === 'meridiana-group' && b.scenario_id === 'S1',
-    );
-    const pendingBatches = s1.filter((b) => b.batch_status !== 'approved').length;
-    const totalPending   = s1.reduce((s, b) => s + (b.pending_review_count ?? 0), 0);
-    return {
-      batches_requiring_review: pendingBatches,
-      total_pending_items: totalPending,
-      flagged_mappings: Math.floor(totalPending * 0.22),
-      rejected_mappings: Math.floor(totalPending * 0.09),
-      advisor_queue_items: 11,
-      approval_gate_active: true,
-    };
-  }
-
-  // G. Scoring readiness
-  getScoringReadinessPreview(): ScoringReadinessPreview {
-    const s1 = batches.filter(
-      (b) => b.company_id === 'meridiana-group' && b.scenario_id === 'S1',
-    );
-    const avgCompleteness = s1.reduce((s, b) => s + b.completeness_pct, 0) / (s1.length || 1);
-    const avgEvidence     = s1.reduce((s, b) => s + (b.evidence_attached_pct ?? 0), 0) / (s1.length || 1);
-    const avgConf         = s1.reduce((s, b) => s + b.mapping_confidence_avg, 0) / (s1.length || 1);
-    const approvedRatio   = s1.filter((b) => b.batch_status === 'approved').length / (s1.length || 1);
-
-    return {
-      data_completeness: Math.round(avgCompleteness * 100) / 100,
-      evidence_quality: Math.round(avgEvidence * 100) / 100,
-      mapping_confidence: Math.round(avgConf * 100) / 100,
-      review_completion: Math.round(approvedRatio * 100) / 100,
-      readiness_status: 'partial',
-      next_required_action: 'Complete human review of 165 pending items across LMS, Welfare, ESG, Partner, and Manual batches. Advisor review of 11 queued IMPACT events required before scoring run.',
-    };
-  }
 })();
