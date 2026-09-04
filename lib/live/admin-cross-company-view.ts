@@ -1,22 +1,33 @@
 // lib/live/admin-cross-company-view.ts
 // CC-00 — B-TRUTH / ONE PRODUCT, ONE TRUTH — AdminPreview Cross-Company
-// Canonicalization, Phase 1.
+// Canonicalization.
 //
 // Canonical live view over analytics.tenant + analytics.kora_index_result +
 // analytics.confidence_result + analytics.source_batch, replacing
 // services/admin-preview/AdminPreviewService.ts's synthetic
-// getPlatformAnalyticsPreview() for its one real caller (app/admin/page.tsx).
+// getPlatformAnalyticsPreview() and getIndexRegistryPreview() for their real
+// caller (app/admin/page.tsx).
 //
-// SCOPE: Platform Analytics ONLY. getIndexRegistryPreview() is explicitly
-// NOT migrated by this file or this PR — see the header of app/admin/page.tsx
-// for why (a security-architecture conflict: one of its two real callers,
-// app/demo/index-registry/page.tsx, is reachable by the DEMO_VIEWER role,
+// Phase 1 (2026-09-06): Platform Analytics only. getIndexRegistryPreview()
+// was deliberately NOT migrated at that time — its second real caller,
+// app/demo/index-registry/page.tsx, was reachable by the DEMO_VIEWER role,
 // which lib/auth/kora-session.ts's own requireDemoAccess() documents as
-// safe only because /demo pages are synth-only; introducing a live
-// cross-company query there requires a founder-level security decision this
-// PR does not make). This file therefore builds its own internal, private
-// aggregation directly from canonical rows — it does not call, wrap, or
-// duplicate the still-synthetic, still-public getIndexRegistryPreview().
+// safe only because /demo pages are synth-only, and introducing a live
+// cross-company query there required a founder-level security decision.
+//
+// Index Registry canonicalization (2026-09-06, later the same day, CC-00):
+// the founder has since ratified DEMO_VIEWER's retirement (superseding the
+// prior D-C decision that had kept /demo/** as permanent DEMO_RUNTIME —
+// see lib/architecture/registry.ts's app-surface.demo entry for the
+// preserved historical record of both decisions). With DEMO_VIEWER's
+// authorization no longer the operative constraint, app/demo/index-registry
+// is retired outright rather than made canonical for two audiences — its
+// real value (the compact "top companies by KORA Index" panel) already
+// lived, and continues to live, in app/admin/page.tsx's own Intelligence
+// Grid panel (KORA_ADMIN-only, unchanged auth model). buildIndexRegistryView()
+// below adds that projection, reusing the SAME already-fetched
+// kora_index_result rows app/admin/page.tsx already queries for Platform
+// Analytics — no second query, no duplicated business logic.
 //
 // Field disposition (only fields actually consumed by the real caller,
 // traced by direct usage in app/admin/page.tsx, not inferred from the
@@ -109,4 +120,50 @@ export function buildAdminPlatformAnalyticsView(
     source_batches_total: batches.length,
     source_batches_approved: batches.filter((b) => b.batch_status === 'approved').length,
   };
+}
+
+// ─── Index Registry ─────────────────────────────────────────────────────────
+// Field disposition (only fields actually consumed by the real caller,
+// traced by direct usage — not inferred from the legacy IndexRegistryEntry
+// return shape): app/admin/page.tsx's Intelligence Grid panel read exactly
+// company_name, kora_index_value, and safeguard_status (the last only for a
+// color lookup) off the legacy 9-field IndexRegistryEntry. scenario_id (the
+// only field with no canonical equivalent — canonical scoring is keyed by
+// tenant_id/reporting_period/is_current, not a "scenario" axis) was rendered
+// as a column but is dropped here, not replaced by an invented substitute.
+// reporting_period, confidence_score, methodology_version_id,
+// calibration_status, and is_synthetic were consumed only by
+// app/demo/index-registry/page.tsx, which is retired in this same change —
+// nothing else needs them, so they are not carried forward. This is a
+// deliberate field-count reduction to what the surviving real caller
+// actually uses, not a parity gap.
+//
+// Entries are returned in natural query order — the original callers never
+// ordered them by kora_index_value either; imposing a value-based ordering
+// now would introduce an unrequested leaderboard/comparison semantic this
+// migration does not authorize.
+
+export interface CanonicalIndexRegistryEntry {
+  tenantId: string;
+  companyName: string;
+  koraIndexValue: number;
+  safeguardStatus: string;
+}
+
+export interface TenantIdentityRow {
+  id: string;
+  company_name: string;
+}
+
+export function buildIndexRegistryView(
+  tenants: TenantIdentityRow[],
+  currentResults: CurrentKoraIndexResultRow[],
+): CanonicalIndexRegistryEntry[] {
+  const nameById = new Map(tenants.map((t) => [t.id, t.company_name]));
+  return currentResults.map((r) => ({
+    tenantId: r.tenant_id,
+    companyName: nameById.get(r.tenant_id) ?? r.tenant_id,
+    koraIndexValue: r.kora_index_value,
+    safeguardStatus: r.safeguard_status,
+  }));
 }

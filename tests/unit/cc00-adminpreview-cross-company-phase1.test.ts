@@ -71,11 +71,18 @@ describe('CC-00 Phase 1 — only the two authorized methods were touched', () =>
     expect(src).not.toContain('export interface PlatformAnalytics');
   });
 
-  it('getIndexRegistryPreview() is untouched — still defined, unchanged shape', () => {
+  // getIndexRegistryPreview() was accurately untouched (still existed) at
+  // the time this test was written. CC-00 Index Registry canonicalization
+  // (2026-09-06, later the same day) later, separately, retired it — the
+  // founder ratified DEMO_VIEWER's retirement, superseding the security
+  // reason it had been deferred here. See
+  // tests/unit/cc00-index-registry-canonicalization.test.ts for the
+  // current, correct state.
+  it('getIndexRegistryPreview() has since been separately canonicalized and removed (historical note, not a live assertion)', () => {
     const src = read('services/admin-preview/AdminPreviewService.ts');
-    expect(src).toContain('getIndexRegistryPreview(): IndexRegistryEntry[]');
-    expect(src).toContain('export interface IndexRegistryEntry');
-    expect(src).toContain('scenario_id: string');
+    const codeOnly = stripComments(src);
+    expect(codeOnly).not.toContain('getIndexRegistryPreview(');
+    expect(codeOnly).not.toContain('export interface IndexRegistryEntry');
   });
 
   it('no runtime file (app/services/lib/components), excluding governance docs and tests, calls adminPreviewService.getPlatformAnalyticsPreview', () => {
@@ -218,9 +225,12 @@ describe('CC-00 Phase 1 — this slice touched ONLY the two authorized methods (
     }
   });
 
-  it('app/demo/index-registry/page.tsx is untouched — still calls the still-synthetic getIndexRegistryPreview()', () => {
-    const src = read('app/demo/index-registry/page.tsx');
-    expect(src).toContain('adminPreviewService.getIndexRegistryPreview()');
+  // app/demo/index-registry/page.tsx was accurately untouched at the time
+  // this test was written. CC-00 Index Registry canonicalization
+  // (2026-09-06) later, separately, retired the entire route — see
+  // tests/unit/cc00-index-registry-canonicalization.test.ts.
+  it('app/demo/index-registry has since been separately retired (historical note, not a live assertion)', () => {
+    expect(existsSync(resolve(root, 'app/demo/index-registry'))).toBe(false);
   });
 
   it('app/demo/portfolio/page.tsx is untouched', () => {

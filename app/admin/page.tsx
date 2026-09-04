@@ -10,24 +10,26 @@
 // companies.json/kora-index-outputs.json/source-batches.json fixtures, via
 // the shared pure view builder lib/live/admin-cross-company-view.ts.
 //
-// getIndexRegistryPreview() (the "KORA Index™ Registry" panel below) is
-// explicitly NOT migrated by this PR — one of its two real callers,
-// app/demo/index-registry/page.tsx, is reachable by the DEMO_VIEWER role,
-// which lib/auth/kora-session.ts's own requireDemoAccess() documents as
-// safe only because /demo pages are synth-only ("If Fase 3 introduces a
-// live-data demo tenant, this function must be revisited to prevent live
-// data leakage into the /demo surface"). Introducing a live cross-company
-// query there is a security-architecture decision this PR does not make
-// unilaterally. Forking a canonical-for-admin/synthetic-for-demo split for
-// the SAME method was ruled out too (ONE PRODUCT, ONE TRUTH). This method,
-// getCompanyPortfolioPreview(), and every other AdminPreviewService method
-// remain untouched, still synthetic-backed, still their own separate,
-// later CC-00 slices.
+// CC-00 — Index Registry canonicalization (2026-09-06, later the same day):
+// the founder has since ratified DEMO_VIEWER's retirement, superseding the
+// security-architecture reason getIndexRegistryPreview() was deferred above
+// (see lib/architecture/registry.ts's app-surface.demo entry for the
+// preserved historical record of the superseded D-C decision). The "KORA
+// Index™ Registry" panel below now reads analytics.kora_index_result
+// directly (reusing the same rows already fetched for Platform Analytics —
+// no second query) via lib/live/admin-cross-company-view.ts's
+// buildIndexRegistryView(). app/demo/index-registry/page.tsx, its only
+// other real caller, is retired — this is no longer a canonical-for-admin/
+// synthetic-for-demo split, it is one canonical projection with one real
+// caller. getCompanyPortfolioPreview() and every other AdminPreviewService
+// method remain untouched, still synthetic-backed, still their own
+// separate, later CC-00 slices. The DEMO_VIEWER role itself is not removed
+// in this change.
 
 import Link from 'next/link';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
-import { buildAdminPlatformAnalyticsView, type CurrentKoraIndexResultRow, type SourceBatchStatusRowForAnalytics } from '@/lib/live/admin-cross-company-view';
+import { buildAdminPlatformAnalyticsView, buildIndexRegistryView, type CurrentKoraIndexResultRow, type SourceBatchStatusRowForAnalytics, type TenantIdentityRow } from '@/lib/live/admin-cross-company-view';
 import { PriorityQueue } from '@/components/admin/PriorityQueue';
 import type { PriorityItem } from '@/components/admin/PriorityQueue';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
@@ -90,8 +92,8 @@ export default async function KoraControlTower() {
 
   const { data: tenantRows, error: tenantErr } = await db
     .schema('analytics').from('tenant')
-    .select('id', { count: 'exact' });
-  if (tenantErr) throw new Error(`[KORA] tenant count lookup failed: ${tenantErr.message}`);
+    .select('id, company_name');
+  if (tenantErr) throw new Error(`[KORA] tenant lookup failed: ${tenantErr.message}`);
 
   const { data: currentResultRows, error: resultErr } = await db
     .schema('analytics').from('kora_index_result')
@@ -104,11 +106,15 @@ export default async function KoraControlTower() {
     .select('batch_status');
   if (batchErr) throw new Error(`[KORA] source_batch lookup failed: ${batchErr.message}`);
 
+  const typedTenantRows = (tenantRows ?? []) as TenantIdentityRow[];
+  const typedCurrentResultRows = (currentResultRows ?? []) as unknown as CurrentKoraIndexResultRow[];
+
   const analytics = buildAdminPlatformAnalyticsView(
-    (tenantRows ?? []).length,
-    (currentResultRows ?? []) as unknown as CurrentKoraIndexResultRow[],
+    typedTenantRows.length,
+    typedCurrentResultRows,
     (batchRows ?? []) as SourceBatchStatusRowForAnalytics[],
   );
+  const registry = buildIndexRegistryView(typedTenantRows, typedCurrentResultRows);
 
   const portfolio  = adminPreviewService.getCompanyPortfolioPreview();
   const gates      = adminPreviewService.getGateStatusPreview();
@@ -117,7 +123,6 @@ export default async function KoraControlTower() {
   const advisors   = adminPreviewService.getAdvisorNetworkPreview();
   const partners   = adminPreviewService.getPartnerNetworkPreview();
   const onb        = adminPreviewService.getAIOnboardingPreview();
-  const registry   = adminPreviewService.getIndexRegistryPreview();
 
   const clearCount   = analytics.safeguard_distribution.CLEAR;
   const warningCount = analytics.safeguard_distribution.WARNING;
@@ -458,20 +463,22 @@ export default async function KoraControlTower() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
 
-        {/* KORA Index Registry */}
-        <Panel n="01" title="KORA Index™ Registry" href="/demo/index-registry" hrefLabel="Registro" badgeLabel="DEMO · dati sintetici">
+        {/* KORA Index Registry — canonical (CC-00 Index Registry canonicalization) */}
+        <Panel n="01" title="KORA Index™ Registry">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 40px 48px', gap: 8, paddingBottom: 6, borderBottom: TOKENS.cardBorder, marginBottom: 6 }}>
-              {['Azienda', 'S', 'Index'].map((h, i) => (
-                <span key={h} style={{ fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKENS.inkHint, textAlign: i === 2 ? 'right' : 'left' }}>{h}</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px', gap: 8, paddingBottom: 6, borderBottom: TOKENS.cardBorder, marginBottom: 6 }}>
+              {['Azienda', 'Index'].map((h, i) => (
+                <span key={h} style={{ fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKENS.inkHint, textAlign: i === 1 ? 'right' : 'left' }}>{h}</span>
               ))}
             </div>
+            {registry.length === 0 && (
+              <p style={{ fontSize: '11px', color: TOKENS.inkHint, padding: '4px 0' }}>Nessun risultato KORA Index™ corrente.</p>
+            )}
             {registry.slice(0, 5).map((e) => (
-              <div key={`${e.company_id}-${e.scenario_id}`} style={{ display: 'grid', gridTemplateColumns: '1fr 40px 48px', gap: 8, paddingBottom: 5, marginBottom: 2 }}>
-                <span style={{ fontSize: '11px', color: TOKENS.inkSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.company_name.split(' ')[0]}</span>
-                <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '10px', color: TOKENS.inkHint }}>{e.scenario_id}</span>
-                <span style={{ textAlign: 'right', fontSize: '12px', fontWeight: 700, color: e.safeguard_status === 'FLAGGED' ? TOKENS.critical : e.safeguard_status === 'WARNING' ? TOKENS.warning : TOKENS.success }}>
-                  {e.kora_index_value}
+              <div key={e.tenantId} style={{ display: 'grid', gridTemplateColumns: '1fr 60px', gap: 8, paddingBottom: 5, marginBottom: 2 }}>
+                <span style={{ fontSize: '11px', color: TOKENS.inkSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.companyName.split(' ')[0]}</span>
+                <span style={{ textAlign: 'right', fontSize: '12px', fontWeight: 700, color: e.safeguardStatus === 'FLAGGED' ? TOKENS.critical : e.safeguardStatus === 'WARNING' ? TOKENS.warning : TOKENS.success }}>
+                  {e.koraIndexValue}
                 </span>
               </div>
             ))}

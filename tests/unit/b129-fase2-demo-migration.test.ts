@@ -58,8 +58,13 @@ describe('B129 Fase 2 — new demo pages exist at new paths', () => {
     expect(fileExists('app/demo/gtm/page.tsx')).toBe(true);
   });
 
-  it('app/demo/index-registry/page.tsx exists', () => {
-    expect(fileExists('app/demo/index-registry/page.tsx')).toBe(true);
+  // app/demo/index-registry/page.tsx existed here accurately as of B129
+  // Fase 2. CC-00 Index Registry canonicalization (2026-09-06) later,
+  // separately, retired the entire route — its real value moved into
+  // app/admin/page.tsx's own Intelligence Grid panel, canonically. See
+  // tests/unit/cc00-index-registry-canonicalization.test.ts.
+  it('app/demo/index-registry/page.tsx has since been separately retired (historical note, not a live assertion)', () => {
+    expect(fileExists('app/demo/index-registry/page.tsx')).toBe(false);
   });
 
   it('app/demo/ai-onboarding/page.tsx exists', () => {
@@ -138,6 +143,10 @@ describe('B129 Fase 2 — next.config.ts: 9 redirect entries', () => {
 // ── Group 4: No Supabase client imports in moved /demo/* pages ───────────────
 
 describe('B129 Fase 2 — /demo/* pages have no Supabase client imports', () => {
+  // app/demo/index-registry/page.tsx was accurately in this list as of B129
+  // Fase 2. CC-00 Index Registry canonicalization (2026-09-06) retired the
+  // route entirely — removed from this list, not replaced (there is no
+  // page left to check).
   const DEMO_PAGES = [
     'app/demo/guide/page.tsx',
     'app/demo/advisor/page.tsx',
@@ -146,7 +155,6 @@ describe('B129 Fase 2 — /demo/* pages have no Supabase client imports', () => 
     'app/demo/benchmarks/page.tsx',
     'app/demo/network/page.tsx',
     'app/demo/gtm/page.tsx',
-    'app/demo/index-registry/page.tsx',
     'app/demo/ai-onboarding/page.tsx',
   ];
 
