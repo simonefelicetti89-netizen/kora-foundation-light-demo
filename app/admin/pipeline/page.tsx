@@ -10,9 +10,15 @@
 // analytics.source_batch + analytics.uef_record (canonical) instead of the
 // synthetic company-raw-data-batches.json/company-raw-data-rows.json
 // fixtures, via the shared pure view builder
-// lib/live/data-intake-status-view.ts (also reused by
-// ReportFactoryService.getDecisionPackFactoryStatus, avoiding a duplicate
-// query for the same data).
+// lib/live/data-intake-status-view.ts.
+//
+// B-TRUTH ReportFactoryService Canonical Decision Pack Status Migration
+// (2026-09-05): the Decision Pack step's readiness signal is now read
+// directly from analytics.decision_pack_version (canonical) instead of the
+// synthetic decision-pack-versions.json fixture, via the shared pure view
+// builder lib/live/decision-pack-status-view.ts. ReportFactoryService.ts
+// (the service that used to own this read) has been retired entirely — its
+// only real caller now reads this canonical view directly.
 //
 // Every OTHER step's data source (worker provisioning, account
 // provisioning, scoring) is UNCHANGED — those remain separate, later
@@ -30,6 +36,7 @@ export const runtime = 'nodejs';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { PilotLifecycleClient, type CanonicalPilotTenant } from './_components/PilotLifecycleClient';
 import { buildDataIntakeStatusView, type CanonicalDataIntakeStatus, type SourceBatchStatusRow } from '@/lib/live/data-intake-status-view';
+import { buildDecisionPackStatusView, type CanonicalDecisionPackStatus, type DecisionPackVersionStatusRow } from '@/lib/live/decision-pack-status-view';
 
 const PILOT_LIFECYCLE_TENANT_CODE = 'KORATEST-01';
 
@@ -63,5 +70,16 @@ export default async function PilotLifecyclePage() {
     dataIntake = buildDataIntakeStatusView((batchRows ?? []) as SourceBatchStatusRow[], pendingCount ?? 0);
   }
 
-  return <PilotLifecycleClient tenant={tenant} dataIntake={dataIntake} />;
+  let decisionPack: CanonicalDecisionPackStatus = { hasDecisionPack: false, status: null };
+  if (tenant) {
+    const { data: versionRows, error: versionErr } = await db
+      .schema('analytics').from('decision_pack_version')
+      .select('status, created_at')
+      .eq('tenant_id', tenant.id);
+    if (versionErr) throw new Error(`[KORA] decision_pack_version lookup failed: ${versionErr.message}`);
+
+    decisionPack = buildDecisionPackStatusView((versionRows ?? []) as DecisionPackVersionStatusRow[]);
+  }
+
+  return <PilotLifecycleClient tenant={tenant} dataIntake={dataIntake} decisionPack={decisionPack} />;
 }

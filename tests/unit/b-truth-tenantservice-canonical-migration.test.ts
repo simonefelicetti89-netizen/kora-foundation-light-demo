@@ -133,12 +133,17 @@ describe('B-TRUTH — migrated consumers use a canonical tenant source', () => {
     expect(src).not.toMatch(/from\s+['"][^'"]*data\/synthetic\//);
   });
 
-  it('services/report-factory/ReportFactoryService.ts accepts a canonicalTenant parameter, no real TenantService import or call', () => {
-    const src = read('services/report-factory/ReportFactoryService.ts');
-    expect(src).toContain('canonicalTenant: CanonicalTenantStatus | null');
-    expect(src).not.toMatch(/from\s+['"][^'"]*services\/tenant\/TenantService['"]/);
-    const codeOnly = src.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
-    expect(codeOnly).not.toContain('tenantService');
+  // services/report-factory/ReportFactoryService.ts was accurately migrated
+  // to accept a canonicalTenant parameter (instead of calling
+  // tenantService.getTenant() itself) at the time this test was written.
+  // B-TRUTH ReportFactoryService Canonical Decision Pack Status Migration
+  // (2026-09-06) later, separately, retired the file entirely — its sole
+  // real caller reads the canonical Decision Pack view directly, with no
+  // ReportFactoryService intermediary. See
+  // tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts
+  // for the current, correct state.
+  it('ReportFactoryService has since been separately retired (historical note, not a live assertion)', () => {
+    expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(false);
   });
 
   it('no data/synthetic/** tenant import remains in any of the 4 migrated files', () => {

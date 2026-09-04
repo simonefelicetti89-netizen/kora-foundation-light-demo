@@ -93,8 +93,14 @@ describe('B-TRUTH — FinancialGovernanceService no longer exists', () => {
 });
 
 describe('B-TRUTH — this PR retired ONLY FinancialGovernanceService (one PR = one service)', () => {
-  it('ReportFactoryService untouched — still exists', () => {
-    expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(true);
+  // ReportFactoryService.ts was accurately untouched (still existed) at the
+  // time this test was written. B-TRUTH ReportFactoryService Canonical
+  // Decision Pack Status Migration (2026-09-06) later, separately, retired
+  // it entirely. See
+  // tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts
+  // for the current, correct state.
+  it('ReportFactoryService has since been separately retired (historical note, not a live assertion)', () => {
+    expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(false);
   });
 
   it('ExplainabilityService untouched — still exists', () => {

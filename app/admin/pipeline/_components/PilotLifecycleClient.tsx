@@ -19,9 +19,9 @@ import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
-import { reportFactoryService } from '@/services/report-factory/ReportFactoryService';
 import { workerSpaceCapabilityService } from '@/services/worker-space/WorkerSpaceCapabilityService';
 import type { CanonicalDataIntakeStatus } from '@/lib/live/data-intake-status-view';
+import type { CanonicalDecisionPackStatus } from '@/lib/live/decision-pack-status-view';
 import {
   LIFECYCLE_STEPS,
   deriveAllStepStatuses,
@@ -213,16 +213,11 @@ function RoleContextLinks() {
 
 // ── Main client component ───────────────────────────────────────────────────────
 
-export function PilotLifecycleClient({ tenant, dataIntake }: { tenant: CanonicalPilotTenant | null; dataIntake: CanonicalDataIntakeStatus }) {
+export function PilotLifecycleClient({ tenant, dataIntake, decisionPack }: { tenant: CanonicalPilotTenant | null; dataIntake: CanonicalDataIntakeStatus; decisionPack: CanonicalDecisionPackStatus }) {
   const accounts     = accountProvisioningService.getAccountsForCompany(DEMO_COMPANY_ID);
   const workerSumm   = workerProvisioningService.getWorkerProvisioningSummary(DEMO_COMPANY_ID);
   const koraIndex    = scoringSimulatorService.getKoraIndexOutput(DEMO_COMPANY_ID, 'S1')
                        ?? scoringSimulatorService.getKoraIndexOutput(DEMO_COMPANY_ID, 'S2');
-  const dpStatus     = reportFactoryService.getDecisionPackFactoryStatus(
-    DEMO_COMPANY_ID,
-    tenant ? { id: tenant.id, isActive: tenant.is_active } : null,
-    dataIntake,
-  );
   const capability   = workerSpaceCapabilityService.getCapabilityByCompanyId(DEMO_COMPANY_ID);
 
   const inputs: LifecycleStatusInputs = {
@@ -233,7 +228,7 @@ export function PilotLifecycleClient({ tenant, dataIntake }: { tenant: Canonical
     submissionPending:  dataIntake.intakeStatus === 'validation_required',
     hasReviewedData:    dataIntake.batchCount > 0 && dataIntake.intakeStatus === 'ready_for_ingestion',
     hasScoring:         !!koraIndex,
-    hasDecisionPack:    tenant?.decision_pack_status === 'ready' || dpStatus.latest_status === 'ready',
+    hasDecisionPack:    tenant?.decision_pack_status === 'ready' || decisionPack.status === 'ready',
     workerSpaceEnabled: capability.enabled,
   };
 

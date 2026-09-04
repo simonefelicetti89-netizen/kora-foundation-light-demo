@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { resolve, join } from 'path';
 
 const root = resolve(process.cwd());
@@ -144,19 +144,23 @@ describe('CC-013 — ReportGeneratorService production re-entry guard (mirrors C
   });
 });
 
-describe('CC-013 — ReportFactoryService remains explicitly non-canonical, synthetic-backed (not fixed here)', () => {
-  it('still imports the synthetic seed directly (B-TRUTH scope, untouched by CC-013)', () => {
-    const factory = src('services/report-factory/ReportFactoryService.ts');
-    expect(factory).toContain('data/synthetic/decision-pack-versions.json');
+// This describe block originally proved ReportFactoryService remained
+// non-canonical/synthetic-backed with exactly one real caller — accurately,
+// at that time. B-TRUTH ReportFactoryService Canonical Decision Pack Status
+// Migration (2026-09-06) later, separately, retired it entirely: its sole
+// real caller now reads analytics.decision_pack_version directly via
+// lib/live/decision-pack-status-view.ts, so the "non-canonical, untouched"
+// premise no longer applies. See
+// tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts
+// for the current, correct state.
+describe('CC-013 — ReportFactoryService has since been separately retired (historical note, not a live assertion)', () => {
+  it('the service file and its synthetic seed no longer exist', () => {
+    expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(false);
+    expect(existsSync(resolve(root, 'data/synthetic/decision-pack-versions.json'))).toBe(false);
   });
 
-  it('exactly one real caller remains — pipeline (root Control Room was retired by B-TRUTH Root Control Room Wave 3 Hardening, 2026-08-30 — no new callers introduced elsewhere)', () => {
-    // B-TRUTH TenantService Canonical Migration (2026-09-04) moved this call
-    // from app/admin/pipeline/page.tsx into the new client component it
-    // renders — see tests/unit/b-truth-tenantservice-canonical-migration.test.ts.
+  it('the former real caller no longer references reportFactoryService', () => {
     const pipeline = src('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
-    const companies = src('app/admin/companies/[companyId]/page.tsx');
-    expect(pipeline).toContain('reportFactoryService');
-    expect(companies).not.toContain('reportFactoryService');
+    expect(pipeline).not.toContain('reportFactoryService');
   });
 });

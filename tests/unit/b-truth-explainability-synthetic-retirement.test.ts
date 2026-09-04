@@ -167,8 +167,14 @@ describe('B-TRUTH — this PR retired ONLY the synthetic branch (one PR = one bo
   // (2026-09-03, its own bounded PR), so they are deliberately removed from
   // this list rather than left to falsely assert continued existence. See
   // tests/unit/b-truth-preview-scoring-retirement.test.ts.
-  it('ReportFactoryService untouched — still exists', () => {
-    expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(true);
+  // ReportFactoryService.ts was accurately untouched (still existed) at the
+  // time this test was written. B-TRUTH ReportFactoryService Canonical
+  // Decision Pack Status Migration (2026-09-06) later, separately, retired
+  // it entirely. See
+  // tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts
+  // for the current, correct state.
+  it('ReportFactoryService has since been separately retired (historical note, not a live assertion)', () => {
+    expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(false);
   });
 
   // Every member of the original "Ingestion/UEF legacy chain untouched" list

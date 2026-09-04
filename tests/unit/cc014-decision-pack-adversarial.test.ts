@@ -476,19 +476,20 @@ describe('CC-014 Phase 8 — ReportFactoryService stays outside the canonical do
     }
   });
 
-  it('the known divergence (admin metadata pages -> ReportFactoryService -> synthetic seed) is still present, unfixed, and now scoped to exactly one real caller', () => {
-    const factory = src('services/report-factory/ReportFactoryService.ts');
-    expect(factory).toContain('data/synthetic/decision-pack-versions.json');
-    // B-TRUTH TenantService Canonical Migration (2026-09-04) moved this call
-    // from app/admin/pipeline/page.tsx into the new client component it
-    // renders — see tests/unit/b-truth-tenantservice-canonical-migration.test.ts.
+  // The known divergence (admin metadata pages -> ReportFactoryService ->
+  // synthetic seed) was accurately still present, unfixed, at the time this
+  // test was written. B-TRUTH ReportFactoryService Canonical Decision Pack
+  // Status Migration (2026-09-06) later, separately, closed it: the sole
+  // real caller now reads analytics.decision_pack_version directly via
+  // lib/live/decision-pack-status-view.ts, and ReportFactoryService.ts no
+  // longer exists. See
+  // tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts
+  // for the current, correct state.
+  it('the known divergence has since been separately closed (historical note, not a live assertion)', () => {
+    expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(false);
+    expect(existsSync(resolve(root, 'data/synthetic/decision-pack-versions.json'))).toBe(false);
     const pipeline = src('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
-    const companies = src('app/admin/companies/[companyId]/page.tsx');
-    expect(pipeline).toContain('reportFactoryService');
-    // B-TRUTH Root Control Room Wave 3 Hardening (2026-08-30): root Control
-    // Room was retired (now a redirect to the Gen 3 workspace tab) — it no
-    // longer calls ReportFactoryService. pipeline remains the sole caller.
-    expect(companies).not.toContain('reportFactoryService');
+    expect(pipeline).not.toContain('reportFactoryService');
   });
 });
 

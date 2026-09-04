@@ -60,38 +60,26 @@ describe('B-TRUTH Demo/Orphan Chain Audit — pipeline is a labeled demo surface
   });
 });
 
-describe('B-TRUTH Demo/Orphan Chain Audit — ReportFactoryService trimmed to its reachable surface', () => {
-  const src = read('services/report-factory/ReportFactoryService.ts');
-  const REMOVED_METHODS = [
-    'getDecisionPackVersionHistory', 'generateDecisionPackVersion', 'getDecisionPackReadiness',
-    'getDecisionPackSections', 'getDecisionPackExportActions', 'getDecisionPackChangeSummary',
-    'getPreviousComparableVersion', 'getDecisionPackMetricDeltas', 'getDecisionPackPeriodComparison',
-    'getDecisionPackLimitations', 'isTenantActive',
-  ];
-
-  for (const method of REMOVED_METHODS) {
-    it(`no longer defines ${method} as a class method (zero callers anywhere, verified before removal)`, () => {
-      // A real method declaration, not a prose mention in this file's own
-      // explanatory header comment (which names several of these methods to
-      // explain why ReportGeneratorService's same-named methods are NOT the
-      // same code path).
-      expect(src).not.toMatch(new RegExp(`^\\s{2,4}${method}\\(`, 'm'));
-    });
-  }
-
-  it('still defines the two reachable methods', () => {
-    // B-TRUTH TenantService Canonical Migration (2026-09-04) added a second
-    // parameter, canonicalTenant; B-TRUTH CompanyDataIntakeService
-    // Canonical Migration (2026-09-05) added a third, dataIntake —
-    // replacing two internal dependencies with caller-supplied canonical
-    // data. Same method, not a new one (see the interface declaration).
-    expect(src).toContain('getDecisionPackFactoryStatus(companyId: string, canonicalTenant: CanonicalTenantStatus | null, dataIntake: CanonicalDataIntakeStatus): DecisionPackFactoryStatus');
-    expect(src).toContain('getLatestDecisionPackVersion(companyId: string)');
+// This describe block originally proved ReportFactoryService was trimmed to
+// its one reachable method (getDecisionPackFactoryStatus) and had exactly
+// one real caller (pipeline) — accurately, at that time. B-TRUTH
+// ReportFactoryService Canonical Decision Pack Status Migration (2026-09-06)
+// later, separately, retired it entirely: field-by-field tracing of that
+// one real caller found it read exactly ONE field (latest_status) off the
+// method's 9-field return shape, so the whole method — and the service — was
+// retired in favor of a canonical analytics.decision_pack_version read via
+// lib/live/decision-pack-status-view.ts. See
+// tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts
+// for the current, correct state.
+describe('B-TRUTH Demo/Orphan Chain Audit — ReportFactoryService has since been separately retired (historical note, not a live assertion)', () => {
+  it('the service file no longer exists', () => {
+    expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(false);
   });
 
-  it('exactly one real caller remains — pipeline (a demo caller)', () => {
+  it('its former sole real caller now reads the canonical Decision Pack view directly, not reportFactoryService', () => {
     const pipeline = read('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
-    expect(pipeline).toContain('reportFactoryService.getDecisionPackFactoryStatus');
+    expect(pipeline).not.toContain('reportFactoryService');
+    expect(pipeline).toContain('decisionPack.status');
   });
 });
 
