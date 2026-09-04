@@ -68,7 +68,6 @@ const SECTION_ECOSYSTEM: DemoSurface[] = [
   { label: 'Activation Network',    href: '/demo/network',        desc: 'Copertura territoriale partner & advisor, protocolli attivi.' },
   { label: 'Benchmark',             href: '/demo/benchmarks',     desc: 'Posizionamento KORA Index vs cluster sintetici di riferimento.' },
   { label: 'Company Portfolio',     href: '/demo/portfolio',      desc: 'Vista aggregata aziende demo: KORA Index, Confidence Score, Safeguard.' },
-  { label: 'KORA Index™ Registry',  href: '/demo/index-registry', desc: 'Registro delle letture KORA Index per aziende pilota e candidate.' },
 ];
 
 const SECTION_PIPELINE: DemoSurface[] = [

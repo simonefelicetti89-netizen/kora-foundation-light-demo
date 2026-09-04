@@ -92,8 +92,12 @@ describe('B82-B Task 4 — Demo Lab routes in navigation (B169 FASE 4)', () => {
     expect(adminNavGroups).not.toContain('Anteprima Live Cockpit');
   });
 
-  it('Demo Lab includes /demo/index-registry', () => {
-    expect(adminNavGroups).toContain("href: '/demo/index-registry'");
+  // /demo/index-registry was accurately in the Demo Lab nav group as of
+  // B169 FASE 4. CC-00 Index Registry canonicalization (2026-09-06) later,
+  // separately, retired the entire route and removed its nav entry — its
+  // real value moved into app/admin/page.tsx's own Intelligence Grid panel.
+  it('Demo Lab no longer includes /demo/index-registry (historical note, not a live assertion)', () => {
+    expect(adminNavGroups).not.toContain("href: '/demo/index-registry'");
   });
 
   it('Demo Lab includes /demo/portfolio', () => {
@@ -110,7 +114,10 @@ describe('B82-B Task 5 — DEMO admin pages have DEMO BoundaryBadge', () => {
     ['app/demo/ai-onboarding/page.tsx', 'ai-onboarding'],
     ['app/demo/gtm/page.tsx', 'gtm'],
     ['app/demo/benchmarks/page.tsx', 'benchmarks'],
-    ['app/demo/index-registry/page.tsx', 'index-registry'],
+    // app/demo/index-registry/page.tsx was accurately in this list as of
+    // this test's writing. CC-00 Index Registry canonicalization
+    // (2026-09-06) retired the route entirely — removed from this list,
+    // not replaced (there is no page left to check).
   ];
 
   for (const [filePath, name] of demoPages) {

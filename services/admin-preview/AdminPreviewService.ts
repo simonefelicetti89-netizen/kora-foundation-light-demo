@@ -3,10 +3,21 @@
 // been retired — its sole real caller (app/admin/page.tsx) now reads
 // analytics.tenant/kora_index_result/confidence_result/source_batch
 // directly via lib/live/admin-cross-company-view.ts. getIndexRegistryPreview()
-// is explicitly NOT migrated (see app/admin/page.tsx's own header for the
-// security-architecture reason: one of its two real callers is reachable by
-// the DEMO_VIEWER role, and /demo pages are documented as safe only because
-// they are synth-only).
+// was NOT migrated at that time (see app/admin/page.tsx's own header for the
+// security-architecture reason it was deferred).
+//
+// CC-00 — Index Registry canonicalization (2026-09-06, later the same day):
+// the founder ratified DEMO_VIEWER's retirement, superseding the reason
+// getIndexRegistryPreview() had been deferred. getIndexRegistryPreview() and
+// its IndexRegistryEntry interface are now retired — app/demo/index-registry
+// (its only reason to keep both a synthetic and a canonical version) is
+// retired outright, and app/admin/page.tsx's own Intelligence Grid panel
+// (its other real caller) now reads the same canonical
+// analytics.kora_index_result rows Platform Analytics already fetches, via
+// lib/live/admin-cross-company-view.ts's new buildIndexRegistryView(). The
+// DEMO_VIEWER role itself is NOT removed in this change — other /demo/**
+// routes still depend on it; this is one bounded step of a larger,
+// already-planned retirement sequence.
 //
 // CC-00 — AI-Onboarding Duplicate Retirement (2026-09-06): five methods that
 // simulated concepts already live and canonical elsewhere — getSourceIntakePreview
@@ -81,19 +92,6 @@ export interface CompanyPortfolioEntry {
   safeguard_status: string | null;
   is_primary_demo: boolean;
   demo_note: string;
-}
-
-export interface IndexRegistryEntry {
-  company_id: string;
-  company_name: string;
-  scenario_id: string;
-  reporting_period: string;
-  kora_index_value: number;
-  confidence_score: number;
-  safeguard_status: string;
-  methodology_version_id: string;
-  calibration_status: string;
-  is_synthetic: boolean;
 }
 
 export interface BenchmarkPreview {
@@ -198,38 +196,6 @@ class AdminPreviewService {
         demo_note: c.demo_narrative ?? '',
       };
     });
-  }
-
-  // 2. Index Registry
-  getIndexRegistryPreview(): IndexRegistryEntry[] {
-    const real: IndexRegistryEntry[] = koraOutputs.map((o) => ({
-      company_id: o.company_id,
-      company_name: COMPANY_NAME_MAP[o.company_id] ?? o.company_id,
-      scenario_id: o.scenario_id,
-      reporting_period: o.reporting_period,
-      kora_index_value: o.kora_index_value,
-      confidence_score: o.confidence_score,
-      safeguard_status: o.safeguard_status,
-      methodology_version_id: o.methodology_version_id,
-      calibration_status: o.calibration_status,
-      is_synthetic: false,
-    }));
-
-    // Synthetic entries for other companies (S2-equivalent snapshot)
-    const synthetic: IndexRegistryEntry[] = Object.entries(SYNTHETIC_INDEX).map(([id, vals]) => ({
-      company_id: id,
-      company_name: COMPANY_NAME_MAP[id] ?? id,
-      scenario_id: 'S2',
-      reporting_period: 'Q1–Q4 2025',
-      kora_index_value: vals.kora_index_value,
-      confidence_score: vals.confidence_score,
-      safeguard_status: vals.safeguard_status,
-      methodology_version_id: 'KORA Index v1.0',
-      calibration_status: 'pre_empirical_calibration',
-      is_synthetic: true,
-    }));
-
-    return [...real, ...synthetic];
   }
 
   // 3. Benchmarks

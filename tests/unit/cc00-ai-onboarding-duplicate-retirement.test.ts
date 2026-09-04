@@ -195,11 +195,16 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — scope boundary (one PR = 
     expect(src).toContain('export interface PrivacyFilterPreview');
   });
 
-  it('getIndexRegistryPreview is untouched — still exists, unmigrated, both real callers intact', () => {
+  // getIndexRegistryPreview was accurately untouched, with both real
+  // callers intact, at the time this test was written. CC-00 Index
+  // Registry canonicalization (2026-09-06, later the same day) later,
+  // separately, retired it — see
+  // tests/unit/cc00-index-registry-canonicalization.test.ts.
+  it('getIndexRegistryPreview has since been separately canonicalized and removed (historical note, not a live assertion)', () => {
     const src = read('services/admin-preview/AdminPreviewService.ts');
-    expect(src).toContain('getIndexRegistryPreview(): IndexRegistryEntry[]');
-    expect(read('app/admin/page.tsx')).toContain('adminPreviewService.getIndexRegistryPreview()');
-    expect(read('app/demo/index-registry/page.tsx')).toContain('adminPreviewService.getIndexRegistryPreview()');
+    const codeOnly = stripComments(src);
+    expect(codeOnly).not.toContain('getIndexRegistryPreview(');
+    expect(existsSync(resolve(root, 'app/demo/index-registry'))).toBe(false);
   });
 
   it('getCompanyPortfolioPreview is untouched — still exists, unmigrated, both real callers intact', () => {

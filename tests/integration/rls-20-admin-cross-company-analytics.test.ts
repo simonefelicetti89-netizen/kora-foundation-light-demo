@@ -1,22 +1,31 @@
 /**
- * RLS-20 — CC-00 AdminPreview Cross-Company Canonicalization Phase 1, real-runtime proof
+ * RLS-20 — CC-00 AdminPreview Cross-Company Canonicalization, real-runtime proof
  * (direct Postgres, local Supabase)
  *
  * WHAT THIS IS:
  *   A DB-backed proof that lib/live/admin-cross-company-view.ts's
- *   buildAdminPlatformAnalyticsView() — the pure function replacing
- *   services/admin-preview/AdminPreviewService.ts's synthetic
- *   getPlatformAnalyticsPreview() for its one real caller
- *   (app/admin/page.tsx) — derives correct portfolio-wide analytics against
- *   real analytics.tenant / analytics.kora_index_result /
+ *   buildAdminPlatformAnalyticsView() and buildIndexRegistryView() — the
+ *   pure functions replacing services/admin-preview/AdminPreviewService.ts's
+ *   synthetic getPlatformAnalyticsPreview() and getIndexRegistryPreview()
+ *   for their real caller (app/admin/page.tsx) — derive correct
+ *   portfolio-wide analytics and per-tenant registry entries against real
+ *   analytics.tenant / analytics.kora_index_result /
  *   analytics.confidence_result / analytics.source_batch rows, across
  *   MULTIPLE tenants, including the case where one tenant has no current
- *   result at all (must not corrupt the other tenants' averages).
+ *   result at all (must not corrupt the other tenants' averages, and must
+ *   not appear as a registry entry).
+ *
+ *   CC-00 Index Registry canonicalization (2026-09-06) extended this
+ *   existing file rather than creating a new RLS-21 — buildIndexRegistryView()
+ *   consumes the exact same tenant + kora_index_result rows this file
+ *   already seeds and validates for Platform Analytics; a separate file
+ *   would duplicate the same fixture setup for no additional safety.
  *
  * This is a companion to RLS-17/18/19 — kept as its own, separate,
  * narrowly-scoped file rather than appended to any of them, matching this
  * repo's own established convention of one dedicated regression file per
- * bounded migration.
+ * bounded migration (extending it for a closely-related second view over
+ * the SAME already-seeded rows, as done here, is not that same case).
  *
  * SAME SAFETY MODEL AS RLS-16/17/18/19 (see those files' headers for the
  * full rationale): skip-safe by default (RLS20_PG_URL + RLS20_ALLOW_RUN==='true'
@@ -36,8 +45,10 @@ import { resolve } from 'path';
 import pg from 'pg';
 import {
   buildAdminPlatformAnalyticsView,
+  buildIndexRegistryView,
   type CurrentKoraIndexResultRow,
   type SourceBatchStatusRowForAnalytics,
+  type TenantIdentityRow,
 } from '../../lib/live/admin-cross-company-view';
 
 describe('RLS-20 structural guard — no legacy synthetic AdminPreview path is used by this suite', () => {
@@ -134,7 +145,7 @@ const TENANT_C_NO_RESULT = 'RLS20-COMPANY-C';
 const REPORTING_PERIOD = 'RLS20-PERIOD';
 
 describe.skipIf(!ready)(
-  'RLS-20 — buildAdminPlatformAnalyticsView() against real multi-tenant analytics.kora_index_result / confidence_result / source_batch rows',
+  'RLS-20 — buildAdminPlatformAnalyticsView() and buildIndexRegistryView() against real multi-tenant analytics.kora_index_result / confidence_result / source_batch rows',
   () => {
     let client: InstanceType<typeof Client>;
     let tenantIdA: string;
@@ -323,6 +334,74 @@ describe.skipIf(!ready)(
       const keys = Object.keys(view);
       for (const forbidden of ['percentile', 'benchmark', 'rank', 'peer']) {
         expect(keys.some((k) => k.toLowerCase().includes(forbidden))).toBe(false);
+      }
+    });
+
+    // ── buildIndexRegistryView() — CC-00 Index Registry canonicalization ────
+    // Reuses the SAME three tenants (A/B with current results, C with none)
+    // already seeded above — no new fixture setup needed.
+
+    it('buildIndexRegistryView returns one entry per tenant WITH a current result — tenant C (no result) does not appear at all', async () => {
+      const tenantRows = await client.query<{ id: string; company_name: string }>(
+        `SELECT id, company_name FROM analytics.tenant WHERE id IN ($1, $2, $3)`,
+        [tenantIdA, tenantIdB, tenantIdC],
+      );
+      const resultRows = await client.query<{ tenant_id: string; kora_index_value: string; safeguard_status: string }>(
+        `SELECT tenant_id, kora_index_value, safeguard_status FROM analytics.kora_index_result WHERE tenant_id IN ($1, $2, $3) AND is_current = true`,
+        [tenantIdA, tenantIdB, tenantIdC],
+      );
+
+      const tenants: TenantIdentityRow[] = tenantRows.rows;
+      const currentResults: CurrentKoraIndexResultRow[] = resultRows.rows.map((r) => ({
+        tenant_id: r.tenant_id,
+        kora_index_value: Number(r.kora_index_value),
+        safeguard_status: r.safeguard_status,
+        confidence_result: null,
+      }));
+
+      const registry = buildIndexRegistryView(tenants, currentResults);
+
+      expect(registry.length).toBe(2);
+      expect(registry.some((e) => e.tenantId === tenantIdC)).toBe(false);
+    });
+
+    it('buildIndexRegistryView resolves each entry\'s companyName from the real analytics.tenant row, not a hardcoded map', async () => {
+      const tenantRows = await client.query<{ id: string; company_name: string }>(
+        `SELECT id, company_name FROM analytics.tenant WHERE id IN ($1, $2)`,
+        [tenantIdA, tenantIdB],
+      );
+      const resultRows = await client.query<{ tenant_id: string; kora_index_value: string; safeguard_status: string }>(
+        `SELECT tenant_id, kora_index_value, safeguard_status FROM analytics.kora_index_result WHERE tenant_id IN ($1, $2) AND is_current = true`,
+        [tenantIdA, tenantIdB],
+      );
+
+      const tenants: TenantIdentityRow[] = tenantRows.rows;
+      const currentResults: CurrentKoraIndexResultRow[] = resultRows.rows.map((r) => ({
+        tenant_id: r.tenant_id,
+        kora_index_value: Number(r.kora_index_value),
+        safeguard_status: r.safeguard_status,
+        confidence_result: null,
+      }));
+
+      const registry = buildIndexRegistryView(tenants, currentResults);
+      const byTenant = new Map(registry.map((e) => [e.tenantId, e]));
+
+      expect(byTenant.get(tenantIdA)?.companyName).toBe(`RLS-20 Reference Tenant ${TENANT_A}`);
+      expect(byTenant.get(tenantIdB)?.companyName).toBe(`RLS-20 Reference Tenant ${TENANT_B}`);
+      // Values never cross-mixed between the two entries.
+      expect(byTenant.get(tenantIdA)?.koraIndexValue).toBe(62);
+      expect(byTenant.get(tenantIdB)?.koraIndexValue).toBe(38);
+    });
+
+    it('buildIndexRegistryView entries carry no scenario_id, reporting_period, confidence_score, calibration_status, or is_synthetic field', () => {
+      const tenants: TenantIdentityRow[] = [{ id: tenantIdA, company_name: 'X' }];
+      const currentResults: CurrentKoraIndexResultRow[] = [
+        { tenant_id: tenantIdA, kora_index_value: 50, safeguard_status: 'CLEAR', confidence_result: null },
+      ];
+      const registry = buildIndexRegistryView(tenants, currentResults);
+      const keys = Object.keys(registry[0]);
+      for (const forbidden of ['scenarioId', 'scenario_id', 'reportingPeriod', 'confidenceScore', 'calibrationStatus', 'isSynthetic']) {
+        expect(keys).not.toContain(forbidden);
       }
     });
   },
