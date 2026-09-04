@@ -21,7 +21,7 @@
 //      payments, no wallet, no checkout, no voucher logic).
 
 import { describe, it, expect } from 'vitest';
-import { existsSync, readdirSync, readFileSync } from 'fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
 import { resolve, join } from 'path';
 
 const root = resolve(process.cwd());
@@ -43,7 +43,7 @@ function walk(dir: string, out: string[] = []): string[] {
   }
   for (const entry of entries) {
     const full = join(dir, entry);
-    const stat = require('fs').statSync(full);
+    const stat = statSync(full);
     if (stat.isDirectory()) {
       walk(full, out);
     } else {
