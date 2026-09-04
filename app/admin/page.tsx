@@ -1,9 +1,33 @@
 // A-01: KORA Control Tower™ — narrative-first admin operating console
 // B82-B: Structural LIVE / DEMO separation.
 // Structure: LIVE PLATFORM block → Priority Queue (DEMO) → Company Readiness Matrix (DEMO) → Intelligence Grid (DEMO) → GTM (DEMO) → Governance
+//
+// CC-00 — B-TRUTH / ONE PRODUCT, ONE TRUTH — AdminPreview Cross-Company
+// Canonicalization, Phase 1 (2026-09-06): the Platform Analytics panel's
+// data is now read directly from analytics.tenant + analytics.kora_index_result
+// + analytics.confidence_result + analytics.source_batch (canonical) instead
+// of adminPreviewService.getPlatformAnalyticsPreview()'s synthetic
+// companies.json/kora-index-outputs.json/source-batches.json fixtures, via
+// the shared pure view builder lib/live/admin-cross-company-view.ts.
+//
+// getIndexRegistryPreview() (the "KORA Index™ Registry" panel below) is
+// explicitly NOT migrated by this PR — one of its two real callers,
+// app/demo/index-registry/page.tsx, is reachable by the DEMO_VIEWER role,
+// which lib/auth/kora-session.ts's own requireDemoAccess() documents as
+// safe only because /demo pages are synth-only ("If Fase 3 introduces a
+// live-data demo tenant, this function must be revisited to prevent live
+// data leakage into the /demo surface"). Introducing a live cross-company
+// query there is a security-architecture decision this PR does not make
+// unilaterally. Forking a canonical-for-admin/synthetic-for-demo split for
+// the SAME method was ruled out too (ONE PRODUCT, ONE TRUTH). This method,
+// getCompanyPortfolioPreview(), and every other AdminPreviewService method
+// remain untouched, still synthetic-backed, still their own separate,
+// later CC-00 slices.
 
 import Link from 'next/link';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
+import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { buildAdminPlatformAnalyticsView, type CurrentKoraIndexResultRow, type SourceBatchStatusRowForAnalytics } from '@/lib/live/admin-cross-company-view';
 import { PriorityQueue } from '@/components/admin/PriorityQueue';
 import type { PriorityItem } from '@/components/admin/PriorityQueue';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
@@ -61,8 +85,31 @@ function SectionHead({ label, badgeMode }: { label: string; badgeMode?: 'LIVE' |
   );
 }
 
-export default function KoraControlTower() {
-  const analytics  = adminPreviewService.getPlatformAnalyticsPreview();
+export default async function KoraControlTower() {
+  const db = getSupabaseServiceClient();
+
+  const { data: tenantRows, error: tenantErr } = await db
+    .schema('analytics').from('tenant')
+    .select('id', { count: 'exact' });
+  if (tenantErr) throw new Error(`[KORA] tenant count lookup failed: ${tenantErr.message}`);
+
+  const { data: currentResultRows, error: resultErr } = await db
+    .schema('analytics').from('kora_index_result')
+    .select('tenant_id, kora_index_value, safeguard_status, confidence_result:confidence_result_id(confidence_score, data_completeness)')
+    .eq('is_current', true);
+  if (resultErr) throw new Error(`[KORA] kora_index_result lookup failed: ${resultErr.message}`);
+
+  const { data: batchRows, error: batchErr } = await db
+    .schema('analytics').from('source_batch')
+    .select('batch_status');
+  if (batchErr) throw new Error(`[KORA] source_batch lookup failed: ${batchErr.message}`);
+
+  const analytics = buildAdminPlatformAnalyticsView(
+    (tenantRows ?? []).length,
+    (currentResultRows ?? []) as unknown as CurrentKoraIndexResultRow[],
+    (batchRows ?? []) as SourceBatchStatusRowForAnalytics[],
+  );
+
   const portfolio  = adminPreviewService.getCompanyPortfolioPreview();
   const gates      = adminPreviewService.getGateStatusPreview();
   const billing    = adminPreviewService.getBillingRevenuePreview();
@@ -277,8 +324,8 @@ export default function KoraControlTower() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 16, marginBottom: 24 }}>
           {[
             { label: 'Aziende attive', value: String(analytics.companies_in_portfolio), sub: 'Pilot portfolio' },
-            { label: 'KORA Index medio', value: String(analytics.avg_kora_index), sub: 'Media portfolio' },
-            { label: 'CS™ medio', value: `${(analytics.avg_confidence_score * 100).toFixed(0)}%`, sub: 'Confidence Score™' },
+            { label: 'KORA Index medio', value: analytics.avg_kora_index != null ? String(analytics.avg_kora_index) : '—', sub: 'Media portfolio' },
+            { label: 'CS™ medio', value: analytics.avg_confidence_score != null ? `${(analytics.avg_confidence_score * 100).toFixed(0)}%` : '—', sub: 'Confidence Score™' },
             { label: 'Batch approvati', value: `${analytics.source_batches_approved}/${analytics.source_batches_total}`, sub: 'Fonti dati' },
           ].map(({ label, value, sub }) => (
             <div key={label} style={{ borderLeft: `2px solid rgba(255,255,255,0.10)`, paddingLeft: 12 }}>
@@ -456,8 +503,8 @@ export default function KoraControlTower() {
         <Panel n="03" title="Platform Analytics" badgeLabel="DEMO · dati sintetici">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
-              ['Confidence Score™ medio',  `${(analytics.avg_confidence_score * 100).toFixed(0)}%`],
-              ['Completezza dati media',   `${(analytics.avg_data_completeness * 100).toFixed(0)}%`],
+              ['Confidence Score™ medio',  analytics.avg_confidence_score != null ? `${(analytics.avg_confidence_score * 100).toFixed(0)}%` : '—'],
+              ['Completezza dati media',   analytics.avg_data_completeness != null ? `${(analytics.avg_data_completeness * 100).toFixed(0)}%` : '—'],
               ['CLEAR / WARNING / FLAGGED', `${analytics.safeguard_distribution.CLEAR} · ${analytics.safeguard_distribution.WARNING} · ${analytics.safeguard_distribution.FLAGGED}`],
             ].map(([l, v]) => (
               <div key={l as string} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>

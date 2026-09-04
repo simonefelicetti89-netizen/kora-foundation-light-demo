@@ -1,3 +1,15 @@
+// CC-00 — B-TRUTH / ONE PRODUCT, ONE TRUTH — AdminPreview Cross-Company
+// Canonicalization, Phase 1 (2026-09-06): getPlatformAnalyticsPreview() has
+// been retired — its sole real caller (app/admin/page.tsx) now reads
+// analytics.tenant/kora_index_result/confidence_result/source_batch
+// directly via lib/live/admin-cross-company-view.ts. getIndexRegistryPreview()
+// is explicitly NOT migrated (see app/admin/page.tsx's own header for the
+// security-architecture reason: one of its two real callers is reachable by
+// the DEMO_VIEWER role, and /demo pages are documented as safe only because
+// they are synth-only). Every other method below (portfolio, benchmark,
+// network, billing, founder-validation, gate status, the AI-onboarding
+// cluster) is untouched — separate, later CC-00 slices, no opportunistic
+// cleanup. This service remains alive, NARROWED, not retired.
 import companiesRaw from '@/data/synthetic/companies.json';
 import koraIndexRaw from '@/data/synthetic/kora-index-outputs.json';
 import sourceBatchesRaw from '@/data/synthetic/source-batches.json';
@@ -86,17 +98,6 @@ export interface PartnerEntry {
   territory: string;
   evidence_protocol_status: string;
   active_programs: number;
-}
-
-export interface PlatformAnalytics {
-  companies_in_portfolio: number;
-  active_scenarios: number;
-  source_batches_total: number;
-  source_batches_approved: number;
-  avg_data_completeness: number;
-  avg_confidence_score: number;
-  safeguard_distribution: { CLEAR: number; WARNING: number; FLAGGED: number };
-  avg_kora_index: number;
 }
 
 export interface BillingEntry {
@@ -239,34 +240,12 @@ class AdminPreviewService {
     ];
   }
 
-  // 6. Platform Analytics
-  getPlatformAnalyticsPreview(): PlatformAnalytics {
-    const totalBatches    = batches.length;
-    const approvedBatches = batches.filter((b) => b.batch_status === 'approved').length;
-    const allEntries = this.getIndexRegistryPreview();
-    const avgIndex = allEntries.length
-      ? Math.round(allEntries.reduce((s, e) => s + e.kora_index_value, 0) / allEntries.length)
-      : 0;
-    const avgCs = allEntries.length
-      ? Math.round((allEntries.reduce((s, e) => s + e.confidence_score, 0) / allEntries.length) * 100) / 100
-      : 0;
-    const safeguardDist = { CLEAR: 0, WARNING: 0, FLAGGED: 0 };
-    for (const e of allEntries) {
-      if (e.safeguard_status === 'CLEAR')   safeguardDist.CLEAR++;
-      if (e.safeguard_status === 'WARNING') safeguardDist.WARNING++;
-      if (e.safeguard_status === 'FLAGGED') safeguardDist.FLAGGED++;
-    }
-    return {
-      companies_in_portfolio: companies.length,
-      active_scenarios: 2,
-      source_batches_total: totalBatches,
-      source_batches_approved: approvedBatches,
-      avg_data_completeness: 0.68,
-      avg_confidence_score: avgCs,
-      safeguard_distribution: safeguardDist,
-      avg_kora_index: avgIndex,
-    };
-  }
+  // 6. Platform Analytics — RETIRED (2026-09-06, CC-00 Phase 1). Migrated to
+  // canonical analytics.tenant/kora_index_result/confidence_result/source_batch
+  // via lib/live/admin-cross-company-view.ts's buildAdminPlatformAnalyticsView(),
+  // fetched server-side by app/admin/page.tsx (its sole real caller). Zero
+  // remaining real/type-only callers of this method confirmed by repo-wide
+  // grep before removal.
 
   // 7. Billing & Revenue (mock — no real payments)
   getBillingRevenuePreview(): BillingEntry[] {
