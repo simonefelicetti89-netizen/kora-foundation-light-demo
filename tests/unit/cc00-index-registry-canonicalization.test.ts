@@ -213,14 +213,22 @@ describe('CC-00 Index Registry canonicalization — scope boundary (one PR = one
     }
   });
 
-  it('other /demo/** routes are untouched — portfolio, network, advisor, partner, ai-onboarding, gtm, benchmarks, guide, future-vision still exist', () => {
+  // app/demo/partner/page.tsx was accurately in this list as of this test's
+  // writing. CC-00 partner demo capability salvage + controlled retirement
+  // (2026-09-12) later, separately, retired the entire route — every
+  // meaningful capability it showed was already duplicated (usually better)
+  // on the real app/partner/** surface, or already named as a deferred
+  // capability in app/partner/workspace/page.tsx's own "Funzionalità future"
+  // section. See tests/unit/cc00-partner-demo-retirement.test.ts.
+  it('other /demo/** routes are untouched — portfolio, network, advisor, ai-onboarding, gtm, benchmarks, guide, future-vision still exist; partner has since been separately retired', () => {
     for (const route of [
       'app/demo/portfolio/page.tsx', 'app/demo/network/page.tsx', 'app/demo/advisor/page.tsx',
-      'app/demo/partner/page.tsx', 'app/demo/ai-onboarding/page.tsx', 'app/demo/gtm/page.tsx',
+      'app/demo/ai-onboarding/page.tsx', 'app/demo/gtm/page.tsx',
       'app/demo/benchmarks/page.tsx', 'app/demo/guide/page.tsx', 'app/demo/future-vision/page.tsx', 'app/demo/page.tsx',
     ]) {
       expect(existsSync(resolve(root, route))).toBe(true);
     }
+    expect(existsSync(resolve(root, 'app/demo/partner/page.tsx'))).toBe(false);
   });
 
   it('DEMO_VIEWER role is untouched — still defined, still admitted by requireDemoAccess()', () => {

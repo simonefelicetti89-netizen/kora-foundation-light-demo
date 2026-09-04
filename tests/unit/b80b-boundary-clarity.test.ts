@@ -291,10 +291,15 @@ describe('B80-B — Worker pages show PREVIEW boundary label', () => {
 // ── Partner/Advisor pages: DEMO boundary label ────────────────────────────────
 
 describe('B80-B — Partner and Advisor pages have DEMO badge', () => {
-  it('partner demo preview page has DEMO badge (PARTNER-01: relocated to app/demo/partner/page.tsx)', () => {
-    const src = read('app/demo/partner/page.tsx');
-    expect(src).toContain('BoundaryBadge');
-    expect(src).toContain("mode=\"DEMO\"");
+  // app/demo/partner/page.tsx carried the DEMO badge asserted here as of
+  // B80-B / PARTNER-01. CC-00 partner demo capability salvage + controlled
+  // retirement (2026-09-12) later, separately, retired the entire route —
+  // its real value was already present on app/partner/** (the live,
+  // authenticated Partner Workspace and its 7 sub-routes), which carries
+  // its own privacy-boundary disclosures, not this DEMO badge pattern. See
+  // tests/unit/cc00-partner-demo-retirement.test.ts.
+  it('partner demo preview page has since been separately retired (historical note, not a live assertion)', () => {
+    expect(exists('app/demo/partner/page.tsx')).toBe(false);
   });
 
   it('advisor page has DEMO badge', () => {
