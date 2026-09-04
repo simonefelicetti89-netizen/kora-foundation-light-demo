@@ -1,3 +1,18 @@
+// B-TRUTH AccountProvisioningService Pipeline Role Migration (2026-09-06):
+// this service used to mix two responsibilities — (1) pipeline/admin
+// provisioning status for the B95-B Pilot Lifecycle orchestrator, and (2)
+// My KORA/session identity resolution for the worker-preview surface. Only
+// (1) has been migrated to canonical Supabase Auth state (see
+// lib/live/account-provisioning-status-view.ts); getAccountsForCompany(),
+// its sole pipeline-only method (was called by
+// app/admin/pipeline/_components/PilotLifecycleClient.tsx, real caller
+// count 1), has been removed accordingly. getCurrentDemoUser() — the sole
+// remaining real caller, app/my-kora/page.tsx's My KORA/session-identity
+// resolution — is UNTOUCHED, out of scope for this migration, and is why
+// this service remains alive (NARROWED, not retired). The synthetic seed
+// (data/synthetic/user-accounts.json) is still required by that surviving
+// method and every other method below (all zero-caller, pre-existing, and
+// out of this migration's narrow scope — no opportunistic cleanup).
 import type {
   KoraUserAccount,
   KoraUserRole,
@@ -21,10 +36,6 @@ const DEFAULT_VISIBLE_SECTIONS: Record<KoraUserRole, string[]> = {
 };
 
 class AccountProvisioningService {
-  getAccountsForCompany(companyId: string): KoraUserAccount[] {
-    return records.filter((u) => u.company_id === companyId);
-  }
-
   getAccountsForTenant(tenantId: string): KoraUserAccount[] {
     return records.filter((u) => u.tenant_id === tenantId);
   }
