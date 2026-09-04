@@ -1,14 +1,32 @@
 #!/usr/bin/env tsx
 // scripts/koratest-canonical-seed.ts
-// B-TRUTH — Canonical Test Tenant Input Foundation ("KoraTest Srl").
+// B-TRUTH — Canonical Test Tenant Input Foundation.
+//
+// Originally built for exactly one canonical test tenant ("KoraTest Srl",
+// PR 1 of the ONE_PRODUCT_CANONICAL_MIGRATION plan). B-TRUTH Second
+// Canonical Test Company (2026-09-06, PR 6 of the same plan) generalized it
+// to accept ANY input fixture via --fixture=<path> — the script's own logic
+// was ALREADY fixture-driven (tenant_code, company_name, reporting_period,
+// workforce_population, segment_breakdown, and rows were always read FROM
+// the loaded fixture, never hardcoded in the script body); only the fixture
+// FILE PATH itself, and a handful of cosmetic string-literal labels/prefixes
+// derived below from the fixture's own tenant_code/company_name (previously
+// hardcoded to "koratest"/"KoraTest Srl"), needed generalizing. No canonical
+// pipeline/methodology function below was touched — same functions, same
+// call shapes, unchanged.
 //
 // USAGE:
 //   npx tsx scripts/koratest-canonical-seed.ts
-//       → Dry run: prints what would be created, no DB writes
+//       → Dry run against the default (KoraTest Srl) fixture: prints what
+//         would be created, no DB writes
 //
 //   npx tsx scripts/koratest-canonical-seed.ts --apply
 //       → Applies to DB: creates the KoraTest Srl tenant and pushes its fixture
 //         rows through the SAME canonical pipeline a real client's upload uses.
+//
+//   npx tsx scripts/koratest-canonical-seed.ts --fixture=data/koratest/boscoverde_input_fixture.json --apply
+//       → Same mechanism, a different canonical test tenant (its identity —
+//         tenant_code, company_name — comes entirely from that fixture file).
 //
 // CORE INVARIANT — "seed inputs, run canonical processing, persist canonical
 // outputs" — this script never writes a derived-output table directly. It
@@ -75,11 +93,12 @@
 //     batch that already has them. A second --apply run is a safe no-op beyond
 //     confirming the existing state, matching the accept route's own
 //     duplicate-batch guard (analytics.source_batch's own natural key).
-//   - Never touches any tenant other than KoraTest Srl (single `.eq('tenant_id', ...)`
-//     scope throughout — no broad writes, no cleanup/reset step in this script).
+//   - Never touches any tenant other than the one resolved from the loaded
+//     fixture's own tenant_code (single `.eq('tenant_id', ...)` scope
+//     throughout — no broad writes, no cleanup/reset step in this script).
 //   - Does NOT import from data/synthetic/** and does NOT reuse
-//     lib/live/op001-synthetic-records.ts — its own fixture,
-//     data/koratest/koratest_input_fixture.json.
+//     lib/live/op001-synthetic-records.ts — each fixture is its own file
+//     under data/koratest/.
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -111,18 +130,27 @@ interface KoraTestFixture {
   rows: KoraTestFixtureRow[];
 }
 
-const fixturePath = path.resolve(__dirname, '../data/koratest/koratest_input_fixture.json');
+const fixtureArg = args.find((a) => a.startsWith('--fixture='));
+const fixturePath = fixtureArg
+  ? path.resolve(process.cwd(), fixtureArg.slice('--fixture='.length))
+  : path.resolve(__dirname, '../data/koratest/koratest_input_fixture.json');
+
 if (!fs.existsSync(fixturePath)) {
-  console.error('\n✗ Fixture not found: data/koratest/koratest_input_fixture.json\n');
+  console.error(`\n✗ Fixture not found: ${fixturePath}\n`);
   process.exit(1);
 }
 
 const fixture = JSON.parse(fs.readFileSync(fixturePath, 'utf-8')) as KoraTestFixture;
 
+// tenant_code, lowercased, used only to derive cosmetic identifiers below
+// (pseudonym_id/raw_hash/recordId prefixes, createdBy label) — never used in
+// any canonical function call and never a processing branch.
+const tenantSlug = fixture.tenant_code.toLowerCase();
+
 // ── Header ────────────────────────────────────────────────────────────────────
 
 console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-console.log('  KORA Canonical Test Tenant Foundation — KoraTest Srl');
+console.log(`  KORA Canonical Test Tenant Foundation — ${fixture.company_name}`);
 console.log(`  Tenant code : ${fixture.tenant_code}`);
 console.log(`  Period      : ${fixture.reporting_period}`);
 console.log(`  Mode        : ${apply ? '⚠  APPLY (writes to DB, runs canonical pipeline)' : '✓  DRY RUN (no writes)'}`);
@@ -171,9 +199,9 @@ async function run(): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = createClient(supabaseUrl!, serviceKey!, { auth: { persistSession: false } }) as any;
 
-  const createdBy = 'system-koratest-canonical-seed';
+  const createdBy = `system-${tenantSlug}-canonical-seed`;
 
-  // ── Step 1: Create or reuse the KoraTest Srl tenant ─────────────────────────
+  // ── Step 1: Create or reuse the tenant identified by the fixture ───────────
   // Same insert shape as app/api/admin/companies/provision/route.ts's tenant
   // creation — idempotent on tenant_code, tenant_kind = 'TEST' (operational
   // safety only — see the file header for the no-branching proof).
@@ -237,7 +265,7 @@ async function run(): Promise<void> {
   // ── Step 3: Source batch — same natural-key duplicate guard as the real ────
   // accept route (tenant_id, reporting_period, source_name).
 
-  const batchLabel = `KoraTest Srl — canonical foundation batch ${fixture.reporting_period}`;
+  const batchLabel = `${fixture.company_name} — canonical foundation batch ${fixture.reporting_period}`;
 
   const { data: existingBatch } = await db
     .schema('analytics').from('source_batch')
@@ -262,7 +290,7 @@ async function run(): Promise<void> {
     // classifyEligibilityBatch() drives eligibility_status (not hand-typed).
 
     const rawRecords: RawUploadedRecord[] = fixture.rows.map((row, i) => ({
-      recordId:           `koratest-${row.row_id}`,
+      recordId:           `${tenantSlug}-${row.row_id}`,
       batchId:             'pre-batch',
       rowIndex:            i,
       detectedRecordType: 'welfare_program',
@@ -291,7 +319,7 @@ async function run(): Promise<void> {
         mapping_confidence_avg:  null,
         evidence_attached_pct:   null,
         pending_review_count:    fixture.rows.length,
-        source_notes:            'B-TRUTH KoraTest Srl canonical foundation — deterministic fixture, real pipeline.',
+        source_notes:            `B-TRUTH ${fixture.company_name} canonical foundation — deterministic fixture, real pipeline.`,
         created_by:              createdBy,
         processed_at:            null,
       })
@@ -308,8 +336,8 @@ async function run(): Promise<void> {
     const uploadedRows = fixture.rows.map((row, i) => ({
       tenant_id:          tenantId,
       batch_id:           batchId,
-      pseudonym_id:       `PSY-KORATEST-${batchId.slice(0, 8)}-${String(i).padStart(4, '0')}`,
-      raw_hash:           `koratest-row:${batchId}:${String(i).padStart(4, '0')}`,
+      pseudonym_id:       `PSY-${tenantSlug.toUpperCase()}-${batchId.slice(0, 8)}-${String(i).padStart(4, '0')}`,
+      raw_hash:           `${tenantSlug}-row:${batchId}:${String(i).padStart(4, '0')}`,
       eligibility_status: eligResults[i].status,
       primary_pillar:     null,
       action_family:      row.category,
@@ -395,7 +423,7 @@ async function run(): Promise<void> {
         data_completeness_score:     proposal.mappingConfidence,
         missing_fields:              proposal.warnings,
         review_status:               'approved',
-        reviewer_notes:              'B-TRUTH KoraTest canonical foundation — automated operator approval for deterministic test provisioning.',
+        reviewer_notes:              `B-TRUTH ${fixture.company_name} canonical foundation — automated operator approval for deterministic test provisioning.`,
         reviewed_by:                 createdBy,
         reviewed_at:                 new Date().toISOString(),
         payload: {

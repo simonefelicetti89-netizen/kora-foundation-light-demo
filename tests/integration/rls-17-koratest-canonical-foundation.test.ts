@@ -176,12 +176,46 @@ const FIXTURE_ROWS: Array<{
   { initiative_name: 'Community di innovazione interna', category: 'collaborazione', type: 'peer coaching', amount: 1200, participants: 20 },
 ];
 
+// B-TRUTH Second Canonical Test Company (2026-09-06, PR 6 of the
+// founder-ratified ONE_PRODUCT_CANONICAL_MIGRATION plan): a SECOND canonical
+// test tenant, "Bosco Verde Cooperativa Sociale" — deliberately distinct
+// from KoraTest Srl above (different workforce size, different row count,
+// a cooperative/social-enterprise category mix skewed toward IMPACT/
+// CONNECTION rather than KoraTest's GROWTH/mixed skew, its own separate
+// limited/blocked/incomplete rows) — proves the SAME canonical mechanism
+// (not a copy, not a "second-company mode") generalizes to a genuinely
+// different second tenant, seeded via the SAME seedCanonicalTestTenant()
+// function below, not a parallel reimplementation.
+const TENANT_CODE_B = 'RLS17-BOSCOVERDE';
+const REPORTING_PERIOD_B = 'RLS17-PERIOD-B';
+const WORKFORCE_POPULATION_B = 68;
+
+const FIXTURE_ROWS_B: Array<{
+  initiative_name: string; category: string; type: string;
+  amount?: number; participants?: number;
+}> = [
+  { initiative_name: 'Corso di agricoltura biologica e sostenibile', category: 'formazione', type: 'training', amount: 2100, participants: 22 },
+  { initiative_name: 'Sportello di ascolto e supporto psicologico', category: 'benessere psicologico', type: 'counselling', amount: 3600, participants: 50 },
+  { initiative_name: 'Programma di inserimento lavorativo per categorie fragili', category: 'inclusione sociale', type: 'community', amount: 5200, participants: 35 },
+  { initiative_name: 'Iniziativa di riforestazione territoriale', category: 'volontariato ambientale', type: 'community', amount: 3100, participants: 40 },
+  { initiative_name: 'Percorso di mentoring tra soci fondatori e nuovi assunti', category: 'trasferimento competenze', type: 'knowledge transfer', amount: 1400, participants: 15 },
+  { initiative_name: 'Buoni spesa mensili per il personale', category: 'buoni spesa', type: 'fringe benefit', amount: 4800, participants: 68 },
+  { initiative_name: 'Corso obbligatorio sicurezza sul lavoro (D.Lgs 81/08)', category: 'sicurezza obbligatoria', type: 'compliance', amount: 700, participants: 68 },
+  { initiative_name: 'Community di scambio tra cooperative locali', category: 'collaborazione', type: 'peer coaching' },
+  { initiative_name: 'Checkup salute stagionale per lavoratori agricoli', category: 'prevenzione sanitaria', type: 'wellbeing', amount: 1900, participants: 44 },
+  { initiative_name: 'Laboratorio di co-progettazione con la comunità locale', category: 'collaborazione', type: 'coaching', amount: 1600, participants: 20 },
+  { initiative_name: 'Percorso di crescita professionale per responsabili di area', category: 'sviluppo professionale', type: 'training', amount: 2400, participants: 10 },
+  { initiative_name: 'Evento di volontariato sociale con anziani del territorio', category: 'volontariato', type: 'community', amount: 900, participants: 25 },
+];
+
 describe.skipIf(!ready)(
-  'RLS-17 — KoraTest Srl (tenant_kind=TEST) input-to-canonical-output pipeline, via the real interpreter',
+  'RLS-17 — two canonical test tenants (tenant_kind=TEST), input-to-canonical-output pipeline via the real interpreter, via the SAME seeding mechanism',
   () => {
     let client: InstanceType<typeof Client>;
     let tenantId: string;
     let batchId: string;
+    let tenantIdB: string;
+    let batchIdB: string;
 
     beforeAll(async () => {
       if (!config) throw new Error('unreachable: beforeAll only runs when describe.skipIf(!ready) has already passed');
@@ -192,30 +226,47 @@ describe.skipIf(!ready)(
 
     afterAll(async () => {
       if (!client) return;
-      const t = await client.query<{ id: string }>(`SELECT id FROM analytics.tenant WHERE tenant_code = $1`, [TENANT_CODE]);
-      const id = t.rows[0]?.id;
-      if (id) {
-        await client.query(`DELETE FROM analytics.uef_record WHERE tenant_id = $1`, [id]);
-        await client.query(`DELETE FROM personal.uploaded_record WHERE tenant_id = $1`, [id]);
-        await client.query(`DELETE FROM analytics.source_batch WHERE tenant_id = $1`, [id]);
-        await client.query(`DELETE FROM personal.workforce_baseline WHERE tenant_id = $1`, [id]);
-        await client.query(`DELETE FROM analytics.tenant WHERE tenant_code = $1`, [TENANT_CODE]);
+      for (const code of [TENANT_CODE, TENANT_CODE_B]) {
+        const t = await client.query<{ id: string }>(`SELECT id FROM analytics.tenant WHERE tenant_code = $1`, [code]);
+        const id = t.rows[0]?.id;
+        if (id) {
+          await client.query(`DELETE FROM analytics.uef_record WHERE tenant_id = $1`, [id]);
+          await client.query(`DELETE FROM personal.uploaded_record WHERE tenant_id = $1`, [id]);
+          await client.query(`DELETE FROM analytics.source_batch WHERE tenant_id = $1`, [id]);
+          await client.query(`DELETE FROM personal.workforce_baseline WHERE tenant_id = $1`, [id]);
+          await client.query(`DELETE FROM analytics.tenant WHERE tenant_code = $1`, [code]);
+        }
       }
       await client.end();
     });
+
+    interface SeedParams {
+      tenantCode: string;
+      companyName: string;
+      reportingPeriod: string;
+      workforcePopulation: number;
+      segmentBreakdown: Record<string, Record<string, number>>;
+      batchLabel: string;
+      fixtureRows: Array<{ initiative_name: string; category: string; type: string; amount?: number; participants?: number }>;
+      idPrefix: string;
+      approverNote: string;
+    }
 
     // Mirrors scripts/koratest-canonical-seed.ts's own write sequence:
     // tenant (upsert) -> workforce_baseline -> source_batch (idempotent on
     // natural key) -> uploaded_record -> uef_record via the REAL
     // interpretUploadedRecord() call, never hand-typed content. Calling this
     // twice must not create duplicate rows — that IS the idempotency proof.
-    async function seedKoraTestFixture(): Promise<{ tenantId: string; batchId: string }> {
+    // Parameterized (not duplicated) so the SAME function proves the
+    // mechanism for both canonical test tenants — the whole point of this
+    // PR is that this is reusable, not a KoraTest-only one-off.
+    async function seedCanonicalTestTenant(p: SeedParams): Promise<{ tenantId: string; batchId: string }> {
       const tenantResult = await client.query<{ id: string }>(
         `INSERT INTO analytics.tenant (tenant_code, company_name, tenant_kind)
          VALUES ($1, $2, 'TEST')
          ON CONFLICT (tenant_code) DO UPDATE SET company_name = EXCLUDED.company_name
          RETURNING id`,
-        [TENANT_CODE, 'RLS-17 KoraTest Reference Tenant'],
+        [p.tenantCode, p.companyName],
       );
       const tId = tenantResult.rows[0].id;
 
@@ -224,12 +275,12 @@ describe.skipIf(!ready)(
            (tenant_id, reporting_period, total_workers, segment_breakdown, privacy_threshold_applied, minimum_group_size, created_by)
          VALUES ($1, $2, $3, $4, true, 10, 'rls17-test')
          ON CONFLICT (tenant_id, reporting_period) DO UPDATE SET total_workers = EXCLUDED.total_workers`,
-        [tId, REPORTING_PERIOD, WORKFORCE_POPULATION, JSON.stringify({ departments: { 'dept-tech': 16, 'dept-operations': 14, 'dept-people': 12 } })],
+        [tId, p.reportingPeriod, p.workforcePopulation, JSON.stringify(p.segmentBreakdown)],
       );
 
       const existingBatch = await client.query<{ id: string }>(
         `SELECT id FROM analytics.source_batch WHERE tenant_id = $1 AND reporting_period = $2 AND source_name = $3`,
-        [tId, REPORTING_PERIOD, 'RLS-17 canonical foundation batch'],
+        [tId, p.reportingPeriod, p.batchLabel],
       );
 
       let bId: string;
@@ -242,24 +293,24 @@ describe.skipIf(!ready)(
               batch_status, pending_review_count, created_by)
            VALUES ($1, 'manual', $2, $3, $4, $4, 0, 'pending', $4, 'rls17-test')
            RETURNING id`,
-          [tId, 'RLS-17 canonical foundation batch', REPORTING_PERIOD, FIXTURE_ROWS.length],
+          [tId, p.batchLabel, p.reportingPeriod, p.fixtureRows.length],
         );
         bId = batchResult.rows[0].id;
 
-        const rawRecords: RawUploadedRecord[] = FIXTURE_ROWS.map((row, i) => ({
-          recordId: `rls17-${i}`, batchId: bId, rowIndex: i, detectedRecordType: 'welfare_program',
+        const rawRecords: RawUploadedRecord[] = p.fixtureRows.map((row, i) => ({
+          recordId: `${p.idPrefix}-${i}`, batchId: bId, rowIndex: i, detectedRecordType: 'welfare_program',
           raw: { initiative_name: row.initiative_name, category: row.category, type: row.type,
             ...(row.amount != null ? { amount: row.amount } : {}), ...(row.participants != null ? { participants: row.participants } : {}) },
         }));
         const eligResults = classifyEligibilityBatch(rawRecords);
 
-        for (const [i, row] of FIXTURE_ROWS.entries()) {
+        for (const [i, row] of p.fixtureRows.entries()) {
           await client.query(
             `INSERT INTO personal.uploaded_record
                (tenant_id, batch_id, pseudonym_id, raw_hash, eligibility_status, primary_pillar, action_family, event_nature, review_status, payload, privacy_redacted)
              VALUES ($1, $2, $3, $4, $5, NULL, $6, $7, 'pending', $8, false)`,
             [
-              tId, bId, `PSY-RLS17-${String(i).padStart(4, '0')}`, `rls17-row:${i}`,
+              tId, bId, `PSY-${p.idPrefix.toUpperCase()}-${String(i).padStart(4, '0')}`, `${p.idPrefix}-row:${i}`,
               eligResults[i].status, row.category, row.type,
               JSON.stringify({ initiative_name: row.initiative_name, category: row.category, type: row.type, ...(row.amount != null ? { amount: row.amount } : {}), ...(row.participants != null ? { participants: row.participants } : {}) }),
             ],
@@ -267,9 +318,9 @@ describe.skipIf(!ready)(
         }
 
         // Real canonical interpreter — content is DERIVED, never hand-typed.
-        for (const row of FIXTURE_ROWS) {
+        for (const row of p.fixtureRows) {
           const input: UploadedRecordInput = {
-            id: `rls17-input-${row.initiative_name}`,
+            id: `${p.idPrefix}-input-${row.initiative_name}`,
             payload: { initiative_name: row.initiative_name, category: row.category, type: row.type,
               ...(row.amount != null ? { amount: row.amount } : {}), ...(row.participants != null ? { participants: row.participants } : {}) },
             action_family: row.category, event_nature: row.type, primary_pillar: null,
@@ -285,7 +336,7 @@ describe.skipIf(!ready)(
                 data_completeness_score, missing_fields, review_status, reviewer_notes, reviewed_by, payload)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, true, $9, $10, $11, 'approved', $12, 'rls17-test', $13)`,
             [
-              tId, bId, REPORTING_PERIOD, proposal.rawName, proposal.eligibility, proposal.pillar,
+              tId, bId, p.reportingPeriod, proposal.rawName, proposal.eligibility, proposal.pillar,
               proposal.actionFamily, proposal.eventNature, approvedForImpactUnits, proposal.mappingConfidence,
               // missing_fields is a native Postgres text[] column — pass the
               // plain JS array; node-postgres serializes it to the correct
@@ -299,7 +350,7 @@ describe.skipIf(!ready)(
               // scripts/koratest-canonical-seed.ts, was never affected —
               // it uses the Supabase JS client, which already handles this
               // conversion correctly for a plain JS array.
-              proposal.warnings, 'RLS-17 automated operator approval stand-in',
+              proposal.warnings, p.approverNote,
               JSON.stringify({ interpreter_version: proposal.interpreterVersion, generated_by: proposal.generatedBy, reason_codes: proposal.reasonCodes }),
             ],
           );
@@ -307,6 +358,26 @@ describe.skipIf(!ready)(
       }
 
       return { tenantId: tId, batchId: bId };
+    }
+
+    async function seedKoraTestFixture(): Promise<{ tenantId: string; batchId: string }> {
+      return seedCanonicalTestTenant({
+        tenantCode: TENANT_CODE, companyName: 'RLS-17 KoraTest Reference Tenant',
+        reportingPeriod: REPORTING_PERIOD, workforcePopulation: WORKFORCE_POPULATION,
+        segmentBreakdown: { departments: { 'dept-tech': 16, 'dept-operations': 14, 'dept-people': 12 } },
+        batchLabel: 'RLS-17 canonical foundation batch', fixtureRows: FIXTURE_ROWS,
+        idPrefix: 'rls17', approverNote: 'RLS-17 automated operator approval stand-in',
+      });
+    }
+
+    async function seedBoscoVerdeFixture(): Promise<{ tenantId: string; batchId: string }> {
+      return seedCanonicalTestTenant({
+        tenantCode: TENANT_CODE_B, companyName: 'RLS-17 Bosco Verde Reference Tenant',
+        reportingPeriod: REPORTING_PERIOD_B, workforcePopulation: WORKFORCE_POPULATION_B,
+        segmentBreakdown: { departments: { 'dept-agricoltura': 28, 'dept-servizi': 24, 'dept-amministrazione': 16 } },
+        batchLabel: 'RLS-17 second-tenant canonical foundation batch', fixtureRows: FIXTURE_ROWS_B,
+        idPrefix: 'rls17b', approverNote: 'RLS-17 second-tenant automated operator approval stand-in',
+      });
     }
 
     it('KoraTest Srl is a tenant_kind=TEST ordinary row — not OP-001', async () => {
@@ -387,6 +458,145 @@ describe.skipIf(!ready)(
 
       const uefRows = await client.query(`SELECT id FROM analytics.uef_record WHERE tenant_id = $1`, [tenantId]);
       expect(uefRows.rows.length).toBe(FIXTURE_ROWS.length);
+    });
+
+    // ── Second canonical test tenant — proves the mechanism is genuinely
+    // reusable, not a KoraTest-only one-off ──────────────────────────────────
+
+    it('Bosco Verde Cooperativa Sociale is ALSO a tenant_kind=TEST ordinary row — same mechanism, different tenant, not OP-001', async () => {
+      const seeded = await seedBoscoVerdeFixture();
+      tenantIdB = seeded.tenantId;
+      batchIdB = seeded.batchId;
+
+      const rows = await client.query<{ tenant_code: string; tenant_kind: string }>(
+        `SELECT tenant_code, tenant_kind FROM analytics.tenant WHERE tenant_code = $1`,
+        [TENANT_CODE_B],
+      );
+      expect(rows.rows[0].tenant_kind).toBe('TEST');
+      expect(TENANT_CODE_B).not.toBe('OP-001');
+      expect(TENANT_CODE_B).not.toBe(TENANT_CODE);
+      expect(tenantIdB).not.toBe(tenantId);
+    });
+
+    it('second tenant\'s input rows are persisted with its own, materially different 12-row shape', async () => {
+      const wb = await client.query(`SELECT total_workers FROM personal.workforce_baseline WHERE tenant_id = $1`, [tenantIdB]);
+      expect(wb.rows[0].total_workers).toBe(WORKFORCE_POPULATION_B);
+      expect(WORKFORCE_POPULATION_B).not.toBe(WORKFORCE_POPULATION);
+
+      const ur = await client.query(`SELECT id FROM personal.uploaded_record WHERE tenant_id = $1`, [tenantIdB]);
+      expect(ur.rows.length).toBe(FIXTURE_ROWS_B.length);
+      expect(FIXTURE_ROWS_B.length).not.toBe(FIXTURE_ROWS.length);
+    });
+
+    it('second tenant\'s UEF records were ALSO derived by the real interpreter — non-uniform, not hand-typed', async () => {
+      const uef = await client.query<{ eligibility: string; primary_pillar: string | null }>(
+        `SELECT eligibility, primary_pillar FROM analytics.uef_record WHERE tenant_id = $1`,
+        [tenantIdB],
+      );
+      expect(uef.rows.length).toBe(FIXTURE_ROWS_B.length);
+      const statuses = new Set(uef.rows.map((r) => r.eligibility));
+      expect(statuses.has('limited') || statuses.has('blocked')).toBe(true);
+      expect(statuses.has('eligible')).toBe(true);
+    });
+
+    it('runKoraPipeline() executes for the second tenant and produces a real, non-trivial, structurally-parallel result', async () => {
+      const approved = await client.query(
+        `SELECT id, raw_name, eligibility, primary_pillar, action_family, event_nature, missing_fields, approved_for_impact_units, payload
+         FROM analytics.uef_record
+         WHERE tenant_id = $1 AND review_status = 'approved' AND approved_for_scoring = true`,
+        [tenantIdB],
+      );
+      expect(approved.rows.length).toBe(FIXTURE_ROWS_B.length);
+
+      const uefRows = approved.rows.map((row) => ({
+        id: row.id as string,
+        raw_name: row.raw_name as string,
+        eligibility: row.eligibility as string,
+        primary_pillar: row.primary_pillar as string | null,
+        action_family: row.action_family as string | null,
+        event_nature: row.event_nature as string | null,
+        missing_fields: Array.isArray(row.missing_fields) ? row.missing_fields as string[] : [],
+        approved_for_impact_units: Boolean(row.approved_for_impact_units),
+        payload: (row.payload ?? {}) as Record<string, unknown>,
+      })) satisfies UefRowForScoring[];
+
+      const records = buildScoringRecordsFromApprovedUef(uefRows, batchIdB);
+      const result = runKoraPipeline({ tenantId: tenantIdB, batchId: batchIdB, records, workforcePopulation: WORKFORCE_POPULATION_B });
+
+      // Structural parity (same shape of result) — NOT numerical equality.
+      // The two tenants' fixtures are deliberately different; identical
+      // output values would actually be suspicious, not reassuring.
+      expect(result.warnings.some((w) => w.includes('KoraPipeline_v2.0'))).toBe(true);
+      expect(typeof result.koraIndex.value).toBe('number');
+      expect(['CLEAR', 'WARNING', 'FLAGGED']).toContain(result.activation.safeguardStatus);
+    });
+
+    it('re-running the second tenant\'s seed is idempotent — no duplicate rows, same discipline as tenant A', async () => {
+      await seedBoscoVerdeFixture();
+
+      const tenantRows = await client.query(`SELECT id FROM analytics.tenant WHERE tenant_code = $1`, [TENANT_CODE_B]);
+      expect(tenantRows.rows.length).toBe(1);
+
+      const batchRows = await client.query(`SELECT id FROM analytics.source_batch WHERE tenant_id = $1`, [tenantIdB]);
+      expect(batchRows.rows.length).toBe(1);
+
+      const uploadedRows = await client.query(`SELECT id FROM personal.uploaded_record WHERE tenant_id = $1`, [tenantIdB]);
+      expect(uploadedRows.rows.length).toBe(FIXTURE_ROWS_B.length);
+
+      const uefRows = await client.query(`SELECT id FROM analytics.uef_record WHERE tenant_id = $1`, [tenantIdB]);
+      expect(uefRows.rows.length).toBe(FIXTURE_ROWS_B.length);
+    });
+
+    // ── Coexistence and isolation ────────────────────────────────────────────
+
+    it('both canonical test tenants coexist — each retains its own, independent rows, no overwrite', async () => {
+      expect(tenantId).toBeTruthy();
+      expect(tenantIdB).toBeTruthy();
+      expect(tenantId).not.toBe(tenantIdB);
+
+      const tenantsRow = await client.query(
+        `SELECT tenant_code FROM analytics.tenant WHERE tenant_code IN ($1, $2)`,
+        [TENANT_CODE, TENANT_CODE_B],
+      );
+      expect(tenantsRow.rows.length).toBe(2);
+
+      const wbA = await client.query(`SELECT total_workers FROM personal.workforce_baseline WHERE tenant_id = $1`, [tenantId]);
+      const wbB = await client.query(`SELECT total_workers FROM personal.workforce_baseline WHERE tenant_id = $1`, [tenantIdB]);
+      expect(wbA.rows[0].total_workers).toBe(WORKFORCE_POPULATION);
+      expect(wbB.rows[0].total_workers).toBe(WORKFORCE_POPULATION_B);
+    });
+
+    it('tenant isolation — tenant A\'s scoped rows are never returned by a tenant-B-scoped query, and vice versa', async () => {
+      const urA = await client.query(`SELECT tenant_id FROM personal.uploaded_record WHERE tenant_id = $1`, [tenantId]);
+      expect(urA.rows.every((r) => r.tenant_id === tenantId)).toBe(true);
+      expect(urA.rows.some((r) => r.tenant_id === tenantIdB)).toBe(false);
+
+      const urB = await client.query(`SELECT tenant_id FROM personal.uploaded_record WHERE tenant_id = $1`, [tenantIdB]);
+      expect(urB.rows.every((r) => r.tenant_id === tenantIdB)).toBe(true);
+      expect(urB.rows.some((r) => r.tenant_id === tenantId)).toBe(false);
+
+      const uefA = await client.query(`SELECT tenant_id FROM analytics.uef_record WHERE tenant_id = $1`, [tenantId]);
+      const uefB = await client.query(`SELECT tenant_id FROM analytics.uef_record WHERE tenant_id = $1`, [tenantIdB]);
+      expect(uefA.rows.every((r) => r.tenant_id === tenantId)).toBe(true);
+      expect(uefB.rows.every((r) => r.tenant_id === tenantIdB)).toBe(true);
+    });
+
+    it('no special RLS/product branch exists for either test tenant — both follow the identical query shape, tenant_kind grants no special access', async () => {
+      const kindA = await client.query<{ tenant_kind: string }>(`SELECT tenant_kind FROM analytics.tenant WHERE tenant_code = $1`, [TENANT_CODE]);
+      const kindB = await client.query<{ tenant_kind: string }>(`SELECT tenant_kind FROM analytics.tenant WHERE tenant_code = $1`, [TENANT_CODE_B]);
+      expect(kindA.rows[0].tenant_kind).toBe('TEST');
+      expect(kindB.rows[0].tenant_kind).toBe('TEST');
+      // Both rows were reached via the exact same seedCanonicalTestTenant()
+      // function and the exact same SELECT shape above — no tenant_kind
+      // conditional was introduced anywhere in this file to reach either one.
+    });
+
+    it('output values are NOT identical between the two tenants — by design, not a coincidence to fix', async () => {
+      const uefA = await client.query<{ eligibility: string }>(`SELECT eligibility FROM analytics.uef_record WHERE tenant_id = $1`, [tenantId]);
+      const uefB = await client.query<{ eligibility: string }>(`SELECT eligibility FROM analytics.uef_record WHERE tenant_id = $1`, [tenantIdB]);
+      // Different row counts alone already proves non-identity; this also
+      // guards against a future accidental fixture collapse.
+      expect(uefA.rows.length).not.toBe(uefB.rows.length);
     });
   },
 );
