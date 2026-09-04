@@ -202,13 +202,14 @@ describe('B-TRUTH — no new tenant_kind product branch introduced', () => {
 });
 
 describe('B-TRUTH — this PR touched ONLY the TenantService migration (one PR = one bounded step)', () => {
-  it('CompanyDataIntakeService, AdminPreviewService still exist, untouched in role', () => {
-    for (const file of [
-      'services/company-data-intake/CompanyDataIntakeService.ts',
-      'services/admin-preview/AdminPreviewService.ts',
-    ]) {
-      expect(existsSync(resolve(root, file))).toBe(true);
-    }
+  // CompanyDataIntakeService.ts was accurately untouched by THIS PR
+  // (TenantService Canonical Migration) at the time this test was written.
+  // B-TRUTH CompanyDataIntakeService Canonical Migration (PR 3) — a later,
+  // separate, bounded PR of the same plan — retired it. See
+  // tests/unit/b-truth-company-data-intake-canonical-migration.test.ts.
+  it('AdminPreviewService still exists, untouched in role — CompanyDataIntakeService has since been separately retired (historical note)', () => {
+    expect(existsSync(resolve(root, 'services/admin-preview/AdminPreviewService.ts'))).toBe(true);
+    expect(existsSync(resolve(root, 'services/company-data-intake/CompanyDataIntakeService.ts'))).toBe(false);
   });
 
   it('AccountProvisioningService still exists — its own migration is a separate, later slice', () => {
@@ -249,8 +250,11 @@ describe('B-TRUTH — registry and I9 reflect the migration', () => {
     expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/tenant\/TenantService\.ts'/);
   });
 
-  it('allowlist header reflects the reduced count, 14 files / 24 imports', () => {
+  it('allowlist header reflects a count at or below the level this PR left it at, 14 files / 24 imports (a later PR may reduce it further — see B-TRUTH CompanyDataIntakeService Canonical Migration, 2026-09-05)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 14 files / 24 import statements');
+    const match = allowlist.match(/CURRENT_SYNTHETIC_RUNTIME_IMPORTS = (\d+) files \/ (\d+) import statements/);
+    expect(match).not.toBeNull();
+    expect(Number(match![1])).toBeLessThanOrEqual(14);
+    expect(Number(match![2])).toBeLessThanOrEqual(24);
   });
 });

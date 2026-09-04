@@ -86,9 +86,15 @@ describe('B-TRUTH Root Control Room Wave 3 — superseded same-day by the Harden
   });
 });
 
-describe('B-TRUTH Root Control Room Wave 3 — I9 unchanged (no service reached zero callers)', () => {
-  it('CompanyDataIntakeService.ts is still in the I9 synthetic import allowlist', async () => {
+// CompanyDataIntakeService.ts was accurately still in the I9 allowlist at
+// the time this test was written (Root Control Room Wave 3 touched a
+// different file, ROOT_PAGE, not this service). B-TRUTH
+// CompanyDataIntakeService Canonical Migration (2026-09-05) — a later,
+// unrelated PR — retired it and removed its allowlist entry. See
+// tests/unit/b-truth-company-data-intake-canonical-migration.test.ts.
+describe('B-TRUTH Root Control Room Wave 3 — CompanyDataIntakeService has since been separately retired (historical note, not a live assertion)', () => {
+  it('CompanyDataIntakeService.ts no longer exists and is no longer in the I9 allowlist', async () => {
     const { SYNTHETIC_IMPORT_ALLOWLIST } = await import('@/lib/security/synthetic-import-allowlist');
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.some((e) => e.file.includes('CompanyDataIntakeService'))).toBe(true);
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.some((e) => e.file.includes('CompanyDataIntakeService'))).toBe(false);
   });
 });

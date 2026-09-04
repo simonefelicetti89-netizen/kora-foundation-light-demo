@@ -6,7 +6,7 @@ import type {
   ScenarioId,
 } from '@/lib/types';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
-import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
+import type { CanonicalDataIntakeStatus } from '@/lib/live/data-intake-status-view';
 import { getMethodologyVersion } from '@/lib/methodology-config/v0.1';
 import versionsRaw from '@/data/synthetic/decision-pack-versions.json';
 
@@ -111,7 +111,7 @@ export interface CanonicalTenantStatus {
 }
 
 export interface IReportFactoryService {
-  getDecisionPackFactoryStatus(companyId: string, canonicalTenant: CanonicalTenantStatus | null): DecisionPackFactoryStatus;
+  getDecisionPackFactoryStatus(companyId: string, canonicalTenant: CanonicalTenantStatus | null, dataIntake: CanonicalDataIntakeStatus): DecisionPackFactoryStatus;
   getLatestDecisionPackVersion(companyId: string): DecisionPackVersion | null;
 }
 
@@ -126,11 +126,19 @@ export class ReportFactoryService implements IReportFactoryService {
     return false;
   }
 
-  private getIntakeStatus(companyId: string): string {
-    return companyDataIntakeService.getDataReadinessSummary(companyId).intake_status;
-  }
-
-  private computeBlockingReasons(companyId: string, canonicalTenant: CanonicalTenantStatus | null): string[] {
+  // B-TRUTH CompanyDataIntakeService Canonical Migration (2026-09-05):
+  // dataIntake now supplied by the caller (already-fetched canonical
+  // analytics.source_batch/uef_record view — see
+  // lib/live/data-intake-status-view.ts) instead of this service reading
+  // companyDataIntakeService itself. The legacy 'blocked_missing_required_fields'
+  // branch is not reproduced — see that file's own header for why (the
+  // concern it existed for is now handled structurally at the canonical
+  // upload boundary, before a source_batch row is ever created).
+  private computeBlockingReasons(
+    companyId: string,
+    canonicalTenant: CanonicalTenantStatus | null,
+    dataIntake: CanonicalDataIntakeStatus,
+  ): string[] {
     const reasons: string[] = [];
 
     if (!canonicalTenant) {
@@ -143,17 +151,13 @@ export class ReportFactoryService implements IReportFactoryService {
     if (!this.hasKoraIndex(companyId)) {
       reasons.push('KORA Index non disponibile — completare il pipeline di scoring prima di generare il Decision Pack.');
     }
-    const intakeStatus = this.getIntakeStatus(companyId);
-    if (intakeStatus === 'not_started') {
+    if (dataIntake.intakeStatus === 'not_started') {
       reasons.push('Data intake non avviato — caricare almeno un batch di dati programma.');
-    } else if (intakeStatus === 'blocked_missing_required_fields') {
-      reasons.push('Data intake bloccato — completare i campi obbligatori del piano fiscale.');
-    } else if (intakeStatus === 'validation_required') {
+    } else if (dataIntake.intakeStatus === 'validation_required') {
       reasons.push('Dati in attesa di validazione — risolvere le righe segnalate prima di procedere.');
     }
-    const intake = companyDataIntakeService.getDataReadinessSummary(companyId);
-    if (intake.review_required_rows > 0) {
-      reasons.push(`${intake.review_required_rows} righe richiedono review advisor prima dell'ingestion.`);
+    if (dataIntake.pendingReviewCount > 0) {
+      reasons.push(`${dataIntake.pendingReviewCount} righe richiedono review advisor prima dell'ingestion.`);
     }
 
     return reasons;
@@ -161,9 +165,13 @@ export class ReportFactoryService implements IReportFactoryService {
 
   // ── Public methods ─────────────────────────────────────────────────────────
 
-  getDecisionPackFactoryStatus(companyId: string, canonicalTenant: CanonicalTenantStatus | null): DecisionPackFactoryStatus {
+  getDecisionPackFactoryStatus(
+    companyId: string,
+    canonicalTenant: CanonicalTenantStatus | null,
+    dataIntake: CanonicalDataIntakeStatus,
+  ): DecisionPackFactoryStatus {
     const tenantId = canonicalTenant?.id ?? '';
-    const blockingReasons = this.computeBlockingReasons(companyId, canonicalTenant);
+    const blockingReasons = this.computeBlockingReasons(companyId, canonicalTenant, dataIntake);
     const canGenerate = blockingReasons.length === 0;
 
     const latestVersion = this.getLatestDecisionPackVersion(companyId);

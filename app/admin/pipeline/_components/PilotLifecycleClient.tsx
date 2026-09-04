@@ -21,7 +21,7 @@ import { workerProvisioningService } from '@/services/worker-provisioning/Worker
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { reportFactoryService } from '@/services/report-factory/ReportFactoryService';
 import { workerSpaceCapabilityService } from '@/services/worker-space/WorkerSpaceCapabilityService';
-import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
+import type { CanonicalDataIntakeStatus } from '@/lib/live/data-intake-status-view';
 import {
   LIFECYCLE_STEPS,
   deriveAllStepStatuses,
@@ -213,7 +213,7 @@ function RoleContextLinks() {
 
 // ── Main client component ───────────────────────────────────────────────────────
 
-export function PilotLifecycleClient({ tenant }: { tenant: CanonicalPilotTenant | null }) {
+export function PilotLifecycleClient({ tenant, dataIntake }: { tenant: CanonicalPilotTenant | null; dataIntake: CanonicalDataIntakeStatus }) {
   const accounts     = accountProvisioningService.getAccountsForCompany(DEMO_COMPANY_ID);
   const workerSumm   = workerProvisioningService.getWorkerProvisioningSummary(DEMO_COMPANY_ID);
   const koraIndex    = scoringSimulatorService.getKoraIndexOutput(DEMO_COMPANY_ID, 'S1')
@@ -221,17 +221,17 @@ export function PilotLifecycleClient({ tenant }: { tenant: CanonicalPilotTenant 
   const dpStatus     = reportFactoryService.getDecisionPackFactoryStatus(
     DEMO_COMPANY_ID,
     tenant ? { id: tenant.id, isActive: tenant.is_active } : null,
+    dataIntake,
   );
   const capability   = workerSpaceCapabilityService.getCapabilityByCompanyId(DEMO_COMPANY_ID);
-  const intakeSumm   = companyDataIntakeService.getDataReadinessSummary(DEMO_COMPANY_ID);
 
   const inputs: LifecycleStatusInputs = {
     tenantExists:       !!tenant,
     hasCompanyUser:     accounts.length > 0,
     totalWorkers:       workerSumm.total_workers,
-    hasSubmission:      intakeSumm.batch_count > 0 || (tenant?.onboarding_status !== 'not_started'),
-    submissionPending:  intakeSumm.intake_status === 'validation_required',
-    hasReviewedData:    intakeSumm.batch_count > 0 && intakeSumm.intake_status === 'ready_for_ingestion',
+    hasSubmission:      dataIntake.batchCount > 0 || (tenant?.onboarding_status !== 'not_started'),
+    submissionPending:  dataIntake.intakeStatus === 'validation_required',
+    hasReviewedData:    dataIntake.batchCount > 0 && dataIntake.intakeStatus === 'ready_for_ingestion',
     hasScoring:         !!koraIndex,
     hasDecisionPack:    tenant?.decision_pack_status === 'ready' || dpStatus.latest_status === 'ready',
     workerSpaceEnabled: capability.enabled,

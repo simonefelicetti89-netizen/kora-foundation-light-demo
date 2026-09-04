@@ -81,9 +81,11 @@ describe('B-TRUTH Demo/Orphan Chain Audit — ReportFactoryService trimmed to it
 
   it('still defines the two reachable methods', () => {
     // B-TRUTH TenantService Canonical Migration (2026-09-04) added a second
-    // parameter, canonicalTenant, replacing the internal tenantService
-    // dependency — getDecisionPackFactoryStatus itself, not a new method.
-    expect(src).toContain('getDecisionPackFactoryStatus(companyId: string, canonicalTenant: CanonicalTenantStatus | null)');
+    // parameter, canonicalTenant; B-TRUTH CompanyDataIntakeService
+    // Canonical Migration (2026-09-05) added a third, dataIntake —
+    // replacing two internal dependencies with caller-supplied canonical
+    // data. Same method, not a new one (see the interface declaration).
+    expect(src).toContain('getDecisionPackFactoryStatus(companyId: string, canonicalTenant: CanonicalTenantStatus | null, dataIntake: CanonicalDataIntakeStatus): DecisionPackFactoryStatus');
     expect(src).toContain('getLatestDecisionPackVersion(companyId: string)');
   });
 
@@ -93,27 +95,15 @@ describe('B-TRUTH Demo/Orphan Chain Audit — ReportFactoryService trimmed to it
   });
 });
 
-describe('B-TRUTH Demo/Orphan Chain Audit — CompanyDataIntakeService trimmed to its reachable surface', () => {
-  const src = read('services/company-data-intake/CompanyDataIntakeService.ts');
-  const REMOVED_METHODS = [
-    'getAvailableCompanies', 'getFiscalPerimeterSummary', 'getRawDataRowsForBatch',
-    'getRowsReadyForIngestion', 'getEligibleCandidates', 'getLimitedCandidates',
-    'getBlockedCandidates', 'getStructuralPolicyRows', 'getReviewRequiredRows',
-    'getRowsWithMissingFields', 'validateRawDataBatch', 'getPipelineLinks',
-  ];
-
-  for (const method of REMOVED_METHODS) {
-    it(`no longer defines ${method} as a class method (zero callers anywhere, verified before removal)`, () => {
-      expect(src).not.toMatch(new RegExp(`^\\s{2,4}${method}\\(`, 'm'));
-    });
-  }
-
-  it('still defines getDataReadinessSummary and the internal helpers it calls', () => {
-    expect(src).toContain('getDataReadinessSummary(companyId: string)');
-    expect(src).toContain('getNextAction(companyId: string)');
-    expect(src).toContain('getBudgetFiscalPlan(companyId: string)');
-    expect(src).toContain('getRawDataBatches(companyId: string)');
-    expect(src).toContain('getRawDataRows(companyId: string)');
+// This describe block originally proved CompanyDataIntakeService was
+// trimmed to its one reachable method (getDataReadinessSummary) — accurately,
+// at the time. B-TRUTH CompanyDataIntakeService Canonical Migration
+// (2026-09-05) later, separately, retired the file entirely (its 2 real
+// callers migrated to a canonical analytics.source_batch/uef_record view).
+// See tests/unit/b-truth-company-data-intake-canonical-migration.test.ts.
+describe('B-TRUTH Demo/Orphan Chain Audit — CompanyDataIntakeService has been fully, independently retired by a later PR (historical note, not a live assertion)', () => {
+  it('services/company-data-intake/CompanyDataIntakeService.ts no longer exists', () => {
+    expect(existsSync(resolve(root, 'services/company-data-intake/CompanyDataIntakeService.ts'))).toBe(false);
   });
 });
 
