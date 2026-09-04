@@ -14,11 +14,76 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 14 files / 24 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 13 files / 21 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// B-TRUTH CompanyDataIntakeService Canonical Migration (2026-09-05): deleted
+// services/company-data-intake/CompanyDataIntakeService.ts and its 3 sole
+// seed files, data/synthetic/company-budget-fiscal-plans.json,
+// data/synthetic/company-raw-data-batches.json, and
+// data/synthetic/company-raw-data-rows.json (confirmed, by direct repo-wide
+// grep before deletion, zero remaining real consumers of any of the three —
+// the only other hits were governance-comment prose, not imports). This is
+// PR 3 of the founder-ratified ONE_PRODUCT_CANONICAL_MIGRATION plan (PR 1 =
+// B-TRUTH KoraTest Canonical Foundation; PR 2 = B-TRUTH TenantService
+// Canonical Migration). Independently re-verified before deletion (not
+// trusted from any prior audit alone): both real runtime callers
+// (app/admin/pipeline/_components/PilotLifecycleClient.tsx,
+// services/report-factory/ReportFactoryService.ts) individually confirmed,
+// zero type-only callers (its own CompanyBudgetFiscalPlan/CompanyRawDataBatch/
+// CompanyRawDataRow/CompanyDataReadinessSummary/CompanyDataIntakeStatus type
+// family lives in @/lib/types, imported FROM there, not exported by this
+// file — that type family was deliberately NOT deleted, no opportunistic
+// cleanup, confirmed to have zero other consumers besides this now-deleted
+// service, but left in place matching the same discipline as every prior
+// B-TRUTH retirement this session). Only the 3 fields either real caller
+// actually consumed (batch_count, intake_status, review_required_rows — out
+// of ~16 fields on the legacy getDataReadinessSummary() return shape) were
+// migrated, via a new shared pure view builder,
+// lib/live/data-intake-status-view.ts, fed by analytics.source_batch
+// (batch existence + latest batch_status, "latest by created_at" matching
+// the same batch-selection precedent already used elsewhere in lib/live and
+// the canonical scoring route) and analytics.uef_record WHERE
+// review_status='pending_review' (the same counting query
+// app/api/admin/uef/review/route.ts's own GET handler already uses for its
+// "pending" tally — reused, not reinvented). The legacy
+// 'blocked_missing_required_fields' intake-status value is NOT reproduced —
+// it was a post-hoc heuristic for malformed rows that, in the real
+// pipeline, are already rejected at the canonical upload boundary
+// (PII-scan/validation in accept/route.ts) before a source_batch row is
+// ever created; neither real caller's behavior ever depended on this value
+// firing. app/admin/pipeline/page.tsx (already a Server Component, per the
+// prior TenantService migration) now also fetches this canonical Data
+// Intake view once and passes it down to PilotLifecycleClient.tsx AND
+// (transitively, via that same fetch) to ReportFactoryService — avoiding a
+// duplicate query for the same data, same discipline as the CanonicalTenantStatus
+// parameter added by the prior PR. ReportFactoryService.getDecisionPackFactoryStatus/
+// computeBlockingReasons gained a third parameter, dataIntake:
+// CanonicalDataIntakeStatus, replacing the internal companyDataIntakeService
+// dependency entirely — its own still-synthetic hasKoraIndex/
+// getLatestDecisionPackVersion checks and Decision Pack version source are
+// UNCHANGED, unmigrated, explicitly out of scope (that is PR 4's job, not
+// this one's). No tenant_kind branch was introduced anywhere — the view
+// builder and its query shape are identical for KoraTest Srl
+// (tenant_kind=TEST) and any tenant_kind=LIVE tenant. One real bug found and
+// fixed in scripts/koratest-canonical-seed.ts (PR 1's own foundation
+// script) while validating this migration against real KoraTest data: it
+// never updated source_batch.batch_status to 'approved' after scoring
+// completed (unlike the real app/api/admin/scoring/run-approved-batch/route.ts,
+// which does), leaving KoraTest's batch permanently stuck below
+// 'ready_for_ingestion' in the new canonical view — fixed by adding the
+// same batch_status update that route performs, in its own clearly-labeled
+// step. AdminPreviewService, AccountProvisioningService, and
+// ReportFactoryService's Decision Pack version source are explicitly
+// untouched — one PR = one bounded migration. CompanyDataIntakeService.ts
+// was an I9 allowlist entry — twelfth genuine I9 reduction via a real
+// caller migration: 14->13 files (24->21 imports, 3 fewer imports since
+// this file alone accounted for 3 of the 24). See
+// tests/unit/b-truth-company-data-intake-canonical-migration.test.ts for
+// the regression guard proving both the deletion and the scope boundary.
 //
 // B-TRUTH TenantService Canonical Migration (2026-09-04): deleted
 // services/tenant/TenantService.ts and its sole seed file,
@@ -448,7 +513,6 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/account/AccountProvisioningService.ts', reason: 'Demo account registry — reads synthetic user accounts.' },
   { file: 'services/activation-safeguard/ActivationSafeguardService.ts', reason: 'Reads pre-computed synthetic Activation Safeguard results (demo scoring path).' },
   { file: 'services/admin-preview/AdminPreviewService.ts', reason: 'Admin demo preview shaping — companies, KORA Index outputs, source batches.' },
-  { file: 'services/company-data-intake/CompanyDataIntakeService.ts', reason: 'Company raw-data batch/row intake demo seed (fiscal plans, batches, rows).' },
   { file: 'services/demo-data/DemoDataService.ts', reason: 'Central synthetic seed reader — companies, departments/sites, programs, aggregates. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
   { file: 'services/founder-validation/FounderValidationService.ts', reason: 'Internal/admin-only founder validation leads seed.' },
   { file: 'services/report-factory/ReportFactoryService.ts', reason: 'Reads synthetic Decision Pack version seed alongside live orchestration.' },

@@ -508,6 +508,24 @@ async function run(): Promise<void> {
   });
   console.log(`✓ Decision Pack created (id=${decisionPack.id}, version=${decisionPack.versionId})`);
 
+  // Same source_batch -> 'approved' update as
+  // app/api/admin/scoring/run-approved-batch/route.ts's own Step 12 — kept
+  // as its own step here for the same reason that route keeps it separate:
+  // a failure here must not undo the scoring/Decision Pack results already
+  // persisted above, only be logged. Added 2026-09-05 (B-TRUTH
+  // CompanyDataIntakeService Canonical Migration) — PR 1's own scoring step
+  // omitted this update, leaving source_batch.batch_status stuck at
+  // 'processing' even after real scoring completed; canonical Data Intake
+  // status derivation (lib/live/data-intake-status.ts) reads batch_status
+  // to determine readiness, so KoraTest Srl needs this to be accurate for
+  // that derivation to validate correctly against real KoraTest data.
+  const { error: batchApprovedErr } = await db
+    .schema('analytics').from('source_batch')
+    .update({ batch_status: 'approved' })
+    .eq('id', batchId);
+  if (batchApprovedErr) console.error('[koratest-canonical-seed] batch status update:', batchApprovedErr.message);
+  else console.log('✓ Source batch marked approved');
+
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('  APPLY complete.');
   console.log(`  Tenant:        ${fixture.tenant_code} (${tenantId})`);

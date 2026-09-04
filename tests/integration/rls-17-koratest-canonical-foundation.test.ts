@@ -287,7 +287,19 @@ describe.skipIf(!ready)(
             [
               tId, bId, REPORTING_PERIOD, proposal.rawName, proposal.eligibility, proposal.pillar,
               proposal.actionFamily, proposal.eventNature, approvedForImpactUnits, proposal.mappingConfidence,
-              JSON.stringify(proposal.warnings), 'RLS-17 automated operator approval stand-in',
+              // missing_fields is a native Postgres text[] column — pass the
+              // plain JS array; node-postgres serializes it to the correct
+              // array literal automatically. JSON.stringify() here produced
+              // a JSON string ("[...]"), which Postgres rejects as a
+              // malformed array literal for a text[] column — this was the
+              // bug, found only once this file first actually ran against
+              // real Postgres in CI (see B-TRUTH CompanyDataIntakeService
+              // Canonical Migration's own PR for how that CI gap was found
+              // and closed). The real production script,
+              // scripts/koratest-canonical-seed.ts, was never affected —
+              // it uses the Supabase JS client, which already handles this
+              // conversion correctly for a plain JS array.
+              proposal.warnings, 'RLS-17 automated operator approval stand-in',
               JSON.stringify({ interpreter_version: proposal.interpreterVersion, generated_by: proposal.generatedBy, reason_codes: proposal.reasonCodes }),
             ],
           );

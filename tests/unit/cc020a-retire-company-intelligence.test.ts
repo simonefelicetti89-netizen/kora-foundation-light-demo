@@ -193,11 +193,13 @@ describe("CC-020A — CompanyIntelligenceService's other 4 former dependencies w
     expect(existsSync(resolve(root, 'services/tenant/TenantService.ts'))).toBe(false);
   });
 
-  it('CompanyDataIntakeService.ts still exists with its other callers intact', () => {
-    expect(existsSync(resolve(root, 'services/company-data-intake/CompanyDataIntakeService.ts'))).toBe(true);
-    for (const file of ['app/admin/pipeline/_components/PilotLifecycleClient.tsx', 'services/report-factory/ReportFactoryService.ts']) {
-      expect(read(file)).toContain('companyDataIntakeService');
-    }
+  // CompanyDataIntakeService.ts was accurately untouched at the time this
+  // test was written. B-TRUTH CompanyDataIntakeService Canonical Migration
+  // (2026-09-05) later, separately, retired it entirely (both real callers
+  // migrated to a canonical analytics.source_batch/uef_record view). See
+  // tests/unit/b-truth-company-data-intake-canonical-migration.test.ts.
+  it('CompanyDataIntakeService.ts has been retired (historical note, not a live assertion of this test)', () => {
+    expect(existsSync(resolve(root, 'services/company-data-intake/CompanyDataIntakeService.ts'))).toBe(false);
   });
 
   it('WorkerProvisioningService.ts still exists with its other callers intact', () => {
