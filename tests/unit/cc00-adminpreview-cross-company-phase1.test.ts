@@ -184,13 +184,26 @@ describe('CC-00 Phase 1 — this slice touched ONLY the two authorized methods (
     expect(src).toContain('export interface CompanyPortfolioEntry');
   });
 
-  it('the AI-onboarding cluster (7 methods) is untouched — still hardcoded to meridiana-group', () => {
+  // getSourceIntakePreview, getMappingIntelligencePreview,
+  // getUefDraftQueuePreview, getHumanReviewPreview, and
+  // getScoringReadinessPreview were accurately untouched (still existed) at
+  // the time this test was written. CC-00 AI-Onboarding Duplicate Retirement
+  // (2026-09-06) later, separately, retired all 5 — they duplicated
+  // already-canonical, already-live capability (app/admin/data-intake,
+  // app/admin/uef-review, app/admin/pipeline). getAIOnboardingPreview and
+  // getPrivacyFilterPreview remain, deferred, unchanged. See
+  // tests/unit/cc00-ai-onboarding-duplicate-retirement.test.ts for the
+  // current, correct state.
+  it('getAIOnboardingPreview and getPrivacyFilterPreview remain — the other 5 AI-onboarding-cluster methods have since been separately retired (historical note)', () => {
     const src = read('services/admin-preview/AdminPreviewService.ts');
-    for (const method of [
-      'getAIOnboardingPreview', 'getSourceIntakePreview', 'getMappingIntelligencePreview',
-      'getPrivacyFilterPreview', 'getUefDraftQueuePreview', 'getHumanReviewPreview', 'getScoringReadinessPreview',
-    ]) {
+    for (const method of ['getAIOnboardingPreview', 'getPrivacyFilterPreview']) {
       expect(src).toContain(`${method}(`);
+    }
+    for (const method of [
+      'getSourceIntakePreview', 'getMappingIntelligencePreview',
+      'getUefDraftQueuePreview', 'getHumanReviewPreview', 'getScoringReadinessPreview',
+    ]) {
+      expect(src).not.toContain(`${method}(`);
     }
     expect(src).toContain("'meridiana-group'");
   });
