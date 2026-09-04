@@ -1,0 +1,122 @@
+{
+  "_comment": "B-TRUTH Second Canonical Test Company (2026-09-06, PR 6 of the ONE_PRODUCT_CANONICAL_MIGRATION plan). These are deterministic FAKE INPUT rows only — the raw, company-provided-style records that a real client would upload. They are consumed by scripts/koratest-canonical-seed.ts (via --fixture=data/koratest/boscoverde_input_fixture.json) and pushed through the real canonical ingestion -> UEF -> eligibility -> scoring -> Decision Pack pipeline. No field here is a KORA-computed output; every downstream result is produced by invoking the same canonical functions a real tenant uses. This is a clearly fictional test company, not modeled on any real identifiable organization, and is NOT presented as empirical market evidence. Deliberately distinct from KoraTest Srl's own fixture: different workforce size, different row count, a cooperative/social-enterprise category mix skewed toward inclusione sociale/volontariato/collaborazione rather than KoraTest's training/mentoring-heavy mix, its own separate limited/blocked/incomplete rows — so future cross-company product surfaces have meaningful, non-degenerate variation to work with, not two copies of the same numbers.",
+  "company_name": "Bosco Verde Cooperativa Sociale",
+  "tenant_code": "BOSCOVERDE-01",
+  "reporting_period": "2026-Q3",
+  "workforce_population": 68,
+  "segment_breakdown": {
+    "departments": { "dept-agricoltura": 28, "dept-servizi": 24, "dept-amministrazione": 16 },
+    "contract_types": { "full_time": 50, "part_time": 18 }
+  },
+  "rows": [
+    {
+      "row_id": "bv-001",
+      "initiative_name": "Corso di agricoltura biologica e sostenibile",
+      "category": "formazione",
+      "type": "training",
+      "amount": 2100,
+      "participants": 22,
+      "department_group": "dept-agricoltura"
+    },
+    {
+      "row_id": "bv-002",
+      "initiative_name": "Sportello di ascolto e supporto psicologico",
+      "category": "benessere psicologico",
+      "type": "counselling",
+      "amount": 3600,
+      "participants": 50,
+      "department_group": "dept-servizi"
+    },
+    {
+      "row_id": "bv-003",
+      "initiative_name": "Programma di inserimento lavorativo per categorie fragili",
+      "category": "inclusione sociale",
+      "type": "community",
+      "amount": 5200,
+      "participants": 35,
+      "department_group": "dept-servizi"
+    },
+    {
+      "row_id": "bv-004",
+      "initiative_name": "Iniziativa di riforestazione territoriale",
+      "category": "volontariato ambientale",
+      "type": "community",
+      "amount": 3100,
+      "participants": 40,
+      "department_group": "dept-agricoltura"
+    },
+    {
+      "row_id": "bv-005",
+      "initiative_name": "Percorso di mentoring tra soci fondatori e nuovi assunti",
+      "category": "trasferimento competenze",
+      "type": "knowledge transfer",
+      "amount": 1400,
+      "participants": 15,
+      "department_group": "dept-amministrazione"
+    },
+    {
+      "row_id": "bv-006",
+      "initiative_name": "Buoni spesa mensili per il personale",
+      "category": "buoni spesa",
+      "type": "fringe benefit",
+      "amount": 4800,
+      "participants": 68,
+      "department_group": "dept-amministrazione",
+      "_note": "deliberately KW_LIMITED — economic relief, not deep activation"
+    },
+    {
+      "row_id": "bv-007",
+      "initiative_name": "Corso obbligatorio sicurezza sul lavoro (D.Lgs 81/08)",
+      "category": "sicurezza obbligatoria",
+      "type": "compliance",
+      "amount": 700,
+      "participants": 68,
+      "department_group": "dept-agricoltura",
+      "_note": "deliberately KW_BLOCKED — mandatory compliance baseline"
+    },
+    {
+      "row_id": "bv-008",
+      "initiative_name": "Community di scambio tra cooperative locali",
+      "category": "collaborazione",
+      "type": "peer coaching",
+      "department_group": "dept-servizi",
+      "_note": "deliberately incomplete — no amount, no participants, exercises missing-field/lower-confidence path"
+    },
+    {
+      "row_id": "bv-009",
+      "initiative_name": "Checkup salute stagionale per lavoratori agricoli",
+      "category": "prevenzione sanitaria",
+      "type": "wellbeing",
+      "amount": 1900,
+      "participants": 44,
+      "department_group": "dept-agricoltura"
+    },
+    {
+      "row_id": "bv-010",
+      "initiative_name": "Laboratorio di co-progettazione con la comunità locale",
+      "category": "collaborazione",
+      "type": "coaching",
+      "amount": 1600,
+      "participants": 20,
+      "department_group": "dept-servizi"
+    },
+    {
+      "row_id": "bv-011",
+      "initiative_name": "Percorso di crescita professionale per responsabili di area",
+      "category": "sviluppo professionale",
+      "type": "training",
+      "amount": 2400,
+      "participants": 10,
+      "department_group": "dept-amministrazione"
+    },
+    {
+      "row_id": "bv-012",
+      "initiative_name": "Evento di volontariato sociale con anziani del territorio",
+      "category": "volontariato",
+      "type": "community",
+      "amount": 900,
+      "participants": 25,
+      "department_group": "dept-servizi"
+    }
+  ]
+}
