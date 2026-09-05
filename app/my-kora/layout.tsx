@@ -68,8 +68,10 @@ export default async function MyKoraLayout({ children }: { children: React.React
     );
   }
 
-  // Any other real session (COMPANY_ADMIN, PARTNER, DEMO_VIEWER, ...) is
-  // hard-blocked here, server-side, before any child page ever renders.
+  // Any other real session (COMPANY_ADMIN, PARTNER, ...) is hard-blocked
+  // here, server-side, before any child page ever renders. (DEMO_VIEWER,
+  // retired by CC-00 on 2026-09-26, used to be blocked here too — no
+  // longer a real role that could reach this check.)
   if (realRole !== null) {
     return (
       <div className="p-6" style={{ maxWidth: 600 }}>

@@ -6,9 +6,10 @@
 // must not be accessible without a KORA session.
 //
 // Guard: any authenticated KORA user is admitted (KORA_ADMIN primary live role).
-// Middleware already redirects WORKER/COMPANY_ADMIN/PARTNER/DEMO_VIEWER away
-// from /commons before this layout runs, so in practice KORA_ADMIN is the
-// primary live user who reaches this layout.
+// Middleware already redirects WORKER/COMPANY_ADMIN/PARTNER away from
+// /commons before this layout runs, so in practice KORA_ADMIN is the
+// primary live user who reaches this layout. (DEMO_VIEWER, retired by CC-00
+// on 2026-09-26, used to be redirected here too — no longer a real role.)
 // Unauthenticated (no session) → redirect to /login.
 
 import { redirect } from 'next/navigation';

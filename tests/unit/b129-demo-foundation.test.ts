@@ -2,16 +2,26 @@
 // B129: Demo Area Foundation — structural tests.
 // Pure fs.readFileSync analysis — no runtime environment required.
 //
+// CC-00 DEMO_VIEWER role retirement (2026-09-26): Groups 1 (KoraDemoUser,
+// guards), 2 (role-home DEMO_VIEWER routing), 3 (middleware DEMO_VIEWER
+// confinement), 6 (provision-viewer route), and 7 (auth/callback DEMO_VIEWER
+// routing) tested a role and its supporting code that has since been
+// retired entirely from the runtime role model — not replaced by another
+// role with a different name. See lib/architecture/registry.ts's
+// app-surface.demo entry and tests/unit/cc00-demo-viewer-retirement.test.ts
+// for the full retirement record. Those groups are replaced below with a
+// single historical-note describe block. Groups 4 (demo/layout.tsx
+// boundary marker), 5 (demo/page.tsx synthetic-only), 8 (anti-regression:
+// live routes must not import demo services), and 9 (anti-regression:
+// /demo/* must not use live DB clients) are unrelated to the DEMO_VIEWER
+// role itself and remain live, unmodified.
+//
 // Groups:
-//   1. kora-session.ts — KoraDemoUser, guards (10 tests)
-//   2. role-home.ts — DEMO_VIEWER routing (2 tests)
-//   3. middleware.ts — DEMO_VIEWER confinement (4 tests)
-//   4. demo/layout.tsx — auth guard, DEMO badge (4 tests)
+//   4. demo/layout.tsx — boundary marker, robots noindex (3 tests)
 //   5. demo/page.tsx — synth-only, no live DB (3 tests)
-//   6. provision-viewer route — KORA_ADMIN, no tenant, 409 guard (6 tests)
-//   7. auth/callback — DEMO_VIEWER routing (2 tests)
 //   8. Anti-regression: live routes must not import demo services (6 tests)
 //   9. Anti-regression: /demo/* must not use live DB clients (3 tests)
+//   10. Historical note: Groups 1/2/3/6/7 retired (historical, not live assertions)
 
 import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
@@ -27,117 +37,20 @@ function fileExists(rel: string): boolean {
   return fs.existsSync(path.join(ROOT, rel));
 }
 
-const koraSession      = readFile('lib/auth/kora-session.ts');
-const roleHome         = readFile('lib/auth/role-home.ts');
-const middleware       = readFile('middleware.ts');
+function stripComments(src: string): string {
+  return src
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('//'))
+    .join('\n');
+}
+
 const demoLayout       = readFile('app/demo/layout.tsx');
 const demoPage         = readFile('app/demo/page.tsx');
-const provisionViewer  = readFile('app/api/admin/demo/provision-viewer/route.ts');
-const callbackRoute    = readFile('app/auth/callback/route.ts');
-
-// ── Group 1: kora-session.ts — KoraDemoUser and guards (10 tests) ─────────────
-
-describe('B129 — kora-session: KoraDemoUser type', () => {
-  it('exports KoraDemoUser interface', () => {
-    expect(koraSession).toContain('export interface KoraDemoUser');
-  });
-
-  it('KoraDemoUser has koraRole: DEMO_VIEWER literal', () => {
-    expect(koraSession).toContain("koraRole: 'DEMO_VIEWER'");
-  });
-
-  it('exports requireDemoUser function', () => {
-    expect(koraSession).toContain('export async function requireDemoUser');
-  });
-
-  it('requireDemoUser rejects non-DEMO_VIEWER with 403', () => {
-    expect(koraSession).toContain("koraRole !== 'DEMO_VIEWER'");
-    expect(koraSession).toContain('{ status: 403 }');
-  });
-
-  it('exports requireDemoAccess function', () => {
-    expect(koraSession).toContain('export async function requireDemoAccess');
-  });
-
-  it('requireDemoAccess admits KORA_ADMIN', () => {
-    expect(koraSession).toContain("koraRole === 'KORA_ADMIN'");
-  });
-
-  it('requireDemoAccess rejects all live company/worker/partner roles', () => {
-    expect(koraSession).toContain("{ status: 403 }");
-    expect(koraSession).toContain('DEMO_VIEWER');
-  });
-
-  it('exports isDemoUser type guard', () => {
-    expect(koraSession).toContain('export function isDemoUser');
-    expect(koraSession).toContain("koraRole === 'DEMO_VIEWER'");
-  });
-
-  it('isKoraAuthError union includes KoraDemoUser', () => {
-    expect(koraSession).toContain('KoraDemoUser | NextResponse');
-  });
-
-  it('exports getCurrentDemoUser helper', () => {
-    expect(koraSession).toContain('export async function getCurrentDemoUser');
-  });
-});
-
-// ── Group 2: role-home.ts — DEMO_VIEWER routing (2 tests) ────────────────────
-
-describe('B129 — role-home: DEMO_VIEWER maps to /demo', () => {
-  it("maps DEMO_VIEWER to '/demo'", () => {
-    expect(roleHome).toContain("'DEMO_VIEWER'");
-    expect(roleHome).toContain("'/demo'");
-  });
-
-  it('other roles are not affected', () => {
-    expect(roleHome).toContain("'KORA_ADMIN'");
-    expect(roleHome).toContain("'/admin'");
-    expect(roleHome).toContain("'COMPANY_ADMIN'");
-    expect(roleHome).toContain("'/company/workspace'");
-    expect(roleHome).toContain("'WORKER'");
-    expect(roleHome).toContain("'/worker/onboarding'");
-  });
-});
-
-// ── Group 3: middleware.ts — DEMO_VIEWER confinement (5 tests) ───────────────
-
-describe('B129 — middleware: DEMO_VIEWER confinement', () => {
-  it('defines DEMO_VIEWER_ALLOWED_PREFIXES constant', () => {
-    expect(middleware).toContain('DEMO_VIEWER_ALLOWED_PREFIXES');
-  });
-
-  it('DEMO_VIEWER_ALLOWED_PREFIXES includes /demo/', () => {
-    expect(middleware).toContain("'/demo/'");
-  });
-
-  it('DEMO_VIEWER_ALLOWED_PREFIXES does NOT include /api/ — defense in depth', () => {
-    // /api/ wildcard removed per B129 correction: middleware blocks live routes before
-    // server-side guards. Future demo API routes must use /api/demo/*, not Fase 1.
-    const blockStart = middleware.indexOf('DEMO_VIEWER_ALLOWED_PREFIXES');
-    const block = middleware.slice(blockStart, blockStart + 500);
-    expect(block).not.toContain("'/api/'");
-  });
-
-  it('DEMO_VIEWER_ALLOWED_PREFIXES does NOT include /company or /worker or /admin', () => {
-    const blockStart = middleware.indexOf('DEMO_VIEWER_ALLOWED_PREFIXES');
-    const block = middleware.slice(blockStart, blockStart + 500);
-    expect(block).not.toContain("'/company'");
-    expect(block).not.toContain("'/worker'");
-    expect(block).not.toContain("'/admin'");
-  });
-
-  it('confinement block redirects DEMO_VIEWER to /demo', () => {
-    expect(middleware).toContain("isDemoViewer");
-    expect(middleware).toContain("'/demo'");
-  });
-});
 
 // ── Group 4: demo/layout.tsx — B168.5-P3: layout neutro, guard per-sub-route ──
 
 describe('B129 — demo/layout: boundary marker (B168.5-P3 ristrutturato)', () => {
-  it('NON importa requireDemoAccess (guard spostato a sub-layout — B168.5-P3)', () => {
-    // Guard is now in /demo/company/layout.tsx and per-route standalone layouts
+  it('NON importa requireDemoAccess (guard rimosso — CC-00 DEMO_VIEWER role retirement)', () => {
     expect(demoLayout).not.toContain("import { requireDemoAccess");
     expect(demoLayout).not.toContain('await requireDemoAccess()');
   });
@@ -149,14 +62,6 @@ describe('B129 — demo/layout: boundary marker (B168.5-P3 ristrutturato)', () =
   it('mantiene robots noindex per tutto /demo/*', () => {
     expect(demoLayout).toContain('index: false');
     expect(demoLayout).toContain('nocache: true');
-  });
-
-  it('demo/company/ directory rimossa (B171: RIDONDANTE pages deleted)', () => {
-    // B171: /demo/company/* rimossi. Il gate per-sub-route era in demo/company/layout.tsx
-    // ma la directory è stata eliminata con le 6 route RIDONDANTE.
-    const fs2 = require('fs');
-    const path2 = require('path');
-    expect(fs2.existsSync(path2.resolve(process.cwd(), 'app/demo/company/layout.tsx'))).toBe(false);
   });
 });
 
@@ -175,61 +80,6 @@ describe('B129 — demo/page: synthetic data only', () => {
   it('does not import getSupabaseServerClient', () => {
     expect(demoPage).not.toContain("import { getSupabaseServerClient");
     expect(demoPage).not.toContain("import {getSupabaseServerClient");
-  });
-});
-
-// ── Group 6: provision-viewer route — constraints (6 tests) ──────────────────
-
-describe('B129 — provision-viewer: security constraints', () => {
-  it('requires KORA_ADMIN via requireKoraAdmin', () => {
-    expect(provisionViewer).toContain('requireKoraAdmin');
-  });
-
-  it("sets kora_role to 'DEMO_VIEWER' in app_metadata", () => {
-    expect(provisionViewer).toContain("kora_role:   'DEMO_VIEWER'");
-  });
-
-  it('does NOT set kora_tenant_id in app_metadata — DEMO_VIEWER has no live tenant', () => {
-    // Check the updateUserById call block — kora_tenant_id must not appear as a metadata key.
-    const updateBlock = provisionViewer.slice(
-      provisionViewer.indexOf('updateUserById'),
-      provisionViewer.indexOf('updateUserById') + 250,
-    );
-    expect(updateBlock).not.toContain('kora_tenant_id');
-  });
-
-  it('returns 409 when email already has a live role', () => {
-    expect(provisionViewer).toContain('{ status: 409 }');
-    expect(provisionViewer).toContain('isLiveRole');
-  });
-
-  it('metadata failure returns 207 with explicit warning (never silent)', () => {
-    const metaErrBlock = provisionViewer.slice(
-      provisionViewer.lastIndexOf('metaErr'),
-      provisionViewer.lastIndexOf('metaErr') + 600,
-    );
-    expect(metaErrBlock).toContain('207');
-    expect(metaErrBlock).toContain('warnings');
-  });
-
-  it('route file exists at correct path', () => {
-    expect(fileExists('app/api/admin/demo/provision-viewer/route.ts')).toBe(true);
-  });
-});
-
-// ── Group 7: auth/callback — DEMO_VIEWER routing (2 tests) ───────────────────
-
-describe('B129 — auth/callback: DEMO_VIEWER routing', () => {
-  it("routes DEMO_VIEWER invite to '/demo'", () => {
-    expect(callbackRoute).toContain("'DEMO_VIEWER'");
-    expect(callbackRoute).toContain("'/demo'");
-  });
-
-  it("DEMO_VIEWER block appears before the final fallback", () => {
-    const demoIdx     = callbackRoute.indexOf("'DEMO_VIEWER'");
-    const fallbackIdx = callbackRoute.lastIndexOf("'/login'");
-    expect(demoIdx).toBeGreaterThan(0);
-    expect(demoIdx).toBeLessThan(fallbackIdx);
   });
 });
 
@@ -291,5 +141,51 @@ describe('B129 — anti-regression: /demo/* must not use live DB clients', () =>
   it('demo/page.tsx has no Supabase client imports at all', () => {
     expect(demoPage).not.toContain("from '@/lib/supabase");
     expect(demoPage).not.toContain('from "@/lib/supabase');
+  });
+});
+
+// ── Group 10: Historical note — Groups 1/2/3/6/7 retired ─────────────────────
+//
+// KoraDemoUser, requireDemoUser(), requireDemoAccess(), getCurrentDemoUser(),
+// isDemoUser() (former Group 1), role-home.ts's DEMO_VIEWER → '/demo' branch
+// (former Group 2), middleware.ts's DEMO_VIEWER_ALLOWED_PREFIXES/isDemoViewer
+// block (former Group 3), app/api/admin/demo/provision-viewer/route.ts
+// (former Group 6), and app/auth/callback/route.ts's DEMO_VIEWER invite
+// branch (former Group 7) were all accurately tested here as of B129. CC-00
+// DEMO_VIEWER role retirement (2026-09-26) retired every one of them —
+// DEMO_VIEWER is not replaced by another role with a different name. See
+// tests/unit/cc00-demo-viewer-retirement.test.ts for the current, correct
+// state.
+
+describe('B129 — Groups 1/2/3/6/7 have since been separately retired (historical note, not a live assertion)', () => {
+  it('KoraDemoUser/requireDemoUser/requireDemoAccess/getCurrentDemoUser/isDemoUser no longer exist in lib/auth/kora-session.ts', () => {
+    const koraSession = stripComments(readFile('lib/auth/kora-session.ts'));
+    for (const name of ['KoraDemoUser', 'requireDemoUser', 'requireDemoAccess', 'getCurrentDemoUser', 'isDemoUser']) {
+      expect(koraSession).not.toContain(name);
+    }
+  });
+
+  it('role-home.ts no longer maps DEMO_VIEWER to /demo', () => {
+    const roleHome = stripComments(readFile('lib/auth/role-home.ts'));
+    expect(roleHome).not.toContain("'DEMO_VIEWER'");
+  });
+
+  it('middleware.ts no longer defines DEMO_VIEWER_ALLOWED_PREFIXES or isDemoViewer', () => {
+    const middleware = stripComments(readFile('middleware.ts'));
+    expect(middleware).not.toContain('DEMO_VIEWER_ALLOWED_PREFIXES');
+    expect(middleware).not.toContain('isDemoViewer');
+  });
+
+  it('app/api/admin/demo/provision-viewer/route.ts no longer exists', () => {
+    expect(fileExists('app/api/admin/demo/provision-viewer/route.ts')).toBe(false);
+  });
+
+  it('auth/callback no longer routes DEMO_VIEWER invites to /demo', () => {
+    const callbackRoute = stripComments(readFile('app/auth/callback/route.ts'));
+    expect(callbackRoute).not.toContain("'DEMO_VIEWER'");
+  });
+
+  it('lib/auth/demo-guard.tsx (requireDemoGate, zero real callers) no longer exists', () => {
+    expect(fileExists('lib/auth/demo-guard.tsx')).toBe(false);
   });
 });

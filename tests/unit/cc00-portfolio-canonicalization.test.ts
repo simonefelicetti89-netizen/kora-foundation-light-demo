@@ -259,17 +259,22 @@ describe('CC-00 Portfolio canonicalization — redirect corrections', () => {
   });
 });
 
-// ── 10. DEMO_VIEWER role untouched; other /demo/** routes untouched ─────────
+// ── 10. DEMO_VIEWER role has since been separately retired; other /demo/** routes untouched ─────────
+// DEMO_VIEWER was accurately untouched at the time this test was written.
+// CC-00 DEMO_VIEWER role retirement (2026-09-26, a later, separate slice)
+// retired the role entirely from the runtime role model — not replaced by
+// another role with a different name.
 
-describe('CC-00 Portfolio canonicalization — DEMO_VIEWER role untouched', () => {
-  it('DEMO_VIEWER is still defined and still admitted by requireDemoAccess()', () => {
+describe('CC-00 Portfolio canonicalization — DEMO_VIEWER role has since been separately retired (historical note, not a live assertion)', () => {
+  it('DEMO_VIEWER no longer exists in lib/constants/kora.ts, requireDemoAccess no longer exists', () => {
     const constants = read('lib/constants/kora.ts');
-    expect(constants).toContain('DEMO_VIEWER');
+    expect(constants).not.toContain('DEMO_KORA_ROLES');
+    const koraRolesStart = constants.indexOf('export const KORA_ROLES');
+    const koraRolesBlock = constants.slice(koraRolesStart, constants.indexOf('as const;', koraRolesStart));
+    expect(koraRolesBlock).not.toContain('DEMO_VIEWER');
     const session = read('lib/auth/kora-session.ts');
-    const start = session.indexOf('export async function requireDemoAccess');
-    const body = session.slice(start, start + 1200);
-    expect(body).toContain("koraRole === 'DEMO_VIEWER'");
-    expect(body).toContain("koraRole === 'KORA_ADMIN'");
+    const sessionCodeOnly = session.split('\n').filter((line) => !line.trim().startsWith('//')).join('\n');
+    expect(sessionCodeOnly).not.toContain('requireDemoAccess');
   });
 
   // advisor, ai-onboarding, benchmarks, gtm, and guide were accurately

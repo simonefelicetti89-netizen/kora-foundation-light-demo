@@ -1731,11 +1731,16 @@ export interface WorkforceBaselineRecord {
 // Foundation Light active product roles are intentionally simplified.
 // Granular HR/ESG/Finance/Executive permissions are future permission layers, not active MVP roles.
 //
-// ActiveProductRole is deliberately NARROWER than KoraRole above: it excludes
-// DEMO_VIEWER (access-matrix/demo-only, see lib/constants/kora.ts's
-// DEMO_KORA_ROLES) since a demo viewer is not a real product account. Derived
-// from lib/constants/kora.ts's ACTIVE_PRODUCT_KORA_ROLES (ROLE-01) rather than
-// hand-duplicated — do not re-list role strings here.
+// ActiveProductRole used to be deliberately narrower than KoraRole above: it
+// excluded DEMO_VIEWER (access-matrix/demo-only, see lib/constants/kora.ts's
+// former DEMO_KORA_ROLES) since a demo viewer was not a real product
+// account. CC-00 DEMO_VIEWER role retirement (2026-09-26) removed
+// DEMO_VIEWER from KoraRole entirely, so the two types now have identical
+// membership — kept as a distinct, named type for call sites that mean "a
+// role a real product user/account could have," not because membership
+// still diverges. Derived from lib/constants/kora.ts's
+// ACTIVE_PRODUCT_KORA_ROLES (ROLE-01) rather than hand-duplicated — do not
+// re-list role strings here.
 
 export type ActiveProductRole = (typeof ACTIVE_PRODUCT_KORA_ROLES)[number];
 

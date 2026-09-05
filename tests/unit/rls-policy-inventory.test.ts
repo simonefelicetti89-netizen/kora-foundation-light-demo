@@ -513,13 +513,17 @@ describe('RLS-02 — cross-check against lib/auth/access-matrix.ts', () => {
     expect(section).toMatch(/KORA_ADMIN:\s*\{\s*allowed:\s*false/);
   });
 
-  it('personal_pseudonym_map denies every role in the access matrix', () => {
+  // DEMO_VIEWER was accurately part of this list at the time this test was
+  // written. CC-00 DEMO_VIEWER role retirement (2026-09-26) removed it from
+  // the access matrix entirely — removed from this list, not replaced.
+  it('personal_pseudonym_map denies every role in the access matrix (historical note: used to also check DEMO_VIEWER)', () => {
     const section = accessMatrixSrc.split('personal_pseudonym_map:')[1]?.split(/hq_operator_console:/)[0] ?? '';
-    for (const role of ['KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'PARTNER', 'DEMO_VIEWER']) {
+    for (const role of ['KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'PARTNER']) {
       expect(section, `${role} should be denied on personal_pseudonym_map`).toMatch(
         new RegExp(`${role}:\\s*\\{\\s*allowed:\\s*false`),
       );
     }
+    expect(section).not.toContain('DEMO_VIEWER');
   });
 
   it('personal.worker_pseudonym_map (DB) has zero application-role policies beyond WORKER-own-select and admin — matches "zero application access" intent', () => {

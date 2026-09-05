@@ -14,7 +14,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { isViewerRole } from '@/lib/permissions';
-import { KORA_ROLES, REMOVED_KORA_ROLES, ACTIVE_KORA_ROLES, FUTURE_KORA_ROLES, DEMO_KORA_ROLES } from '@/lib/constants/kora';
+import { KORA_ROLES, REMOVED_KORA_ROLES, ACTIVE_KORA_ROLES, FUTURE_KORA_ROLES } from '@/lib/constants/kora';
 import { canAccess, type AccessResource, type KoraEnvironment } from '@/lib/auth/access-matrix';
 import type { KoraRole as AccessMatrixKoraRole } from '@/lib/auth/access-matrix';
 import type { KoraRole } from '@/lib/types';
@@ -44,12 +44,16 @@ describe('PILOT-SAAS-01 — COMPANY_VIEWER is fully removed at the app layer (B1
     expect(KORA_ROLES).not.toContain('COMPANY_VIEWER');
   });
 
-  it('REMOVED_KORA_ROLES documents COMPANY_VIEWER and nothing else overlaps it with a live array (ROLE-01)', () => {
-    expect(REMOVED_KORA_ROLES).toEqual(['COMPANY_VIEWER']);
+  // REMOVED_KORA_ROLES was accurately exactly ['COMPANY_VIEWER'] at the time
+  // this test was written. CC-00 DEMO_VIEWER role retirement (2026-09-26)
+  // later, separately, retired DEMO_VIEWER too — it joins COMPANY_VIEWER on
+  // this list rather than vanishing without a trace. DEMO_KORA_ROLES no
+  // longer exists (there is no demo-only role array left to check).
+  it('REMOVED_KORA_ROLES documents COMPANY_VIEWER and DEMO_VIEWER, and nothing else overlaps it with a live array (ROLE-01, CC-00)', () => {
+    expect(REMOVED_KORA_ROLES).toEqual(['COMPANY_VIEWER', 'DEMO_VIEWER']);
     for (const removed of REMOVED_KORA_ROLES) {
       expect(ACTIVE_KORA_ROLES as readonly string[]).not.toContain(removed);
       expect(FUTURE_KORA_ROLES as readonly string[]).not.toContain(removed);
-      expect(DEMO_KORA_ROLES as readonly string[]).not.toContain(removed);
       expect(KORA_ROLES as readonly string[]).not.toContain(removed);
     }
   });
@@ -98,8 +102,12 @@ describe('ROLE-01 — the two former KoraRole type definitions are now reconcile
     void _fromAccessMatrix;
   });
 
-  it('KORA_ROLES contains exactly ACTIVE + FUTURE + DEMO roles, nothing else', () => {
-    const expected = new Set<string>([...ACTIVE_KORA_ROLES, ...FUTURE_KORA_ROLES, ...DEMO_KORA_ROLES]);
+  // KORA_ROLES accurately contained ACTIVE + FUTURE + DEMO roles at the time
+  // this test was written. CC-00 DEMO_VIEWER role retirement (2026-09-26)
+  // removed the demo-only role array entirely — KORA_ROLES is now exactly
+  // ACTIVE + FUTURE, nothing else.
+  it('KORA_ROLES contains exactly ACTIVE + FUTURE roles, nothing else (historical note: used to also include DEMO)', () => {
+    const expected = new Set<string>([...ACTIVE_KORA_ROLES, ...FUTURE_KORA_ROLES]);
     const actual = new Set<string>(KORA_ROLES as readonly string[]);
     expect(actual).toEqual(expected);
   });
@@ -133,17 +141,28 @@ describe('ROLE-01 — future/demo roles can never be silently treated as active 
     }
   });
 
-  it('DEMO_VIEWER never gets allowed:true on any resource, in any environment', () => {
-    for (const resource of ALL_RESOURCES) {
-      for (const env of ALL_ENVS) {
-        const decision = canAccess('DEMO_VIEWER', resource, env);
-        expect(decision.allowed, `DEMO_VIEWER must not be allowed on ${resource} (${env})`).toBe(false);
-      }
-    }
+  // DEMO_VIEWER accurately never got allowed:true on any resource at the
+  // time this test was written — it was a real, if always-denied, member of
+  // KoraRole/MATRIX. CC-00 DEMO_VIEWER role retirement (2026-09-26) removed
+  // it from KoraRole entirely, so `canAccess('DEMO_VIEWER', ...)` no longer
+  // type-checks — the invariant this test protected (DEMO_VIEWER can never
+  // gain access) now holds more strongly: the role doesn't exist to gain
+  // anything. Replaced with a structural check that no trace of it remains
+  // in the live MATRIX.
+  it('DEMO_VIEWER no longer exists as a MATRIX role — no row references it (historical note: it used to be always denied)', () => {
+    const accessMatrixSrc = readFileSync(join(REPO_ROOT, 'lib/auth/access-matrix.ts'), 'utf8');
+    const matrixStart = accessMatrixSrc.indexOf('const MATRIX');
+    const matrixBody = accessMatrixSrc.slice(matrixStart, accessMatrixSrc.indexOf('\n};', matrixStart));
+    expect(matrixBody).not.toContain('DEMO_VIEWER');
+    expect(KORA_ROLES as readonly string[]).not.toContain('DEMO_VIEWER');
   });
 
-  it('every FUTURE_KORA_ROLES and DEMO_KORA_ROLES member is denied on every resource (belt-and-braces over the two tests above)', () => {
-    const neverActiveRoles: readonly string[] = [...FUTURE_KORA_ROLES, ...DEMO_KORA_ROLES];
+  // FUTURE_KORA_ROLES and DEMO_KORA_ROLES members were accurately checked
+  // together here at the time this test was written. CC-00 DEMO_VIEWER role
+  // retirement (2026-09-26) removed DEMO_KORA_ROLES entirely — only
+  // FUTURE_KORA_ROLES (ADVISOR) remains to check.
+  it('every FUTURE_KORA_ROLES member is denied on every resource (belt-and-braces over the ADVISOR test above; historical note: used to also check DEMO_KORA_ROLES)', () => {
+    const neverActiveRoles: readonly string[] = [...FUTURE_KORA_ROLES];
     for (const role of neverActiveRoles) {
       for (const resource of ALL_RESOURCES) {
         for (const env of ALL_ENVS) {

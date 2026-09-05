@@ -265,11 +265,20 @@ describe('CC-00 Index Registry canonicalization — scope boundary (one PR = one
     }
   });
 
-  it('DEMO_VIEWER role is untouched — still defined, still admitted by requireDemoAccess()', () => {
+  // DEMO_VIEWER was accurately untouched, still defined and still admitted
+  // by requireDemoAccess(), at the time this test was written. CC-00
+  // DEMO_VIEWER role retirement (2026-09-26, a later, separate slice)
+  // retired the role entirely from the runtime role model — not replaced by
+  // another role with a different name.
+  it('DEMO_VIEWER role has since been separately retired (historical note, not a live assertion)', () => {
     const constants = read('lib/constants/kora.ts');
-    expect(constants).toContain("DEMO_VIEWER");
+    expect(constants).not.toContain('DEMO_KORA_ROLES');
+    const koraRolesStart = constants.indexOf('export const KORA_ROLES');
+    const koraRolesBlock = constants.slice(koraRolesStart, constants.indexOf('as const;', koraRolesStart));
+    expect(koraRolesBlock).not.toContain('DEMO_VIEWER');
     const session = read('lib/auth/kora-session.ts');
-    expect(session).toContain("koraRole === 'DEMO_VIEWER'");
+    const sessionCodeOnly = session.split('\n').filter((line) => !line.trim().startsWith('//')).join('\n');
+    expect(sessionCodeOnly).not.toContain('requireDemoAccess');
   });
 
   // 'app/demo/portfolio/layout.tsx' was accurately in this list as of this

@@ -1,6 +1,7 @@
 'use client';
 // components/demo/DemoAccessBanner.tsx — B168.5-P3
-// Banner informativo per le 5 route demo pubbliche.
+// Banner informativo per le route demo pubbliche (2 dal CC-00 DEMO_VIEWER
+// role retirement, 2026-09-26: /demo, /demo/future-vision).
 // Visibile solo a visitatori anonimi (nessuna sessione).
 // Dismissibile con React state locale — si resetta al reload (corretto per questo caso).
 // Stato locale puro — nessun storage persistente.

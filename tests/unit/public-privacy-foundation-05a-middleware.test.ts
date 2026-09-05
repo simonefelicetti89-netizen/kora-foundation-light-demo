@@ -27,6 +27,7 @@ function read(rel: string): string {
 }
 
 const mw = read('middleware.ts');
+const mwCodeOnly = mw.split('\n').filter((line) => !line.trim().startsWith('//')).join('\n');
 
 describe('ALWAYS_PUBLIC_PATHS — /privacy centralizzata, non una wildcard', () => {
   it('esiste un\'unica lista centralizzata ALWAYS_PUBLIC_PATHS contenente /privacy', () => {
@@ -75,10 +76,13 @@ describe('/privacy consentita per ogni ruolo — provato via ordine di esecuzion
     expect(earlyReturnIdx).toBeLessThan(partnerRedirectIdx);
   });
 
-  it('DEMO_VIEWER: il redirect a /demo è irraggiungibile per /privacy (early return precede il blocco)', () => {
-    const demoRedirectIdx = mw.indexOf("const isAllowed = DEMO_VIEWER_ALLOWED_PREFIXES.some");
-    expect(demoRedirectIdx).toBeGreaterThan(-1);
-    expect(earlyReturnIdx).toBeLessThan(demoRedirectIdx);
+  // DEMO_VIEWER's redirect block was accurately checked here, unreachable
+  // for /privacy due to the early return, at the time this test was
+  // written. CC-00 DEMO_VIEWER role retirement (2026-09-26) removed the
+  // entire block — there is no DEMO_VIEWER redirect left to check
+  // reachability of.
+  it('DEMO_VIEWER redirect block has since been separately retired (historical note, not a live assertion)', () => {
+    expect(mwCodeOnly).not.toContain('DEMO_VIEWER_ALLOWED_PREFIXES');
   });
 
   it('KORA_ADMIN: il blocco worker-individual è irraggiungibile per /privacy (early return precede il blocco, e comunque si applica solo a /worker/)', () => {
@@ -116,19 +120,22 @@ describe('nessuna regressione sulle route private — le quattro allowlist per-r
     expect(block).toContain("'/partner/'");
   });
 
-  it('DEMO_VIEWER_ALLOWED_PREFIXES non include /privacy, resta confinata a /demo/', () => {
-    const start = mw.indexOf('const DEMO_VIEWER_ALLOWED_PREFIXES = [');
-    const end = mw.indexOf('];', start);
-    const block = mw.slice(start, end);
-    expect(block).not.toContain("'/privacy'");
-    expect(block).toContain("'/demo/'");
+  // DEMO_VIEWER_ALLOWED_PREFIXES was accurately checked here at the time
+  // this test was written. CC-00 DEMO_VIEWER role retirement (2026-09-26)
+  // removed the constant entirely — there is no allowlist left to check.
+  it('DEMO_VIEWER_ALLOWED_PREFIXES has since been separately retired (historical note, not a live assertion)', () => {
+    expect(mwCodeOnly).not.toContain('DEMO_VIEWER_ALLOWED_PREFIXES');
   });
 
-  it('nessuna nuova autorizzazione/ruolo/tenant-boundary introdotta: canAccess() e i redirect esistenti restano invariati', () => {
+  // The final assertion below asserted the /demo redirect (DEMO_VIEWER's
+  // own confinement redirect) alongside the other 3 role redirects,
+  // accurately, at the time this test was written. CC-00 DEMO_VIEWER role
+  // retirement (2026-09-26) removed that redirect entirely — removed from
+  // this list, not replaced.
+  it('nessuna nuova autorizzazione/ruolo/tenant-boundary introdotta: canAccess() e i redirect esistenti restano invariati (historical note: used to also check the /demo redirect)', () => {
     expect(mw).toContain("canAccess('KORA_ADMIN', 'worker_individual_pib', 'live')");
     expect(mw).toContain("NextResponse.redirect(new URL('/company/workspace', request.url))");
     expect(mw).toContain("NextResponse.redirect(new URL('/worker/workspace', request.url))");
     expect(mw).toContain("NextResponse.redirect(new URL('/partner/workspace', request.url))");
-    expect(mw).toContain("NextResponse.redirect(new URL('/demo', request.url))");
   });
 });

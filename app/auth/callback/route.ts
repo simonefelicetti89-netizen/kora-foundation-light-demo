@@ -74,10 +74,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/company/setup-password', origin));
   }
 
-  // B129: DEMO_VIEWER invite → demo home (no separate setup page needed)
-  if (koraRole === 'DEMO_VIEWER') {
-    return NextResponse.redirect(new URL('/demo', origin));
-  }
+  // CC-00 DEMO_VIEWER role retirement (2026-09-26): the former "B129:
+  // DEMO_VIEWER invite → demo home" branch is removed, not replaced. A
+  // legacy account still carrying kora_role = 'DEMO_VIEWER' now falls
+  // through to the same unknown-role branch below.
 
   // Unknown role or KORA_ADMIN invite → unified login
   return NextResponse.redirect(new URL('/login', origin));

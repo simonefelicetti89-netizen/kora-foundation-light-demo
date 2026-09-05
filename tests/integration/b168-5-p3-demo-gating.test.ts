@@ -11,10 +11,15 @@
 // lib/architecture/registry.ts's app-surface.demo entry for the full
 // route-by-route disposition, and
 // tests/unit/cc00-residual-demo-retirement.test.ts for the current, correct
-// state. Only /demo and /demo/future-vision remain public; zero
-// DEMO_VIEWER-gated layouts remain. Infrastructure this file also tests
-// (app/demo/layout.tsx, lib/auth/demo-guard.tsx, middleware x-pathname
-// header, DemoAccessBanner) is untouched and still fully asserted below.
+// state. Only /demo and /demo/future-vision remain public.
+//
+// CC-00 — DEMO_VIEWER role retirement (2026-09-26, a later, separate
+// slice): lib/auth/demo-guard.tsx (requireDemoGate) and its dependency
+// lib/auth/kora-session.ts's requireDemoAccess() are both retired — DEMO_VIEWER
+// no longer exists as a runtime role. app/demo/layout.tsx and
+// DemoAccessBanner are unrelated to the role and remain fully asserted
+// below. See tests/unit/cc00-demo-viewer-retirement.test.ts for the current,
+// correct state.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
@@ -121,50 +126,24 @@ describe('Layout standalone gated — tutti ritirati (historical note, not a liv
   });
 });
 
-// ── requireDemoGate helper ─────────────────────────────────────────────────────
-// Kept alive for DEMO_VIEWER's own end-state readiness — no /demo/** route
-// currently calls it, but the role itself is not retired in this slice.
+// ── requireDemoGate helper — ritirato ────────────────────────────────────────
+// lib/auth/demo-guard.tsx's requireDemoGate() (and the middleware x-pathname
+// header it was the sole consumer of) were accurately tested here, kept
+// alive for DEMO_VIEWER's own end-state readiness, at the time this test was
+// written. CC-00 DEMO_VIEWER role retirement (2026-09-26) retired the role
+// entirely — requireDemoGate(), requireDemoAccess(), and the x-pathname
+// header are all removed, not replaced. See
+// tests/unit/cc00-demo-viewer-retirement.test.ts for the current, correct
+// state.
 
-describe('lib/auth/demo-guard.tsx — helper condiviso', () => {
-  const src = read('lib/auth/demo-guard.tsx');
-
-  it('esporta requireDemoGate()', () => {
-    expect(src).toContain('export async function requireDemoGate');
+describe('lib/auth/demo-guard.tsx and middleware x-pathname have since been separately retired (historical note, not a live assertion)', () => {
+  it('lib/auth/demo-guard.tsx no longer exists', () => {
+    expect(exists('lib/auth/demo-guard.tsx')).toBe(false);
   });
 
-  it('usa requireDemoAccess + isKoraAuthError da kora-session', () => {
-    expect(src).toContain('requireDemoAccess');
-    expect(src).toContain('isKoraAuthError');
-  });
-
-  it('su 401 redirige a /request-access con parametro next', () => {
-    expect(src).toContain('/request-access?next=');
-    expect(src).toContain('encodeURIComponent');
-    expect(src).toContain("auth.status === 401");
-  });
-
-  it('su 403 redirige a / (ruolo live sbagliato)', () => {
-    expect(src).toContain("redirect('/')");
-  });
-
-  it('legge x-pathname dall\'header (impostato dal middleware)', () => {
-    expect(src).toContain('x-pathname');
-    expect(src).toContain('await headers()');
-  });
-
-  it('NON usa localStorage', () => {
-    expect(src).not.toContain('localStorage');
-  });
-});
-
-// ── Middleware — x-pathname header ────────────────────────────────────────────
-
-describe('middleware.ts — x-pathname header (B168.5-P3)', () => {
-  const mw = read('middleware.ts');
-
-  it('imposta x-pathname sul response prima del return finale', () => {
-    expect(mw).toContain("set('x-pathname'");
-    expect(mw).toContain('pathname');
+  it('middleware.ts no longer sets an x-pathname header', () => {
+    const mw = read('middleware.ts');
+    expect(mw).not.toContain("set('x-pathname'");
   });
 });
 
@@ -231,12 +210,19 @@ describe('Coerenza B169/B168.5-P3: sidebar admin non punta a route ritirate', ()
     }
   });
 
-  it('requireDemoGate accetta KORA_ADMIN (requireDemoAccess accetta KORA_ADMIN)', () => {
-    const sessionSrc = read('lib/auth/kora-session.ts');
-    expect(sessionSrc).toContain("koraRole === 'KORA_ADMIN'");
-    // Returns user object (not error) for KORA_ADMIN
-    const koraAdminBlock = sessionSrc.split("koraRole === 'KORA_ADMIN'")[1];
-    expect(koraAdminBlock).toContain("koraRole: 'KORA_ADMIN'");
+  // This test's premise (requireDemoGate/requireDemoAccess admitting
+  // KORA_ADMIN for /demo preview purposes) was accurate at the time it was
+  // written. CC-00 DEMO_VIEWER role retirement (2026-09-26) retired both
+  // functions entirely — there is no KORA_ADMIN /demo preview exception left
+  // to check. See tests/unit/rls06-kora-admin-access-control.test.ts for the
+  // live, still-relevant KORA_ADMIN-exception regression guard.
+  it('requireDemoGate/requireDemoAccess have since been separately retired (historical note, not a live assertion)', () => {
+    const sessionSrc = read('lib/auth/kora-session.ts')
+      .split('\n')
+      .filter((line) => !line.trim().startsWith('//'))
+      .join('\n');
+    expect(sessionSrc).not.toContain('requireDemoAccess');
+    expect(exists('lib/auth/demo-guard.tsx')).toBe(false);
   });
 });
 

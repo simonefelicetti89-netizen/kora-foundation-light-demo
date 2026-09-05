@@ -24,28 +24,31 @@ export const ACTIVE_KORA_ROLES = ['KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'PART
 // production until that changes — see docs/FUTURE_ROLES_AND_SURFACES.md.
 export const FUTURE_KORA_ROLES = ['ADVISOR'] as const;
 
-// Synthetic-only by design — never backed by a real Supabase Auth user or an
-// RLS grant on any live table. See lib/auth/access-matrix.ts, lib/demo-state/.
-export const DEMO_KORA_ROLES = ['DEMO_VIEWER'] as const;
-
 // Historical — removed at the app layer (B143; lib/permissions/index.ts's
 // isViewerRole() always returns false). Never valid in KORA_ROLES below —
 // kept only so tests can assert it stays removed, not to be reintroduced casually.
-export const REMOVED_KORA_ROLES = ['COMPANY_VIEWER'] as const;
+// DEMO_VIEWER (CC-00 DEMO_VIEWER role retirement, 2026-09-26) joins this
+// removed-role precedent: it was synthetic-only by design (never backed by a
+// real Supabase Auth grant on any live table), and has been retired from the
+// runtime role model entirely — not replaced by another role with a
+// different name. See lib/auth/kora-session.ts and lib/architecture/registry.ts's
+// app-surface.demo entry for the full retirement record.
+export const REMOVED_KORA_ROLES = ['COMPANY_VIEWER', 'DEMO_VIEWER'] as const;
 
 // Foundation Light active product roles are intentionally simplified.
 // Granular HR/ESG/Finance/Executive permissions are future permission layers, not active MVP roles.
-// All role strings valid anywhere in the app — active + future + demo.
+// All role strings valid anywhere in the app — active + future. No demo-only
+// role exists anymore (CC-00 DEMO_VIEWER retirement, 2026-09-26).
 export const KORA_ROLES = [
   ...ACTIVE_KORA_ROLES,
   ...FUTURE_KORA_ROLES,
-  ...DEMO_KORA_ROLES,
 ] as const;
 
-// Product-facing subset of KORA_ROLES — excludes DEMO_VIEWER. Use this where
-// "a role a real product user/account could have" is the intended meaning
-// (e.g. account provisioning), as opposed to KoraRole/KORA_ROLES, which also
-// recognizes the synthetic demo-only role for the access-matrix/privacy layer.
+// Product-facing subset of KORA_ROLES. Since DEMO_VIEWER's retirement this is
+// identical in membership to KORA_ROLES — kept as a distinct, named type for
+// call sites that mean "a role a real product user/account could have"
+// (e.g. account provisioning), rather than collapsing two semantically
+// different concepts into one just because their membership now coincides.
 export const ACTIVE_PRODUCT_KORA_ROLES = [...ACTIVE_KORA_ROLES, ...FUTURE_KORA_ROLES] as const;
 
 export const SAFEGUARD_THRESHOLDS = {

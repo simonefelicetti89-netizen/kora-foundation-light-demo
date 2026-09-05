@@ -1,12 +1,16 @@
-// app/demo/layout.tsx — B168.5-P3: demo area layout, NO auth guard.
-// Guard is now per-sub-route:
-//   - /demo/company/* → app/demo/company/layout.tsx (requireDemoAccess)
-//   - /demo/{index-registry,portfolio,network,advisor,ai-onboarding} → per-route layout
-// The 5 public routes (/demo, /demo/guide, /demo/gtm, /demo/benchmarks,
-//   /demo/future-vision) are intentionally unguarded — zero friction for prospects.
+// app/demo/layout.tsx — demo area layout, NO auth guard.
 //
-// robots: noindex applies to ALL /demo/* routes (public and gated alike) —
-//   we don't want any demo URL indexed regardless of auth status.
+// CC-00 DEMO_VIEWER role retirement (2026-09-26): after a 4-slice route
+// retirement sequence (index-registry, partner, portfolio, then advisor,
+// ai-onboarding, benchmarks, gtm, guide, network) and this final role
+// retirement, exactly 2 routes remain under app/demo/**: /demo (root hub)
+// and /demo/future-vision. Both are public static presentation — zero
+// role-specific guard anywhere, and no DEMO_VIEWER role exists anymore to
+// guard against. See lib/architecture/registry.ts's app-surface.demo entry
+// for the full retirement record.
+//
+// robots: noindex applies to both remaining /demo/* routes — we don't want
+//   any demo URL indexed.
 
 import type { Metadata } from 'next';
 

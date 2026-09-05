@@ -401,105 +401,38 @@ export async function getCurrentWorkerUser(request?: NextRequest): Promise<KoraW
   return result instanceof NextResponse ? null : result;
 }
 
-// ── KoraDemoUser — authenticated demo viewer in the /demo area ───────────────
-// Provisioned by KORA_ADMIN only (no self-signup).
-// No kora_tenant_id — demo viewer has no tenant association.
-// No RLS policy grants for DEMO_VIEWER on any live table — structural isolation.
-
-export interface KoraDemoUser {
-  id: string;
-  email: string;
-  koraRole: 'DEMO_VIEWER';
-}
-
-// ── requireDemoUser — returns KoraDemoUser or a 401/403 NextResponse ──────────
-// Accepts DEMO_VIEWER only. All live roles (KORA_ADMIN, COMPANY_*, WORKER,
-// PARTNER) are rejected with 403.
-
-export async function requireDemoUser(request?: NextRequest): Promise<KoraDemoUser | NextResponse> {
-  const user = await resolveUser(request);
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const appMeta = user.app_metadata as Record<string, unknown> | undefined;
-  const koraRole = appMeta?.kora_role as string | undefined;
-
-  if (koraRole !== 'DEMO_VIEWER') {
-    return NextResponse.json(
-      { error: 'Forbidden — DEMO_VIEWER role required', role_found: koraRole ?? 'none' },
-      { status: 403 },
-    );
-  }
-
-  return { id: user.id, email: user.email ?? '', koraRole: 'DEMO_VIEWER' };
-}
-
-// ── requireDemoAccess — DEMO_VIEWER or KORA_ADMIN ─────────────────────────────
-// KORA_ADMIN is admitted for preview purposes. This is safe only because /demo
-// pages are synth-only (no live DB queries). If Fase 3 introduces a live-data
-// demo tenant, this function must be revisited to prevent live data leakage
-// into the /demo surface.
-// COMPANY_*, WORKER, PARTNER → 403.
-
-export async function requireDemoAccess(
-  request?: NextRequest,
-): Promise<KoraDemoUser | KoraUser | NextResponse> {
-  const user = await resolveUser(request);
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const appMeta = user.app_metadata as Record<string, unknown> | undefined;
-  const koraRole = appMeta?.kora_role as string | undefined;
-
-  if (koraRole === 'DEMO_VIEWER') {
-    return { id: user.id, email: user.email ?? '', koraRole: 'DEMO_VIEWER' };
-  }
-
-  if (koraRole === 'KORA_ADMIN') {
-    return { id: user.id, email: user.email ?? '', koraRole: 'KORA_ADMIN' };
-  }
-
-  return NextResponse.json(
-    { error: 'Forbidden — accesso riservato a DEMO_VIEWER. Area dimostrativa.', role_found: koraRole ?? 'none' },
-    { status: 403 },
-  );
-}
-
-// ── getCurrentDemoUser — returns KoraDemoUser or null (no throw) ──────────────
-
-export async function getCurrentDemoUser(request?: NextRequest): Promise<KoraDemoUser | null> {
-  const result = await requireDemoUser(request);
-  return result instanceof NextResponse ? null : result;
-}
+// ── DEMO_VIEWER role retirement (CC-00, 2026-09-26) ───────────────────────────
+// KoraDemoUser, requireDemoUser(), requireDemoAccess(), getCurrentDemoUser(),
+// and isDemoUser() were retired here. DEMO_VIEWER was synthetic-only by
+// design (never backed by an RLS grant on any live table) and has been
+// removed from the runtime role model entirely — not replaced by another
+// role with a different name. Its last real callers (lib/auth/demo-guard.tsx's
+// requireDemoGate(), itself already zero-caller) are retired alongside it.
+// The remaining /demo and /demo/future-vision surfaces are now public
+// static presentation with no role-specific guard. See
+// lib/architecture/registry.ts's app-surface.demo entry and
+// tests/unit/cc00-demo-viewer-retirement.test.ts for the full record.
 
 // ── Type guards — distinguish error response from authorized user ──────────────
 
 export function isKoraAuthError(
-  value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraDemoUser | NextResponse,
+  value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | NextResponse,
 ): value is NextResponse {
   return value instanceof NextResponse;
 }
 
-export function isKoraAdmin(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraDemoUser): value is KoraUser {
+export function isKoraAdmin(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser): value is KoraUser {
   return value.koraRole === 'KORA_ADMIN';
 }
 
-export function isCompanyUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraDemoUser): value is KoraCompanyUser {
+export function isCompanyUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser): value is KoraCompanyUser {
   return value.koraRole === 'COMPANY_ADMIN';
 }
 
-export function isWorkerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraDemoUser): value is KoraWorkerUser {
+export function isWorkerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser): value is KoraWorkerUser {
   return value.koraRole === 'WORKER';
 }
 
-export function isPartnerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraDemoUser): value is KoraPartnerUser {
+export function isPartnerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser): value is KoraPartnerUser {
   return value.koraRole === 'PARTNER';
-}
-
-export function isDemoUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraDemoUser): value is KoraDemoUser {
-  return value.koraRole === 'DEMO_VIEWER';
 }

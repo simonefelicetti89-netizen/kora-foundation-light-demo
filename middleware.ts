@@ -21,7 +21,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { canAccess } from '@/lib/auth/access-matrix';
 
 // PUBLIC-PRIVACY-FOUNDATION-05A: paths that are always public, for every
-// role (anonymous, COMPANY_ADMIN, WORKER, PARTNER, DEMO_VIEWER, KORA_ADMIN)
+// role (anonymous, COMPANY_ADMIN, WORKER, PARTNER, KORA_ADMIN)
 // — checked once, centrally, before any role-specific redirect logic below.
 // Exact-path match only, no prefix/wildcard — mirrors the existing '/'
 // exact-match rationale (a prefix match here would risk silently exempting
@@ -94,19 +94,11 @@ const PARTNER_ALLOWED_PREFIXES = [
   '/_next',
 ];
 
-// B129: Paths that authenticated DEMO_VIEWER users are allowed to access.
-// Defense in depth: middleware blocks live routes before API guards run.
-// DEMO_VIEWER has no path to live API routes from the middleware layer.
-// Future demo-specific API routes must use /api/demo/* (not yet in Fase 1).
-// /auth/ covers the Supabase PKCE callback (/auth/callback) and reset flow —
-// all auth calls hit Supabase's external server directly, not local /api/* routes.
-const DEMO_VIEWER_ALLOWED_PREFIXES = [
-  '/demo/',                  // demo area — synth-only, DEMO_VIEWER home
-  '/login',                  // unified login — accessible after session expiry
-  '/auth/',                  // Supabase callback + reset-password (PKCE flow)
-  '/_next',                  // Next.js internals
-  '/request-access',         // public informational page
-];
+// CC-00 DEMO_VIEWER role retirement (2026-09-26): the former "B129:
+// DEMO_VIEWER_ALLOWED_PREFIXES" array is removed, not replaced. /demo and
+// /demo/future-vision are now public static presentation with no
+// role-specific enforcement at any layer — see the isDemoViewer redirect
+// block that used to follow this constant, also removed below.
 
 export async function middleware(request: NextRequest) {
   const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -212,22 +204,16 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // B129: Redirect authenticated demo viewers away from any live path.
-  // DEMO_VIEWER is confined to /demo/* — any other path redirects to /demo.
-  // The demo area is synth-only: no live DB queries, no tenant association.
-  const isDemoViewer = sessionKoraRole === 'DEMO_VIEWER';
+  // CC-00 DEMO_VIEWER role retirement (2026-09-26): the former "B129:
+  // Redirect authenticated demo viewers away from any live path" block is
+  // removed, not replaced. DEMO_VIEWER no longer exists as a session role —
+  // sessionKoraRole can never equal it — and /demo/** carries no
+  // role-specific enforcement anywhere in this file anymore.
 
-  if (isDemoViewer) {
-    const isAllowed = DEMO_VIEWER_ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
-
-    if (!isAllowed) {
-      return NextResponse.redirect(new URL('/demo', request.url));
-    }
-  }
-
-  // B168.5-P3: pass pathname to server components so demo guard layouts
-  // can build the ?next= redirect URL without needing usePathname (client-only).
-  supabaseResponse.headers.set('x-pathname', pathname);
+  // CC-00 DEMO_VIEWER role retirement (2026-09-26): the former "B168.5-P3:
+  // pass pathname to server components so demo guard layouts can build the
+  // ?next= redirect URL" x-pathname header is removed, not replaced — its
+  // sole consumer, lib/auth/demo-guard.tsx's requireDemoGate(), is deleted.
   return supabaseResponse;
 }
 

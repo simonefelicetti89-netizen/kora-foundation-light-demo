@@ -155,9 +155,12 @@ describe('RLS-06 — no other role accidentally inherits KORA_ADMIN capability',
 // ── 4. require*User() session guards: KORA_ADMIN is not silently admitted ───
 // lib/auth/kora-session.ts — each non-admin require*User() function must
 // reject a KORA_ADMIN session on its OWN role check, the same way it
-// rejects any other wrong role. The one deliberate, documented exception is
-// requireDemoAccess() (admits DEMO_VIEWER or KORA_ADMIN, for demo preview —
-// see that function's own comment on why it's safe: /demo is synth-only).
+// rejects any other wrong role. The one deliberate, documented exception
+// used to be requireDemoAccess() (admitted DEMO_VIEWER or KORA_ADMIN, for
+// demo preview — /demo was synth-only). CC-00 DEMO_VIEWER role retirement
+// (2026-09-26) retired requireDemoAccess() entirely — there are now zero
+// KORA_ADMIN exceptions of this kind anywhere in kora-session.ts, a
+// stronger invariant than before, not a weaker one.
 
 describe('RLS-06 — session guards do not silently admit KORA_ADMIN into other roles', () => {
   const sessionSrc = src('lib/auth/kora-session.ts');
@@ -189,25 +192,15 @@ describe('RLS-06 — session guards do not silently admit KORA_ADMIN into other 
     expect(fn).not.toMatch(/koraRole === 'KORA_ADMIN'/);
   });
 
-  it('requireDemoUser (strict) rejects KORA_ADMIN — only requireDemoAccess admits it, deliberately', () => {
-    const fn = sessionSrc.slice(
-      sessionSrc.indexOf('export async function requireDemoUser'),
-      sessionSrc.indexOf('export async function requireDemoAccess'),
-    );
-    expect(fn).toMatch(/koraRole !== 'DEMO_VIEWER'/);
-    expect(fn).not.toMatch(/koraRole === 'KORA_ADMIN'/);
-  });
-
-  it('requireDemoAccess is the one documented KORA_ADMIN exception, and only for /demo preview', () => {
-    const fn = sessionSrc.slice(
-      sessionSrc.indexOf('export async function requireDemoAccess'),
-      sessionSrc.indexOf('export async function getCurrentDemoUser'),
-    );
-    expect(fn).toMatch(/koraRole === 'KORA_ADMIN'/);
-    // The function's own comment must document why this is safe (synth-only
-    // surface) — if that comment is ever removed, the exception becomes
-    // undocumented and this test should be revisited.
-    expect(sessionSrc).toMatch(/synth-only/);
+  // requireDemoUser() (strict) and requireDemoAccess() (the one documented
+  // KORA_ADMIN exception, for /demo preview) were both accurately tested
+  // here at the time this test was written. CC-00 DEMO_VIEWER role
+  // retirement (2026-09-26) retired both entirely — there is no KORA_ADMIN
+  // exception left anywhere in kora-session.ts to check.
+  it('requireDemoUser/requireDemoAccess have since been separately retired — zero KORA_ADMIN exceptions remain (historical note)', () => {
+    const codeOnly = sessionSrc.split('\n').filter((line) => !line.trim().startsWith('//')).join('\n');
+    expect(codeOnly).not.toContain('requireDemoUser');
+    expect(codeOnly).not.toContain('requireDemoAccess');
   });
 
   it('KoraUser.koraRole is a literal admin-only type, not a broader union', () => {

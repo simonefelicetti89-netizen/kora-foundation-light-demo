@@ -60,8 +60,13 @@ describe('B106-B — kora-session: auth metadata canonici', () => {
     expect(session).not.toContain('searchParams');
   });
 
-  it('isKoraAuthError type guard accetta tutti i ruoli incluso KoraDemoUser (B129)', () => {
-    expect(session).toContain('KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraDemoUser | NextResponse');
+  // isKoraAuthError's union accurately included KoraDemoUser at the time
+  // this test was written. CC-00 DEMO_VIEWER role retirement (2026-09-26)
+  // removed KoraDemoUser entirely — the union now covers only real roles.
+  it('isKoraAuthError type guard accetta tutti i ruoli reali (historical note: used to also include KoraDemoUser, B129)', () => {
+    expect(session).toContain('KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | NextResponse');
+    const codeOnly = session.split('\n').filter((line) => !line.trim().startsWith('//')).join('\n');
+    expect(codeOnly).not.toContain('KoraDemoUser');
   });
 });
 
