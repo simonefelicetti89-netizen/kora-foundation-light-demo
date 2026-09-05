@@ -124,11 +124,6 @@
       "count": 17
     }
   },
-  "tests/unit/b129-demo-foundation.test.ts": {
-    "@typescript-eslint/no-require-imports": {
-      "count": 2
-    }
-  },
   "tests/unit/b132a-demo-boundary.test.ts": {
     "@typescript-eslint/no-require-imports": {
       "count": 2
