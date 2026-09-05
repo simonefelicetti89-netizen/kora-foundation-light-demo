@@ -599,17 +599,54 @@
 //
 // Each entry's `reason` records WHY the import exists today, for B-TRUTH
 // triage — not a judgment that it should stay.
+//
+// CC-00 I9 GOVERNANCE RATIFICATION (2026-09-05): each entry now also carries
+// an `owner` field. This resolves a genuine sequencing contradiction found by
+// the CC-00 Closure Decision Gate (2026-09-05): Master Plan Section 28's
+// Execution Calendar names "I9 = 0" as a CC-022/B-TRUTH closure condition at
+// day 20, but 3 of these 6 residuals (AccountProvisioningService,
+// WorkerAchievementService, WorkerProvisioningService) cannot be reduced to
+// zero without a Worker/My KORA product decision — a decision the Master
+// Plan itself reserves to B-WORKER (CC-025), which the same Execution
+// Calendar starts at day 23, three days AFTER CC-022. The founder-ratified
+// resolution (see docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1.md
+// §32a for the full record) does NOT change what "I9 = 0" originally meant
+// as a global aspiration; it clarifies that CC-022's own closure gate checks
+// only the B_TRUTH-owned subset. `owner: 'B_WORKER'` entries remain fully
+// visible in this allowlist and in every count below — they are NOT hidden,
+// NOT deleted, and NOT exempted from ever reaching zero; they are
+// reassigned to B-WORKER's own closure requirement instead of CC-022's.
+// This is not a general-purpose exemption mechanism: only these 3
+// specifically-named, specifically-evidenced residuals carry
+// owner: 'B_WORKER' — any other entry defaults to (and must justify)
+// owner: 'B_TRUTH'. See tests/unit/cc00-i9-governance-ratification.test.ts
+// for the regression guard proving no UNKNOWN owner, no wildcard, and no
+// silent growth of the B_WORKER-owned set.
 
 export interface SyntheticImportAllowlistEntry {
   file: string;
   reason: string;
+  /**
+   * B_TRUTH: must reach zero for CC-022/B-TRUTH closure (this allowlist's
+   * original, un-narrowed purpose).
+   * B_WORKER: transferred to B-WORKER's own closure requirement (CC-00 I9
+   * Governance Ratification, 2026-09-05) — still tracked, still required to
+   * reach zero eventually, just not by CC-022.
+   */
+  owner: 'B_TRUTH' | 'B_WORKER';
 }
 
 export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
-  { file: 'services/account/AccountProvisioningService.ts', reason: 'Demo account registry — reads synthetic user accounts.' },
-  { file: 'services/activation-safeguard/ActivationSafeguardService.ts', reason: 'Reads pre-computed synthetic Activation Safeguard results (demo scoring path).' },
-  { file: 'services/demo-data/DemoDataService.ts', reason: 'Central synthetic seed reader — companies, departments/sites, programs, aggregates. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
-  { file: 'services/scoring-simulator/ScoringSimulatorService.ts', reason: 'Demo scoring path — KORA Index outputs, company aggregates, confidence records. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
-  { file: 'services/worker-achievements/WorkerAchievementService.ts', reason: 'Worker-private demo achievements seed.' },
-  { file: 'services/worker-provisioning/WorkerProvisioningService.ts', reason: 'Demo worker roster seed for provisioning flows.' },
+  { file: 'services/account/AccountProvisioningService.ts', reason: 'Demo account registry — reads synthetic user accounts.', owner: 'B_WORKER' },
+  { file: 'services/activation-safeguard/ActivationSafeguardService.ts', reason: 'Reads pre-computed synthetic Activation Safeguard results (demo scoring path).', owner: 'B_TRUTH' },
+  { file: 'services/demo-data/DemoDataService.ts', reason: 'Central synthetic seed reader — companies, departments/sites, programs, aggregates. Master Plan §32: scheduled for removal at end of B-TRUTH.', owner: 'B_TRUTH' },
+  { file: 'services/scoring-simulator/ScoringSimulatorService.ts', reason: 'Demo scoring path — KORA Index outputs, company aggregates, confidence records. Master Plan §32: scheduled for removal at end of B-TRUTH.', owner: 'B_TRUTH' },
+  { file: 'services/worker-achievements/WorkerAchievementService.ts', reason: 'Worker-private demo achievements seed.', owner: 'B_WORKER' },
+  { file: 'services/worker-provisioning/WorkerProvisioningService.ts', reason: 'Demo worker roster seed for provisioning flows.', owner: 'B_WORKER' },
 ];
+
+/** CC-022's own closure gate checks only this subset (CC-00 I9 Governance Ratification, 2026-09-05). */
+export const BTRUTH_OWNED_SYNTHETIC_IMPORTS = SYNTHETIC_IMPORT_ALLOWLIST.filter((e) => e.owner === 'B_TRUTH');
+
+/** Transferred to B-WORKER's own closure requirement — NOT a CC-022 blocker, still tracked. */
+export const BWORKER_OWNED_SYNTHETIC_IMPORTS = SYNTHETIC_IMPORT_ALLOWLIST.filter((e) => e.owner === 'B_WORKER');

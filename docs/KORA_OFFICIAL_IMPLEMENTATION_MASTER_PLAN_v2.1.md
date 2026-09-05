@@ -1000,6 +1000,22 @@ Nient'altro. `company-setup` e `report-generator` restano **INVESTIGATE**.
 
 ---
 
+# 32a. CC-022 — CHIARIMENTO SCOPE I9 (ratifica fondatore, 2026-09-05)
+
+**Regola originale (invariata, non cancellata):** Sezione 28, riga "20" — "CC-022 chiusura B-TRUTH ... demo = live, I9 = 0"; Sezione 32 — "`DemoScoringAdapter` · `ScoringSimulatorService` · `demo-data` · `access-control` | fine B-TRUTH | I9 = 0, adversarial superata".
+
+**Contraddizione rilevata (CC-00 Closure Decision Gate, 2026-09-05):** al momento della verifica, 3 dei 6 residui I9 allora rimanenti in `lib/security/synthetic-import-allowlist.ts` (`AccountProvisioningService`, `WorkerAchievementService`, `WorkerProvisioningService`) non sono azzerabili senza una decisione di prodotto Worker/My KORA — decisione che il Master Plan stesso riserva esplicitamente a **B-WORKER** (Sezione 28, riga "23", CC-025 — "superficie unica"; righe 478/683/690 — percorso critico `B-TRUTH → B-WORKER → NB-1 → NB-2 attivo → NB-3`). La stessa Execution Calendar fa iniziare B-WORKER al giorno 23, **dopo** CC-022 (giorno 20). CC-022, letta alla lettera come azzeramento globale dell'allowlist, richiederebbe quindi una decisione B-WORKER prima che B-WORKER stesso inizi.
+
+**Ratifica (founder decision, CC-00 Governance Ratification, 2026-09-05):**
+- `GLOBAL_I9_ZERO_REINTERPRETED = YES` — "I9 = 0" resta l'obiettivo finale dell'allowlist nel suo complesso, ma il **gate di chiusura di CC-022** viene riletto come riferito al solo sottoinsieme di proprietà B-TRUTH.
+- `BTRUTH_SCOPED_I9_ZERO_REQUIRED = YES` — CC-022 può dichiararsi chiuso solo quando i residui `owner: 'B_TRUTH'` sono a zero: `ScoringSimulatorService`, `DemoDataService`, `ActivationSafeguardService` (percorso `evaluateFromSeed()`).
+- `BWORKER_RESIDUALS_STILL_TRACKED = YES` — i residui `owner: 'B_WORKER'` (`AccountProvisioningService`, `WorkerAchievementService`, `WorkerProvisioningService`) restano nell'allowlist, restano visibili nel conteggio totale, e restano un requisito di chiusura per B-WORKER stesso — non vengono eliminati né dichiarati permanenti.
+- **Non è un'esenzione generica.** Si applica solo a questi 3 residui, la cui proprietà B-WORKER è già evidenziata dal Master Plan stesso (non inventata qui). Qualunque nuovo residuo futuro è `owner: 'B_TRUTH'` per default e richiede la propria giustificazione esplicita per essere riassegnato.
+
+Dettaglio implementativo (campo `owner` per residuo, guardie di regressione, contratto di trasferimento a B-WORKER): `lib/security/synthetic-import-allowlist.ts`, `lib/architecture/registry.ts`, `tests/unit/cc00-i9-governance-ratification.test.ts`.
+
+---
+
 # 33. DO-NOT-DELETE / FUTURE CORE
 
 `services/commons/BookingService.ts` + schema `commons` — **vivo e canonico**, con il pattern cross-tenant `worker_tenant_id × post_tenant_id` **[VERIFIED]** · `network.partner_*`, `app/partner/` · `kora_link.*` · `personal.worker_pib`, `personal.worker_pseudonym_map`, `services/worker-pib/` — prerequisiti di CF canonico **e di Worker Listening** · `services/kora-contribution/` e `lib/kora-contribution/` · `services/dynamic-cv/` · `services/worker-opportunity/`, `activity-discovery/` — **base tecnica di Exposure** · `collective-initiatives` come forma dei programmi territoriali **[VERIFIED]** · **i nuovi oggetti Survey, Needs e ProgramBrief, che nascono core e non sono mai candidati alla rimozione** · `services/company-setup/`, `services/report-generator/` — **INVESTIGATE**.
