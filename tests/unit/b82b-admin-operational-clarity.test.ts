@@ -113,12 +113,14 @@ describe('B82-B Task 4 — Demo Lab routes in navigation (B169 FASE 4)', () => {
 // ── Task 5: DEMO pages have BoundaryBadge ────────────────────────────────────
 
 describe('B82-B Task 5 — DEMO admin pages have DEMO BoundaryBadge', () => {
+  // app/demo/network/page.tsx, app/demo/ai-onboarding/page.tsx,
+  // app/demo/gtm/page.tsx, and app/demo/benchmarks/page.tsx were all
+  // accurately in this list as of this test's writing. CC-00 Residual
+  // /demo/** controlled retirement (2026-09-26) retired every one of
+  // them — removed from this list, not replaced (there is no page left to
+  // check).
   const demoPages: [string, string][] = [
-    ['app/demo/network/page.tsx', 'network'],
     ['app/admin/operator/_components/OperatorConsole.tsx', 'operator'],
-    ['app/demo/ai-onboarding/page.tsx', 'ai-onboarding'],
-    ['app/demo/gtm/page.tsx', 'gtm'],
-    ['app/demo/benchmarks/page.tsx', 'benchmarks'],
     // app/demo/index-registry/page.tsx was accurately in this list as of
     // this test's writing. CC-00 Index Registry canonicalization
     // (2026-09-06) retired the route entirely — removed from this list,

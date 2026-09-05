@@ -183,45 +183,51 @@ describe('CC-00 Partner demo retirement — DEMO_VIEWER role untouched', () => {
   // it too — its real capability already existed, canonically, at
   // app/admin/companies/page.tsx. See
   // tests/unit/cc00-portfolio-canonicalization.test.ts.
-  it('other /demo/** routes are untouched — advisor, ai-onboarding, benchmarks, future-vision, gtm, guide, network; portfolio has since been separately retired', () => {
-    const routes = [
+  // advisor, ai-onboarding, benchmarks, gtm, and guide were accurately
+  // untouched at the time this test was written. CC-00 Residual /demo/**
+  // controlled retirement (2026-09-26, a later, separate slice) retired
+  // all 6 of them.
+  it('other /demo/** routes untouched at the time this test was written (historical note: a later slice retired 6 of them); portfolio has since been separately retired', () => {
+    const stillExist = ['app/demo/future-vision/page.tsx', 'app/demo/page.tsx'];
+    for (const route of stillExist) {
+      expect(exists(route)).toBe(true);
+    }
+    const sinceRetired = [
       'app/demo/advisor/page.tsx',
       'app/demo/ai-onboarding/page.tsx',
       'app/demo/benchmarks/page.tsx',
-      'app/demo/future-vision/page.tsx',
       'app/demo/gtm/page.tsx',
       'app/demo/guide/page.tsx',
       'app/demo/network/page.tsx',
-      'app/demo/page.tsx',
+      'app/demo/portfolio/page.tsx',
     ];
-    for (const route of routes) {
-      expect(exists(route)).toBe(true);
+    for (const route of sinceRetired) {
+      expect(exists(route)).toBe(false);
     }
-    expect(exists('app/demo/portfolio/page.tsx')).toBe(false);
   });
 });
 
 // ── 6. Gated /demo/** layout count: originally 5, now 3 (portfolio ─────────
 //    separately retired by CC-00 Company Portfolio canonicalization) ───────
 
-describe('CC-00 Partner demo retirement — gated /demo/** layout count drops from 5 to 4 (historical: now 3)', () => {
-  const REMAINING_GATED_LAYOUTS = [
-    'app/demo/advisor/layout.tsx',
-    'app/demo/ai-onboarding/layout.tsx',
-    'app/demo/network/layout.tsx',
-  ];
-
+describe('CC-00 Partner demo retirement — gated /demo/** layout count drops from 5 to 4 (historical: now 0)', () => {
   // app/demo/portfolio/layout.tsx was accurately one of the 4 remaining
   // gated layouts at the time this test was written. CC-00 Company
   // Portfolio capability salvage + canonicalization (2026-09-12) later,
-  // separately, retired it too — see
-  // tests/unit/cc00-portfolio-canonicalization.test.ts.
-  it('exactly 3 remaining gated layouts exist and each calls requireDemoGate(); portfolio has since been separately retired', () => {
-    for (const layout of REMAINING_GATED_LAYOUTS) {
-      expect(exists(layout)).toBe(true);
-      expect(read(layout)).toContain('requireDemoGate');
+  // separately, retired it too. advisor, ai-onboarding, and network were
+  // the 3 gated layouts remaining after that — CC-00 Residual /demo/**
+  // controlled retirement (2026-09-26, a later, separate slice) retired
+  // all 3, leaving zero gated /demo/** layouts. See
+  // tests/unit/cc00-residual-demo-retirement.test.ts.
+  it('the 3 layouts gated at the time this test was written have since been separately retired; portfolio too', () => {
+    for (const layout of [
+      'app/demo/advisor/layout.tsx',
+      'app/demo/ai-onboarding/layout.tsx',
+      'app/demo/network/layout.tsx',
+      'app/demo/portfolio/layout.tsx',
+    ]) {
+      expect(exists(layout)).toBe(false);
     }
-    expect(exists('app/demo/portfolio/layout.tsx')).toBe(false);
   });
 
   it('app/demo/partner/layout.tsx and app/demo/index-registry/layout.tsx are both gone (2 of the original 6 gated layouts retired)', () => {
@@ -241,18 +247,21 @@ describe('CC-00 Partner demo retirement — architecture registry updated', () =
   // CC-00 Company Portfolio capability salvage + canonicalization
   // (2026-09-12) later, separately, retired portfolio too, and rephrased
   // this purpose string to "(7 subdirectories: ... — index-registry,
-  // partner, and portfolio all retired ...)" — 'partner' now legitimately
-  // appears once, inside that "retired" clause, not the live list. Anchor
-  // on the live-subdirectory segment only (before the em-dash) rather than
-  // the whole parenthetical, so this test still checks what it originally
-  // meant to check.
-  it('registry purpose no longer lists partner as a LIVE /demo subdirectory (it may legitimately appear in the retired-routes clause)', () => {
+  // partner, and portfolio all retired ...)" — 'partner' legitimately
+  // appeared once, inside that "retired" clause, not a live list. CC-00
+  // Residual /demo/** controlled retirement (2026-09-26, a later, separate
+  // slice) retired every remaining live subdirectory except future-vision
+  // and rephrased the purpose string again — there is no "subdirectories:"
+  // parenthetical left to anchor on; the purpose string now names only 2
+  // surviving routes explicitly and lists every retired name in a single
+  // "have all been retired" clause, so 'partner' can only ever appear
+  // there, never as a live route.
+  it('registry purpose no longer lists partner as a LIVE /demo subdirectory (historical note: format changed, partner still only appears retired)', () => {
     const src = read('lib/architecture/registry.ts');
     const start = src.indexOf("id: 'app-surface.demo'");
-    const entry = src.slice(start, start + 600);
-    const subdirsMatch = entry.match(/subdirectories: ([^)]*)\)/);
-    expect(subdirsMatch).not.toBeNull();
-    const liveSegment = subdirsMatch![1].split('—')[0];
-    expect(liveSegment.split(',').map((s) => s.trim())).not.toContain('partner');
+    const entry = src.slice(start, start + 700);
+    expect(entry).toContain('reduced to 2 routes');
+    expect(entry).toContain('app/demo/future-vision/');
+    expect(entry).toMatch(/partner.*have all been retired/);
   });
 });

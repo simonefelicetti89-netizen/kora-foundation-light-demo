@@ -28,27 +28,27 @@ describe('B132-A Step 1 — demo hub structure (app/demo/page.tsx)', () => {
     expect(src).toContain('Intelligence Aziendale');
   });
 
-  it('has section: Ecosistema & Advisor', () => {
-    expect(src).toContain('demo-section-ecosystem');
-    expect(src).toContain('Ecosistema');
-  });
-
-  it('has section: Pipeline & Classificazione', () => {
-    expect(src).toContain('demo-section-pipeline');
-    expect(src).toContain('Pipeline');
+  // "Ecosistema & Advisor" (demo-section-ecosystem), "Pipeline &
+  // Classificazione" (demo-section-pipeline), and the internal-tools GTM
+  // footer (demo-internal-tools) existed here accurately as of B132-A.
+  // CC-00 Residual /demo/** controlled retirement (2026-09-26) retired
+  // every route those sections linked to (advisor, network, benchmarks,
+  // ai-onboarding, gtm, guide) and removed the sections themselves from
+  // app/demo/page.tsx — see tests/unit/cc00-residual-demo-retirement.test.ts.
+  it('Ecosistema & Advisor / Pipeline & Classificazione / internal-tools sections have since been separately retired (historical note, not a live assertion)', () => {
+    expect(src).not.toContain('demo-section-ecosystem');
+    expect(src).not.toContain('demo-section-pipeline');
+    expect(src).not.toContain('demo-internal-tools');
+    expect(src).not.toContain('/demo/gtm');
+    expect(src).not.toContain('/demo/advisor');
+    expect(src).not.toContain('/demo/network');
+    expect(src).not.toContain('/demo/benchmarks');
+    expect(src).not.toContain('/demo/ai-onboarding');
   });
 
   it('has section: Roadmap', () => {
     expect(src).toContain('demo-section-roadmap');
     expect(src).toContain('Roadmap');
-  });
-
-  it('GTM Console appears in internal-tools footer, not in prospect sections', () => {
-    expect(src).toContain('demo-internal-tools');
-    expect(src).toContain('/demo/gtm');
-    // GTM href should appear only once (in the internal-tools block)
-    const matches = src.match(/\/demo\/gtm/g) ?? [];
-    expect(matches.length).toBe(1);
   });
 
   it('scenario cards have CTA linking to /company/kora-index (B171: canonical route)', () => {
@@ -112,38 +112,13 @@ describe('B132-A Step 1 — demo hub structure (app/demo/page.tsx)', () => {
 // Step 2 — guide / future-vision / gtm no live hrefs  (added after Step 2)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('B132-A Step 2 — guide: uses /company/* canonical routes (B171)', () => {
-  let src: string;
-  beforeAll(() => { src = read('guide/page.tsx'); });
-
-  it('guide links to canonical /company/kora-index (B171: demo copy removed)', () => {
-    expect(src).toContain('/company/kora-index');
-  });
-
-  it('guide links to canonical /company/activation', () => {
-    expect(src).toContain('/company/activation');
-  });
-
-  it('guide links to canonical /company/financial', () => {
-    expect(src).toContain('/company/financial');
-  });
-
-  it('guide links to canonical /company/reports', () => {
-    expect(src).toContain('/company/reports');
-  });
-
-  it('does not contain href to /company/data (no demo equivalent)', () => {
-    expect(src).not.toContain("href: '/company/data'");
-    expect(src).not.toContain('href="/company/data"');
-  });
-
-  it('does not contain href to /company/contribution (no demo equivalent)', () => {
-    expect(src).not.toContain("href: '/company/contribution'");
-    expect(src).not.toContain('href="/company/contribution"');
-  });
-
-  it('has no href to /admin/* routes', () => {
-    expect(src).not.toMatch(/href[=:]\s*['"]\/admin\//);
+// app/demo/guide/page.tsx existed here accurately as of B132-A Step 2.
+// CC-00 Residual /demo/** controlled retirement (2026-09-26) retired the
+// entire route — pure navigation/doctrine duplicate of the /demo root hub,
+// which itself still asserts the same canonical /company/* hrefs above.
+describe('B132-A Step 2 — guide: has since been separately retired (historical note, not a live assertion)', () => {
+  it('app/demo/guide/ non esiste più', () => {
+    expect(fs.existsSync(path.join(DEMO_ROOT, 'guide'))).toBe(false);
   });
 });
 
@@ -168,21 +143,13 @@ describe('B132-A Step 2 — future-vision: Phase 01 uses /company/* canonical ro
   });
 });
 
-describe('B132-A Step 2 — gtm: uses canonical /company/* routes (B171)', () => {
-  let src: string;
-  beforeAll(() => { src = read('gtm/page.tsx'); });
-
-  it('GTM links use /company/* canonical routes (B171: demo copies removed)', () => {
-    expect(src).toContain('/company/kora-index');
-  });
-
-  it('does not contain href to /partner (live — no demo equivalent)', () => {
-    expect(src).not.toContain("href: '/partner'");
-    expect(src).not.toContain('href="/partner"');
-  });
-
-  it('has no href to /admin/* routes', () => {
-    expect(src).not.toMatch(/href[:\s=]*['"]\/admin\//);
+// app/demo/gtm/page.tsx existed here accurately as of B132-A Step 2. CC-00
+// Residual /demo/** controlled retirement (2026-09-26) retired the entire
+// route (Scenario Presenter, Demo Script, Pilot Package, GTM Pipeline, Gate
+// & Methodology Status — each a duplicate of a real canonical surface).
+describe('B132-A Step 2 — gtm: has since been separately retired (historical note, not a live assertion)', () => {
+  it('app/demo/gtm/page.tsx non esiste più', () => {
+    expect(fs.existsSync(path.join(DEMO_ROOT, 'gtm', 'page.tsx'))).toBe(false);
   });
 });
 

@@ -258,101 +258,28 @@ describe('B86-B T4 — CS explainability drivers', () => {
   });
 });
 
-// ── T5: AdvisorEvidenceReviewService ─────────────────────────────────────────
+// ── T5/T6: AdvisorEvidenceReviewService + advisor review UI — RETIRED ────────
+// (historical note, not a live assertion)
+//
+// AdvisorEvidenceReviewService and app/demo/advisor/page.tsx were accurately
+// present, tested here, at the time T5/T6 were written. CC-00 Residual
+// /demo/** controlled retirement (2026-09-26) later, separately, retired
+// both: app/demo/advisor/ (its sole caller) was retired — ADVISOR is a real
+// active session role, but no canonical advisor workspace/roster model
+// exists yet (deferred, NETWORK track — see
+// lib/architecture/registry.ts). AdvisorEvidenceReviewService itself was
+// 100% in-memory, per-session demo interactivity with zero other callers —
+// no real capability lost, nothing to migrate. See
+// tests/unit/cc00-residual-demo-retirement.test.ts for the current, correct
+// state.
 
-import { AdvisorEvidenceReviewService } from '../../services/advisor-evidence-review/AdvisorEvidenceReviewService';
-
-describe('B86-B T5 — AdvisorEvidenceReviewService', () => {
-  it('service file exists', () => {
-    expect(exists('services/advisor-evidence-review/AdvisorEvidenceReviewService.ts')).toBe(true);
+describe('B86-B T5/T6 — AdvisorEvidenceReviewService and advisor review UI have since been separately retired', () => {
+  it('services/advisor-evidence-review/ no longer exists', () => {
+    expect(exists('services/advisor-evidence-review/AdvisorEvidenceReviewService.ts')).toBe(false);
   });
 
-  it('getPendingItems returns array of pending items', () => {
-    const svc = new AdvisorEvidenceReviewService();
-    const pending = svc.getPendingItems();
-    expect(Array.isArray(pending)).toBe(true);
-    expect(pending.length).toBeGreaterThan(0);
-    for (const item of pending) {
-      expect(item.reviewStatus).toBe('pending');
-      expect(typeof item.itemId).toBe('string');
-      expect(typeof item.itemTitle).toBe('string');
-    }
-  });
-
-  it('submitReview transitions item from pending to reviewed', () => {
-    const svc = new AdvisorEvidenceReviewService();
-    const before = svc.getPendingItems().length;
-    const first = svc.getPendingItems()[0];
-    svc.submitReview(first.itemId, first.itemTitle, first.evidenceLevel, first.pillar, 'approved', null, 'KORA-ADV-TEST');
-    expect(svc.getPendingItems().length).toBe(before - 1);
-  });
-
-  it('getReviewState returns the submitted record', () => {
-    const svc = new AdvisorEvidenceReviewService();
-    const item = svc.getPendingItems()[0];
-    svc.submitReview(item.itemId, item.itemTitle, item.evidenceLevel, item.pillar, 'flagged', 'Test note', 'KORA-ADV-TEST');
-    const record = svc.getReviewState(item.itemId);
-    expect(record).not.toBeNull();
-    expect(record!.decision).toBe('flagged');
-    expect(record!.notes).toBe('Test note');
-  });
-
-  it('getAllReviewed returns all submitted reviews', () => {
-    const svc = new AdvisorEvidenceReviewService();
-    const items = svc.getPendingItems();
-    for (const item of items) {
-      svc.submitReview(item.itemId, item.itemTitle, item.evidenceLevel, item.pillar, 'approved', null, 'KORA-ADV-TEST');
-    }
-    expect(svc.getAllReviewed().length).toBe(items.length);
-    expect(svc.getPendingItems().length).toBe(0);
-  });
-
-  it('review decision is one of approved|rejected|flagged', () => {
-    const svc = new AdvisorEvidenceReviewService();
-    const item = svc.getPendingItems()[0];
-    svc.submitReview(item.itemId, item.itemTitle, item.evidenceLevel, item.pillar, 'rejected', null, 'KORA-ADV-TEST');
-    const record = svc.getReviewState(item.itemId);
-    expect(['approved', 'rejected', 'flagged']).toContain(record!.decision);
-  });
-
-  it('state is isolated per instance (no shared singleton bleed)', () => {
-    const svc1 = new AdvisorEvidenceReviewService();
-    const svc2 = new AdvisorEvidenceReviewService();
-    const item = svc1.getPendingItems()[0];
-    svc1.submitReview(item.itemId, item.itemTitle, item.evidenceLevel, item.pillar, 'approved', null, 'ADV-1');
-    // svc2 should not see svc1's reviews
-    expect(svc2.getReviewState(item.itemId)).toBeNull();
-  });
-});
-
-// ── T6: Advisor review UI wiring (source checks) ──────────────────────────────
-
-describe('B86-B T6 — Advisor review UI', () => {
-  it('advisor page imports advisorEvidenceReviewService', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).toContain('advisorEvidenceReviewService');
-  });
-
-  it('advisor page has data-testid advisor-evidence-review-panel', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).toContain('advisor-evidence-review-panel');
-  });
-
-  it('advisor page has approve/reject/flag button test IDs', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).toContain('approve-btn-');
-    expect(src).toContain('reject-btn-');
-    expect(src).toContain('flag-btn-');
-  });
-
-  it('handleReview calls submitReview', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).toContain('advisorEvidenceReviewService.submitReview');
-  });
-
-  it('reviewed items log section exists', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).toContain('reviewed-item-');
+  it('app/demo/advisor/ no longer exists', () => {
+    expect(exists('app/demo/advisor')).toBe(false);
   });
 });
 
@@ -442,32 +369,18 @@ describe('B86-B T7 — EvidenceReliabilityIntelligenceService pillar breakdown',
   });
 });
 
-// ── T8: Pillar breakdown — advisor page wiring ────────────────────────────────
+// ── T8: Pillar breakdown — advisor page wiring — RETIRED ──────────────────────
+// app/demo/advisor/page.tsx's PillarEvidenceBreakdown wiring
+// (getPillarEvidenceBreakdown, pillar-evidence-breakdown-panel testid,
+// per-pillar pillar-ev-* testids, ADVISOR_PILLAR_BREAKDOWN constant) was
+// accurately tested here. CC-00 Residual /demo/** controlled retirement
+// (2026-09-26) retired the entire page — see the T5/T6 note above for why
+// (EvidenceReliabilityIntelligenceService.getPillarEvidenceBreakdown()
+// itself is untouched and still has other live callers).
 
-describe('B86-B T8 — Pillar evidence breakdown in advisor page', () => {
-  it('advisor page imports PillarEvidenceBreakdown type', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).toContain('PillarEvidenceBreakdown');
-  });
-
-  it('advisor page calls getPillarEvidenceBreakdown', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).toContain('getPillarEvidenceBreakdown');
-  });
-
-  it('advisor page has pillar-evidence-breakdown-panel testid', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).toContain('pillar-evidence-breakdown-panel');
-  });
-
-  it('advisor page renders per-pillar testids', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).toContain('pillar-ev-');
-  });
-
-  it('advisor page uses ADVISOR_PILLAR_BREAKDOWN constant', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).toContain('ADVISOR_PILLAR_BREAKDOWN');
+describe('B86-B T8 — Pillar evidence breakdown in advisor page has since been separately retired', () => {
+  it('app/demo/advisor/ no longer exists', () => {
+    expect(exists('app/demo/advisor')).toBe(false);
   });
 });
 
@@ -515,10 +428,12 @@ describe('B86-B T9 — Decision Pack Evidence Intelligence section', () => {
 
 describe('B86-B T10 — Red Lines (no forbidden artifacts created)', () => {
   it('no SQL DDL in B86-B service files', () => {
+    // services/advisor-evidence-review/AdvisorEvidenceReviewService.ts was
+    // accurately in this list as of this test's writing. CC-00 Residual
+    // /demo/** controlled retirement (2026-09-26) retired it entirely.
     const files = [
       'services/dynamic-cv/DynamicCVService.ts',
       'services/confidence-score/ConfidenceScoreService.ts',
-      'services/advisor-evidence-review/AdvisorEvidenceReviewService.ts',
       'services/evidence-reliability/EvidenceReliabilityIntelligenceService.ts',
     ];
     for (const f of files) {
@@ -528,9 +443,12 @@ describe('B86-B T10 — Red Lines (no forbidden artifacts created)', () => {
   });
 
   it('no Prisma model definitions in B86-B files', () => {
+    // services/advisor-evidence-review/AdvisorEvidenceReviewService.ts was
+    // accurately in this list as of this test's writing. CC-00 Residual
+    // /demo/** controlled retirement (2026-09-26) retired it entirely
+    // (its sole caller, app/demo/advisor/page.tsx, was retired too).
     const files = [
       'services/confidence-score/ConfidenceScoreService.ts',
-      'services/advisor-evidence-review/AdvisorEvidenceReviewService.ts',
     ];
     for (const f of files) {
       const src = read(f);
@@ -560,20 +478,16 @@ describe('B86-B T10 — Red Lines (no forbidden artifacts created)', () => {
     expect(src).toContain('pre_empirical_estimate');
   });
 
-  it('advisor page does not render individual worker PIB data', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).not.toContain('pib-records');
-    expect(src).not.toContain('workerPseudonymId');
-    expect(src).not.toContain('individual_pib');
+  // Both advisor-page checks below (no individual PIB rendering, aggregate-
+  // only evidence chain panel) were accurately asserted here as of this
+  // test's writing. CC-00 Residual /demo/** controlled retirement
+  // (2026-09-26) retired app/demo/advisor/page.tsx entirely.
+  it('advisor page has since been separately retired (historical note, not a live assertion)', () => {
+    expect(exists('app/demo/advisor/page.tsx')).toBe(false);
   });
 
   it('ConfidenceScoreService is external to KORA Index (source: CS weight = 0)', () => {
     const src = read('services/confidence-score/ConfidenceScoreService.ts');
     expect(src).toContain('weight remains 0');
-  });
-
-  it('Evidence chain panel in advisor is aggregate-only (source)', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).toContain('nessun dato individuale lavoratore');
   });
 });

@@ -302,10 +302,11 @@ describe('B80-B — Partner and Advisor pages have DEMO badge', () => {
     expect(exists('app/demo/partner/page.tsx')).toBe(false);
   });
 
-  it('advisor page has DEMO badge', () => {
-    const src = read('app/demo/advisor/page.tsx');
-    expect(src).toContain('BoundaryBadge');
-    expect(src).toContain("mode=\"DEMO\"");
+  // app/demo/advisor/page.tsx carried the DEMO badge asserted here as of
+  // B80-B. CC-00 Residual /demo/** controlled retirement (2026-09-26)
+  // later, separately, retired the entire route.
+  it('advisor page has since been separately retired (historical note, not a live assertion)', () => {
+    expect(exists('app/demo/advisor/page.tsx')).toBe(false);
   });
 });
 

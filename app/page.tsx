@@ -123,7 +123,7 @@ export default function LandingPage() {
                 — con evidenze verificate, confini espliciti e Decision Pack di cui rispondere al board.
               </p>
               <div className={`${styles.heroCtas} ${styles.reveal} ${styles.revealIn} ${styles.d3}`}>
-                <Link className={styles.btnPrimary} href="/demo/guide">Esplora la demo →</Link>
+                <Link className={styles.btnPrimary} href="/demo">Esplora la demo →</Link>
                 <a className={styles.btnGhost} href="#metodo">Come funziona</a>
               </div>
               <p className={`${styles.heroBoundary} ${styles.reveal} ${styles.revealIn} ${styles.d4}`}>
@@ -538,7 +538,7 @@ export default function LandingPage() {
           </p>
           <div className={`${styles.closeCtas} ${styles.reveal} ${styles.d3}`}>
             <Link className={styles.btnInk} href="/pilot">Avvia un pilot →</Link>
-            <Link className={styles.btnOut} href="/demo/guide">Esplora la demo</Link>
+            <Link className={styles.btnOut} href="/demo">Esplora la demo</Link>
           </div>
         </div>
       </section>

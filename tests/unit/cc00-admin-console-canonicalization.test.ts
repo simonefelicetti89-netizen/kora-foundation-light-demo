@@ -115,11 +115,14 @@ describe('CC-00 Admin Console canonicalization — no benchmark semantics introd
     }
   });
 
-  it('getBenchmarkPreview remains for its legitimate demo caller only', () => {
+  // getBenchmarkPreview remained for its legitimate demo caller,
+  // app/demo/benchmarks/page.tsx, accurately at the time this test was
+  // written. CC-00 Residual /demo/** controlled retirement (2026-09-26, a
+  // later, separate slice) retired that route and removed the method.
+  it('getBenchmarkPreview has since been separately retired too (historical note)', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
-    expect(src).toContain('getBenchmarkPreview(');
-    const demoSrc = read('app/demo/benchmarks/page.tsx');
-    expect(demoSrc).toContain('adminPreviewService.getBenchmarkPreview()');
+    expect(src).not.toContain('getBenchmarkPreview(');
+    expect(exists('app/demo/benchmarks/page.tsx')).toBe(false);
   });
 });
 
@@ -131,11 +134,14 @@ describe('CC-00 Admin Console canonicalization — advisor mock removed from Adm
     expect(admin).not.toContain('title="Advisor Network"');
   });
 
-  it('getAdvisorNetworkPreview remains for its legitimate demo caller only', () => {
+  // getAdvisorNetworkPreview remained for its legitimate demo caller,
+  // app/demo/network/page.tsx, accurately at the time this test was
+  // written. CC-00 Residual /demo/** controlled retirement (2026-09-26, a
+  // later, separate slice) retired that route and removed the method.
+  it('getAdvisorNetworkPreview has since been separately retired too (historical note)', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
-    expect(src).toContain('getAdvisorNetworkPreview(');
-    const demoSrc = read('app/demo/network/page.tsx');
-    expect(demoSrc).toContain('adminPreviewService.getAdvisorNetworkPreview()');
+    expect(src).not.toContain('getAdvisorNetworkPreview(');
+    expect(exists('app/demo/network/page.tsx')).toBe(false);
   });
 });
 
@@ -163,18 +169,16 @@ describe('CC-00 Admin Console canonicalization — privacy filter content reloca
     expect(src).not.toContain('export interface PrivacyFilterPreview');
   });
 
-  it('app/demo/ai-onboarding/page.tsx carries the same privacy content locally, values unchanged', () => {
-    const src = read('app/demo/ai-onboarding/page.tsx');
-    expect(src).not.toContain('adminPreviewService.getPrivacyFilterPreview()');
-    expect(src).toContain('PRIVACY_FILTER');
-    expect(src).toContain('sensitive_fields_detected: 14');
-    expect(src).toContain('pseudonymization_applied: true');
-    expect(src).toContain('Diagnostic or therapist references');
-  });
-
-  it('the page still calls getAIOnboardingPreview unchanged (it has a legitimate demo caller)', () => {
-    const src = read('app/demo/ai-onboarding/page.tsx');
-    expect(src).toContain('adminPreviewService.getAIOnboardingPreview()');
+  // app/demo/ai-onboarding/page.tsx carried the same relocated privacy
+  // content, and still called getAIOnboardingPreview, accurately at the
+  // time this test was written. CC-00 Residual /demo/** controlled
+  // retirement (2026-09-26, a later, separate slice) retired the entire
+  // route (and getAIOnboardingPreview along with it) — there is no page
+  // left to check.
+  it('app/demo/ai-onboarding/ has since been separately retired too (historical note)', () => {
+    expect(exists('app/demo/ai-onboarding')).toBe(false);
+    const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
+    expect(src).not.toContain('getAIOnboardingPreview(');
   });
 });
 
@@ -225,13 +229,18 @@ describe('CC-00 Admin Console canonicalization — founder validation duplicatio
     expect(src).toContain('founderValidationService');
   });
 
-  it('getFounderValidationPreview and getGateStatusPreview remain for their legitimate demo caller only', () => {
+  // getFounderValidationPreview and getGateStatusPreview both remained for
+  // their legitimate demo caller, app/demo/gtm/page.tsx, accurately at the
+  // time this test was written. CC-00 Residual /demo/** controlled
+  // retirement (2026-09-26, a later, separate slice) retired that route —
+  // getGateStatusPreview survived because app/admin/page.tsx already had
+  // its own, separate, legitimate call to it; getFounderValidationPreview
+  // had no other caller and was removed.
+  it('getFounderValidationPreview has since been separately retired; getGateStatusPreview remains (historical note)', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
-    expect(src).toContain('getFounderValidationPreview(');
+    expect(src).not.toContain('getFounderValidationPreview(');
     expect(src).toContain('getGateStatusPreview(');
-    const demoSrc = read('app/demo/gtm/page.tsx');
-    expect(demoSrc).toContain('adminPreviewService.getFounderValidationPreview()');
-    expect(demoSrc).toContain('adminPreviewService.getGateStatusPreview()');
+    expect(exists('app/demo/gtm/page.tsx')).toBe(false);
   });
 });
 
@@ -261,25 +270,34 @@ describe('CC-00 Admin Console canonicalization — safety', () => {
     expect(body).toContain("koraRole === 'KORA_ADMIN'");
   });
 
-  it('no live canonical data (getSupabaseServiceClient / analytics.* query) was added to any /demo/** page touched by this slice', () => {
-    const demoAiOnboarding = read('app/demo/ai-onboarding/page.tsx');
-    expect(demoAiOnboarding).not.toContain('getSupabaseServiceClient');
-    expect(demoAiOnboarding).not.toMatch(/from\(['"]analytics/);
+  // app/demo/ai-onboarding/page.tsx was the page touched by this slice and
+  // was accurately checked here. CC-00 Residual /demo/** controlled
+  // retirement (2026-09-26, a later, separate slice) retired the entire
+  // route — there is no page left to check.
+  it('app/demo/ai-onboarding/ has since been separately retired (historical note, not a live assertion)', () => {
+    expect(exists('app/demo/ai-onboarding')).toBe(false);
   });
 
-  it('no /demo/** route was retired by this slice — all pre-existing routes still exist', () => {
-    const routes = [
+  // advisor, benchmarks, gtm, guide, and network were accurately
+  // untouched, pre-existing routes at the time this slice landed. CC-00
+  // Residual /demo/** controlled retirement (2026-09-26, a later, separate
+  // slice) retired all 6 routes checked here (including ai-onboarding,
+  // above).
+  it('no /demo/** route was retired by THIS slice (historical note: a later slice retired 6 of these 8)', () => {
+    const stillExist = ['app/demo/future-vision/page.tsx', 'app/demo/page.tsx'];
+    for (const route of stillExist) {
+      expect(exists(route)).toBe(true);
+    }
+    const sinceRetired = [
       'app/demo/advisor/page.tsx',
       'app/demo/ai-onboarding/page.tsx',
       'app/demo/benchmarks/page.tsx',
-      'app/demo/future-vision/page.tsx',
       'app/demo/gtm/page.tsx',
       'app/demo/guide/page.tsx',
       'app/demo/network/page.tsx',
-      'app/demo/page.tsx',
     ];
-    for (const route of routes) {
-      expect(exists(route)).toBe(true);
+    for (const route of sinceRetired) {
+      expect(exists(route)).toBe(false);
     }
   });
 
@@ -346,14 +364,17 @@ describe('CC-00 Admin Console canonicalization — I9 unaffected', () => {
   // reduced the count further (app/page.tsx dropped both its synthetic
   // imports) — unrelated to this slice's own scope. See
   // tests/unit/cc00-public-landing-canonicalization.test.ts.
-  it('allowlist header count is unchanged by THIS slice (historical note: a later, unrelated slice changed the count)', () => {
+  // CC-00 Residual /demo/** controlled retirement (2026-09-26, same day,
+  // later slice) reduced it further to 8 files / 13 imports and rewrote
+  // AdminPreviewService.ts down to zero synthetic imports.
+  it('allowlist header count is unchanged by THIS slice (historical note: a later slice changed the count to 13)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
   });
 
-  it('AdminPreviewService.ts still imports exactly one synthetic fixture (source-batches.json)', () => {
+  it('AdminPreviewService.ts imports zero synthetic fixtures (historical note: used to still import source-batches.json)', () => {
     const src = read('services/admin-preview/AdminPreviewService.ts');
-    expect(src).toContain("from '@/data/synthetic/source-batches.json'");
+    expect(src).not.toContain("from '@/data/synthetic/source-batches.json'");
     expect(src).not.toContain("from '@/data/synthetic/companies.json'");
     expect(src).not.toContain("from '@/data/synthetic/kora-index-outputs.json'");
   });

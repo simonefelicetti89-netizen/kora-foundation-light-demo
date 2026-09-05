@@ -255,11 +255,13 @@ describe('B-TRUTH — registry and I9 reflect the migration', () => {
 
   // CC-00 Company Portfolio capability salvage + canonicalization
   // (2026-09-12) later, separately, reduced the import count further, to
-  // 12 files / 18 imports, and CC-00 Public Landing canonicalization
-  // (2026-09-26) reduced it again to 11 files / 16 imports. See
-  // tests/unit/cc00-public-landing-canonicalization.test.ts.
-  it('allowlist header reflects the current count, 11 files / 16 imports (historical note: this PR itself produced 12/20)', () => {
+  // 12 files / 18 imports, CC-00 Public Landing canonicalization
+  // (2026-09-26) reduced it again to 11 files / 16 imports, and CC-00
+  // Residual /demo/** controlled retirement (2026-09-26, same day, later
+  // slice) reduced it further to 8 files / 13 imports. See
+  // tests/unit/cc00-residual-demo-retirement.test.ts.
+  it('allowlist header reflects the current count, 8 files / 13 imports (historical note: this PR itself produced 12/20)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
   });
 });

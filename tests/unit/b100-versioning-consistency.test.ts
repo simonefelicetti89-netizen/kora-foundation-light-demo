@@ -165,11 +165,14 @@ describe('B100 — provision route methodology_version_id', () => {
 // ── 5. Forbidden legacy strings — spot checks on key files ───────────────────
 
 describe('B100 — legacy string absence in key files', () => {
+  // app/demo/advisor/page.tsx was accurately in this spot-check list at the
+  // time this test was written. CC-00 Residual /demo/** controlled
+  // retirement (2026-09-26) later, separately, retired the entire route —
+  // removed from this list, not replaced (there is no page left to check).
   const filesToCheck: Array<[string, string]> = [
     ['lib/constants/kora.ts',                       'constants'],
     ['data/methodology/methodology-config.json',     'methodology config JSON'],
     ['app/api/admin/companies/provision/route.ts',   'provision route'],
-    ['app/demo/advisor/page.tsx',                         'advisor page'],
   ];
 
   for (const [filePath, label] of filesToCheck) {

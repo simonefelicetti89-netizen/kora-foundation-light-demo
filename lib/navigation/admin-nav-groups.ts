@@ -74,15 +74,15 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     environmentTag: 'SYNTHETIC',
     // FASE 4: all non-redundant items from docs/sprint-B169/redundancy-analysis.md.
     // 6 /demo/company/* items EXCLUDED — RIDONDANTI (useRole + accessible via VISTA).
+    // CC-00 Residual demo retirement (2026-09-26): "Rete Advisor & Partner",
+    // "Anteprima Classificazione", "GTM Preview", "Benchmark Preview", and
+    // "Demo Guide" entries removed — every route they linked to is retired
+    // this same slice (see lib/architecture/registry.ts's app-surface.demo
+    // entry for the full disposition).
     items: [
       { label: 'Guided Demo (ACME-001)',   href: '/admin/demo/acme-001' },
       { label: 'KORA Commons Network',     href: '/commons' },
-      { label: 'Rete Advisor & Partner',   href: '/demo/network' },
       { label: 'Demo Scoring (Synthetic)', href: '/admin/operator' },
-      { label: 'Anteprima Classificazione',href: '/demo/ai-onboarding' },
-      { label: 'GTM Preview',              href: '/demo/gtm' },
-      { label: 'Benchmark Preview',        href: '/demo/benchmarks' },
-      { label: 'Demo Guide',               href: '/demo/guide' },
     ],
   },
   {

@@ -213,9 +213,14 @@ describe('CC-00 Phase 1 — this slice touched ONLY the two authorized methods (
   // directly in its sole caller, app/demo/ai-onboarding/page.tsx. See
   // tests/unit/cc00-admin-console-canonicalization.test.ts for the current,
   // correct state.
-  it('getAIOnboardingPreview remains; getPrivacyFilterPreview has since been separately moved out of this file (historical note)', () => {
+  // getAIOnboardingPreview remained, with getPrivacyFilterPreview already
+  // moved out, accurately at the time this test was written. CC-00
+  // Residual /demo/** controlled retirement (2026-09-26, a later, separate
+  // slice) retired app/demo/ai-onboarding/ entirely and removed
+  // getAIOnboardingPreview along with it.
+  it('getAIOnboardingPreview has since been separately retired too (historical note)', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
-    expect(src).toContain('getAIOnboardingPreview(');
+    expect(src).not.toContain('getAIOnboardingPreview(');
     expect(src).not.toContain('getPrivacyFilterPreview(');
     for (const method of [
       'getSourceIntakePreview', 'getMappingIntelligencePreview',
@@ -223,7 +228,6 @@ describe('CC-00 Phase 1 — this slice touched ONLY the two authorized methods (
     ]) {
       expect(src).not.toContain(`${method}(`);
     }
-    expect(src).toContain("'meridiana-group'");
   });
 
   // getPartnerNetworkPreview and getBillingRevenuePreview were accurately
@@ -231,16 +235,21 @@ describe('CC-00 Phase 1 — this slice touched ONLY the two authorized methods (
   // CC-00 Admin Console canonicalization (2026-09-19) later, separately,
   // retired both outright — see
   // tests/unit/cc00-admin-console-canonicalization.test.ts.
-  it('Tier C methods (benchmark, advisor network, founder-validation, gate status) are untouched — still fully hardcoded; partner network and billing have since been separately retired', () => {
+  // getBenchmarkPreview, getAdvisorNetworkPreview, and
+  // getFounderValidationPreview were accurately untouched, still fully
+  // hardcoded, at the time this test was written. CC-00 Residual /demo/**
+  // controlled retirement (2026-09-26, a later, separate slice) retired
+  // their sole remaining callers and removed all 3 — getGateStatusPreview
+  // is the only method left.
+  it('Tier C methods have since been separately narrowed to getGateStatusPreview only (historical note)', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
+    expect(src).toContain('getGateStatusPreview(');
     for (const method of [
-      'getBenchmarkPreview', 'getAdvisorNetworkPreview',
-      'getFounderValidationPreview', 'getGateStatusPreview',
+      'getBenchmarkPreview', 'getAdvisorNetworkPreview', 'getFounderValidationPreview',
+      'getPartnerNetworkPreview', 'getBillingRevenuePreview',
     ]) {
-      expect(src).toContain(`${method}(`);
+      expect(src).not.toContain(`${method}(`);
     }
-    expect(src).not.toContain('getPartnerNetworkPreview(');
-    expect(src).not.toContain('getBillingRevenuePreview(');
   });
 
   // app/demo/index-registry/page.tsx was accurately untouched at the time
@@ -293,13 +302,18 @@ describe('CC-00 Phase 1 — AdminPreviewService remains correctly NARROWED, not 
     expect(entry).toContain('CC-00');
   });
 
-  it('the registry does not claim AdminPreviewService is fully canonical', () => {
+  // The purpose field's leading phrase read "PARTIALLY CANONICALIZED"
+  // accurately at the time this test was written. CC-00 Residual /demo/**
+  // controlled retirement (2026-09-26, a later, separate slice) narrowed
+  // AdminPreviewService.ts down to a single surviving method and updated
+  // the phrase to "NARROWED TO ONE METHOD" — still not "fully canonical".
+  it('the registry does not claim AdminPreviewService is fully canonical (historical note: purpose phrase updated)', () => {
     const registry = read('lib/architecture/registry.ts');
     const idx = registry.indexOf("id: 'svc.admin-preview'");
     const nextIdx = registry.indexOf('{ id:', idx + 10);
     const entry = registry.slice(idx, nextIdx);
     expect(entry).not.toMatch(/status:\s*'CANONICAL'/);
-    expect(entry).toContain('PARTIALLY CANONICALIZED');
+    expect(entry).toContain('NARROWED TO ONE METHOD');
   });
 
   it('the registry does not claim CC-00 is closed', () => {
@@ -330,9 +344,13 @@ describe('CC-00 Phase 1 — I9 remains as expected (not force-reduced)', () => {
   // unchanged (12), import count 20->18. CC-00 Public Landing
   // canonicalization (2026-09-26) later reduced it further to 11 files / 16
   // imports. See tests/unit/cc00-public-landing-canonicalization.test.ts.
-  it('allowlist header count reflects the current total (historical note: was 20, then 18, now 16 imports)', () => {
+  // CC-00 Residual /demo/** controlled retirement (2026-09-26, same day,
+  // later slice) reduced it further to 8 files / 13 imports and rewrote
+  // AdminPreviewService.ts down to zero synthetic imports — it is no
+  // longer an allowlist entry at all.
+  it('allowlist header count reflects the current total (historical note: was 20, then 18, then 16, now 13 imports)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements');
-    expect(allowlist).toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 });

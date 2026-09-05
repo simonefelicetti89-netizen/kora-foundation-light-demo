@@ -3,6 +3,18 @@
 // Test statici: legge source files per verificare la struttura di guard,
 // layout, e DemoAccessBanner. I test live (401/403 effettivi) richiedono
 // un server running — verifica manuale tramite curl post-push.
+//
+// CC-00 — Residual /demo/** controlled retirement (2026-09-26): every
+// gated /demo/** layout/page this file originally tested (network, advisor,
+// ai-onboarding) is retired this same slice, along with 3 of the original
+// 5 public routes (guide, gtm, benchmarks) — see
+// lib/architecture/registry.ts's app-surface.demo entry for the full
+// route-by-route disposition, and
+// tests/unit/cc00-residual-demo-retirement.test.ts for the current, correct
+// state. Only /demo and /demo/future-vision remain public; zero
+// DEMO_VIEWER-gated layouts remain. Infrastructure this file also tests
+// (app/demo/layout.tsx, lib/auth/demo-guard.tsx, middleware x-pathname
+// header, DemoAccessBanner) is untouched and still fully asserted below.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
@@ -16,14 +28,15 @@ function exists(rel: string): boolean {
   return existsSync(join(ROOT, rel));
 }
 
-// ── 5 route pubbliche — NESSUN guard diretto ──────────────────────────────────
+// ── Route pubbliche rimanenti — NESSUN guard diretto ─────────────────────────
+// guide, gtm, e benchmarks erano accuratamente route pubbliche al momento
+// della scrittura di questo test (originariamente "5 route pubbliche").
+// CC-00 Residual /demo/** controlled retirement (2026-09-26) le ha ritirate
+// — rimosse da questa lista, non sostituite.
 
-describe('Route pubbliche (5) — nessun guard diretto', () => {
+describe('Route pubbliche rimanenti (2) — nessun guard diretto', () => {
   const PUBLIC_ROUTES = [
     'app/demo/page.tsx',
-    'app/demo/guide/page.tsx',
-    'app/demo/gtm/page.tsx',
-    'app/demo/benchmarks/page.tsx',
     'app/demo/future-vision/page.tsx',
   ];
 
@@ -46,6 +59,12 @@ describe('Route pubbliche (5) — nessun guard diretto', () => {
       const src = read(route);
       expect(src, `${route} deve importare DemoAccessBanner`).toContain('DemoAccessBanner');
     }
+  });
+
+  it('guide, gtm, e benchmarks sono stati separatamente ritirati da CC-00 (nota storica, non asserzione live)', () => {
+    expect(exists('app/demo/guide/page.tsx')).toBe(false);
+    expect(exists('app/demo/gtm/page.tsx')).toBe(false);
+    expect(exists('app/demo/benchmarks/page.tsx')).toBe(false);
   });
 });
 
@@ -77,60 +96,34 @@ describe('app/demo/company/ — rimosso da B171 (route RIDONDANTI cancellate)', 
     expect(exists('app/demo/company/layout.tsx')).toBe(false);
     expect(exists('app/demo/company/kora-index/page.tsx')).toBe(false);
   });
-
-  // app/demo/index-registry/layout.tsx existed here accurately as of this
-  // test's writing. CC-00 Index Registry canonicalization (2026-09-06)
-  // later, separately, retired the entire route (layout included) — see
-  // tests/unit/cc00-index-registry-canonicalization.test.ts. app/demo/
-  // portfolio/layout.tsx was also accurately present; CC-00 Company
-  // Portfolio capability salvage + canonicalization (2026-09-12) retired
-  // it too — see tests/unit/cc00-portfolio-canonicalization.test.ts. 3
-  // standalone gated layouts remain, not 5.
-  it('3 layout standalone gated ancora presenti (non RIDONDANTI — protetti; index-registry e portfolio separately retired by CC-00)', () => {
-    expect(exists('app/demo/index-registry/layout.tsx')).toBe(false);
-    expect(exists('app/demo/portfolio/layout.tsx')).toBe(false);
-    expect(exists('app/demo/network/layout.tsx')).toBe(true);
-    expect(exists('app/demo/advisor/layout.tsx')).toBe(true);
-    expect(exists('app/demo/ai-onboarding/layout.tsx')).toBe(true);
-  });
 });
 
-// ── 3 layout standalone gated ─────────────────────────────────────────────────
+// ── Layout standalone gated — tutti ritirati ─────────────────────────────────
 // app/demo/index-registry/layout.tsx and app/demo/portfolio/layout.tsx were
-// accurately in this list as of this test's writing (originally "5 layout
-// standalone gated"). CC-00 Index Registry canonicalization (2026-09-06)
-// and CC-00 Company Portfolio capability salvage + canonicalization
-// (2026-09-12) retired both routes — removed from this list, not replaced.
+// accurately in this list as of an earlier test's writing (originally "5
+// layout standalone gated", then "3"). CC-00 Index Registry canonicalization
+// (2026-09-06), CC-00 Company Portfolio capability salvage +
+// canonicalization (2026-09-12), and CC-00 Residual /demo/** controlled
+// retirement (2026-09-26) retired all 5 original gated layouts — none
+// remain.
 
-describe('Layout standalone gated (3) — requireDemoGate', () => {
-  const GATED_LAYOUTS = [
-    'app/demo/network/layout.tsx',
-    'app/demo/advisor/layout.tsx',
-    'app/demo/ai-onboarding/layout.tsx',
-  ];
-
-  it('tutti i layout standalone gated esistono', () => {
-    for (const layout of GATED_LAYOUTS) {
-      expect(exists(layout), `${layout} deve esistere`).toBe(true);
-    }
-  });
-
-  it('tutti chiamano await requireDemoGate()', () => {
-    for (const layout of GATED_LAYOUTS) {
-      const src = read(layout);
-      expect(src, `${layout} deve chiamare requireDemoGate`).toContain('await requireDemoGate()');
-    }
-  });
-
-  it('nessuno è un client component (guard deve essere server-side)', () => {
-    for (const layout of GATED_LAYOUTS) {
-      const src = read(layout);
-      expect(src, `${layout} non deve essere 'use client'`).not.toContain("'use client'");
+describe('Layout standalone gated — tutti ritirati (historical note, not a live assertion)', () => {
+  it('nessun layout standalone gated rimane sotto app/demo/**', () => {
+    for (const layout of [
+      'app/demo/index-registry/layout.tsx',
+      'app/demo/portfolio/layout.tsx',
+      'app/demo/network/layout.tsx',
+      'app/demo/advisor/layout.tsx',
+      'app/demo/ai-onboarding/layout.tsx',
+    ]) {
+      expect(exists(layout), `${layout} deve essere stato rimosso`).toBe(false);
     }
   });
 });
 
 // ── requireDemoGate helper ─────────────────────────────────────────────────────
+// Kept alive for DEMO_VIEWER's own end-state readiness — no /demo/** route
+// currently calls it, but the role itself is not retired in this slice.
 
 describe('lib/auth/demo-guard.tsx — helper condiviso', () => {
   const src = read('lib/auth/demo-guard.tsx');
@@ -213,37 +206,29 @@ describe('DemoAccessBanner — componente client dismissibile', () => {
   });
 });
 
-// ── CTA in /demo/guide ────────────────────────────────────────────────────────
+// ── /demo/guide — ritirato ────────────────────────────────────────────────────
+// /demo/guide's CTA verso /company/kora-index was accurately tested here.
+// CC-00 Residual /demo/** controlled retirement (2026-09-26) retired the
+// entire route — pure navigation/doctrine duplicate of /demo root +
+// CLAUDE.md, with zero unique value.
 
-describe('/demo/guide — CTA verso KORA Index (B171: route canonical)', () => {
-  const src = read('app/demo/guide/page.tsx');
-
-  it('ha CTA verso /company/kora-index con data-testid (B171: canonical route)', () => {
-    expect(src).toContain('data-testid="guide-cta-kora-index"');
-    expect(src).toContain('/company/kora-index');
-  });
-
-  it('il CTA ha testo che invita al dettaglio metodologico', () => {
-    expect(src).toContain('Vedi il dettaglio metodologico');
+describe('/demo/guide — ritirato da CC-00 (historical note, not a live assertion)', () => {
+  it('app/demo/guide/ non esiste più', () => {
+    expect(exists('app/demo/guide')).toBe(false);
   });
 });
 
-// ── Coerenza: link sidebar admin verso route gated non è bloccato ─────────────
+// ── Coerenza: nav admin non punta più a route gated ritirate ─────────────────
 
-describe('Coerenza B169/B168.5-P3: sidebar admin verso route gated', () => {
-  // /demo/index-registry was accurately linked from ADMIN_NAV_GROUPS as of
-  // this test's writing. CC-00 Index Registry canonicalization (2026-09-06)
-  // removed the link along with the route it pointed to. /demo/portfolio
-  // was also accurately linked; CC-00 Company Portfolio capability salvage
-  // + canonicalization (2026-09-12) removed that link too, for the same
-  // reason.
-  it('ADMIN_NAV_GROUPS contiene link a route gated (devono passare per KORA_ADMIN); index-registry e portfolio separately retired by CC-00', () => {
+describe('Coerenza B169/B168.5-P3: sidebar admin non punta a route ritirate', () => {
+  // index-registry, portfolio, network, and ai-onboarding were accurately
+  // linked from ADMIN_NAV_GROUPS at various earlier points. CC-00 slices
+  // removed each link along with the route it pointed to.
+  it('ADMIN_NAV_GROUPS non contiene più link a route demo ritirate', () => {
     const navSrc = read('lib/navigation/admin-nav-groups.ts');
-    // Links to gated demo routes from Demo Lab group — OK for KORA_ADMIN
-    expect(navSrc).not.toContain('/demo/index-registry');
-    expect(navSrc).not.toContain('/demo/portfolio');
-    expect(navSrc).toContain('/demo/network');
-    expect(navSrc).toContain('/demo/ai-onboarding');
+    for (const retired of ['/demo/index-registry', '/demo/portfolio', '/demo/network', '/demo/ai-onboarding', '/demo/advisor', '/demo/benchmarks', '/demo/gtm', '/demo/guide']) {
+      expect(navSrc).not.toContain(retired);
+    }
   });
 
   it('requireDemoGate accetta KORA_ADMIN (requireDemoAccess accetta KORA_ADMIN)', () => {
@@ -255,31 +240,22 @@ describe('Coerenza B169/B168.5-P3: sidebar admin verso route gated', () => {
   });
 });
 
-// ── 3 route gated rimaste (B171: 6 demo/company/* RIDONDANTI rimosse; ────────
-//    CC-00, 2026-09-06: index-registry separately retired — canonicalized
-//    into app/admin/page.tsx's own Intelligence Grid panel; CC-00,
-//    2026-09-12: portfolio separately retired — canonicalized into
-//    app/admin/companies/page.tsx, already-existing Company Console) ───────
+// ── Route gated — tutte ritirate (B171: 6 demo/company/* RIDONDANTI ─────────
+//    rimosse; CC-00 slices di 2026-09-06/09-12/09-26: index-registry,
+//    portfolio, network, advisor, e ai-onboarding tutte separatamente
+//    ritirate) ──────────────────────────────────────────────────────────────
 
-describe('3 route gated ancora presenti (non RIDONDANTI)', () => {
-  const GATED_PAGES = [
-    'app/demo/network/page.tsx',
-    'app/demo/advisor/page.tsx',
-    'app/demo/ai-onboarding/page.tsx',
-  ];
-
-  it('tutte le 3 page.tsx gated ancora presenti', () => {
-    for (const page of GATED_PAGES) {
-      expect(exists(page), `${page} deve esistere`).toBe(true);
+describe('Route gated — tutte ritirate (historical note, not a live assertion)', () => {
+  it('nessuna delle route gated originali rimane', () => {
+    for (const page of [
+      'app/demo/index-registry/page.tsx',
+      'app/demo/portfolio/page.tsx',
+      'app/demo/network/page.tsx',
+      'app/demo/advisor/page.tsx',
+      'app/demo/ai-onboarding/page.tsx',
+    ]) {
+      expect(exists(page), `${page} deve essere stato rimosso`).toBe(false);
     }
-  });
-
-  it('app/demo/index-registry/page.tsx è stato separatamente ritirato da CC-00 (nota storica, non asserzione live)', () => {
-    expect(exists('app/demo/index-registry/page.tsx')).toBe(false);
-  });
-
-  it('app/demo/portfolio/page.tsx è stato separatamente ritirato da CC-00 (nota storica, non asserzione live)', () => {
-    expect(exists('app/demo/portfolio/page.tsx')).toBe(false);
   });
 
   it('le 6 /demo/company/* RIDONDANTI non esistono più (B171)', () => {
