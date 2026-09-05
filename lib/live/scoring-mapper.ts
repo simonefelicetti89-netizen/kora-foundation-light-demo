@@ -20,7 +20,7 @@ import type {
   CalibrationStatus,
   ScenarioId,
 } from '@/lib/types';
-import type { ConfidenceRecord } from '@/services/scoring-simulator/ScoringSimulatorService';
+import type { ConfidenceRecord } from '@/lib/types';
 
 // ── LiveRow — the joined shape returned by the is_current query ───────────────
 

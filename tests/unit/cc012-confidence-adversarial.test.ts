@@ -14,7 +14,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { resolve, join } from 'path';
 import {
   computeConfidence,
@@ -27,6 +27,9 @@ import type { BTIResult, ActivationResult, EligibilitySummary } from '@/lib/kora
 const root = resolve(process.cwd());
 function src(relPath: string): string {
   return readFileSync(resolve(root, relPath), 'utf-8');
+}
+function exists(relPath: string): boolean {
+  return existsSync(resolve(root, relPath));
 }
 
 // ── Shared fixtures ──────────────────────────────────────────────────────────
@@ -551,17 +554,24 @@ describe('CC-012 Phase 8 — Service B production re-entry guard', () => {
 // PHASE 9 — DEMO CONTAINMENT
 // ═════════════════════════════════════════════════════════════════════════════
 
-describe('CC-012 Phase 9 — demo Confidence containment (recorded OPEN for B-TRUTH, not fixed)', () => {
-  it('demo path still bypasses Engine A entirely (ScoringSimulatorService reads static JSON, not computeConfidence)', () => {
-    const simulator = src('services/scoring-simulator/ScoringSimulatorService.ts');
-    expect(simulator).toContain('confidence-records.json');
-    expect(simulator).not.toContain('confidence-engine');
-    expect(simulator).not.toContain('computeConfidence');
+// PRIOR HISTORY (accurate as of its own time, preserved verbatim): this
+// block recorded a KNOWN, DELIBERATELY UNFIXED gap — the demo scoring path
+// (ScoringSimulatorService reading data/synthetic/confidence-records.json)
+// bypassed Engine A's real computeConfidence() entirely, an issue "recorded
+// OPEN for B-TRUTH, not fixed" at the time. CC-00 Final Scoring
+// Canonicalization (2026-09-05) RESOLVES this — not by wiring the demo path
+// into Engine A, but by deleting the demo path (and its fixture) entirely:
+// ScoringSimulatorService.ts and data/synthetic/confidence-records.json no
+// longer exist. environment === 'demo' now returns 'insufficient_data'
+// honestly, so there is no confidence band — real or bypassed — left to
+// contain. See tests/unit/cc00-final-scoring-canonicalization.test.ts.
+describe('CC-012 Phase 9 — demo Confidence containment (RESOLVED by CC-00 Final Scoring Canonicalization, 2026-09-05 — the demo confidence path was deleted, not fixed in place)', () => {
+  it('ScoringSimulatorService.ts and its confidence-records.json fixture no longer exist', () => {
+    expect(exists('services/scoring-simulator/ScoringSimulatorService.ts')).toBe(false);
+    expect(exists('data/synthetic/confidence-records.json')).toBe(false);
   });
 
-  it('"moderate" is never produced as an actual band VALUE (string literal in quotes) by any live/canonical source file — mentioning it in an explanatory comment is fine', () => {
-    const seed = src('data/synthetic/confidence-records.json');
-    expect(seed).toContain('"moderate"');
+  it('"moderate" is still never produced as an actual band VALUE by any live/canonical source file', () => {
     const confidenceEngine = src('lib/kora-engine/confidence-engine.ts');
     const persistence = src('lib/live/persistence.ts');
     // getConfidenceBand's return type is 'high' | 'medium' | 'low' — TypeScript
@@ -569,11 +579,6 @@ describe('CC-012 Phase 9 — demo Confidence containment (recorded OPEN for B-TR
     // proves no quoted string literal 'moderate' exists as a value anywhere.
     expect(confidenceEngine).not.toMatch(/['"]moderate['"]/);
     expect(persistence).not.toMatch(/['"]moderate['"]/);
-  });
-
-  it('CC-011 did not touch the demo seed file (still the pre-CC-011 known values)', () => {
-    const seed = src('data/synthetic/confidence-records.json');
-    expect(seed).toContain('"confidence_score": 0.60'); // Meridiana S1 record, unchanged
   });
 });
 

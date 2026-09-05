@@ -54,10 +54,21 @@ describe('CC-00 Worker/Account audit — synthetic imports unchanged (nothing sa
     );
   });
 
-  it('ActivationSafeguardService.ts still imports data/synthetic/activation-safeguard-results.json', () => {
-    expect(read('services/activation-safeguard/ActivationSafeguardService.ts')).toContain(
-      "from '@/data/synthetic/activation-safeguard-results.json'",
-    );
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "ActivationSafeguardService.ts still imports
+  // data/synthetic/activation-safeguard-results.json." CC-00 Final Scoring
+  // Canonicalization (2026-09-05) — a later, separate slice — removed
+  // evaluateFromSeed() (its only caller was the now-deleted
+  // ScoringSimulatorService) and its synthetic import. evaluate() is
+  // unchanged. This was not part of the worker/account cluster this audit
+  // examined (AccountProvisioningService, WorkerAchievementService,
+  // WorkerProvisioningService) — it was the file's OTHER, final-scoring-
+  // coupled path, tracked separately per this audit's own finding above.
+  it('ActivationSafeguardService.ts no longer imports activation-safeguard-results.json (evaluateFromSeed retired)', () => {
+    const src = read('services/activation-safeguard/ActivationSafeguardService.ts');
+    const codeOnly = src.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+    expect(src).not.toContain("from '@/data/synthetic/activation-safeguard-results.json'");
+    expect(codeOnly).not.toContain('evaluateFromSeed');
   });
 
   // 8 files / 13 imports was accurate at the time this audit ran. CC-00
@@ -67,7 +78,7 @@ describe('CC-00 Worker/Account audit — synthetic imports unchanged (nothing sa
   // files this audit examined were touched by that slice.
   it('allowlist header now reflects 6 files / 11 import statements — unchanged for this cluster (historical note: was 8/13 at the time this audit ran)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
   });
 });
 
@@ -231,9 +242,17 @@ describe('CC-00 Worker/Account audit — prior slices untouched', () => {
 // ── 13. Final scoring untouched ───────────────────────────────────────────────
 
 describe('CC-00 Worker/Account audit — final scoring untouched', () => {
-  it('ScoringSimulatorService.ts is untouched — still calls activationSafeguardService.evaluateFromSeed unchanged', () => {
-    const src = read('services/scoring-simulator/ScoringSimulatorService.ts');
-    expect(src).toContain('activationSafeguardService.evaluateFromSeed(companyId, scenarioId)');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "ScoringSimulatorService.ts is untouched — still calls
+  // activationSafeguardService.evaluateFromSeed unchanged." CC-00 Final
+  // Scoring Canonicalization (2026-09-05) — a later, separate,
+  // unrelated-to-this-audit slice — deleted ScoringSimulatorService.ts
+  // entirely (zero real callers, last B-TRUTH-owned synthetic scoring
+  // dependency), which is why evaluateFromSeed() itself could then also be
+  // retired (see the "no longer imports activation-safeguard-results.json"
+  // test above).
+  it('ScoringSimulatorService.ts no longer exists (CC-00 Final Scoring Canonicalization, 2026-09-05)', () => {
+    expect(exists('services/scoring-simulator/ScoringSimulatorService.ts')).toBe(false);
   });
 
   it('ActivationSafeguardService.evaluate() (real, canonical, methodology-driven) remains the only method every live company page calls', () => {

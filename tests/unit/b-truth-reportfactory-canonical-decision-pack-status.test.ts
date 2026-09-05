@@ -208,15 +208,15 @@ describe('B-TRUTH — this PR touched ONLY the ReportFactoryService migration (o
     }
   });
 
-  it('the final scoring group and B-WORKER members remain untouched — still exist', () => {
+  it('B-WORKER members remain untouched — still exist; the final scoring group was later retired by CC-00 Final Scoring Canonicalization (2026-09-05), unrelated to this PR', () => {
     for (const file of [
-      'services/scoring-simulator/ScoringSimulatorService.ts',
-      'services/demo-data/DemoDataService.ts',
       'services/worker-provisioning/WorkerProvisioningService.ts',
       'services/worker-achievements/WorkerAchievementService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
     }
+    expect(existsSync(resolve(root, 'services/scoring-simulator/ScoringSimulatorService.ts'))).toBe(false);
+    expect(existsSync(resolve(root, 'services/demo-data/DemoDataService.ts'))).toBe(false);
   });
 
   it('PR 1/2/3 outcomes are untouched in their own scope', () => {
@@ -262,6 +262,6 @@ describe('B-TRUTH — registry and I9 reflect the migration', () => {
   // tests/unit/cc00-residual-demo-retirement.test.ts.
   it('allowlist header reflects the current count, 6 files / 11 imports (historical note: this PR itself produced 12/20)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
   });
 });

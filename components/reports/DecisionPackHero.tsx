@@ -1,6 +1,6 @@
 import type { KoraIndexOutput, MacroblockScore, ScenarioId } from '@/lib/types';
 import type { ActivationSafeguardResult } from '@/lib/types';
-import type { ConfidenceRecord } from '@/services/scoring-simulator/ScoringSimulatorService';
+import type { ConfidenceRecord } from '@/lib/types';
 
 interface Props {
   output: KoraIndexOutput;

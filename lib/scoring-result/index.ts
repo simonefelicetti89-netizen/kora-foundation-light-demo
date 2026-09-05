@@ -4,20 +4,32 @@
 //
 // All application pages and components MUST consume scoring via useScoringResult().
 //
-// TWO scoring paths exist (see services/scoring/IScoringService.ts for the full map):
-//   demo  → ScoringSimulatorService (synthetic seed, not authoritative)
-//   live  → fetchLiveScoringResult  (run-kora-pipeline, authoritative)
+// ONE scoring path exists: live → fetchLiveScoringResult (run-kora-pipeline,
+// authoritative). See services/scoring/IScoringService.ts for the full map.
 //
-// NEVER import ScoringSimulatorService or run-kora-pipeline directly in
-// app/ routes or components. Bypassing this hook breaks the demo/live
-// boundary guarantee.
+// NEVER import run-kora-pipeline directly in app/ routes or components.
+// Bypassing this hook breaks the live boundary guarantee.
+//
+// CC-00 Final Scoring Canonicalization (2026-09-05): the DEMO path
+// (ScoringSimulatorService, reading data/synthetic/kora-index-outputs.json /
+// company-aggregates.json / confidence-records.json) is retired — this was
+// the last B-TRUTH-owned synthetic scoring dependency (Master Plan §32:
+// "DemoScoringAdapter · ScoringSimulatorService · demo-data · access-control
+// | fine B-TRUTH | I9 = 0"). environment === 'demo' (the operator/visitor
+// preview toggle in lib/demo-state — unaffected by this change) now resolves
+// to the SAME honest 'insufficient_data' status a real tenant sees before
+// its first scoring run completes — reusing existing UI, not inventing a
+// new one, and not routing through any live DB call (no new dependency
+// introduced for anonymous/demo visitors). No replacement simulator, no
+// second scoring path: getDemoScoringResult() below no longer reads or
+// computes anything, it only reports the shape's own "not yet scored" state.
+// See tests/unit/cc00-final-scoring-canonicalization.test.ts.
 
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useEnvironment } from '@/lib/demo-state';
-import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
-import type { ConfidenceRecord } from '@/services/scoring-simulator/ScoringSimulatorService';
+import type { ConfidenceRecord } from '@/lib/types';
 import { mapDbRow, type LiveRow } from '@/lib/live/scoring-mapper';
 import type {
   KoraIndexOutput, KoraIndexComponent, MacroblockScore,
@@ -119,7 +131,13 @@ async function fetchLiveScoringResult({
   return mapDbRowToScoringResult(row as import('@/lib/live/scoring-mapper').LiveRow, tenantId, scenarioId);
 }
 
-// ── Demo resolver (sync, no Supabase) ─────────────────────────────────────────
+// ── Demo resolver (sync, no Supabase, no synthetic seed) ──────────────────────
+//
+// CC-00 Final Scoring Canonicalization (2026-09-05): the demo environment no
+// longer has its own computed data source. It honestly reports the same
+// 'insufficient_data' status a real tenant sees before its first scoring run
+// completes — every consuming page already has a "dati non ancora
+// disponibili" empty state for this status, so no new UI is required.
 
 function getDemoScoringResult({
   tenantId,
@@ -128,11 +146,11 @@ function getDemoScoringResult({
   tenantId: string;
   scenarioId: ScenarioId;
 }): ScoringResult {
-  const koraIndex  = scoringSimulatorService.getKoraIndexOutput(tenantId, scenarioId);
-  const aggregate  = scoringSimulatorService.getCompanyAggregate(tenantId, scenarioId);
-  const confidence = scoringSimulatorService.getConfidenceRecord(tenantId, scenarioId);
-  const status: ScoringResultStatus = koraIndex ? 'ok' : 'insufficient_data';
-  return { status, tenantId, scenarioId, environment: 'demo', koraIndex, aggregate, confidence };
+  return {
+    status: 'insufficient_data',
+    tenantId, scenarioId, environment: 'demo',
+    koraIndex: null, aggregate: null, confidence: null,
+  };
 }
 
 // ── Public API: useScoringResult ───────────────────────────────────────────────
@@ -140,7 +158,7 @@ function getDemoScoringResult({
 /**
  * Single consumption point for scoring data in client components.
  *
- * Demo:  synchronous — returns immediately from in-memory seed. loading = false.
+ * Demo:  synchronous — returns 'insufficient_data' immediately, no seed, no fetch. loading = false.
  * Live:  async — fetches from Supabase, returns loading=true while pending.
  *        LIVE must NEVER fallback to demo seed data.
  *
@@ -193,36 +211,10 @@ export function useScoringResult({
   return liveState;
 }
 
-// ── Demo-only: scenario comparison helper ─────────────────────────────────────
-//
-// S1/S2 scenario comparison is meaningful only in demo mode (Meridiana seed has
-// two synthetic scenarios). Live tenants have a current reporting period, not S1/S2.
-// All call sites must be guarded by isDemo to prevent crashes in live environment.
-
-export function isDemoScenarioComparison(environment: Environment): boolean {
-  return environment === 'demo';
-}
-
-/**
- * Returns S1 and S2 scoring results for demo scenario comparison strips.
- * Returns { s1: null, s2: null, isDemo: false } in live/future — never crashes.
- *
- * Usage (kora-index page):
- *   const { s1, s2, isDemo } = useDemoScenarioComparison(COMPANY_ID);
- *   {isDemo && s1 && <ScenarioCard out={s1.koraIndex} />}
- */
-export function useDemoScenarioComparison(tenantId: string): {
-  s1: ScoringResult | null;
-  s2: ScoringResult | null;
-  isDemo: boolean;
-} {
-  const { activeEnvironment } = useEnvironment();
-  const isDemo = isDemoScenarioComparison(activeEnvironment);
-
-  // Hooks called unconditionally (React rules).
-  const { data: s1Data } = useScoringResult({ tenantId, scenarioId: 'S1' });
-  const { data: s2Data } = useScoringResult({ tenantId, scenarioId: 'S2' });
-
-  if (!isDemo) return { s1: null, s2: null, isDemo: false };
-  return { s1: s1Data, s2: s2Data, isDemo: true };
-}
+// CC-00 Final Scoring Canonicalization (2026-09-05): isDemoScenarioComparison()
+// and useDemoScenarioComparison() are removed here — both existed only to
+// support an S1/S2 demo scenario comparison strip that had zero real callers
+// anywhere in the repository (confirmed by repo-wide grep before removal),
+// and both depended on the now-retired synthetic per-scenario seed data.
+// Dead code removed alongside its own now-dead dependency, not carried
+// forward speculatively.

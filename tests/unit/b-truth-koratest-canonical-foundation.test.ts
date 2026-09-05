@@ -289,14 +289,14 @@ describe('B-TRUTH — this PR touches ONLY foundation, not the B95-B/B95-C clust
     expect(script).not.toMatch(/from\s+['"][^'"]*\/(app|components)\//);
   });
 
-  it('the final scoring group and B-WORKER members remain untouched — still exist', () => {
+  it('B-WORKER members remain untouched — still exist; the final scoring group was later retired by CC-00 Final Scoring Canonicalization (2026-09-05), unrelated to this PR', () => {
     for (const file of [
-      'services/scoring-simulator/ScoringSimulatorService.ts',
-      'services/demo-data/DemoDataService.ts',
       'services/worker-provisioning/WorkerProvisioningService.ts',
       'services/worker-achievements/WorkerAchievementService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
     }
+    expect(existsSync(resolve(root, 'services/scoring-simulator/ScoringSimulatorService.ts'))).toBe(false);
+    expect(existsSync(resolve(root, 'services/demo-data/DemoDataService.ts'))).toBe(false);
   });
 });

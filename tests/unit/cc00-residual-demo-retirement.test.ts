@@ -288,18 +288,23 @@ describe('CC-00 Residual demo retirement — untouched surfaces', () => {
     }
   });
 
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): also
+  // asserted app/my-kora/page.tsx contained 'getCurrentDemoUser'. CC-00
+  // Final Scoring Canonicalization (2026-09-05) removed that call — it only
+  // ever fed the now-retired scoringSimulatorService.getCompanyAggregate().
   it('My KORA is untouched', () => {
     expect(exists('app/my-kora/page.tsx')).toBe(true);
-    expect(read('app/my-kora/page.tsx')).toContain('getCurrentDemoUser');
   });
 
-  it('final scoring is untouched', () => {
-    for (const file of [
-      'services/scoring-simulator/ScoringSimulatorService.ts',
-      'services/activation-safeguard/ActivationSafeguardService.ts',
-    ]) {
-      expect(exists(file)).toBe(true);
-    }
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "final
+  // scoring is untouched" — asserted ScoringSimulatorService.ts existed.
+  // CC-00 Final Scoring Canonicalization (2026-09-05) — a later, separate,
+  // unrelated-to-this-PR slice — deleted it (zero real callers, last
+  // B-TRUTH-owned synthetic scoring dependency). ActivationSafeguardService.ts
+  // still exists (only its synthetic evaluateFromSeed() method was removed).
+  it('ActivationSafeguardService.ts still exists; ScoringSimulatorService.ts was later retired by CC-00 Final Scoring Canonicalization, unrelated to this PR', () => {
+    expect(exists('services/activation-safeguard/ActivationSafeguardService.ts')).toBe(true);
+    expect(exists('services/scoring-simulator/ScoringSimulatorService.ts')).toBe(false);
   });
 
   it('no KORA Admin redesign — app/admin/page.tsx keeps its existing section structure', () => {
@@ -317,7 +322,7 @@ describe('CC-00 Residual demo retirement — I9/I10 and CC-00 status', () => {
   // it further to 6 files / 11 imports.
   it('allowlist header reflects 6 files / 11 import statements (historical note: was 8/13 at the time this slice landed)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
     expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 

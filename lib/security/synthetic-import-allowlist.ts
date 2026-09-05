@@ -34,11 +34,26 @@
 // empty LEADS array — the tool itself, and every derived view, is
 // unchanged; no founder CRM schema was invented.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// CC-00 Final Scoring Canonicalization (2026-09-05): all 3 owner: 'B_TRUTH'
+// entries (ActivationSafeguardService.ts, DemoDataService.ts,
+// ScoringSimulatorService.ts) are removed from this allowlist entirely
+// (6->3 files, 11->3 imports) — CC-022's B-TRUTH-scoped I9 gate (ratified by
+// CC-00 I9 Governance Ratification, 2026-09-05, §32a) is now satisfied:
+// BTRUTH_OWNED_SYNTHETIC_IMPORTS = []. ActivationSafeguardService.ts itself
+// still exists (its real, canonical evaluate() is unchanged) — only its
+// synthetic evaluateFromSeed() method, and the file's synthetic import, are
+// removed. DemoDataService.ts and ScoringSimulatorService.ts are deleted
+// entirely (zero real callers, confirmed by repo-wide grep before deletion).
+// Only the 3 owner: 'B_WORKER' entries remain — transferred to B-WORKER's
+// own closure requirement, not CC-022's, per the ratification above. They
+// are NOT touched by this slice and are NOT a CC-022 blocker. See
+// tests/unit/cc00-final-scoring-canonicalization.test.ts.
 //
 // CC-00 — Residual /demo/** controlled retirement (2026-09-26, later the
 // same day): "No demo route survives merely because it still has a
@@ -638,9 +653,6 @@ export interface SyntheticImportAllowlistEntry {
 
 export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/account/AccountProvisioningService.ts', reason: 'Demo account registry — reads synthetic user accounts.', owner: 'B_WORKER' },
-  { file: 'services/activation-safeguard/ActivationSafeguardService.ts', reason: 'Reads pre-computed synthetic Activation Safeguard results (demo scoring path).', owner: 'B_TRUTH' },
-  { file: 'services/demo-data/DemoDataService.ts', reason: 'Central synthetic seed reader — companies, departments/sites, programs, aggregates. Master Plan §32: scheduled for removal at end of B-TRUTH.', owner: 'B_TRUTH' },
-  { file: 'services/scoring-simulator/ScoringSimulatorService.ts', reason: 'Demo scoring path — KORA Index outputs, company aggregates, confidence records. Master Plan §32: scheduled for removal at end of B-TRUTH.', owner: 'B_TRUTH' },
   { file: 'services/worker-achievements/WorkerAchievementService.ts', reason: 'Worker-private demo achievements seed.', owner: 'B_WORKER' },
   { file: 'services/worker-provisioning/WorkerProvisioningService.ts', reason: 'Demo worker roster seed for provisioning flows.', owner: 'B_WORKER' },
 ];

@@ -244,17 +244,21 @@ describe('CC-00 Bucket C cleanup — worker/account cluster untouched', () => {
 // ── 12. Final scoring untouched ───────────────────────────────────────────────
 
 describe('CC-00 Bucket C cleanup — final scoring untouched', () => {
-  it('ScoringSimulatorService.ts is untouched — still imports all 3 of its synthetic fixtures', () => {
-    const src = read('services/scoring-simulator/ScoringSimulatorService.ts');
-    expect(src).toContain("from '@/data/synthetic/kora-index-outputs.json'");
-    expect(src).toContain("from '@/data/synthetic/company-aggregates.json'");
-    expect(src).toContain("from '@/data/synthetic/confidence-records.json'");
-  });
-
-  it('ActivationSafeguardService.ts (scoring-coupled only) is untouched', () => {
-    const src = read('services/activation-safeguard/ActivationSafeguardService.ts');
-    expect(src).toContain("from '@/data/synthetic/activation-safeguard-results.json'");
-    expect(src).toContain('evaluateFromSeed');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "ScoringSimulatorService.ts is untouched — still imports all 3 of its
+  // synthetic fixtures" and "ActivationSafeguardService.ts (scoring-coupled
+  // only) is untouched" (still importing activation-safeguard-results.json,
+  // still defining evaluateFromSeed). CC-00 Final Scoring Canonicalization
+  // (2026-09-05) — a later, separate, unrelated-to-this-PR slice — deleted
+  // ScoringSimulatorService.ts entirely (zero real callers) and removed
+  // ActivationSafeguardService.ts's evaluateFromSeed() (its only caller was
+  // the now-deleted ScoringSimulatorService); evaluate() is unchanged. See
+  // tests/unit/cc00-final-scoring-canonicalization.test.ts.
+  it('final scoring — ScoringSimulatorService.ts and ActivationSafeguardService.evaluateFromSeed() were later retired by CC-00 Final Scoring Canonicalization, unrelated to this PR', () => {
+    expect(exists('services/scoring-simulator/ScoringSimulatorService.ts')).toBe(false);
+    const safeguardSrc = read('services/activation-safeguard/ActivationSafeguardService.ts');
+    expect(stripComments(safeguardSrc)).not.toContain('evaluateFromSeed');
+    expect(safeguardSrc).toContain('evaluate(ar: number, mar: number)');
   });
 });
 
@@ -281,6 +285,6 @@ describe('CC-00 Bucket C cleanup — governance unchanged, CC-00 status', () => 
 
   it('I9 allowlist header reflects 6 files / 11 import statements', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
   });
 });

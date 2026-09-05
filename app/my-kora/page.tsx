@@ -33,14 +33,13 @@ import { useRole, useScenario, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
 import { workerOpportunityService } from '@/services/worker-opportunity/WorkerOpportunityService';
-import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
-import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerAchievementService } from '@/services/worker-achievements/WorkerAchievementService';
 import { STATUS_LABELS as ACHIEVEMENT_STATUS_LABELS } from '@/lib/worker-achievements/types';
 import { computeNextAction } from '@/lib/my-kora/nextActionLogic';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
+import type { CompanyAggregateExtended } from '@/lib/types';
 
 // ─── Styling maps ─────────────────────────────────────────────────────────────
 
@@ -121,8 +120,12 @@ export default function MyKoraHome() {
 
   const personaId = activePersona?.id ?? 'persona-elena-m';
   const pib       = workerPIBService.getPIB(personaId, activeScenario);
-  const workerCompanyId = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
-  const aggregate = scoringSimulatorService.getCompanyAggregate(workerCompanyId, activeScenario);
+  // CC-00 Final Scoring Canonicalization (2026-09-05): scoringSimulatorService
+  // is retired (last B-TRUTH-owned synthetic scoring dependency). This
+  // section's own pre-existing `{aggregate && (...)}` guard already renders
+  // nothing when aggregate is absent — same honest-empty pattern as the
+  // rest of this PREVIEW surface, no new UI, no My KORA redesign.
+  const aggregate = null as CompanyAggregateExtended | null;
 
   // ── Derived data ────────────────────────────────────────────────────────────
 

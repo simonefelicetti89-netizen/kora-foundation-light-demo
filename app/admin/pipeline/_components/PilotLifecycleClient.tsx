@@ -23,11 +23,21 @@
 // KORA/session-identity responsibility, called only from
 // app/my-kora/page.tsx — is untouched; that is why
 // AccountProvisioningService.ts still exists (narrowed, not retired).
+//
+// CC-00 Final Scoring Canonicalization (2026-09-05): the "Scoring" step's
+// hasScoring flag no longer reads scoringSimulatorService (deleted — the
+// last B-TRUTH-owned synthetic scoring dependency). DEMO_COMPANY_ID
+// ('meridiana-group') is not a real tenant_code and has no canonical
+// scoring row to read instead, so this leg honestly reports false rather
+// than fabricating a replacement value — the same "honest zero for a
+// non-canonical company_id" pattern already applied to this same panel's
+// worker-count sub-values (see svc.worker-provisioning's own registry
+// entry). Worker provisioning and worker space remain UNCHANGED, still
+// keyed by DEMO_COMPANY_ID — separate, later, B-WORKER-territory slices.
 
 import Link from 'next/link';
 import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
-import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { workerSpaceCapabilityService } from '@/services/worker-space/WorkerSpaceCapabilityService';
 import type { CanonicalDataIntakeStatus } from '@/lib/live/data-intake-status-view';
 import type { CanonicalDecisionPackStatus } from '@/lib/live/decision-pack-status-view';
@@ -225,8 +235,6 @@ function RoleContextLinks() {
 
 export function PilotLifecycleClient({ tenant, dataIntake, decisionPack, accountProvisioning }: { tenant: CanonicalPilotTenant | null; dataIntake: CanonicalDataIntakeStatus; decisionPack: CanonicalDecisionPackStatus; accountProvisioning: CanonicalAccountProvisioningStatus }) {
   const workerSumm   = workerProvisioningService.getWorkerProvisioningSummary(DEMO_COMPANY_ID);
-  const koraIndex    = scoringSimulatorService.getKoraIndexOutput(DEMO_COMPANY_ID, 'S1')
-                       ?? scoringSimulatorService.getKoraIndexOutput(DEMO_COMPANY_ID, 'S2');
   const capability   = workerSpaceCapabilityService.getCapabilityByCompanyId(DEMO_COMPANY_ID);
 
   const inputs: LifecycleStatusInputs = {
@@ -236,7 +244,7 @@ export function PilotLifecycleClient({ tenant, dataIntake, decisionPack, account
     hasSubmission:      dataIntake.batchCount > 0 || (tenant?.onboarding_status !== 'not_started'),
     submissionPending:  dataIntake.intakeStatus === 'validation_required',
     hasReviewedData:    dataIntake.batchCount > 0 && dataIntake.intakeStatus === 'ready_for_ingestion',
-    hasScoring:         !!koraIndex,
+    hasScoring:         false, // DEMO_COMPANY_ID has no canonical scoring source — see header note
     hasDecisionPack:    tenant?.decision_pack_status === 'ready' || decisionPack.status === 'ready',
     workerSpaceEnabled: capability.enabled,
   };

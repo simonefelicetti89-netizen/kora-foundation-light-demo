@@ -19,6 +19,17 @@
 //
 // This slice changes NO runtime behavior — only governance/test-only code
 // (the `owner` field and its two derived arrays) and documentation.
+//
+// CC-00 Final Scoring Canonicalization (2026-09-05, a later, separate
+// slice): acted on the ratification above — all 3 owner: 'B_TRUTH' entries
+// (ScoringSimulatorService.ts, DemoDataService.ts,
+// ActivationSafeguardService.ts's synthetic path) are retired.
+// BTRUTH_OWNED_SYNTHETIC_IMPORTS is now [] — CC-022's B-TRUTH-scoped I9 gate
+// is satisfied. The 3 owner: 'B_WORKER' entries are untouched, still
+// tracked, still non-zero — this slice did not close B-WORKER. The tests
+// below are updated in place (PRIOR HISTORY notes preserved per-assertion)
+// to reflect this; see tests/unit/cc00-final-scoring-canonicalization.test.ts
+// for that slice's own full regression suite.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
@@ -39,11 +50,18 @@ function exists(rel: string): boolean {
   return existsSync(resolve(root, rel));
 }
 
-const EXPECTED_BTRUTH_FILES = [
+// PRIOR HISTORY (accurate as of its own time, preserved verbatim): at this
+// slice's own time, EXPECTED_BTRUTH_FILES held these 3 files, none yet
+// retired. CC-00 Final Scoring Canonicalization (2026-09-05) retired all 3
+// — BTRUTH_OWNED_SYNTHETIC_IMPORTS is now genuinely empty. Kept here,
+// unused by any assertion below, as the historical record of what the
+// B-TRUTH-owned set used to contain.
+const _HISTORICAL_EXPECTED_BTRUTH_FILES = [
   'services/scoring-simulator/ScoringSimulatorService.ts',
   'services/demo-data/DemoDataService.ts',
   'services/activation-safeguard/ActivationSafeguardService.ts',
 ].sort();
+void _HISTORICAL_EXPECTED_BTRUTH_FILES;
 
 const EXPECTED_BWORKER_FILES = [
   'services/account/AccountProvisioningService.ts',
@@ -72,9 +90,14 @@ describe('CC-00 I9 Governance Ratification — ownership completeness', () => {
 // ── 2 & 3. B-TRUTH / B-WORKER residual sets match the ratified, evidenced map ──
 
 describe('CC-00 I9 Governance Ratification — ownership map matches repository evidence', () => {
-  it('B-TRUTH-owned residuals are exactly the final-scoring cluster', () => {
-    const files = BTRUTH_OWNED_SYNTHETIC_IMPORTS.map((e) => e.file).sort();
-    expect(files).toEqual(EXPECTED_BTRUTH_FILES);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "B-TRUTH-owned residuals are exactly the final-scoring cluster" —
+  // asserted BTRUTH_OWNED_SYNTHETIC_IMPORTS equaled the 3-file
+  // final-scoring cluster. CC-00 Final Scoring Canonicalization
+  // (2026-09-05) retired all 3 — the set is now empty, satisfying the
+  // CC-022 B-TRUTH-scoped I9 gate this ratification defined.
+  it('B-TRUTH-owned residuals are now empty — CC-022 B-TRUTH-scoped I9 gate satisfied', () => {
+    expect(BTRUTH_OWNED_SYNTHETIC_IMPORTS).toEqual([]);
   });
 
   it('B-WORKER-owned residuals are exactly the transferred worker/account cluster', () => {
@@ -86,13 +109,16 @@ describe('CC-00 I9 Governance Ratification — ownership map matches repository 
 // ── 4. CC-022 checks the B-TRUTH-scoped count only ──────────────────────────
 
 describe('CC-00 I9 Governance Ratification — CC-022 gate is B-TRUTH-scoped', () => {
-  it('the B-TRUTH-scoped count (the CC-022 closure gate) is independent of the total allowlist count', () => {
-    // CC-022 closes when BTRUTH_OWNED_SYNTHETIC_IMPORTS.length === 0, not
-    // when SYNTHETIC_IMPORT_ALLOWLIST.length === 0. Today neither is zero
-    // (final scoring has not started this slice), but the two must be
-    // measured, and must be able to diverge, independently.
-    expect(BTRUTH_OWNED_SYNTHETIC_IMPORTS.length).toBe(3);
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(6);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): at this
+  // slice's own time, BTRUTH_OWNED_SYNTHETIC_IMPORTS.length was 3 and
+  // SYNTHETIC_IMPORT_ALLOWLIST.length was 6 — the two counts were shown to
+  // be independently measurable and able to diverge. CC-00 Final Scoring
+  // Canonicalization (2026-09-05) exercised exactly that divergence: the
+  // B-TRUTH count dropped to 0 while the total dropped only to 3 (the
+  // B-WORKER-owned subset, untouched).
+  it('the B-TRUTH-scoped count (the CC-022 closure gate) is independent of the total allowlist count — B-TRUTH is now 0, total is 3', () => {
+    expect(BTRUTH_OWNED_SYNTHETIC_IMPORTS.length).toBe(0);
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(3);
     expect(BTRUTH_OWNED_SYNTHETIC_IMPORTS.length).toBeLessThan(SYNTHETIC_IMPORT_ALLOWLIST.length);
   });
 
@@ -115,11 +141,16 @@ describe('CC-00 I9 Governance Ratification — CC-022 gate is B-TRUTH-scoped', (
 
 // ── 5. Global count remains observable ──────────────────────────────────────
 
+// PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
+// "6 files / 11 import statements." CC-00 Final Scoring Canonicalization
+// (2026-09-05) reduced this to 3 files / 3 imports by retiring the 3
+// B-TRUTH-owned entries. Total visibility itself is unaffected — updated
+// below to the new true count.
 describe('CC-00 I9 Governance Ratification — visibility preserved', () => {
   it('the total allowlist count remains fully visible (not hidden behind the ownership split)', () => {
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(6);
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(3);
     const allowlistSrc = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlistSrc).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
+    expect(allowlistSrc).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
   });
 });
 
@@ -167,18 +198,27 @@ describe('CC-00 I9 Governance Ratification — B-WORKER residuals remain open, n
   });
 });
 
-// ── 8 & 9 & 11. Final scoring runtime and worker runtime untouched ──────────
+// ── 8 & 9 & 11. Final scoring runtime retired (later slice); worker runtime untouched ──
 
-describe('CC-00 I9 Governance Ratification — runtime untouched', () => {
-  it('the B-TRUTH final-scoring cluster files still exist and still carry their original synthetic imports (no runtime change)', () => {
-    for (const file of EXPECTED_BTRUTH_FILES) {
-      expect(exists(file)).toBe(true);
-    }
-    // Cross-check against the live I9 scan performed by cc002: the files
-    // this slice classifies as B_TRUTH must be the same files the scanner
-    // independently finds importing data/synthetic/** today.
-    const liveFiles = new Set(SYNTHETIC_IMPORT_ALLOWLIST.map((e) => e.file));
-    for (const file of EXPECTED_BTRUTH_FILES) expect(liveFiles.has(file)).toBe(true);
+// PRIOR HISTORY (accurate as of its own time, preserved verbatim): this
+// block asserted the B-TRUTH final-scoring cluster files "still exist and
+// still carry their original synthetic imports (no runtime change)" — true
+// at this (governance-only) slice's own time. CC-00 Final Scoring
+// Canonicalization (2026-09-05), a later, separate, IMPLEMENTATION slice,
+// retired that cluster exactly as this ratification's own §32a anticipated
+// ("CC-022's own closure gate checks only the B_TRUTH-owned subset").
+// B-WORKER's cluster remains genuinely untouched. See
+// tests/unit/cc00-final-scoring-canonicalization.test.ts for that slice's
+// own full regression suite.
+describe('CC-00 I9 Governance Ratification — runtime: B-TRUTH retired, B-WORKER untouched', () => {
+  it('the B-TRUTH final-scoring cluster was later retired by CC-00 Final Scoring Canonicalization (2026-09-05) — ScoringSimulatorService.ts and DemoDataService.ts deleted, ActivationSafeguardService.ts kept (evaluate() unchanged, evaluateFromSeed() removed)', () => {
+    expect(exists('services/scoring-simulator/ScoringSimulatorService.ts')).toBe(false);
+    expect(exists('services/demo-data/DemoDataService.ts')).toBe(false);
+    expect(exists('services/activation-safeguard/ActivationSafeguardService.ts')).toBe(true);
+    const safeguardSrc = read('services/activation-safeguard/ActivationSafeguardService.ts');
+    const codeOnly = safeguardSrc.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+    expect(safeguardSrc).toContain('evaluate(ar: number, mar: number)');
+    expect(codeOnly).not.toContain('evaluateFromSeed');
   });
 
   it('the B-WORKER worker/account cluster files still exist and still carry their original synthetic imports (no runtime change)', () => {
@@ -189,9 +229,8 @@ describe('CC-00 I9 Governance Ratification — runtime untouched', () => {
     for (const file of EXPECTED_BWORKER_FILES) expect(liveFiles.has(file)).toBe(true);
   });
 
-  it('ScoringSimulatorService, WorkerProvisioningService, WorkerAchievementService, and AccountProvisioningService source files are unmodified in behavior (reason text describes the same synthetic dependency as before this slice)', () => {
+  it('WorkerProvisioningService, WorkerAchievementService, and AccountProvisioningService source files are unmodified in behavior (reason text unchanged since this slice)', () => {
     const allowlistSrc = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlistSrc).toContain("reason: 'Demo scoring path — KORA Index outputs, company aggregates, confidence records. Master Plan §32: scheduled for removal at end of B-TRUTH.'");
     expect(allowlistSrc).toContain("reason: 'Demo worker roster seed for provisioning flows.'");
     expect(allowlistSrc).toContain("reason: 'Worker-private demo achievements seed.'");
     expect(allowlistSrc).toContain("reason: 'Demo account registry — reads synthetic user accounts.'");

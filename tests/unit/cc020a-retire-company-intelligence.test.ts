@@ -209,7 +209,13 @@ describe("CC-020A — CompanyIntelligenceService's other 4 former dependencies w
     }
   });
 
-  it('ScoringSimulatorService.ts is untouched (reserved end-of-B-TRUTH group, not part of this slice)', () => {
-    expect(existsSync(resolve(root, 'services/scoring-simulator/ScoringSimulatorService.ts'))).toBe(true);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "ScoringSimulatorService.ts is untouched (reserved end-of-B-TRUTH group,
+  // not part of this slice)." CC-00 Final Scoring Canonicalization
+  // (2026-09-05) — the later slice this file's own comment anticipated —
+  // deleted it (zero real callers, last B-TRUTH-owned synthetic scoring
+  // dependency).
+  it('ScoringSimulatorService.ts no longer exists (CC-00 Final Scoring Canonicalization, 2026-09-05)', () => {
+    expect(existsSync(resolve(root, 'services/scoring-simulator/ScoringSimulatorService.ts'))).toBe(false);
   });
 });
