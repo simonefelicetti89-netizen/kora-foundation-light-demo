@@ -123,9 +123,22 @@ describe('B165 — migration 024 structure', () => {
     expect(sql).toContain('location_lng');
   });
 
-  it('Gate 2 annotation: written, not applied to any remote/production DB (corrected 2026-09-02 — the bare "NOT applied" wording was stale: this migration IS applied to local/CI ephemeral Postgres via the tracked migration ledger, verified by the mandatory DB-backed CI gate)', () => {
-    expect(sql).toContain('Gate 2 OPEN');
-    expect(sql).toContain('NOT applied to any remote/production DB');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "Gate 2
+  // annotation: written, not applied to any remote/production DB (corrected
+  // 2026-09-02 — the bare 'NOT applied' wording was stale: this migration IS
+  // applied to local/CI ephemeral Postgres...)." CC-022 Staging Reconciliation
+  // (2026-09-06): the header was stale on a second, larger count too — a
+  // read-only `supabase migration list --linked` check against staging
+  // (`haqflkurpmeaxpikozjl`) confirmed migration 024 IS applied there
+  // (consistent with docs/archive/gate2/GATE2_PHASE1_POST_MIGRATION_VERIFICATION.md's
+  // 2026-06-21 record). The header now states this plainly. Production
+  // remains untouched.
+  it('Gate annotation: records the corrected staging-application history, preserves the original wording as prior history, does not claim production', () => {
+    expect(sql).toContain('PRIOR HISTORY');
+    expect(sql).toContain('Gate 2 OPEN — written, NOT applied to any remote/production DB');
+    expect(sql).toContain('CORRECTED (CC-022 Staging Reconciliation, 2026-09-06)');
+    expect(sql).toContain('haqflkurpmeaxpikozjl');
+    expect(sql).toContain('remains untouched — applying there still requires Gate 3');
   });
 
   it('NOTIFY pgrst reload schema', () => {

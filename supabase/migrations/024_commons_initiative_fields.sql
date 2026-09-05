@@ -3,10 +3,21 @@
 -- Migration:   024_commons_initiative_fields
 -- Created:     2026-06-16
 -- Block:       B165 — KORA Space iniziative con gradi di apertura e mappa
--- Gate:        Gate 2 OPEN — written, NOT applied to any remote/production DB
+-- Gate:        PRIOR HISTORY (as originally written, preserved verbatim):
+--              "Gate 2 OPEN — written, NOT applied to any remote/production DB
 --              (applied to local/CI ephemeral Postgres via the tracked
---              migration ledger and the mandatory DB-backed CI gate — see
---              CC-051/B-024 closeout, lib/architecture/registry.ts svc.commons)
+--              migration ledger and the mandatory DB-backed CI gate)."
+--              CORRECTED (CC-022 Staging Reconciliation, 2026-09-06): this was
+--              stale on two counts. (1) Gate 2 closed WITH CONDITIONS on
+--              2026-06-22 (see docs/GATE2_STATUS.md) — the conditions concern
+--              migration 027, not 024. (2) This migration WAS applied to the
+--              staging remote (`haqflkurpmeaxpikozjl`) on 2026-06-21 (see
+--              docs/archive/gate2/GATE2_PHASE1_POST_MIGRATION_VERIFICATION.md
+--              §1) and reconfirmed applied via a fresh `supabase migration
+--              list --linked` read-only check on 2026-09-06. Production
+--              remains untouched — applying there still requires Gate 3 and
+--              Gate 5 to close first. See lib/architecture/registry.ts
+--              svc.commons and tests/unit/cc022-btruth-closure.test.ts.
 --              Applicabile insieme a 013 (commons.post) al pilot.
 -- ───────────────────────────────────────────────────────────────────────────────
 -- SCOPO
