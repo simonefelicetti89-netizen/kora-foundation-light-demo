@@ -190,11 +190,16 @@ describe('CC-00 Index Registry canonicalization — no benchmark semantics, no t
 });
 
 describe('CC-00 Index Registry canonicalization — scope boundary (one PR = one bounded step)', () => {
-  it('getCompanyPortfolioPreview is untouched — still exists, unmigrated, both real callers intact', () => {
+  // getCompanyPortfolioPreview was accurately untouched, with both real
+  // callers intact, at the time this test was written. CC-00 Company
+  // Portfolio capability salvage + canonicalization (2026-09-12) later,
+  // separately, retired it outright. See
+  // tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('getCompanyPortfolioPreview has since been separately retired (historical note, not a live assertion)', () => {
     const src = read('services/admin-preview/AdminPreviewService.ts');
-    expect(src).toContain('getCompanyPortfolioPreview(): CompanyPortfolioEntry[]');
-    expect(read('app/admin/page.tsx')).toContain('adminPreviewService.getCompanyPortfolioPreview()');
-    expect(read('app/demo/portfolio/page.tsx')).toContain('adminPreviewService.getCompanyPortfolioPreview()');
+    const codeOnly = stripComments(src);
+    expect(codeOnly).not.toContain('getCompanyPortfolioPreview(');
+    expect(existsSync(resolve(root, 'app/demo/portfolio'))).toBe(false);
   });
 
   it('getAIOnboardingPreview and getPrivacyFilterPreview are untouched', () => {
@@ -220,15 +225,21 @@ describe('CC-00 Index Registry canonicalization — scope boundary (one PR = one
   // on the real app/partner/** surface, or already named as a deferred
   // capability in app/partner/workspace/page.tsx's own "Funzionalità future"
   // section. See tests/unit/cc00-partner-demo-retirement.test.ts.
-  it('other /demo/** routes are untouched — portfolio, network, advisor, ai-onboarding, gtm, benchmarks, guide, future-vision still exist; partner has since been separately retired', () => {
+  // app/demo/portfolio/page.tsx was accurately in this list too. CC-00
+  // Company Portfolio capability salvage + canonicalization (2026-09-12,
+  // later the same day) separately retired it as well — its real capability
+  // already existed, canonically, at app/admin/companies/page.tsx. See
+  // tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('other /demo/** routes are untouched — network, advisor, ai-onboarding, gtm, benchmarks, guide, future-vision still exist; partner and portfolio have since been separately retired', () => {
     for (const route of [
-      'app/demo/portfolio/page.tsx', 'app/demo/network/page.tsx', 'app/demo/advisor/page.tsx',
+      'app/demo/network/page.tsx', 'app/demo/advisor/page.tsx',
       'app/demo/ai-onboarding/page.tsx', 'app/demo/gtm/page.tsx',
       'app/demo/benchmarks/page.tsx', 'app/demo/guide/page.tsx', 'app/demo/future-vision/page.tsx', 'app/demo/page.tsx',
     ]) {
       expect(existsSync(resolve(root, route))).toBe(true);
     }
     expect(existsSync(resolve(root, 'app/demo/partner/page.tsx'))).toBe(false);
+    expect(existsSync(resolve(root, 'app/demo/portfolio/page.tsx'))).toBe(false);
   });
 
   it('DEMO_VIEWER role is untouched — still defined, still admitted by requireDemoAccess()', () => {
@@ -238,13 +249,20 @@ describe('CC-00 Index Registry canonicalization — scope boundary (one PR = one
     expect(session).toContain("koraRole === 'DEMO_VIEWER'");
   });
 
-  it('the remaining 4 gated /demo/** layouts still call requireDemoGate()', () => {
+  // 'app/demo/portfolio/layout.tsx' was accurately in this list as of this
+  // test's writing. CC-00 Partner and Company Portfolio retirements
+  // (2026-09-12) later, separately, retired both it and
+  // app/demo/partner/layout.tsx — see
+  // tests/unit/cc00-partner-demo-retirement.test.ts and
+  // tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('the remaining 3 gated /demo/** layouts still call requireDemoGate()', () => {
     for (const layout of [
-      'app/demo/portfolio/layout.tsx', 'app/demo/network/layout.tsx',
+      'app/demo/network/layout.tsx',
       'app/demo/advisor/layout.tsx', 'app/demo/ai-onboarding/layout.tsx',
     ]) {
       expect(read(layout)).toContain('await requireDemoGate()');
     }
+    expect(existsSync(resolve(root, 'app/demo/portfolio/layout.tsx'))).toBe(false);
   });
 
   it('B-WORKER, My KORA, and final scoring are untouched', () => {
@@ -290,9 +308,17 @@ describe('CC-00 Index Registry canonicalization — registry documents the D-C s
 });
 
 describe('CC-00 Index Registry canonicalization — I9 unaffected (method removal, not a fixture removal)', () => {
-  it('allowlist header count is unchanged — kora-index-outputs.json remains needed by the non-retired getCompanyPortfolioPreview and other consumers', () => {
+  // The header count was accurately "12 files / 20 import statements" at
+  // the time this test was written — kora-index-outputs.json was still
+  // needed by getCompanyPortfolioPreview and other consumers. CC-00 Company
+  // Portfolio capability salvage + canonicalization (2026-09-12) later,
+  // separately, retired getCompanyPortfolioPreview() and its
+  // kora-index-outputs.json/companies.json imports — import count 20->18
+  // (kora-index-outputs.json remains needed by its OTHER consumers, just
+  // not this one). See tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('allowlist header count reflects the current total (historical note: was 20 imports, now 18)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 20 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 18 import statements');
     expect(allowlist).toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 });

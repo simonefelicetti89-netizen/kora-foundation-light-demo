@@ -102,7 +102,7 @@ describe('PARTNER-01 — demo partner preview has since been separately retired 
     expect(exists('app/demo/partner/page.tsx')).toBe(false);
   });
 
-  it('requireDemoGate() (still shared by /demo/network, /demo/advisor, /demo/portfolio, /demo/ai-onboarding) only admits DEMO_VIEWER/KORA_ADMIN via requireDemoAccess', () => {
+  it('requireDemoGate() (still shared by /demo/network, /demo/advisor, /demo/ai-onboarding) only admits DEMO_VIEWER/KORA_ADMIN via requireDemoAccess', () => {
     expect(demoGuardSrc).toContain('requireDemoAccess');
     // requireDemoAccess itself (kora-session.ts) explicitly enumerates DEMO_VIEWER and KORA_ADMIN as the only admitted roles.
     const start = sessionSrc.indexOf('export async function requireDemoAccess');

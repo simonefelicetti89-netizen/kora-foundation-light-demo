@@ -65,11 +65,20 @@ const nextConfig: NextConfig = {
       { source: '/demo-guide',           destination: '/demo/guide',          permanent: true },
       { source: '/future-vision',        destination: '/demo/future-vision',  permanent: true },
       { source: '/future-vision/:path*', destination: '/demo/future-vision/:path*', permanent: true },
-      { source: '/admin/portfolio',      destination: '/demo/portfolio',      permanent: true },
+      // CC-00 Company Portfolio canonicalization (2026-09-12): /demo/portfolio
+      // is retired — its real capability lives at /admin/companies (Company
+      // Console), so old bookmarks of the pre-B129 /admin/portfolio path now
+      // redirect there instead.
+      { source: '/admin/portfolio',      destination: '/admin/companies',     permanent: true },
       { source: '/admin/benchmarks',     destination: '/demo/benchmarks',     permanent: true },
       { source: '/admin/network',        destination: '/demo/network',        permanent: true },
       { source: '/admin/gtm',            destination: '/demo/gtm',            permanent: true },
-      { source: '/admin/index-registry', destination: '/demo/index-registry', permanent: true },
+      // Pre-existing bug found and fixed while editing this array (CC-00
+      // Company Portfolio canonicalization, 2026-09-12): /demo/index-registry
+      // was retired by CC-00 Index Registry canonicalization (2026-09-06),
+      // but this redirect target was left stale, pointing old bookmarks at a
+      // route that no longer exists. Its real value lives on /admin itself.
+      { source: '/admin/index-registry', destination: '/admin',               permanent: true },
       { source: '/admin/ai-onboarding',  destination: '/demo/ai-onboarding',  permanent: true },
     ];
   },

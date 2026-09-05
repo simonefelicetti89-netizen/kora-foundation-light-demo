@@ -207,11 +207,17 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — scope boundary (one PR = 
     expect(existsSync(resolve(root, 'app/demo/index-registry'))).toBe(false);
   });
 
-  it('getCompanyPortfolioPreview is untouched — still exists, unmigrated, both real callers intact', () => {
+  // getCompanyPortfolioPreview was accurately untouched, with both real
+  // callers intact, at the time this test was written. CC-00 Company
+  // Portfolio capability salvage + canonicalization (2026-09-12) later,
+  // separately, retired it outright — its real capability already existed,
+  // canonically, at app/admin/companies/page.tsx. See
+  // tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('getCompanyPortfolioPreview has since been separately retired (historical note, not a live assertion)', () => {
     const src = read('services/admin-preview/AdminPreviewService.ts');
-    expect(src).toContain('getCompanyPortfolioPreview(): CompanyPortfolioEntry[]');
-    expect(read('app/admin/page.tsx')).toContain('adminPreviewService.getCompanyPortfolioPreview()');
-    expect(read('app/demo/portfolio/page.tsx')).toContain('adminPreviewService.getCompanyPortfolioPreview()');
+    const codeOnly = stripComments(src);
+    expect(codeOnly).not.toContain('getCompanyPortfolioPreview(');
+    expect(existsSync(resolve(root, 'app/demo/portfolio'))).toBe(false);
   });
 
   it('Tier C methods (benchmark, advisor network, partner network, billing, founder-validation, gate status) are untouched', () => {
@@ -270,16 +276,29 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — AdminPreviewService remai
 });
 
 describe('CC-00 AI-Onboarding Duplicate Retirement — I9 unaffected (retirement, not a synthetic-import removal)', () => {
-  it('allowlist header count is unchanged — source-batches.json remains needed by getAIOnboardingPreview', () => {
+  // The header count was accurately "12 files / 20 import statements" at
+  // the time this test was written. CC-00 Company Portfolio capability
+  // salvage + canonicalization (2026-09-12) later, separately, removed 2 of
+  // AdminPreviewService.ts's 3 synthetic imports (companies.json,
+  // kora-index-outputs.json) when it retired getCompanyPortfolioPreview() —
+  // file count unchanged (12), import count 20->18. See
+  // tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('allowlist header count reflects the current total — source-batches.json remains needed by getAIOnboardingPreview', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 20 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 18 import statements');
     expect(allowlist).toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 
-  it('AdminPreviewService.ts still imports all 3 of its original synthetic fixtures', () => {
+  // companies.json and kora-index-outputs.json were accurately imported by
+  // AdminPreviewService.ts at the time this test was written. CC-00 Company
+  // Portfolio capability salvage + canonicalization (2026-09-12) later,
+  // separately, removed both when it retired getCompanyPortfolioPreview() —
+  // source-batches.json is the only one that remains, still needed by the
+  // non-retired getAIOnboardingPreview.
+  it('AdminPreviewService.ts imports only its remaining needed synthetic fixture (historical note: used to import 3, now 1)', () => {
     const src = read('services/admin-preview/AdminPreviewService.ts');
-    expect(src).toContain("from '@/data/synthetic/companies.json'");
-    expect(src).toContain("from '@/data/synthetic/kora-index-outputs.json'");
+    expect(src).not.toContain("from '@/data/synthetic/companies.json'");
+    expect(src).not.toContain("from '@/data/synthetic/kora-index-outputs.json'");
     expect(src).toContain("from '@/data/synthetic/source-batches.json'");
   });
 });

@@ -81,26 +81,29 @@ describe('app/demo/company/ — rimosso da B171 (route RIDONDANTI cancellate)', 
   // app/demo/index-registry/layout.tsx existed here accurately as of this
   // test's writing. CC-00 Index Registry canonicalization (2026-09-06)
   // later, separately, retired the entire route (layout included) — see
-  // tests/unit/cc00-index-registry-canonicalization.test.ts. 4 standalone
-  // gated layouts remain, not 5.
-  it('4 layout standalone gated ancora presenti (non RIDONDANTI — protetti; index-registry separately retired by CC-00)', () => {
+  // tests/unit/cc00-index-registry-canonicalization.test.ts. app/demo/
+  // portfolio/layout.tsx was also accurately present; CC-00 Company
+  // Portfolio capability salvage + canonicalization (2026-09-12) retired
+  // it too — see tests/unit/cc00-portfolio-canonicalization.test.ts. 3
+  // standalone gated layouts remain, not 5.
+  it('3 layout standalone gated ancora presenti (non RIDONDANTI — protetti; index-registry e portfolio separately retired by CC-00)', () => {
     expect(exists('app/demo/index-registry/layout.tsx')).toBe(false);
-    expect(exists('app/demo/portfolio/layout.tsx')).toBe(true);
+    expect(exists('app/demo/portfolio/layout.tsx')).toBe(false);
     expect(exists('app/demo/network/layout.tsx')).toBe(true);
     expect(exists('app/demo/advisor/layout.tsx')).toBe(true);
     expect(exists('app/demo/ai-onboarding/layout.tsx')).toBe(true);
   });
 });
 
-// ── 4 layout standalone gated ─────────────────────────────────────────────────
-// app/demo/index-registry/layout.tsx was accurately in this list as of this
-// test's writing (originally "5 layout standalone gated"). CC-00 Index
-// Registry canonicalization (2026-09-06) retired the entire route — removed
-// from this list, not replaced.
+// ── 3 layout standalone gated ─────────────────────────────────────────────────
+// app/demo/index-registry/layout.tsx and app/demo/portfolio/layout.tsx were
+// accurately in this list as of this test's writing (originally "5 layout
+// standalone gated"). CC-00 Index Registry canonicalization (2026-09-06)
+// and CC-00 Company Portfolio capability salvage + canonicalization
+// (2026-09-12) retired both routes — removed from this list, not replaced.
 
-describe('Layout standalone gated (4) — requireDemoGate', () => {
+describe('Layout standalone gated (3) — requireDemoGate', () => {
   const GATED_LAYOUTS = [
-    'app/demo/portfolio/layout.tsx',
     'app/demo/network/layout.tsx',
     'app/demo/advisor/layout.tsx',
     'app/demo/ai-onboarding/layout.tsx',
@@ -230,12 +233,15 @@ describe('/demo/guide — CTA verso KORA Index (B171: route canonical)', () => {
 describe('Coerenza B169/B168.5-P3: sidebar admin verso route gated', () => {
   // /demo/index-registry was accurately linked from ADMIN_NAV_GROUPS as of
   // this test's writing. CC-00 Index Registry canonicalization (2026-09-06)
-  // removed the link along with the route it pointed to.
-  it('ADMIN_NAV_GROUPS contiene link a route gated (devono passare per KORA_ADMIN); index-registry separately retired by CC-00', () => {
+  // removed the link along with the route it pointed to. /demo/portfolio
+  // was also accurately linked; CC-00 Company Portfolio capability salvage
+  // + canonicalization (2026-09-12) removed that link too, for the same
+  // reason.
+  it('ADMIN_NAV_GROUPS contiene link a route gated (devono passare per KORA_ADMIN); index-registry e portfolio separately retired by CC-00', () => {
     const navSrc = read('lib/navigation/admin-nav-groups.ts');
     // Links to gated demo routes from Demo Lab group — OK for KORA_ADMIN
     expect(navSrc).not.toContain('/demo/index-registry');
-    expect(navSrc).toContain('/demo/portfolio');
+    expect(navSrc).not.toContain('/demo/portfolio');
     expect(navSrc).toContain('/demo/network');
     expect(navSrc).toContain('/demo/ai-onboarding');
   });
@@ -249,19 +255,20 @@ describe('Coerenza B169/B168.5-P3: sidebar admin verso route gated', () => {
   });
 });
 
-// ── 4 route gated rimaste (B171: 6 demo/company/* RIDONDANTI rimosse; ────────
+// ── 3 route gated rimaste (B171: 6 demo/company/* RIDONDANTI rimosse; ────────
 //    CC-00, 2026-09-06: index-registry separately retired — canonicalized
-//    into app/admin/page.tsx's own Intelligence Grid panel) ────────────────
+//    into app/admin/page.tsx's own Intelligence Grid panel; CC-00,
+//    2026-09-12: portfolio separately retired — canonicalized into
+//    app/admin/companies/page.tsx, already-existing Company Console) ───────
 
-describe('4 route gated ancora presenti (non RIDONDANTI)', () => {
+describe('3 route gated ancora presenti (non RIDONDANTI)', () => {
   const GATED_PAGES = [
-    'app/demo/portfolio/page.tsx',
     'app/demo/network/page.tsx',
     'app/demo/advisor/page.tsx',
     'app/demo/ai-onboarding/page.tsx',
   ];
 
-  it('tutte le 4 page.tsx gated ancora presenti', () => {
+  it('tutte le 3 page.tsx gated ancora presenti', () => {
     for (const page of GATED_PAGES) {
       expect(exists(page), `${page} deve esistere`).toBe(true);
     }
@@ -269,6 +276,10 @@ describe('4 route gated ancora presenti (non RIDONDANTI)', () => {
 
   it('app/demo/index-registry/page.tsx è stato separatamente ritirato da CC-00 (nota storica, non asserzione live)', () => {
     expect(exists('app/demo/index-registry/page.tsx')).toBe(false);
+  });
+
+  it('app/demo/portfolio/page.tsx è stato separatamente ritirato da CC-00 (nota storica, non asserzione live)', () => {
+    expect(exists('app/demo/portfolio/page.tsx')).toBe(false);
   });
 
   it('le 6 /demo/company/* RIDONDANTI non esistono più (B171)', () => {

@@ -253,8 +253,12 @@ describe('B-TRUTH — registry and I9 reflect the migration', () => {
     expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/report-factory\/ReportFactoryService\.ts'/);
   });
 
-  it('allowlist header reflects the reduced count, 12 files / 20 imports', () => {
+  // CC-00 Company Portfolio capability salvage + canonicalization
+  // (2026-09-12) later, separately, reduced the import count further, to
+  // 12 files / 18 imports. See
+  // tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('allowlist header reflects the current count, 12 files / 18 imports (historical note: this PR itself produced 12/20)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 20 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 18 import statements');
   });
 });

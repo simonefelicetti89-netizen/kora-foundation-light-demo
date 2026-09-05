@@ -185,10 +185,17 @@ describe('CC-00 Phase 1 — no test-tenant special branch, no tenant_kind produc
 });
 
 describe('CC-00 Phase 1 — this slice touched ONLY the two authorized methods (scope boundary)', () => {
-  it('getCompanyPortfolioPreview is untouched — still exists, still synthetic-backed, unchanged shape', () => {
+  // getCompanyPortfolioPreview was accurately untouched, still
+  // synthetic-backed, at the time this test was written. CC-00 Company
+  // Portfolio capability salvage + canonicalization (2026-09-12) later,
+  // separately, retired it outright — its real capability already existed,
+  // canonically, at app/admin/companies/page.tsx. See
+  // tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('getCompanyPortfolioPreview has since been separately retired (historical note, not a live assertion)', () => {
     const src = read('services/admin-preview/AdminPreviewService.ts');
-    expect(src).toContain('getCompanyPortfolioPreview(): CompanyPortfolioEntry[]');
-    expect(src).toContain('export interface CompanyPortfolioEntry');
+    const codeOnly = stripComments(src);
+    expect(codeOnly).not.toContain('getCompanyPortfolioPreview(');
+    expect(codeOnly).not.toContain('export interface CompanyPortfolioEntry');
   });
 
   // getSourceIntakePreview, getMappingIntelligencePreview,
@@ -233,9 +240,12 @@ describe('CC-00 Phase 1 — this slice touched ONLY the two authorized methods (
     expect(existsSync(resolve(root, 'app/demo/index-registry'))).toBe(false);
   });
 
-  it('app/demo/portfolio/page.tsx is untouched', () => {
-    const src = read('app/demo/portfolio/page.tsx');
-    expect(src).toContain('adminPreviewService.getCompanyPortfolioPreview()');
+  // app/demo/portfolio/page.tsx was accurately untouched at the time this
+  // test was written. CC-00 Company Portfolio capability salvage +
+  // canonicalization (2026-09-12) later, separately, retired the entire
+  // route — see tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('app/demo/portfolio has since been separately retired (historical note, not a live assertion)', () => {
+    expect(existsSync(resolve(root, 'app/demo/portfolio'))).toBe(false);
   });
 
   it('B-WORKER, My KORA, and final scoring are untouched — still exist, unmodified reachability', () => {
@@ -301,9 +311,16 @@ describe('CC-00 Phase 1 — RLS-20 is wired into the mandatory CI DB-backed gate
 });
 
 describe('CC-00 Phase 1 — I9 remains as expected (not force-reduced)', () => {
-  it('allowlist header count is unchanged — this slice removes a method, not a synthetic import', () => {
+  // The header count was accurately "12 files / 20 import statements" at
+  // the time this test was written (this slice removed a method, not a
+  // synthetic import). CC-00 Company Portfolio capability salvage +
+  // canonicalization (2026-09-12) later, separately, reduced the import
+  // count when it retired getCompanyPortfolioPreview() — file count
+  // unchanged (12), import count 20->18. See
+  // tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('allowlist header count reflects the current total (historical note: was 20 imports, now 18)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 20 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 18 import statements');
     expect(allowlist).toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 });

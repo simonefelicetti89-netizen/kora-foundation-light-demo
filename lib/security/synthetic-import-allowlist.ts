@@ -14,11 +14,33 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 20 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 18 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// CC-00 — Company Portfolio capability salvage + canonicalization
+// (2026-09-12): getCompanyPortfolioPreview() retired from
+// services/admin-preview/AdminPreviewService.ts (real capability already
+// existed, canonically, at app/admin/companies/page.tsx — "Company
+// Console" — richer and DB-backed; see that method's own removal comment
+// and lib/architecture/registry.ts's svc.admin-preview entry for the full
+// rationale). This removed 2 of that file's 3 synthetic imports
+// (data/synthetic/companies.json, data/synthetic/kora-index-outputs.json) —
+// its third, data/synthetic/source-batches.json, remains needed by the
+// non-retired getAIOnboardingPreview, so the FILE stays on the allowlist
+// (12 files unchanged) while the IMPORT count drops (20->18 imports).
+// Neither JSON fixture became fully zero-consumer overall — companies.json
+// remains needed by services/demo-data/DemoDataService.ts, and
+// kora-index-outputs.json remains needed by 6 other real consumers
+// (app/page.tsx, app/demo/page.tsx, app/demo/gtm/page.tsx,
+// components/demo/DemoGuideContent.tsx,
+// services/scoring/DemoScoringAdapter.ts,
+// services/scoring-simulator/ScoringSimulatorService.ts) — verified by
+// direct repo-wide grep before this change, not assumed. See
+// tests/unit/cc00-portfolio-canonicalization.test.ts for the regression
+// guard proving both the retirement and the scope boundary.
 //
 // B-TRUTH ReportFactoryService Canonical Decision Pack Status Migration (2026-09-06): deleted services/report-factory/ReportFactoryService.ts and its sole seed file, data/synthetic/decision-pack-versions.json (confirmed, by direct repo-wide grep before deletion, zero remaining real consumers of the JSON — the only other hits were governance-comment prose, not imports). This is PR 4 of the founder-ratified ONE_PRODUCT_CANONICAL_MIGRATION plan (PR 1 = B-TRUTH KoraTest Canonical Foundation; PR 2 = B-TRUTH TenantService Canonical Migration; PR 3 = B-TRUTH CompanyDataIntakeService Canonical Migration). Independently re-verified before deletion: the service's sole real runtime caller, app/admin/pipeline/_components/PilotLifecycleClient.tsx, was traced field-by-field — of the legacy 9-field DecisionPackFactoryStatus return shape (company_id, tenant_id, latest_version_id, latest_status, can_generate, can_export_pdf, can_share, blocking_reasons, warnings, next_action), the caller read exactly ONE field, latest_status, compared to 'ready'. Per this migration's own "map only what the canonical model actually supports, do not fake 1:1 parity with legacy synthetic fields" rule, the blocking_reasons/warnings/next_action/can_generate apparatus (itself built from a private hasKoraIndex() call into the still-synthetic ScoringSimulatorService demo path) was DROPPED, not migrated — it never had a real consumer, so there was nothing canonical to migrate it onto; this also means hasKoraIndex()'s ScoringSimulatorService dependency is dropped along with it, not reimplemented against a canonical KORA Index existence check, and final scoring remains completely untouched by this migration — not because a canonical replacement was avoided, but because nothing downstream ever needed it. The replacement is a new shared pure view builder, lib/live/decision-pack-status-view.ts, reading directly from analytics.decision_pack_version (status, created_at columns), fetched once by app/admin/pipeline/page.tsx (already a Server Component) and passed down to PilotLifecycleClient.tsx as a new decisionPack prop — same "fetch once server-side, thread down as props" discipline as the prior two PRs. Version-selection rule (multiple analytics.decision_pack_version rows can exist per tenant): latest by created_at — the same precedent already used by lib/live/data-intake-status-view.ts and, before that, by the operator-flow route's own GET handler for this exact table; not invented for this migration. No tenant_kind branch was introduced — the view builder and its query shape are identical for KoraTest Srl (tenant_kind=TEST) and any tenant_kind=LIVE tenant. CanonicalTenantStatus (formerly exported from ReportFactoryService.ts) needed no relocation: repo-wide grep confirmed zero remaining real or type-only importers of it once the getDecisionPackFactoryStatus call site was removed — the type is deleted along with the file it was defined in, not moved. AccountProvisioningService, AdminPreviewService, final scoring, and B-WORKER are all explicitly untouched — one PR = one bounded migration. ReportFactoryService.ts was an I9 allowlist entry — thirteenth genuine I9 reduction via a real caller migration: 13->12 files (21->20 imports, 1 fewer import since this file's only synthetic import was the single decision-pack-versions.json read). See tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts for the regression guard proving both the deletion and the scope boundary.
 //
