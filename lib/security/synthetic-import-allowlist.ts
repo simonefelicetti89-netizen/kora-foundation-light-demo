@@ -14,7 +14,27 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements
+// CC-00 Bucket C cleanup (2026-09-05): app/demo/page.tsx and
+// services/founder-validation/FounderValidationService.ts both removed
+// from this allowlist entirely (8->6 files, 13->11 imports) — the only two
+// I9 residuals independent of both the final-scoring cluster (Bucket A:
+// ScoringSimulatorService, DemoDataService, ActivationSafeguardService) and
+// the worker/My-KORA cluster (Bucket B: WorkerProvisioningService,
+// WorkerAchievementService, AccountProvisioningService), per the CC-00
+// Closure Decision Gate's own bucket analysis. app/demo/page.tsx's
+// "Scenari dimostrativi" section (two named companies with a specific
+// claimed KORA Index/Confidence Score/Safeguard result — one real-seed-backed,
+// one entirely fabricated) is replaced with the same real, static,
+// canonical schematic pattern app/page.tsx already established (real 0–100
+// scale, real Safeguard states, real macroblock weights — no company name,
+// no claimed result). FounderValidationService.ts's
+// data/synthetic/founder-validation-leads.json (5 fictional companies,
+// created once in the original B96-B commit, never subsequently
+// maintained, zero persistence/mutation path) is retired to a real, honest
+// empty LEADS array — the tool itself, and every derived view, is
+// unchanged; no founder CRM schema was invented.
+//
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
@@ -586,11 +606,9 @@ export interface SyntheticImportAllowlistEntry {
 }
 
 export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
-  { file: 'app/demo/page.tsx', reason: 'Demo entry surface — reads pre-computed S1 KORA Index output.' },
   { file: 'services/account/AccountProvisioningService.ts', reason: 'Demo account registry — reads synthetic user accounts.' },
   { file: 'services/activation-safeguard/ActivationSafeguardService.ts', reason: 'Reads pre-computed synthetic Activation Safeguard results (demo scoring path).' },
   { file: 'services/demo-data/DemoDataService.ts', reason: 'Central synthetic seed reader — companies, departments/sites, programs, aggregates. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
-  { file: 'services/founder-validation/FounderValidationService.ts', reason: 'Internal/admin-only founder validation leads seed.' },
   { file: 'services/scoring-simulator/ScoringSimulatorService.ts', reason: 'Demo scoring path — KORA Index outputs, company aggregates, confidence records. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
   { file: 'services/worker-achievements/WorkerAchievementService.ts', reason: 'Worker-private demo achievements seed.' },
   { file: 'services/worker-provisioning/WorkerProvisioningService.ts', reason: 'Demo worker roster seed for provisioning flows.' },

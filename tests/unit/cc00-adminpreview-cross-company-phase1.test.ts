@@ -347,10 +347,11 @@ describe('CC-00 Phase 1 — I9 remains as expected (not force-reduced)', () => {
   // CC-00 Residual /demo/** controlled retirement (2026-09-26, same day,
   // later slice) reduced it further to 8 files / 13 imports and rewrote
   // AdminPreviewService.ts down to zero synthetic imports — it is no
-  // longer an allowlist entry at all.
-  it('allowlist header count reflects the current total (historical note: was 20, then 18, then 16, now 13 imports)', () => {
+  // longer an allowlist entry at all. CC-00 Bucket C cleanup (2026-09-05, a
+  // later, separate slice) reduced it further still to 6 files / 11 imports.
+  it('allowlist header count reflects the current total (historical note: was 20, then 18, then 16, then 13, now 11 imports)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
     expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 });

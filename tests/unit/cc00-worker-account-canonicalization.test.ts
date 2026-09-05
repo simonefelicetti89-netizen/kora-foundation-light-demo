@@ -60,9 +60,14 @@ describe('CC-00 Worker/Account audit — synthetic imports unchanged (nothing sa
     );
   });
 
-  it('allowlist header still reflects 8 files / 13 import statements — unchanged by this audit', () => {
+  // 8 files / 13 imports was accurate at the time this audit ran. CC-00
+  // Bucket C cleanup (2026-09-05, a later, separate slice) resolved the 2
+  // I9 residuals independent of this cluster (app/demo/page.tsx,
+  // FounderValidationService.ts) — none of the 4 worker/account-cluster
+  // files this audit examined were touched by that slice.
+  it('allowlist header now reflects 6 files / 11 import statements — unchanged for this cluster (historical note: was 8/13 at the time this audit ran)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
   });
 });
 

@@ -374,10 +374,12 @@ describe('CC-00 Admin Console canonicalization — I9 unaffected', () => {
   // tests/unit/cc00-public-landing-canonicalization.test.ts.
   // CC-00 Residual /demo/** controlled retirement (2026-09-26, same day,
   // later slice) reduced it further to 8 files / 13 imports and rewrote
-  // AdminPreviewService.ts down to zero synthetic imports.
-  it('allowlist header count is unchanged by THIS slice (historical note: a later slice changed the count to 13)', () => {
+  // AdminPreviewService.ts down to zero synthetic imports. CC-00 Bucket C
+  // cleanup (2026-09-05, a later, separate slice) reduced it further still
+  // to 6 files / 11 imports.
+  it('allowlist header count is unchanged by THIS slice (historical note: later slices changed the count, most recently to 6/11)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
   });
 
   it('AdminPreviewService.ts imports zero synthetic fixtures (historical note: used to still import source-batches.json)', () => {

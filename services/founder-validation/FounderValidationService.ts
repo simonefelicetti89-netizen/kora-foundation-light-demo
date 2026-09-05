@@ -2,9 +2,21 @@
 // B96-B — Founder Validation Service
 // Internal founder tool — tracks commercial and pilot validation signals.
 // NOT part of KORA Index, product methodology, or company-visible outputs.
-// Admin/Founder only. No DB. No persistence. Pure demo service.
-
-import rawLeads from '@/data/synthetic/founder-validation-leads.json';
+// Admin/Founder only. No DB. No persistence.
+//
+// CC-00 Bucket C cleanup (2026-09-05): data/synthetic/founder-validation-leads.json
+// (5 fictional companies — "Galileo Industrie", "Helix Assicurazioni", etc.,
+// created once in the original B96-B commit and never subsequently
+// maintained) is retired. This page has never had any data-entry/mutation
+// path (100% read-only display, zero persistence layer) — the fixture was
+// always a static illustration of what a populated cockpit would show, not
+// real founder pipeline data. LEADS is now a real, honest empty array; every
+// derived view (funnel, objections, feedback themes, pipeline value, next
+// actions, investor signals) already degrades gracefully to zero/empty —
+// no method below was changed. A real founder CRM/leads schema is
+// explicitly NOT invented here (out of this slice's scope) — if/when the
+// founder needs persisted lead tracking, that requires its own, separately
+// authorized capability, not a synthetic placeholder.
 import {
   STAGE_META,
   OBJECTION_LABELS,
@@ -22,7 +34,7 @@ import {
   type FeedbackTheme,
 } from '@/lib/founder-validation/types';
 
-const LEADS = rawLeads as ValidationLead[];
+const LEADS: ValidationLead[] = [];
 
 // ── Active funnel stages (ordered) ──────────────────────────────────────────
 

@@ -263,22 +263,26 @@ describe('CC-00 Public Landing canonicalization — untouched surfaces', () => {
 describe('CC-00 Public Landing canonicalization — I9 reflects the import removal', () => {
   // 11 files / 16 imports was accurate at the time this slice landed.
   // CC-00 Residual /demo/** controlled retirement (2026-09-26, a later,
-  // separate slice) reduced it further to 8 files / 13 imports. See
+  // separate slice) reduced it further to 8 files / 13 imports, and CC-00
+  // Bucket C cleanup (2026-09-05, a later, separate slice) reduced it
+  // further still to 6 files / 11 imports. See
   // tests/unit/cc00-residual-demo-retirement.test.ts.
-  it('allowlist header reflects 8 files / 13 import statements (historical note: was 16 imports at the time this slice landed)', () => {
+  it('allowlist header reflects 6 files / 11 import statements (historical note: was 16, then 13, imports at the time this slice landed)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
   });
 
   // app/demo/gtm/page.tsx and components/demo/DemoGuideContent.tsx were
   // both accurately kora-index-outputs.json consumers at the time this
   // slice landed. CC-00 Residual /demo/** controlled retirement
   // (2026-09-26) retired both files entirely — removed from this list, not
-  // replaced (app/demo/page.tsx and ScoringSimulatorService.ts remain
-  // real, live consumers).
+  // replaced. app/demo/page.tsx was also accurately a consumer; CC-00
+  // Bucket C cleanup (2026-09-05) replaced its "Scenari dimostrativi"
+  // fake-company-with-claimed-score section with a real static schematic
+  // card (no synthetic import) — removed from this list too.
+  // ScoringSimulatorService.ts remains the real, live consumer.
   it('neither fixture became zero-consumer overall — both remain needed by other real consumers', () => {
     const koraIndexOutputsConsumers = [
-      'app/demo/page.tsx',
       'services/scoring-simulator/ScoringSimulatorService.ts',
     ];
     for (const file of koraIndexOutputsConsumers) {

@@ -266,11 +266,12 @@ describe('B-TRUTH — I9 and registry reflect an additive, non-migrating change'
   // later, separately, reduced the import count to 18, CC-00 Public
   // Landing canonicalization (2026-09-26) reduced it further to 16, and
   // CC-00 Residual /demo/** controlled retirement (2026-09-26, same day,
-  // later slice) reduced it further to 13 — all unrelated to this PR's own
-  // scope. See tests/unit/cc00-residual-demo-retirement.test.ts.
+  // later slice) reduced it further to 13, and CC-00 Bucket C cleanup
+  // (2026-09-05) reduced it further still to 11 — all unrelated to this
+  // PR's own scope. See tests/unit/cc00-residual-demo-retirement.test.ts.
   it('I9 allowlist is completely unaffected by THIS PR — this PR adds no new data/synthetic/** consumer and removes none (historical note: later, unrelated PRs changed the count)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
     expect(allowlist).not.toMatch(/\{\s*file:\s*'scripts\/koratest-canonical-seed\.ts'/);
   });
 
