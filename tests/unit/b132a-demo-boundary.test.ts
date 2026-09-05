@@ -87,9 +87,15 @@ describe('B132-A Step 1 — demo hub structure (app/demo/page.tsx)', () => {
     expect(src).toContain('data-testid="demo-disclaimer"');
   });
 
-  it('demo-scenario testid pattern is preserved', () => {
-    // Source uses template literal: data-testid={`demo-scenario-${s.id}`}
-    expect(src).toContain('demo-scenario-${s.id}');
+  // The demo-scenario-${s.id} testid pattern was accurately preserved here
+  // at the time this test was written, backing the "Scenari dimostrativi"
+  // section's 2 named-company cards. CC-00 Bucket C cleanup (2026-09-05)
+  // replaced that section with a real static schematic card (no company
+  // name, no claimed result) — there is no per-scenario testid left to
+  // check.
+  it('demo-index-schematic testid replaces the retired demo-scenario pattern (historical note)', () => {
+    expect(src).toContain('data-testid="demo-index-schematic"');
+    expect(src).not.toContain('demo-scenario-');
   });
 
   it('Future Vision is labeled INATTIVO', () => {

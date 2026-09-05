@@ -8,6 +8,8 @@
 // Founder tool only — not part of KORA Index or product methodology.
 
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import { founderValidationService } from '../../services/founder-validation/FounderValidationService';
 import { buildNavGroups } from '../../components/layout/Sidebar';
 import {
@@ -27,9 +29,16 @@ import {
 
 describe('B96-B Seed data — completeness and structure', () => {
 
-  it('loads at least 10 leads', () => {
+  // The seed accurately loaded >=10 leads at the time this test was written.
+  // CC-00 Bucket C cleanup (2026-09-05) retired data/synthetic/founder-validation-leads.json
+  // (5 fictional companies, created once in the original B96-B commit and
+  // never subsequently maintained, zero persistence/mutation path — a pure
+  // demo mockup, not real founder pipeline data) to a real, honest empty
+  // array. LEADS is now legitimately 0 until real leads are entered through
+  // a genuine persistence layer (not built here — no CRM schema invented).
+  it('loads leads without a fabricated seed (historical note: used to load >=10 synthetic leads)', () => {
     const leads = founderValidationService.getLeads();
-    expect(leads.length).toBeGreaterThanOrEqual(10);
+    expect(leads.length).toBe(0);
   });
 
   it('every lead has required string fields non-empty', () => {
@@ -117,14 +126,16 @@ describe('B96-B Seed data — completeness and structure', () => {
     }
   });
 
-  it('seed data includes all required stages for a realistic funnel', () => {
+  // The synthetic seed accurately covered a realistic funnel spread at the
+  // time this test was written. CC-00 Bucket C cleanup (2026-09-05) retired
+  // that seed to an honest empty array — there are no stages to check
+  // presence of anymore; FUNNEL_STAGES (the ordered stage list itself,
+  // unrelated to lead data) remains intact and is checked elsewhere
+  // (B96-B Funnel summary's "funnel stages array covers all 6 active
+  // funnel stages").
+  it('seed data no longer fabricates a funnel (historical note: used to cover a realistic stage spread)', () => {
     const leads = founderValidationService.getLeads();
-    const stages = new Set(leads.map((l) => l.stage));
-    // A realistic validation funnel must have at least contacted, meeting_done, and one advanced stage
-    expect(stages.has('contacted')).toBe(true);
-    expect(stages.has('meeting_done')).toBe(true);
-    const hasAdvanced = stages.has('pilot_interested') || stages.has('loi_discussed') || stages.has('loi_signed');
-    expect(hasAdvanced).toBe(true);
+    expect(leads.length).toBe(0);
   });
 });
 
@@ -208,9 +219,13 @@ describe('B96-B Conversion rates', () => {
 
 describe('B96-B Objection aggregation', () => {
 
-  it('returns non-empty objection list', () => {
+  // The synthetic seed accurately produced a non-empty objection list at
+  // the time this test was written. CC-00 Bucket C cleanup (2026-09-05)
+  // retired that seed to an honest empty array — getTopObjections()
+  // correctly returns [] now (no fabricated objections).
+  it('returns an empty objection list (historical note: seed used to produce a non-empty one)', () => {
     const objections = founderValidationService.getTopObjections();
-    expect(objections.length).toBeGreaterThan(0);
+    expect(objections).toEqual([]);
   });
 
   it('objection counts are positive integers', () => {
@@ -248,9 +263,13 @@ describe('B96-B Objection aggregation', () => {
 
 describe('B96-B Feedback theme aggregation', () => {
 
-  it('returns non-empty theme list', () => {
+  // The synthetic seed accurately produced a non-empty theme list at the
+  // time this test was written. CC-00 Bucket C cleanup (2026-09-05) retired
+  // that seed to an honest empty array — getFeedbackThemes() correctly
+  // returns [] now (no fabricated themes).
+  it('returns an empty theme list (historical note: seed used to produce a non-empty one)', () => {
     const themes = founderValidationService.getFeedbackThemes();
-    expect(themes.length).toBeGreaterThan(0);
+    expect(themes).toEqual([]);
   });
 
   it('theme counts are positive integers', () => {
@@ -286,9 +305,13 @@ describe('B96-B Next actions', () => {
     expect(actions.length).toBeLessThanOrEqual(5);
   });
 
-  it('returns at least 1 next action', () => {
+  // The synthetic seed accurately produced at least 1 next action at the
+  // time this test was written. CC-00 Bucket C cleanup (2026-09-05) retired
+  // that seed to an honest empty array — getNextActions() correctly
+  // returns [] now (no fabricated actions).
+  it('returns zero next actions (historical note: seed used to produce at least 1)', () => {
     const actions = founderValidationService.getNextActions();
-    expect(actions.length).toBeGreaterThan(0);
+    expect(actions).toEqual([]);
   });
 
   it('next actions are sorted by date ascending', () => {
@@ -327,9 +350,13 @@ describe('B96-B Pilot pipeline value', () => {
     expect(typeof pipeline.lead_count).toBe('number');
   });
 
-  it('total_eur is positive', () => {
+  // The synthetic seed accurately produced a positive total_eur at the time
+  // this test was written. CC-00 Bucket C cleanup (2026-09-05) retired that
+  // seed to an honest empty array — getPilotPipelineValue().total_eur
+  // correctly returns 0 now (no fabricated pipeline value).
+  it('total_eur is zero (historical note: seed used to produce a positive value)', () => {
     const pipeline = founderValidationService.getPilotPipelineValue();
-    expect(pipeline.total_eur).toBeGreaterThan(0);
+    expect(pipeline.total_eur).toBe(0);
   });
 
   it('total_eur >= loi_signed_eur + loi_discussed_eur + pilot_interested_eur', () => {
@@ -514,12 +541,21 @@ describe('B96-B Privacy invariants', () => {
     }
   });
 
-  it('validation service is independent of scoring or KORA Index services', () => {
-    // Service returns data without depending on ScoringSimulatorService
+  // leads.length > 0 / funnel.contacted_total > 0 were accurate proxies for
+  // "returns real data without depending on ScoringSimulatorService" at the
+  // time this test was written. CC-00 Bucket C cleanup (2026-09-05) retired
+  // the seed to an honest empty array — the actual independence property
+  // (this service imports nothing from scoring-simulator/ or kora-engine/)
+  // is what the test now checks directly, rather than inferring it from a
+  // nonzero count.
+  it('validation service is independent of scoring or KORA Index services (historical note: was inferred from nonzero seed counts)', () => {
+    const src = readFileSync(resolve(__dirname, '../../services/founder-validation/FounderValidationService.ts'), 'utf-8');
+    expect(src).not.toContain('scoring-simulator');
+    expect(src).not.toContain('kora-engine');
     const leads  = founderValidationService.getLeads();
     const funnel = founderValidationService.getFunnelSummary();
-    expect(leads.length).toBeGreaterThan(0);
-    expect(funnel.contacted_total).toBeGreaterThan(0);
+    expect(leads.length).toBe(0);
+    expect(funnel.contacted_total).toBe(0);
   });
 });
 

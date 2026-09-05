@@ -439,9 +439,9 @@ describe('CC-00 Portfolio canonicalization — I9 reflects the import reduction'
   // (2026-09-26, same day, later slice) retired getAIOnboardingPreview's
   // sole caller and rewrote AdminPreviewService.ts to zero synthetic
   // imports — it is no longer an allowlist entry at all.
-  it('allowlist header reflects 8 files / 13 import statements (historical note: was 16 imports at the time this slice landed)', () => {
+  it('allowlist header reflects 6 files / 11 import statements (historical note: was 16, then 13, imports at the time this slice landed)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
     expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 
@@ -462,14 +462,16 @@ describe('CC-00 Portfolio canonicalization — I9 reflects the import reduction'
   // app/page.tsx's synthetic imports, and CC-00 Residual /demo/**
   // controlled retirement (2026-09-26, same day, later slice) deleted
   // both app/demo/gtm/page.tsx and DemoGuideContent.tsx entirely — removed
-  // from this list, not replaced (app/demo/page.tsx and
-  // ScoringSimulatorService.ts remain real, live consumers). See
+  // from this list, not replaced. app/demo/page.tsx was also accurately a
+  // consumer; CC-00 Bucket C cleanup (2026-09-05) replaced its "Scenari
+  // dimostrativi" fake-company-with-claimed-score section with a real
+  // static schematic card (no synthetic import) — removed from this list
+  // too. ScoringSimulatorService.ts remains the real, live consumer. See
   // tests/unit/cc00-public-landing-canonicalization.test.ts and
   // tests/unit/cc00-residual-demo-retirement.test.ts.
   it('neither fixture became zero-consumer overall — both remain needed by other real consumers', () => {
     expect(read('services/demo-data/DemoDataService.ts')).toContain('companies.json');
     const otherConsumers = [
-      'app/demo/page.tsx',
       'services/scoring-simulator/ScoringSimulatorService.ts',
     ];
     for (const file of otherConsumers) {

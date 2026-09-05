@@ -312,9 +312,12 @@ describe('CC-00 Residual demo retirement — untouched surfaces', () => {
 // ── 10. I9/I10 reflect this slice; CC-00 remains open ────────────────────────
 
 describe('CC-00 Residual demo retirement — I9/I10 and CC-00 status', () => {
-  it('allowlist header reflects 8 files / 13 import statements', () => {
+  // 8 files / 13 imports was accurate at the time this slice landed.
+  // CC-00 Bucket C cleanup (2026-09-05, a later, separate slice) reduced
+  // it further to 6 files / 11 imports.
+  it('allowlist header reflects 6 files / 11 import statements (historical note: was 8/13 at the time this slice landed)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
     expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 

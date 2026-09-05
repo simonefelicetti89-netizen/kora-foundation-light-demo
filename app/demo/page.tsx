@@ -1,10 +1,7 @@
 // app/demo/page.tsx — B132-A: Demo area home — struttura narrativa a 4 sezioni.
 // B129: Demo area home originale.
 // Synthetic data only — no getSupabaseServiceClient, no getSupabaseServerClient,
-// no live DB queries. Numbers are canonical demo values from Foundation Light v2.0.
-//   S1 (Meridiana): letti da data/synthetic/kora-index-outputs.json[0]
-//   S2 (Ferretti):  nessuna voce seed — STOP-AND-REPORT: seed S2 Ferretti non ancora creato.
-//                   Valore conservato temporaneamente; creare voce seed prima del merge.
+// no live DB queries.
 //
 // CC-00 — Residual /demo/** controlled retirement (2026-09-26): the
 // "Ecosistema & Advisor" (advisor, network, benchmark), "Pipeline &
@@ -15,48 +12,40 @@
 // canonical company surfaces) and "Roadmap" (Future Vision — a
 // constitutionally-designated category per CLAUDE.md §10/§16/Red Line #10,
 // not an ordinary demo preview) are untouched.
+//
+// CC-00 Bucket C cleanup (2026-09-05): the former "Scenari dimostrativi"
+// section named two companies — one real (S1, read from
+// data/synthetic/kora-index-outputs.json[0]) and one entirely fabricated,
+// never even seed-backed (S2 "Ferretti Holding", hardcoded koraIndex: 54 /
+// safeguard: 'CLEAR' / cs: '74%', per this file's own now-removed TODO
+// admitting the seed was never created) — each with a specific claimed
+// KORA Index value, Confidence Score, and Safeguard status. This is exactly
+// the "fake company + claimed score = customer proof" pattern CC-00 removed
+// from the public landing page (see app/page.tsx's own Index Anatomy card
+// and CC-00 Public Landing canonicalization, 2026-09-26). Replaced with the
+// same real, static, canonical schematic pattern app/page.tsx already
+// established: the real 0–100 scale, the 3 real Activation Safeguard
+// states, the real "Confidence Score external, weight 0" fact, and the
+// real macroblock weights from lib/methodology-config/v0.1.ts — no company
+// name, no claimed result, no invented replacement number.
 
 export const dynamic = 'force-static';
 
 import Link from 'next/link';
 import { DemoAccessBanner } from '@/components/demo/DemoAccessBanner';
-import koraOutputsRaw from '@/data/synthetic/kora-index-outputs.json';
+import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
-const _outputs = (koraOutputsRaw as { data: Array<Record<string, unknown>> }).data;
-const _s1 = _outputs[0]!;
+const MB_WEIGHTS = getMacroblockWeights();
+const pct = (w: number) => Math.round(w * 100);
 
-function _safeguardStyle(status: string) {
-  if (status === 'CLEAR')   return { background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' };
-  if (status === 'WARNING') return { background: '#fffbeb', color: '#92400e', border: '1px solid #fcd34d' };
-  return { background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5' };
-}
-
-const DEMO_SCENARIOS = [
-  {
-    id:         'S1',
-    company:    'Meridiana Group S.r.l.',
-    sector:     'Manifattura · 250 lavoratori',
-    koraIndex:  _s1['kora_index_value'] as number,
-    safeguard:  _s1['safeguard_status'] as string,
-    cs:         `${Math.round((_s1['confidence_score'] as number) * 100)}%`,
-    description: 'Attivazione concentrata in pochi reparti. Maggioranza silenziosa evidente. Activation Debt significativo.',
-    safeguardStyle: _safeguardStyle(_s1['safeguard_status'] as string),
-  },
-  {
-    // TODO(sprint3-seed): S2 Ferretti non ha ancora voce in kora-index-outputs.json.
-    // Creare seed S2 prima di rimuovere questi valori temporanei.
-    id:         'S2',
-    company:    'Ferretti Holding S.p.A.',
-    sector:     'Logistica · 180 lavoratori',
-    koraIndex:  54,
-    safeguard:  'CLEAR',
-    cs:         '74%',
-    description: 'Distribuzione bilanciata. Continuità cross-pillar. Budget-to-Human-Impact positivo.',
-    safeguardStyle: _safeguardStyle('CLEAR'),
-  },
-] as unknown as Array<{ id: string; company: string; sector: string; koraIndex: number; safeguard: string; cs: string; description: string; safeguardStyle: Record<string, string> }>;
+const MACROBLOCKS = [
+  { label: 'Activation Reach',       weight: pct(MB_WEIGHTS.REACH)   },
+  { label: 'Activation Quality',     weight: pct(MB_WEIGHTS.QUALITY) },
+  { label: 'Distribution & Equity',  weight: pct(MB_WEIGHTS.EQUITY)  },
+  { label: 'Budget-to-Human-Impact', weight: pct(MB_WEIGHTS.BTI)     },
+];
 
 interface DemoSurface {
   label: string;
@@ -127,49 +116,47 @@ export default function DemoHomePage() {
         </p>
       </div>
 
-      {/* ── Scenari dimostrativi ──────────────────────────────────────────── */}
+      {/* ── Anatomia del KORA Index — schematico, nessuna azienda, nessun
+             risultato attribuito: solo la scala reale (0–100), i 3 stati
+             reali dell'Activation Safeguard, e i pesi reali dei macroblocchi
+             (lib/methodology-config/v0.1.ts). ─────────────────────────────── */}
       <section style={{ marginBottom: 48 }}>
         <h2 style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.40)', marginBottom: 16 }}>
-          Scenari dimostrativi
+          Anatomia del KORA Index
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
-          {DEMO_SCENARIOS.map((s) => (
-            <div
-              key={s.id}
-              data-testid={`demo-scenario-${s.id}`}
-              style={{ background: '#FFFFFF', border: '1px solid rgba(6,3,43,0.09)', borderRadius: 14, padding: '24px 22px' }}
-            >
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#B5512E', padding: '2px 6px', background: 'rgba(181,81,46,0.08)', borderRadius: 4 }}>
-                  {s.id}
-                </span>
-                <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 999, fontWeight: 700, ...s.safeguardStyle }}>
-                  {s.safeguard}
-                </span>
+        <div
+          data-testid="demo-index-schematic"
+          style={{ background: '#FFFFFF', border: '1px solid rgba(6,3,43,0.09)', borderRadius: 14, padding: '24px 22px', maxWidth: 480 }}
+        >
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#B5512E', marginBottom: 10 }}>
+            KORA Index v1.0 · Esempio schematico
+          </p>
+          <p style={{ fontSize: '1.75rem', fontWeight: 800, color: '#211F1A', lineHeight: 1, marginBottom: 14 }}>
+            0–100
+          </p>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 999, fontWeight: 700, background: '#fffbeb', color: '#92400e', border: '1px solid #fcd34d' }}>
+              CLEAR · WARNING · FLAGGED
+            </span>
+            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 999, fontWeight: 700, background: 'rgba(6,3,43,0.05)', color: 'rgba(6,3,43,0.55)' }}>
+              CS esterno · peso 0
+            </span>
+          </div>
+          <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', marginBottom: 16 }}>pre_empirical_calibration</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+            {MACROBLOCKS.map((mb) => (
+              <div key={mb.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                <span style={{ color: 'rgba(6,3,43,0.60)' }}>{mb.label}</span>
+                <span style={{ fontWeight: 700, color: '#211F1A' }}>{mb.weight}%</span>
               </div>
-              <h3 style={{ fontWeight: 800, fontSize: '1rem', color: '#211F1A', marginBottom: 3, lineHeight: 1.3 }}>
-                {s.company}
-              </h3>
-              <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', marginBottom: 14 }}>{s.sector}</p>
-              <div style={{ display: 'flex', gap: 20, marginBottom: 14 }}>
-                <div>
-                  <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', marginBottom: 3 }}>KORA Index™</p>
-                  <p style={{ fontSize: '1.75rem', fontWeight: 800, color: '#211F1A', lineHeight: 1 }}>{s.koraIndex}</p>
-                </div>
-                <div>
-                  <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', marginBottom: 3 }}>Confidence Score™</p>
-                  <p style={{ fontSize: '1.75rem', fontWeight: 800, color: '#211F1A', lineHeight: 1 }}>{s.cs}</p>
-                </div>
-              </div>
-              <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', lineHeight: 1.55, marginBottom: 16 }}>{s.description}</p>
-              <Link
-                href="/company/kora-index"
-                style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: '#B5512E', textDecoration: 'none' }}
-              >
-                Esplora KORA Index™ →
-              </Link>
-            </div>
-          ))}
+            ))}
+          </div>
+          <Link
+            href="/company/kora-index"
+            style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: '#B5512E', textDecoration: 'none' }}
+          >
+            Esplora KORA Index™ →
+          </Link>
         </div>
       </section>
 
@@ -177,7 +164,7 @@ export default function DemoHomePage() {
       <section data-testid="demo-section-intelligence" style={{ marginBottom: 40 }}>
         <SectionHeading
           label="Intelligence Aziendale"
-          subtitle="Cosa vede un'azienda pilota KORA — dati sintetici S1/S2."
+          subtitle="Cosa vede un'azienda pilota KORA."
         />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {SECTION_INTELLIGENCE.map((s) => <SurfaceLink key={s.href} surface={s} />)}

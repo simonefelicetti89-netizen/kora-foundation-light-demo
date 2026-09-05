@@ -292,10 +292,12 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — I9 unaffected (retirement
   // later slice) retired getAIOnboardingPreview's sole caller
   // (app/demo/ai-onboarding/) and removed source-batches.json along with
   // it — AdminPreviewService.ts is no longer an allowlist entry at all,
-  // and the count reduces further to 8 files / 13 imports.
+  // and the count reduces further to 8 files / 13 imports. CC-00 Bucket C
+  // cleanup (2026-09-05, a later, separate slice) reduced it further still
+  // to 6 files / 11 imports.
   it('allowlist header count reflects the current total — source-batches.json is gone (historical note: used to remain needed by getAIOnboardingPreview)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
     expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 

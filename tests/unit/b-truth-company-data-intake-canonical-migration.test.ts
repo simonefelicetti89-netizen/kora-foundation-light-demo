@@ -262,8 +262,8 @@ describe('B-TRUTH — registry and I9 reflect the migration', () => {
   // further to 8 files / 13 imports. See
   // tests/unit/cc00-residual-demo-retirement.test.ts for the current,
   // correct count.
-  it('allowlist header reflects the current, further-reduced count, 8 files / 13 imports (historical note: this PR itself produced 13/21)', () => {
+  it('allowlist header reflects the current, further-reduced count, 6 files / 11 imports (historical note: this PR itself produced 13/21)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
   });
 });
