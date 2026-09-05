@@ -223,15 +223,15 @@ describe('B-TRUTH — this PR touched ONLY the TenantService migration (one PR =
     expect(src).toMatch(/from\s+['"][^'"]*data\/synthetic\//);
   });
 
-  it('the final scoring group and B-WORKER members remain untouched — still exist', () => {
+  it('B-WORKER members remain untouched — still exist; the final scoring group was later retired by CC-00 Final Scoring Canonicalization (2026-09-05), unrelated to this PR', () => {
     for (const file of [
-      'services/scoring-simulator/ScoringSimulatorService.ts',
-      'services/demo-data/DemoDataService.ts',
       'services/worker-provisioning/WorkerProvisioningService.ts',
       'services/worker-achievements/WorkerAchievementService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
     }
+    expect(existsSync(resolve(root, 'services/scoring-simulator/ScoringSimulatorService.ts'))).toBe(false);
+    expect(existsSync(resolve(root, 'services/demo-data/DemoDataService.ts'))).toBe(false);
   });
 
   it('KoraTest canonical foundation (PR 1, #140) is untouched — script and fixture still exist', () => {

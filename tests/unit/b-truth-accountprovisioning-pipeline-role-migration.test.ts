@@ -98,7 +98,14 @@ describe('B-TRUTH — all real callers of AccountProvisioningService, before and
     expect(offenders).toEqual([]);
   });
 
-  it('exactly one real caller of accountProvisioningService remains — app/my-kora/page.tsx (getCurrentDemoUser)', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "exactly
+  // one real caller of accountProvisioningService remains — app/my-kora/page.tsx
+  // (getCurrentDemoUser)." CC-00 Final Scoring Canonicalization (2026-09-05):
+  // that call was removed — it existed only to derive a company_id fed into
+  // the now-retired scoringSimulatorService.getCompanyAggregate(). Zero real
+  // callers remain; AccountProvisioningService.ts itself is untouched (not
+  // modified, not deleted). See tests/unit/cc00-final-scoring-canonicalization.test.ts.
+  it('zero real callers of accountProvisioningService remain — its own file is untouched, unmodified', () => {
     const offenders: string[] = [];
     for (const dir of RUNTIME_DIRS) {
       for (const file of walkTs(resolve(root, dir))) {
@@ -109,7 +116,7 @@ describe('B-TRUTH — all real callers of AccountProvisioningService, before and
         if (/accountProvisioningService\s*\./.test(codeOnly)) offenders.push(relative);
       }
     }
-    expect(offenders).toEqual(['app/my-kora/page.tsx']);
+    expect(offenders).toEqual([]);
   });
 });
 
@@ -153,9 +160,18 @@ describe('B-TRUTH — migrated pipeline consumer uses the canonical account-prov
 });
 
 describe('B-TRUTH — responsibility split preserved: no My KORA/session behavior changed, no worker identity behavior changed', () => {
-  it('app/my-kora/page.tsx is untouched — still resolves the session persona via getCurrentDemoUser, unchanged call shape', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "app/my-kora/page.tsx
+  // is untouched — still resolves the session persona via getCurrentDemoUser,
+  // unchanged call shape." CC-00 Final Scoring Canonicalization (2026-09-05):
+  // that call is removed from app/my-kora/page.tsx (it only ever fed the
+  // now-retired scoringSimulatorService.getCompanyAggregate() lookup, not
+  // session/persona resolution itself — activeRole/activePersona continue to
+  // resolve via useRole()/usePersona(), unchanged). getCurrentDemoUser()
+  // itself is untouched in AccountProvisioningService.ts.
+  it('app/my-kora/page.tsx session/persona resolution (useRole/usePersona) is untouched', () => {
     const src = read('app/my-kora/page.tsx');
-    expect(src).toContain("accountProvisioningService.getCurrentDemoUser(activeRole).company_id");
+    expect(src).toContain('useRole, useScenario, usePersona');
+    expect(src).not.toContain('getCurrentDemoUser');
   });
 
   it('the new view builder does not import or reference My KORA/session/worker-identity concerns in real code (prose mentions in its own explanatory header comment are not a violation)', () => {
@@ -197,13 +213,9 @@ describe('B-TRUTH — no tenant_kind branch, no KoraTest special branch, no clie
 });
 
 describe('B-TRUTH — this PR touched ONLY the AccountProvisioningService pipeline-role migration (one PR = one bounded step)', () => {
-  it('AdminPreviewService and final scoring are untouched — still exist', () => {
-    for (const file of [
-      'services/admin-preview/AdminPreviewService.ts',
-      'services/scoring-simulator/ScoringSimulatorService.ts',
-    ]) {
-      expect(existsSync(resolve(root, file))).toBe(true);
-    }
+  it('AdminPreviewService is untouched — still exists; the final scoring group was later retired by CC-00 Final Scoring Canonicalization (2026-09-05), unrelated to this PR', () => {
+    expect(existsSync(resolve(root, 'services/admin-preview/AdminPreviewService.ts'))).toBe(true);
+    expect(existsSync(resolve(root, 'services/scoring-simulator/ScoringSimulatorService.ts'))).toBe(false);
   });
 
   it('PR 1/2/3/4 outcomes are untouched in their own scope', () => {
@@ -262,6 +274,6 @@ describe('B-TRUTH — registry and I9 reflect the migration', () => {
   // 8 files / 13 imports. See tests/unit/cc00-residual-demo-retirement.test.ts.
   it('allowlist header count is unchanged by THIS PR — 6 files / 11 imports (no synthetic import was removed, only a pipeline-only method; historical note: later, unrelated PRs changed the count, most recently to 6/11)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
   });
 });

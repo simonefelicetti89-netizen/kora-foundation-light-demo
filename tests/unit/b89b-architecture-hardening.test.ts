@@ -20,7 +20,6 @@ import {
   resolvePermission,
 } from '../../lib/permissions/index';
 import type { KoraRole } from '../../lib/types';
-import { demoScoringAdapter }    from '../../services/scoring/DemoScoringAdapter';
 import { liveScoringAdapter }    from '../../services/scoring/LiveScoringAdapter';
 import type { IScoringService, ScoringPathMode } from '../../services/scoring/IScoringService';
 import type {
@@ -235,8 +234,17 @@ describe('resolvePermission — worker-private resource guard', () => {
 // ── 5. Scoring adapters — IScoringService contract ────────────────────────────
 
 describe('IScoringService — adapter contracts', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): this
+  // suite exercised both DemoScoringAdapter and LiveScoringAdapter against
+  // the shared IScoringService contract. CC-00 Final Scoring
+  // Canonicalization (2026-09-05) deleted DemoScoringAdapter — zero real
+  // callers repo-wide, the last B-TRUTH-owned synthetic scoring dependency
+  // (Master Plan §32). Only LiveScoringAdapter remains; ScoringPathMode
+  // still includes 'DEMO' as a literal (lib/scoring-result/index.ts still
+  // produces environment: 'demo' results, just with no adapter behind
+  // them) so the type is unchanged here. See
+  // tests/unit/cc00-final-scoring-canonicalization.test.ts.
   const adapters: Array<{ name: string; adapter: IScoringService }> = [
-    { name: 'DemoScoringAdapter',    adapter: demoScoringAdapter },
     { name: 'LiveScoringAdapter',    adapter: liveScoringAdapter },
   ];
 
@@ -256,14 +264,6 @@ describe('IScoringService — adapter contracts', () => {
     });
   }
 
-  it('DemoScoringAdapter mode is DEMO', () => {
-    expect(demoScoringAdapter.mode).toBe('DEMO');
-  });
-
-  it('DemoScoringAdapter is NOT authoritative', () => {
-    expect(demoScoringAdapter.isAuthoritative).toBe(false);
-  });
-
   it('LiveScoringAdapter mode is LIVE', () => {
     expect(liveScoringAdapter.mode).toBe('LIVE');
   });
@@ -272,18 +272,8 @@ describe('IScoringService — adapter contracts', () => {
     expect(liveScoringAdapter.isAuthoritative).toBe(true);
   });
 
-  it('only LiveScoringAdapter is authoritative', () => {
-    expect(demoScoringAdapter.isAuthoritative).toBe(false);
-    expect(liveScoringAdapter.isAuthoritative).toBe(true);
-  });
-
   it('LiveScoringAdapter exposes the run function', () => {
     expect(typeof liveScoringAdapter.run).toBe('function');
-  });
-
-  it('DemoScoringAdapter exposes the underlying service', () => {
-    expect(liveScoringAdapter.run).toBeDefined();
-    expect(demoScoringAdapter.underlying).toBeDefined();
   });
 });
 

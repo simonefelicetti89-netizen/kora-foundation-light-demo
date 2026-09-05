@@ -1,7 +1,7 @@
 'use client';
 
 import { TOKENS } from '@/lib/design/kora-design-tokens';
-import type { ConfidenceRecord } from '@/services/scoring-simulator/ScoringSimulatorService';
+import type { ConfidenceRecord } from '@/lib/types';
 
 interface ConfidenceBreakdownProps {
   record?: ConfidenceRecord | null;

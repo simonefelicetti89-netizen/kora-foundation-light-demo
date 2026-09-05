@@ -198,18 +198,15 @@ describe('B-TRUTH — this PR retired ONLY the synthetic branch (one PR = one bo
     }
   });
 
-  it('the final scoring group untouched — still exists, DemoDataService.ts unmodified in behavior', () => {
+  it('access-control untouched — still exists; the final scoring group (including DemoDataService.ts, whose unconditional getResource() stub this test used to verify) was later retired in full by CC-00 Final Scoring Canonicalization (2026-09-05), unrelated to this PR', () => {
+    expect(existsSync(resolve(root, 'services/access-control/AccessControlService.ts'))).toBe(true);
     for (const file of [
       'services/scoring/DemoScoringAdapter.ts',
       'services/scoring-simulator/ScoringSimulatorService.ts',
       'services/demo-data/DemoDataService.ts',
-      'services/access-control/AccessControlService.ts',
     ]) {
-      expect(existsSync(resolve(root, file))).toBe(true);
+      expect(existsSync(resolve(root, file))).toBe(false);
     }
-    const demoData = read('services/demo-data/DemoDataService.ts');
-    expect(demoData).toContain("'explainability-records'");
-    expect(demoData).toContain('return [];');
   });
 });
 

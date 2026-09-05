@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 
 const root = resolve(process.cwd());
@@ -218,10 +218,14 @@ describe('B101 — scoring adapter boundary', () => {
     expect(src).toContain('readonly isAuthoritative = true');
   });
 
-  it('DemoScoringAdapter is authoritative=false', () => {
-    const src = readSrc('services/scoring/DemoScoringAdapter.ts');
-    expect(src).toContain("readonly mode: ScoringPathMode = 'DEMO'");
-    expect(src).toContain('readonly isAuthoritative = false');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "DemoScoringAdapter is authoritative=false" — read
+  // services/scoring/DemoScoringAdapter.ts and asserted mode='DEMO',
+  // isAuthoritative=false. CC-00 Final Scoring Canonicalization
+  // (2026-09-05) deleted that file — zero real callers repo-wide, the
+  // last B-TRUTH-owned synthetic scoring dependency (Master Plan §32).
+  it('DemoScoringAdapter no longer exists (CC-00 Final Scoring Canonicalization, 2026-09-05)', () => {
+    expect(existsSync(resolve(root, 'services/scoring/DemoScoringAdapter.ts'))).toBe(false);
   });
 
   it('useScoringResult live path never falls back to demo seed', () => {
@@ -232,8 +236,13 @@ describe('B101 — scoring adapter boundary', () => {
 
   it('scoring-result index does not import synthetic data files', () => {
     const src = readSrc('lib/scoring-result/index.ts');
-    expect(src).not.toContain('op001-synthetic-records');
-    expect(src).not.toContain('kora-index-outputs.json');
+    const codeOnly = src
+      .split('\n')
+      .filter((line) => !line.trim().startsWith('//'))
+      .join('\n');
+    expect(codeOnly).not.toContain('op001-synthetic-records');
+    expect(codeOnly).not.toContain('kora-index-outputs.json');
+    expect(codeOnly).not.toMatch(/from\s+['"][^'"]*data\/synthetic\//);
   });
 });
 

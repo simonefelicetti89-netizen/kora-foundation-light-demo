@@ -128,9 +128,15 @@ describe('CC-019A — TenantService and AccountProvisioningService implementatio
   // (getCurrentDemoUser()), which is untouched. See
   // tests/unit/b-truth-accountprovisioning-pipeline-role-migration.test.ts
   // for the current, correct state.
-  it('AccountProvisioningService.ts still exists, narrowed to its My KORA/session-identity role only (historical note: pipeline was also a real caller when this test was written)', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): also
+  // asserted app/my-kora/page.tsx contained 'accountProvisioningService'.
+  // CC-00 Final Scoring Canonicalization (2026-09-05) removed that page's
+  // getCurrentDemoUser() call — it only ever fed the now-retired
+  // scoringSimulatorService.getCompanyAggregate(). The service file itself
+  // is untouched (not modified, not deleted); it now simply has zero real
+  // callers. See tests/unit/cc00-final-scoring-canonicalization.test.ts.
+  it('AccountProvisioningService.ts still exists, unmodified (historical note: pipeline was also a real caller when this test was written; My KORA no longer calls it either, as of a later, unrelated slice)', () => {
     expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(true);
-    expect(read('app/my-kora/page.tsx')).toContain('accountProvisioningService');
     const pipelineSrc = read('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
     const pipelineCodeOnly = pipelineSrc.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
     expect(pipelineCodeOnly).not.toMatch(/accountProvisioningService\s*\./);

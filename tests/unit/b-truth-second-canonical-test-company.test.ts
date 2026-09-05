@@ -241,11 +241,20 @@ describe('B-TRUTH — scope safety: no AdminPreview, no UI, no B-WORKER, no fina
     expect(runKoraPipelineSrc).toContain('export function runKoraPipeline');
   });
 
-  it('FounderValidationService and My KORA session identity are untouched', () => {
+  it('FounderValidationService is untouched by this PR (its own later Bucket C retirement is a separate, unrelated slice)', () => {
     expect(existsSync(resolve(root, 'services/founder-validation/FounderValidationService.ts'))).toBe(true);
-    const myKoraSrc = read('app/my-kora/page.tsx');
-    expect(myKoraSrc).toContain('getCurrentDemoUser');
   });
+
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "My KORA
+  // session identity are untouched... expect(myKoraSrc).toContain('getCurrentDemoUser')."
+  // CC-00 Final Scoring Canonicalization (2026-09-05): app/my-kora/page.tsx's
+  // getCurrentDemoUser() call is removed — it existed only to derive a
+  // company_id fed into scoringSimulatorService.getCompanyAggregate(),
+  // itself retired as the last B-TRUTH-owned synthetic scoring dependency.
+  // AccountProvisioningService.ts itself is untouched (not modified, not
+  // deleted) — getCurrentDemoUser() still exists there, unchanged, simply
+  // with no remaining real caller. See
+  // tests/unit/cc00-final-scoring-canonicalization.test.ts.
 });
 
 describe('B-TRUTH — no benchmark/percentile claim introduced by this PR', () => {
@@ -271,7 +280,7 @@ describe('B-TRUTH — I9 and registry reflect an additive, non-migrating change'
   // PR's own scope. See tests/unit/cc00-residual-demo-retirement.test.ts.
   it('I9 allowlist is completely unaffected by THIS PR — this PR adds no new data/synthetic/** consumer and removes none (historical note: later, unrelated PRs changed the count)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
     expect(allowlist).not.toMatch(/\{\s*file:\s*'scripts\/koratest-canonical-seed\.ts'/);
   });
 

@@ -79,11 +79,15 @@ describe('B-TRUTH — PreviewScoringAdapter and DynamicScoringPreviewService no 
     expect(existsSync(resolve(root, 'services/dynamic-scoring/DynamicScoringPreviewService.ts'))).toBe(false);
   });
 
-  it('the dynamic-scoring directory is gone (no leftover empty dir); services/scoring/ persists (other adapters remain)', () => {
+  it('the dynamic-scoring directory is gone (no leftover empty dir); services/scoring/ persists (LiveScoringAdapter remains)', () => {
     expect(existsSync(resolve(root, 'services/dynamic-scoring'))).toBe(false);
     expect(existsSync(resolve(root, 'services/scoring'))).toBe(true);
-    expect(existsSync(resolve(root, 'services/scoring/DemoScoringAdapter.ts'))).toBe(true);
     expect(existsSync(resolve(root, 'services/scoring/LiveScoringAdapter.ts'))).toBe(true);
+    // DemoScoringAdapter.ts (present at this PR's own time) was later
+    // deleted by CC-00 Final Scoring Canonicalization (2026-09-05) —
+    // zero real callers, the last B-TRUTH-owned synthetic scoring
+    // dependency. Unrelated to this PR's own Preview-pair retirement.
+    expect(existsSync(resolve(root, 'services/scoring/DemoScoringAdapter.ts'))).toBe(false);
   });
 
   it('no runtime file (app/services/lib/components) imports, instantiates, or calls either retired file', () => {
@@ -118,10 +122,8 @@ describe('B-TRUTH — canonical scoring routing untouched (2 paths, not 3, never
     expect(src).not.toContain("'PREVIEW'");
   });
 
-  it('DemoScoringAdapter and LiveScoringAdapter still exist and are unmodified in role', () => {
-    const demo = read('services/scoring/DemoScoringAdapter.ts');
+  it('LiveScoringAdapter still exists and is unmodified in role (DemoScoringAdapter was later deleted by CC-00 Final Scoring Canonicalization, 2026-09-05 — unrelated to this PR)', () => {
     const live = read('services/scoring/LiveScoringAdapter.ts');
-    expect(demo).toContain("mode: ScoringPathMode = 'DEMO'");
     expect(live).toContain("mode: ScoringPathMode = 'LIVE'");
   });
 });
@@ -134,10 +136,15 @@ describe('B-TRUTH — b89b architecture contract updated, remaining adapters sti
     expect(src).not.toContain('previewScoringAdapter');
   });
 
-  it('DemoScoringAdapter and LiveScoringAdapter contract tests still present', () => {
-    expect(src).toContain("DemoScoringAdapter mode is DEMO");
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "DemoScoringAdapter and LiveScoringAdapter contract tests still present"
+  // — asserted src.toContain("DemoScoringAdapter mode is DEMO") and
+  // ("only LiveScoringAdapter is authoritative"). CC-00 Final Scoring
+  // Canonicalization (2026-09-05) removed DemoScoringAdapter (and its
+  // b89b contract tests) entirely — the last B-TRUTH-owned synthetic
+  // scoring dependency. LiveScoringAdapter's own contract test survives.
+  it('LiveScoringAdapter contract test still present', () => {
     expect(src).toContain("LiveScoringAdapter mode is LIVE");
-    expect(src).toContain("only LiveScoringAdapter is authoritative");
   });
 });
 
@@ -171,14 +178,14 @@ describe('B-TRUTH — this PR retired ONLY the Preview pair (one PR = one bounde
     expect(src).toContain('getConceptExplanation(');
   });
 
-  it('the final scoring group untouched — still exists', () => {
+  it('access-control untouched — still exists; the final scoring group was later retired by CC-00 Final Scoring Canonicalization (2026-09-05), unrelated to this PR', () => {
+    expect(existsSync(resolve(root, 'services/access-control/AccessControlService.ts'))).toBe(true);
     for (const file of [
       'services/scoring/DemoScoringAdapter.ts',
       'services/scoring-simulator/ScoringSimulatorService.ts',
       'services/demo-data/DemoDataService.ts',
-      'services/access-control/AccessControlService.ts',
     ]) {
-      expect(existsSync(resolve(root, file))).toBe(true);
+      expect(existsSync(resolve(root, file))).toBe(false);
     }
   });
 });

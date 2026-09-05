@@ -343,17 +343,24 @@ describe('CC-00 Admin Console canonicalization — prior slices untouched', () =
 // ── 11. Untouched surfaces ────────────────────────────────────────────────────
 
 describe('CC-00 Admin Console canonicalization — untouched surfaces', () => {
-  it('B-WORKER, My KORA, and final scoring are untouched', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): this
+  // check also asserted services/scoring-simulator/ScoringSimulatorService.ts
+  // existed and app/my-kora/page.tsx contained 'getCurrentDemoUser'. CC-00
+  // Final Scoring Canonicalization (2026-09-05) deleted ScoringSimulatorService
+  // (zero real callers, last B-TRUTH-owned synthetic scoring dependency) and
+  // removed my-kora/page.tsx's now-pointless getCurrentDemoUser() call along
+  // with it. ActivationSafeguardService.ts still exists (only its synthetic
+  // evaluateFromSeed() method was removed). B-WORKER is untouched.
+  it('B-WORKER is untouched; final scoring (ScoringSimulatorService) was later retired by CC-00 Final Scoring Canonicalization, unrelated to this PR', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
       'services/worker-achievements/WorkerAchievementService.ts',
       'services/worker-space/WorkerSpaceCapabilityService.ts',
-      'services/scoring-simulator/ScoringSimulatorService.ts',
       'services/activation-safeguard/ActivationSafeguardService.ts',
     ]) {
       expect(exists(file)).toBe(true);
     }
-    expect(read('app/my-kora/page.tsx')).toContain('getCurrentDemoUser');
+    expect(exists('services/scoring-simulator/ScoringSimulatorService.ts')).toBe(false);
   });
 
   it('no KORA Admin redesign — app/admin/page.tsx keeps its existing section structure', () => {
@@ -379,7 +386,7 @@ describe('CC-00 Admin Console canonicalization — I9 unaffected', () => {
   // to 6 files / 11 imports.
   it('allowlist header count is unchanged by THIS slice (historical note: later slices changed the count, most recently to 6/11)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
   });
 
   it('AdminPreviewService.ts imports zero synthetic fixtures (historical note: used to still import source-batches.json)', () => {

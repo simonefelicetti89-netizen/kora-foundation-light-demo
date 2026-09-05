@@ -549,9 +549,17 @@ describe('B81-B Verification — no scoring, methodology, auth, or DB changes', 
     expect(src).toContain("getMacroblockWeights");
   });
 
-  it('ScoringSimulatorService is unchanged (reads from methodology-config)', () => {
-    const src = read('services/scoring-simulator/ScoringSimulatorService.ts');
-    expect(src).toContain("methodology");
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "ScoringSimulatorService is unchanged (reads from methodology-config)."
+  // CC-00 Final Scoring Canonicalization (2026-09-05) deleted this file —
+  // zero real callers repo-wide, the last B-TRUTH-owned synthetic scoring
+  // dependency. No methodology change: run-kora-pipeline.ts (the sole
+  // authoritative scoring engine) still reads lib/methodology-config/v0.1.ts,
+  // unaffected by this deletion.
+  it('ScoringSimulatorService no longer exists; the live pipeline still reads methodology-config, unchanged', () => {
+    expect(exists('services/scoring-simulator/ScoringSimulatorService.ts')).toBe(false);
+    const src = read('lib/kora-engine/run-kora-pipeline.ts');
+    expect(src).toContain('methodology');
   });
 
   it('ActivationSafeguardService is unchanged (no threshold changes)', () => {

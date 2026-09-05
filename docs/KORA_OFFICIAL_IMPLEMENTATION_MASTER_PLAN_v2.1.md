@@ -1014,6 +1014,8 @@ Nient'altro. `company-setup` e `report-generator` restano **INVESTIGATE**.
 
 Dettaglio implementativo (campo `owner` per residuo, guardie di regressione, contratto di trasferimento a B-WORKER): `lib/security/synthetic-import-allowlist.ts`, `lib/architecture/registry.ts`, `tests/unit/cc00-i9-governance-ratification.test.ts`.
 
+**Chiusura del gate B-TRUTH-scoped (CC-00 Final Scoring Canonicalization, 2026-09-05):** i 3 residui `owner: 'B_TRUTH'` sono stati azzerati. `ScoringSimulatorService` e `DemoDataService` sono stati eliminati (zero chiamanti reali, verificato prima della cancellazione); `ActivationSafeguardService` resta — il suo `evaluate()` canonico è invariato, solo il percorso sintetico `evaluateFromSeed()` è stato rimosso. `BTRUTH_OWNED_SYNTHETIC_IMPORTS = []`. Di conseguenza, dei 4 elementi nominati alla Sezione 32 ("`DemoScoringAdapter` · `ScoringSimulatorService` · `demo-data` · `access-control`"), i primi 3 sono ora retirati (`DemoScoringAdapter` eliminato insieme a `ScoringSimulatorService`, zero chiamanti reali propri); `services/access-control/` resta un elemento separato, non toccato da questa slice. I residui `owner: 'B_WORKER'` restano invariati, tracciati, non azzerati — CC-022 stesso non è dichiarato chiuso qui: resta in capo alla sua stessa slice di chiusura formale (CC-022/CC-023). Dettaglio: `lib/security/synthetic-import-allowlist.ts`, `lib/architecture/registry.ts`, `tests/unit/cc00-final-scoring-canonicalization.test.ts`.
+
 ---
 
 # 33. DO-NOT-DELETE / FUTURE CORE

@@ -241,18 +241,23 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — scope boundary (one PR = 
     expect(existsSync(resolve(root, 'lib/auth/demo-guard.tsx'))).toBe(false);
   });
 
-  it('B-WORKER, My KORA, and final scoring are untouched — still exist, unmodified reachability', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): this
+  // check also asserted services/scoring-simulator/ScoringSimulatorService.ts
+  // existed and app/my-kora/page.tsx contained 'getCurrentDemoUser'. CC-00
+  // Final Scoring Canonicalization (2026-09-05) deleted ScoringSimulatorService
+  // (zero real callers, last B-TRUTH-owned synthetic scoring dependency) and
+  // removed my-kora/page.tsx's now-pointless getCurrentDemoUser() call along
+  // with it. B-WORKER is untouched.
+  it('B-WORKER is untouched — still exist, unmodified reachability; final scoring was later retired by CC-00 Final Scoring Canonicalization, unrelated to this PR', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
       'services/worker-achievements/WorkerAchievementService.ts',
       'services/worker-space/WorkerSpaceCapabilityService.ts',
-      'services/scoring-simulator/ScoringSimulatorService.ts',
       'services/activation-safeguard/ActivationSafeguardService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
     }
-    const myKoraSrc = read('app/my-kora/page.tsx');
-    expect(myKoraSrc).toContain('getCurrentDemoUser');
+    expect(existsSync(resolve(root, 'services/scoring-simulator/ScoringSimulatorService.ts'))).toBe(false);
   });
 });
 
@@ -297,7 +302,7 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — I9 unaffected (retirement
   // to 6 files / 11 imports.
   it('allowlist header count reflects the current total — source-batches.json is gone (historical note: used to remain needed by getAIOnboardingPreview)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
     expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 

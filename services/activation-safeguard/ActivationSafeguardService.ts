@@ -1,19 +1,16 @@
-import type { ActivationSafeguardResult, SafeguardStatus, ScenarioId } from '@/lib/types';
+import type { ActivationSafeguardResult, SafeguardStatus } from '@/lib/types';
 import { getThresholds } from '@/lib/methodology-config/v0.1';
-import activationSafeguardRaw from '@/data/synthetic/activation-safeguard-results.json';
 
-interface SeedSafeguardRecord {
-  id: string; company_id: string; scenario_id: string;
-  ar_value: number; mar_value: number; status: string;
-  methodology_version_id: string; calibration_status: string;
-  synthetic_demo_data: true; generated_for: string; not_live_data: true;
-}
-
-const safeguardRecords = (activationSafeguardRaw as { data: SeedSafeguardRecord[] }).data;
+// CC-00 Final Scoring Canonicalization (2026-09-05): evaluateFromSeed()
+// (data/synthetic/activation-safeguard-results.json, called only by the
+// now-deleted ScoringSimulatorService.getActivationSafeguard(), itself
+// confirmed to have zero real callers repo-wide) is retired. evaluate() —
+// the real, canonical, methodology-driven path already used by every live
+// company page — is unchanged. See
+// tests/unit/cc00-final-scoring-canonicalization.test.ts.
 
 export interface IActivationSafeguardService {
   evaluate(ar: number, mar: number): ActivationSafeguardResult;
-  evaluateFromSeed(companyId: string, scenarioId: ScenarioId): ActivationSafeguardResult | null;
 }
 
 export class ActivationSafeguardService implements IActivationSafeguardService {
@@ -36,26 +33,6 @@ export class ActivationSafeguardService implements IActivationSafeguardService {
     }
 
     return { status, ar_value: ar, mar_value: mar };
-  }
-
-  evaluateFromSeed(companyId: string, scenarioId: ScenarioId): ActivationSafeguardResult | null {
-    const record = safeguardRecords.find(
-      (r) => r.company_id === companyId && r.scenario_id === scenarioId,
-    );
-    if (!record) return null;
-
-    // Validate seed status is consistent with OR logic before returning
-    const computed = this.evaluate(record.ar_value, record.mar_value);
-    if (computed.status !== record.status) {
-      // Seed status does not match OR logic — trust the computed value, not the seed label
-      return computed;
-    }
-
-    return {
-      status: record.status as SafeguardStatus,
-      ar_value: record.ar_value,
-      mar_value: record.mar_value,
-    };
   }
 }
 

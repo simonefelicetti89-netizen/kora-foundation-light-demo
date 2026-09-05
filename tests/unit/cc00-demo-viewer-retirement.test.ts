@@ -276,20 +276,26 @@ describe('CC-00 DEMO_VIEWER retirement — B-WORKER, My KORA, final scoring unto
     }
   });
 
-  it('My KORA product behavior is untouched — AccountProvisioningService.getCurrentDemoUser() (a different, unrelated concept) is untouched', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): also
+  // asserted app/my-kora/page.tsx contained 'accountProvisioningService.getCurrentDemoUser'.
+  // CC-00 Final Scoring Canonicalization (2026-09-05) removed that call —
+  // it only ever fed the now-retired scoringSimulatorService.getCompanyAggregate().
+  // AccountProvisioningService.ts itself (this test's actual subject) is untouched.
+  it('AccountProvisioningService.getCurrentDemoUser() (a different, unrelated concept) is untouched', () => {
     expect(exists('services/account/AccountProvisioningService.ts')).toBe(true);
     const src = read('services/account/AccountProvisioningService.ts');
     expect(src).toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
-    expect(read('app/my-kora/page.tsx')).toContain('accountProvisioningService.getCurrentDemoUser');
   });
 
-  it('final scoring is untouched', () => {
-    for (const file of [
-      'services/scoring-simulator/ScoringSimulatorService.ts',
-      'services/activation-safeguard/ActivationSafeguardService.ts',
-    ]) {
-      expect(exists(file)).toBe(true);
-    }
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "final
+  // scoring is untouched" — asserted ScoringSimulatorService.ts existed.
+  // CC-00 Final Scoring Canonicalization (2026-09-05) — a later, separate,
+  // unrelated-to-this-PR slice — deleted it (zero real callers, last
+  // B-TRUTH-owned synthetic scoring dependency). ActivationSafeguardService.ts
+  // still exists (only its synthetic evaluateFromSeed() method was removed).
+  it('ActivationSafeguardService.ts still exists; ScoringSimulatorService.ts was later retired by CC-00 Final Scoring Canonicalization, unrelated to this PR', () => {
+    expect(exists('services/activation-safeguard/ActivationSafeguardService.ts')).toBe(true);
+    expect(exists('services/scoring-simulator/ScoringSimulatorService.ts')).toBe(false);
   });
 });
 

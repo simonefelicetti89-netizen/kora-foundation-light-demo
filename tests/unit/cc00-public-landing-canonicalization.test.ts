@@ -231,17 +231,23 @@ describe('CC-00 Public Landing canonicalization — prior slices untouched', () 
 // ── 7. Untouched surfaces ─────────────────────────────────────────────────────
 
 describe('CC-00 Public Landing canonicalization — untouched surfaces', () => {
-  it('B-WORKER, My KORA, and final scoring are untouched', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): this
+  // check also asserted services/scoring-simulator/ScoringSimulatorService.ts
+  // existed and app/my-kora/page.tsx contained 'getCurrentDemoUser'. CC-00
+  // Final Scoring Canonicalization (2026-09-05) deleted ScoringSimulatorService
+  // (zero real callers, last B-TRUTH-owned synthetic scoring dependency) and
+  // removed my-kora/page.tsx's now-pointless getCurrentDemoUser() call along
+  // with it. B-WORKER is untouched.
+  it('B-WORKER is untouched; final scoring was later retired by CC-00 Final Scoring Canonicalization, unrelated to this PR', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
       'services/worker-achievements/WorkerAchievementService.ts',
       'services/worker-space/WorkerSpaceCapabilityService.ts',
-      'services/scoring-simulator/ScoringSimulatorService.ts',
       'services/activation-safeguard/ActivationSafeguardService.ts',
     ]) {
       expect(exists(file)).toBe(true);
     }
-    expect(read('app/my-kora/page.tsx')).toContain('getCurrentDemoUser');
+    expect(exists('services/scoring-simulator/ScoringSimulatorService.ts')).toBe(false);
   });
 
   it('Foundation Light package pricing (lib/landing/packages.ts) is untouched — already real static config', () => {
@@ -269,7 +275,7 @@ describe('CC-00 Public Landing canonicalization — I9 reflects the import remov
   // tests/unit/cc00-residual-demo-retirement.test.ts.
   it('allowlist header reflects 6 files / 11 import statements (historical note: was 16, then 13, imports at the time this slice landed)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
   });
 
   // app/demo/gtm/page.tsx and components/demo/DemoGuideContent.tsx were
@@ -281,21 +287,22 @@ describe('CC-00 Public Landing canonicalization — I9 reflects the import remov
   // fake-company-with-claimed-score section with a real static schematic
   // card (no synthetic import) — removed from this list too.
   // ScoringSimulatorService.ts remains the real, live consumer.
-  it('neither fixture became zero-consumer overall — both remain needed by other real consumers', () => {
-    const koraIndexOutputsConsumers = [
-      'services/scoring-simulator/ScoringSimulatorService.ts',
-    ];
-    for (const file of koraIndexOutputsConsumers) {
-      expect(read(file)).toContain('kora-index-outputs.json');
-    }
-    const companyAggregatesConsumers = [
-      'services/demo-data/DemoDataService.ts',
-      'services/worker-pillar-adoption/WorkerPillarAdoptionService.ts',
-      'services/scoring-simulator/ScoringSimulatorService.ts',
-    ];
-    for (const file of companyAggregatesConsumers) {
-      expect(read(file)).toContain('company-aggregates.json');
-    }
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "neither
+  // fixture became zero-consumer overall — both remain needed by other real
+  // consumers" — kora-index-outputs.json (ScoringSimulatorService.ts) and
+  // company-aggregates.json (DemoDataService.ts, ScoringSimulatorService.ts;
+  // WorkerPillarAdoptionService.ts's own mention was already a stale
+  // comment, not a real import, by this test's own time). CC-00 Final
+  // Scoring Canonicalization (2026-09-05) deleted ScoringSimulatorService.ts
+  // and DemoDataService.ts (zero real callers, the last B-TRUTH-owned
+  // synthetic scoring dependency) — both fixtures then became genuinely
+  // zero-consumer and were deleted too. Unrelated to this PR's own public
+  // landing page scope.
+  it('kora-index-outputs.json and company-aggregates.json were later fully retired by CC-00 Final Scoring Canonicalization (2026-09-05) once their last real consumers were deleted', () => {
+    expect(exists('data/synthetic/kora-index-outputs.json')).toBe(false);
+    expect(exists('data/synthetic/company-aggregates.json')).toBe(false);
+    expect(exists('services/scoring-simulator/ScoringSimulatorService.ts')).toBe(false);
+    expect(exists('services/demo-data/DemoDataService.ts')).toBe(false);
   });
 });
 

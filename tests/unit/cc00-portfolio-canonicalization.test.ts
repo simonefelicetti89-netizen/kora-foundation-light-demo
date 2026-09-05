@@ -365,17 +365,23 @@ describe('CC-00 Portfolio canonicalization — untouched surfaces', () => {
     }
   });
 
-  it('B-WORKER, My KORA, and final scoring are untouched', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): this
+  // check also asserted services/scoring-simulator/ScoringSimulatorService.ts
+  // existed and app/my-kora/page.tsx contained 'getCurrentDemoUser'. CC-00
+  // Final Scoring Canonicalization (2026-09-05) deleted ScoringSimulatorService
+  // (zero real callers, last B-TRUTH-owned synthetic scoring dependency) and
+  // removed my-kora/page.tsx's now-pointless getCurrentDemoUser() call along
+  // with it. B-WORKER is untouched.
+  it('B-WORKER is untouched; final scoring was later retired by CC-00 Final Scoring Canonicalization, unrelated to this PR', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
       'services/worker-achievements/WorkerAchievementService.ts',
       'services/worker-space/WorkerSpaceCapabilityService.ts',
-      'services/scoring-simulator/ScoringSimulatorService.ts',
       'services/activation-safeguard/ActivationSafeguardService.ts',
     ]) {
       expect(exists(file)).toBe(true);
     }
-    expect(read('app/my-kora/page.tsx')).toContain('getCurrentDemoUser');
+    expect(exists('services/scoring-simulator/ScoringSimulatorService.ts')).toBe(false);
   });
 
   // benchmark/network/advisor routes were accurately untouched at the time
@@ -441,7 +447,7 @@ describe('CC-00 Portfolio canonicalization — I9 reflects the import reduction'
   // imports — it is no longer an allowlist entry at all.
   it('allowlist header reflects 6 files / 11 import statements (historical note: was 16, then 13, imports at the time this slice landed)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 6 files / 11 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
     expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 
@@ -469,13 +475,18 @@ describe('CC-00 Portfolio canonicalization — I9 reflects the import reduction'
   // too. ScoringSimulatorService.ts remains the real, live consumer. See
   // tests/unit/cc00-public-landing-canonicalization.test.ts and
   // tests/unit/cc00-residual-demo-retirement.test.ts.
-  it('neither fixture became zero-consumer overall — both remain needed by other real consumers', () => {
-    expect(read('services/demo-data/DemoDataService.ts')).toContain('companies.json');
-    const otherConsumers = [
-      'services/scoring-simulator/ScoringSimulatorService.ts',
-    ];
-    for (const file of otherConsumers) {
-      expect(read(file)).toContain('kora-index-outputs.json');
-    }
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "neither
+  // fixture became zero-consumer overall — both remain needed by other real
+  // consumers" — DemoDataService.ts (companies.json) and
+  // ScoringSimulatorService.ts (kora-index-outputs.json). CC-00 Final
+  // Scoring Canonicalization (2026-09-05) deleted BOTH of those remaining
+  // consumers (zero real callers, the last B-TRUTH-owned synthetic scoring
+  // dependency) — both fixtures then became genuinely zero-consumer and
+  // were deleted too. Unrelated to this PR's own AdminPreviewService scope.
+  it('companies.json and kora-index-outputs.json were later fully retired by CC-00 Final Scoring Canonicalization (2026-09-05) once their last real consumers were deleted', () => {
+    expect(exists('data/synthetic/companies.json')).toBe(false);
+    expect(exists('data/synthetic/kora-index-outputs.json')).toBe(false);
+    expect(exists('services/demo-data/DemoDataService.ts')).toBe(false);
+    expect(exists('services/scoring-simulator/ScoringSimulatorService.ts')).toBe(false);
   });
 });
