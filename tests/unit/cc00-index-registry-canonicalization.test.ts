@@ -325,10 +325,12 @@ describe('CC-00 Index Registry canonicalization — I9 unaffected (method remova
   // separately, retired getCompanyPortfolioPreview() and its
   // kora-index-outputs.json/companies.json imports — import count 20->18
   // (kora-index-outputs.json remains needed by its OTHER consumers, just
-  // not this one). See tests/unit/cc00-portfolio-canonicalization.test.ts.
-  it('allowlist header count reflects the current total (historical note: was 20 imports, now 18)', () => {
+  // not this one). CC-00 Public Landing canonicalization (2026-09-26) later
+  // reduced it further to 11 files / 16 imports. See
+  // tests/unit/cc00-public-landing-canonicalization.test.ts.
+  it('allowlist header count reflects the current total (historical note: was 20, then 18, now 16 imports)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 18 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements');
     expect(allowlist).toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 });

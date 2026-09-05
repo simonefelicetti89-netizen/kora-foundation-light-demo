@@ -327,11 +327,12 @@ describe('CC-00 Phase 1 — I9 remains as expected (not force-reduced)', () => {
   // synthetic import). CC-00 Company Portfolio capability salvage +
   // canonicalization (2026-09-12) later, separately, reduced the import
   // count when it retired getCompanyPortfolioPreview() — file count
-  // unchanged (12), import count 20->18. See
-  // tests/unit/cc00-portfolio-canonicalization.test.ts.
-  it('allowlist header count reflects the current total (historical note: was 20 imports, now 18)', () => {
+  // unchanged (12), import count 20->18. CC-00 Public Landing
+  // canonicalization (2026-09-26) later reduced it further to 11 files / 16
+  // imports. See tests/unit/cc00-public-landing-canonicalization.test.ts.
+  it('allowlist header count reflects the current total (historical note: was 20, then 18, now 16 imports)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 18 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements');
     expect(allowlist).toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 });

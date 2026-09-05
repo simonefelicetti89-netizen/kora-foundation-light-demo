@@ -342,9 +342,13 @@ describe('CC-00 Admin Console canonicalization — untouched surfaces', () => {
 // ── 12. I9 unaffected — no fixture-backed method was touched ────────────────
 
 describe('CC-00 Admin Console canonicalization — I9 unaffected', () => {
-  it('allowlist header count is unchanged — none of the retired/moved methods imported a synthetic fixture', () => {
+  // CC-00 Public Landing canonicalization (2026-09-26) later, separately,
+  // reduced the count further (app/page.tsx dropped both its synthetic
+  // imports) — unrelated to this slice's own scope. See
+  // tests/unit/cc00-public-landing-canonicalization.test.ts.
+  it('allowlist header count is unchanged by THIS slice (historical note: a later, unrelated slice changed the count)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 18 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements');
   });
 
   it('AdminPreviewService.ts still imports exactly one synthetic fixture (source-batches.json)', () => {

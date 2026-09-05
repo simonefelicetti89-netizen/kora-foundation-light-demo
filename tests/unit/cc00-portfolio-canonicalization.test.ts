@@ -402,9 +402,13 @@ describe('CC-00 Portfolio canonicalization — registry updated, preserving hist
 // ── 14. I9 — file count unchanged, import count 20→18 ───────────────────────
 
 describe('CC-00 Portfolio canonicalization — I9 reflects the import reduction', () => {
-  it('allowlist header reflects 12 files / 18 import statements', () => {
+  // CC-00 Public Landing canonicalization (2026-09-26) later, separately,
+  // reduced the count further (app/page.tsx dropped both its synthetic
+  // imports) — unrelated to this slice's own scope. See
+  // tests/unit/cc00-public-landing-canonicalization.test.ts.
+  it('allowlist header reflects 11 files / 16 import statements (historical note: was 18 imports at the time this slice landed)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 18 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements');
     expect(allowlist).toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 
@@ -415,10 +419,15 @@ describe('CC-00 Portfolio canonicalization — I9 reflects the import reduction'
     expect(src).toContain("from '@/data/synthetic/source-batches.json'");
   });
 
+  // app/page.tsx was accurately one of kora-index-outputs.json's other real
+  // consumers at the time this test was written. CC-00 Public Landing
+  // canonicalization (2026-09-26) later, separately, removed BOTH of
+  // app/page.tsx's synthetic imports entirely — removed from this list, not
+  // replaced (there is no import left to check). See
+  // tests/unit/cc00-public-landing-canonicalization.test.ts.
   it('neither fixture became zero-consumer overall — both remain needed by other real consumers', () => {
     expect(read('services/demo-data/DemoDataService.ts')).toContain('companies.json');
     const otherConsumers = [
-      'app/page.tsx',
       'app/demo/page.tsx',
       'app/demo/gtm/page.tsx',
       'components/demo/DemoGuideContent.tsx',

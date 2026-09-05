@@ -299,11 +299,13 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — I9 unaffected (retirement
   // salvage + canonicalization (2026-09-12) later, separately, removed 2 of
   // AdminPreviewService.ts's 3 synthetic imports (companies.json,
   // kora-index-outputs.json) when it retired getCompanyPortfolioPreview() —
-  // file count unchanged (12), import count 20->18. See
-  // tests/unit/cc00-portfolio-canonicalization.test.ts.
+  // file count unchanged (12), import count 20->18. CC-00 Public Landing
+  // canonicalization (2026-09-26) later reduced it further to 11 files / 16
+  // imports (app/page.tsx dropped both its synthetic imports). See
+  // tests/unit/cc00-public-landing-canonicalization.test.ts.
   it('allowlist header count reflects the current total — source-batches.json remains needed by getAIOnboardingPreview', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 18 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements');
     expect(allowlist).toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 

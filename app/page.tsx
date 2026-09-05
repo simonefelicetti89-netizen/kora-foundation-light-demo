@@ -6,6 +6,23 @@
 //   4) Animazioni in LandingMotion (client component)
 //   5) CTA su route esistenti (/demo-guide, /company, /admin/company-live-preview)
 //   6) Numeri canonici in un unico blocco CANONICAL (sotto)
+//
+// CC-00 — Public Landing canonicalization (2026-09-26): this page no longer
+// imports any data/synthetic/** fixture. It previously read a specific
+// fictional company's ("Meridiana Group", scenario S1) KORA Index value,
+// Confidence Score, Safeguard status, per-macroblock score, and per-pillar
+// IU share directly off data/synthetic/kora-index-outputs.json and
+// data/synthetic/company-aggregates.json, and displayed them as if
+// illustrating a real product result — a named fictional company with a
+// specific claimed score is customer-proof-shaped content, not truthful
+// static copy. Every one of those per-company synthetic values is removed.
+// What remains: real, static, canonical methodology facts that are true for
+// every company and versioned in lib/methodology-config/v0.1.ts (the 4
+// macroblock weights: REACH 25% / QUALITY 30% / EQUITY 25% / BTI 20%,
+// matching CLAUDE.md §5) and the pillar definitions themselves (matching
+// CLAUDE.md §4) — no per-company score or per-pillar share is claimed
+// anywhere on this page. See lib/architecture/registry.ts's app-surface.demo
+// entry and tests/unit/cc00-public-landing-canonicalization.test.ts.
 
 import Link from 'next/link';
 import { LandingMotion } from '@/components/landing/LandingMotion';
@@ -14,9 +31,8 @@ import { MarketingFooter } from '@/components/landing/MarketingFooter';
 import { RecoveryHashHandler } from '@/components/auth/RecoveryHashHandler';
 import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 import { PACKAGES } from '@/lib/landing/packages';
+import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
 import styles from './landing.module.css';
-import koraOutputsRaw   from '@/data/synthetic/kora-index-outputs.json';
-import koraAggregatesRaw from '@/data/synthetic/company-aggregates.json';
 
 const LANDING_NAV_LINKS = [
   { label: 'Il problema',       href: '#problema' },
@@ -25,44 +41,26 @@ const LANDING_NAV_LINKS = [
   { label: 'Foundation Light',  href: '#pilot'    },
 ];
 
-// ── Numeri canonici — letti dai seed sintetici (fonte canonica unica) ──────
-// Scenario S1 · Meridiana Group — Foundation Light v2.0.
-// Per aggiornare i numeri: rigenera data/synthetic/kora-index-outputs.json
-// e data/synthetic/company-aggregates.json. NON modificare qui.
+// ── Fatti canonici e statici — versionati in lib/methodology-config/v0.1.ts,
+// veri per ogni azienda, mai per-tenant. Nessun punteggio o risultato
+// specifico di una company (reale o fittizia) è mostrato su questa pagina.
 
-const _s1Idx = (koraOutputsRaw  as { data: Array<Record<string, unknown>> }).data[0]!;
-const _s1Agg = (koraAggregatesRaw as { data: Array<Record<string, unknown>> }).data[0]!;
-
-function _mbScore(code: string): number {
-  const mbs = _s1Idx['macroblocks'] as Array<{ code: string; score: number; weight: number }> | undefined;
-  return mbs?.find(m => m.code === code)?.score ?? 0;
-}
-function _mbWeight(code: string): number {
-  const mbs = _s1Idx['macroblocks'] as Array<{ code: string; score: number; weight: number }> | undefined;
-  return Math.round((mbs?.find(m => m.code === code)?.weight ?? 0) * 100);
-}
-function _pillarShare(code: string): number {
-  const pd = _s1Agg['pillar_distribution'] as Record<string, number> | undefined;
-  return Math.round((pd?.[code] ?? 0) * 100);
-}
+const MB_WEIGHTS = getMacroblockWeights();
+const pct = (w: number) => Math.round(w * 100);
 
 const CANONICAL = {
-  koraIndex:  _s1Idx['kora_index_value'] as number,
-  confidence: Math.round((_s1Idx['confidence_score'] as number) * 100),
-  safeguard:  _s1Idx['safeguard_status'] as string,
-  regime:     'Foundation Light',
   macroblocks: {
-    reach:   { label: 'Activation Reach',       weight: _mbWeight('REACH'),   score: _mbScore('REACH')   },
-    quality: { label: 'Activation Quality',     weight: _mbWeight('QUALITY'), score: _mbScore('QUALITY') },
-    equity:  { label: 'Distribution & Equity',  weight: _mbWeight('EQUITY'),  score: _mbScore('EQUITY')  },
-    bti:     { label: 'Budget-to-Human-Impact', weight: _mbWeight('BTI'),     score: _mbScore('BTI')     },
+    reach:   { label: 'Activation Reach',       weight: pct(MB_WEIGHTS.REACH)   },
+    quality: { label: 'Activation Quality',     weight: pct(MB_WEIGHTS.QUALITY) },
+    equity:  { label: 'Distribution & Equity',  weight: pct(MB_WEIGHTS.EQUITY)  },
+    bti:     { label: 'Budget-to-Human-Impact', weight: pct(MB_WEIGHTS.BTI)     },
   },
   pillars: [
-    { code: 'LIFE',       share: _pillarShare('LIFE'),       desc: 'Salute, prevenzione, supporto psicologico, benessere, nutrizione.' },
-    { code: 'GROWTH',     share: _pillarShare('GROWTH'),     desc: 'Formazione, competenze, sviluppo professionale, upskilling digitale.' },
-    { code: 'CONNECTION', share: _pillarShare('CONNECTION'), desc: 'Mentoring, peer support, community interne, coesione di team.' },
-    { code: 'IMPACT',     share: _pillarShare('IMPACT'),     desc: 'Volontariato, progetti sociali, iniziative ambientali, territorio.' },
-    { code: 'LEGACY',     share: _pillarShare('LEGACY'),     desc: 'Trasferimento di conoscenza, mentoring senior-junior, futuro, pensione.' },
+    { code: 'LIFE',       desc: 'Salute, prevenzione, supporto psicologico, benessere, nutrizione.' },
+    { code: 'GROWTH',     desc: 'Formazione, competenze, sviluppo professionale, upskilling digitale.' },
+    { code: 'CONNECTION', desc: 'Mentoring, peer support, community interne, coesione di team.' },
+    { code: 'IMPACT',     desc: 'Volontariato, progetti sociali, iniziative ambientali, territorio.' },
+    { code: 'LEGACY',     desc: 'Trasferimento di conoscenza, mentoring senior-junior, futuro, pensione.' },
   ],
 };
 
@@ -171,24 +169,26 @@ export default function LandingPage() {
                   /100
                 </text>
                 <g id="field-nodes" />
-                {/* CS badge */}
+                {/* CS badge — no specific score claimed, only the real static
+                    architectural fact (Confidence Score is external, weight 0) */}
                 <text x="418" y="402" textAnchor="end"
                   style={{ fontFamily: 'Plus Jakarta Sans', fontWeight: 700, fontSize: 9, fill: 'rgba(247,245,239,.3)', letterSpacing: '.12em' }}>
                   CONFIDENCE SCORE
                 </text>
                 <text x="418" y="425" textAnchor="end"
-                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 21, fontWeight: 800, fill: '#C76F3D' }}>
-                  {CANONICAL.confidence}%
+                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 16, fontWeight: 800, fill: '#C76F3D' }}>
+                  ESTERNO
                 </text>
                 <text x="418" y="438" textAnchor="end"
                   style={{ fontFamily: 'Plus Jakarta Sans', fontWeight: 500, fontSize: 8.5, fill: 'rgba(247,245,239,.26)', letterSpacing: '.08em' }}>
-                  ESTERNO · PESO = 0
+                  PESO = 0
                 </text>
-                {/* Safeguard badge */}
+                {/* Safeguard badge — lists the 3 real states, no specific
+                    company status claimed */}
                 <circle cx="22" cy="416" r="4.5" fill="#D99A2B" />
                 <text x="33" y="412" textAnchor="start"
-                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 11, fontWeight: 800, fill: '#E9B95C', letterSpacing: '.04em' }}>
-                  {CANONICAL.safeguard}
+                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 10, fontWeight: 800, fill: '#E9B95C', letterSpacing: '.02em' }}>
+                  CLEAR · WARNING · FLAGGED
                 </text>
                 <text x="33" y="426" textAnchor="start"
                   style={{ fontFamily: 'Plus Jakarta Sans', fontWeight: 500, fontSize: 8.5, fill: 'rgba(247,245,239,.3)', letterSpacing: '.06em' }}>
@@ -316,7 +316,7 @@ export default function LandingPage() {
                 ['04','Computato',  'IU Engine · 0.84 IU · trace'],
                 ['05','Aggregato',  'privacy N ≥ 10'],
                 ['06','Contribuito','Index · REACH +0.3'],
-                ['07','Visibile',   `Cockpit · parte del ${CANONICAL.koraIndex}/100`],
+                ['07','Visibile',   'Cockpit · contributo visibile nel KORA Index'],
               ].map(([num, stage, detail], i) => (
                 <div
                   key={num}
@@ -347,19 +347,21 @@ export default function LandingPage() {
             Un numero. Quattro macroblocchi. Zero black box.
           </h2>
           <div className={styles.anat}>
-            {/* Index card */}
+            {/* Index card — schematic, no company attribution, no claimed
+                score: only the real static scale (0–100) and the 3 real
+                Activation Safeguard states, not a specific result. */}
             <div className={`${styles.indexCard} ${styles.reveal} ${styles.d2}`}>
-              <div className={styles.icLabel}>KORA Index v1.0 · Meridiana Group · S1</div>
+              <div className={styles.icLabel}>KORA Index v1.0 · Esempio schematico</div>
               <div className={`${styles.icScore} ${styles.num}`}>
-                {CANONICAL.koraIndex}<span className={styles.icScoreSpan}>/100</span>
+                0–100
               </div>
               <div className={styles.icRow}>
                 <span className={`${styles.chip} ${styles.chipWarn}`}>
                   <span className={`${styles.chipDot} ${styles.chipWarnDot}`} />
-                  WARNING
+                  CLEAR · WARNING · FLAGGED
                 </span>
                 <span className={`${styles.chip} ${styles.chipCs}`}>
-                  CS {CANONICAL.confidence}%
+                  CS esterno · peso 0
                 </span>
               </div>
               <div className={styles.icMeth}>pre_empirical_calibration</div>
@@ -368,7 +370,9 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Macroblock bars */}
+            {/* Macroblock weight distribution — real, static, canonical
+                (lib/methodology-config/v0.1.ts). No per-company score shown:
+                the bar reflects each macroblock's real weight, not a result. */}
             <div>
               <div className={styles.blocks}>
                 {mbs.map((mb, i) => (
@@ -383,9 +387,9 @@ export default function LandingPage() {
                       <span className={styles.blkNameW}>PESO {mb.weight}%</span>
                     </div>
                     <div className={styles.blkBar}>
-                      <div className={styles.blkFill} data-w={String(mb.score)} />
+                      <div className={styles.blkFill} data-w={String(mb.weight)} />
                     </div>
-                    <div className={`${styles.blkVal} ${styles.num}`}>{mb.score}</div>
+                    <div className={`${styles.blkVal} ${styles.num}`}>{mb.weight}%</div>
                   </div>
                 ))}
               </div>
@@ -422,10 +426,6 @@ export default function LandingPage() {
                   <span className={styles.pdot} style={{ background: color }} />
                   <span className={styles.pname}>{p.code}</span>
                   <span className={styles.pdesc}>{p.desc}</span>
-                  <span className={styles.pshare}>
-                    <span className={`${styles.pshareV} ${styles.num}`} style={{ color }}>{p.share}%</span>
-                    <span className={styles.pshareL}>share IU · S1</span>
-                  </span>
                 </div>
               );
             })}
@@ -544,7 +544,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <MarketingFooter meth="synthetic_demo_data: true · KORA-METHOD-v0.1.0 · pre_empirical_calibration · organization-level only · KORA misura organizzazioni, non individui." />
+      <MarketingFooter meth="KORA-METHOD-v0.1.0 · pre_empirical_calibration · organization-level only · KORA misura organizzazioni, non individui." />
 
       {/* Modifica 4: animazioni in client component isolato */}
       <LandingMotion />
