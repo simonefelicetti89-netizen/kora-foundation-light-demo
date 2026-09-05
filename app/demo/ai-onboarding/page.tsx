@@ -8,8 +8,31 @@
 // simulavano capacità ora reali e canoniche altrove (Data Intake Studio,
 // UEF Review Queue, Pilot Lifecycle Orchestrator), non uniche a questa
 // pagina demo. Le sezioni A e D restano, invariate nella loro fonte dati.
+//
+// CC-00 — Admin Console panel-by-panel canonicalization (2026-09-19):
+// Section D's data moved here from AdminPreviewService.getPrivacyFilterPreview()
+// — it was real, accurate, always-true KORA privacy policy, not a synthetic
+// "preview" of variable state, so it never belonged in a Preview-simulation
+// service shared with Admin Home. Values unchanged, purely relocated.
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+
+const PRIVACY_FILTER = {
+  sensitive_fields_detected: 14,
+  sensitive_fields_excluded: 14,
+  excluded_categories: [
+    'Email addresses',
+    'Phone numbers',
+    'Postal addresses',
+    'Tax identifiers (codice fiscale)',
+    'Health and clinical details',
+    'Free-text personal notes',
+    'Diagnostic or therapist references',
+  ],
+  no_external_llm_on_hr_data: true,
+  no_employer_access_individual: true,
+  pseudonymization_applied: true,
+};
 
 const READINESS_PILL: Record<string, string> = {
   ready:   'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
@@ -36,7 +59,7 @@ function AIBoundaryNotice({ children }: { children: React.ReactNode }) {
 
 export default function AIOnboardingPage() {
   const onboarding     = adminPreviewService.getAIOnboardingPreview();
-  const privacy        = adminPreviewService.getPrivacyFilterPreview();
+  const privacy        = PRIVACY_FILTER;
 
   return (
     <div className="space-y-8 max-w-3xl">

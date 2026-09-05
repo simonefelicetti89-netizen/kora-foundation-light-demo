@@ -62,6 +62,41 @@
 // (sector, territory, is_primary_demo, demo_note) were not migrated — see
 // this slice's own regression test and lib/architecture/registry.ts's
 // svc.admin-preview entry for the full field-by-field disposition.
+//
+// CC-00 — Admin Console panel-by-panel canonicalization (2026-09-19):
+// "No panel survives merely because it exists today." Re-verified every
+// remaining method against its actual Admin/demo callers and any canonical
+// data support:
+//   - getPartnerNetworkPreview() RETIRED — its sole caller was Admin Home's
+//     "Partner Network" panel (fake evidence_protocol_status/active_programs
+//     for 6 fictional partners). A real canonical network.partner_profile
+//     table exists (used by app/partner/workspace), but has no equivalent
+//     for evidence_protocol_status or active_programs — canonicalizing
+//     would mean inventing those fields, forbidden by this slice's own
+//     scope. Zero callers remained once removed from Admin Home — deleted
+//     outright, not deferred-in-place. Deferred as a real NETWORK-track
+//     capability (see lib/architecture/registry.ts).
+//   - getBillingRevenuePreview() RETIRED — Foundation Light has zero billing
+//     authority (CLAUDE.md Red Line: no payments/wallet/checkout), it had
+//     zero demo caller, and Admin Home's own panel title already called it
+//     "(mock)". Deleted outright.
+//   - getPrivacyFilterPreview() MOVED — its content is real, accurate,
+//     always-true KORA privacy policy, not a synthetic "preview" of
+//     variable state; it never belonged in a Preview-simulation service.
+//     Inlined directly into its sole caller, app/demo/ai-onboarding/page.tsx.
+//   - getBenchmarkPreview(), getAdvisorNetworkPreview(),
+//     getFounderValidationPreview(), getGateStatusPreview(), and
+//     getAIOnboardingPreview() are UNTOUCHED as methods — each still has a
+//     legitimate demo caller (per PART 17 of this slice's own task: "do not
+//     force retirement of methods with legitimate residual callers"). What
+//     changed is Admin Home's consumption of them — see app/admin/page.tsx's
+//     own header comment for the panel-by-panel disposition (advisor/partner
+//     network panels removed as unfounded synthetic product truth; billing
+//     panel removed; GTM Founder Cockpit panel removed in favor of the
+//     already-existing real internal tool at app/admin/founder-validation;
+//     gate status kept as accurate static governance config; AI onboarding's
+//     two priority-queue signals replaced by already-fetched canonical
+//     aggregate fields, one signal dropped outright rather than invented).
 import sourceBatchesRaw from '@/data/synthetic/source-batches.json';
 
 // ─── Raw seed shapes ───────────────────────────────────────────────────────────
@@ -93,24 +128,6 @@ export interface AdvisorEntry {
   specialization: string;
   assigned_companies: string[];
   pending_reviews: number;
-  status: string;
-}
-
-export interface PartnerEntry {
-  id: string;
-  name: string;
-  pillars: string[];
-  territory: string;
-  evidence_protocol_status: string;
-  active_programs: number;
-}
-
-export interface BillingEntry {
-  company_name: string;
-  plan: string;
-  setup_fee_eur: number;
-  monthly_fee_eur: number;
-  advisory_fee_eur: number;
   status: string;
 }
 
@@ -163,17 +180,13 @@ class AdminPreviewService {
     ];
   }
 
-  // 5. Partner Network
-  getPartnerNetworkPreview(): PartnerEntry[] {
-    return [
-      { id: 'partner-mindspace',   name: 'MindSpace Wellness',   pillars: ['LIFE'],             territory: 'Milan',           evidence_protocol_status: 'audit_completato',  active_programs: 3 },
-      { id: 'partner-nutriwell',   name: 'NutriWell Italia',     pillars: ['LIFE'],             territory: 'Italy (remote)',  evidence_protocol_status: 'audit_completato',  active_programs: 2 },
-      { id: 'partner-mediflex',    name: 'MediFlex Health',      pillars: ['LIFE'],             territory: 'Lombardy',        evidence_protocol_status: 'audit_completato',  active_programs: 4 },
-      { id: 'partner-learningpro', name: 'LearningPro Academy',  pillars: ['GROWTH'],           territory: 'Italy',           evidence_protocol_status: 'audit_parziale',    active_programs: 5 },
-      { id: 'partner-growthlab',   name: 'GrowthLab Skills',     pillars: ['GROWTH', 'LEGACY'], territory: 'Milan',           evidence_protocol_status: 'audit_parziale',    active_programs: 2 },
-      { id: 'partner-communit8',   name: 'Communit8 Social',     pillars: ['CONNECTION', 'IMPACT'], territory: 'Northern Italy', evidence_protocol_status: 'audit_in_corso', active_programs: 1 },
-    ];
-  }
+  // 5. Partner Network — RETIRED (2026-09-19, CC-00 Admin Console
+  // canonicalization). Its sole caller, Admin Home's "Partner Network"
+  // panel, is removed — a real canonical network.partner_profile table
+  // exists but has no evidence_protocol_status/active_programs equivalent;
+  // canonicalizing here would mean inventing those fields. See this slice's
+  // own regression test and lib/architecture/registry.ts's svc.admin-preview
+  // entry for the full disposition and the deferred NETWORK-track capability.
 
   // 6. Platform Analytics — RETIRED (2026-09-06, CC-00 Phase 1). Migrated to
   // canonical analytics.tenant/kora_index_result/confidence_result/source_batch
@@ -182,15 +195,13 @@ class AdminPreviewService {
   // remaining real/type-only callers of this method confirmed by repo-wide
   // grep before removal.
 
-  // 7. Billing & Revenue (mock — no real payments)
-  getBillingRevenuePreview(): BillingEntry[] {
-    return [
-      { company_name: 'Meridiana Group S.r.l.',  plan: 'Foundation Pilot',     setup_fee_eur: 4500, monthly_fee_eur: 1200, advisory_fee_eur: 2400, status: 'demo' },
-      { company_name: 'Nexo Digital S.p.A.',      plan: 'Foundation Pilot',     setup_fee_eur: 4500, monthly_fee_eur: 1200, advisory_fee_eur: 1800, status: 'demo' },
-      { company_name: 'Fortis Industrial S.p.A.', plan: 'Enterprise Pilot',     setup_fee_eur: 8000, monthly_fee_eur: 2400, advisory_fee_eur: 4800, status: 'demo' },
-      { company_name: 'Communitas Cooperativa',   plan: 'Social Enterprise',    setup_fee_eur: 2200, monthly_fee_eur:  750, advisory_fee_eur: 1200, status: 'demo' },
-    ];
-  }
+  // 7. Billing & Revenue — RETIRED (2026-09-19, CC-00 Admin Console
+  // canonicalization). Foundation Light has zero billing/payment product
+  // authority (CLAUDE.md Red Line: no payments, no wallet, no checkout).
+  // Zero demo caller ever existed for this method — Admin Home was its
+  // only caller, and its own panel title already called it "(mock)".
+  // Deleted outright, not deferred — there is no future KORA billing
+  // product capability implied here to defer.
 
   // 8. Founder Validation / GTM
   getFounderValidationPreview(): FounderValidationEntry[] {
@@ -234,14 +245,11 @@ export interface CompanyOnboardingStatus {
   synthetic_demo: true;
 }
 
-export interface PrivacyFilterPreview {
-  sensitive_fields_detected: number;
-  sensitive_fields_excluded: number;
-  excluded_categories: string[];
-  no_external_llm_on_hr_data: true;
-  no_employer_access_individual: true;
-  pseudonymization_applied: true;
-}
+// PrivacyFilterPreview / getPrivacyFilterPreview() MOVED (2026-09-19, CC-00
+// Admin Console canonicalization) — its content is real, accurate, always-
+// true KORA privacy policy, not a synthetic "preview" of variable state; it
+// never belonged in a Preview-simulation service. Inlined as a local
+// constant directly in its sole caller, app/demo/ai-onboarding/page.tsx.
 
 // ─── Extended AdminPreviewService ─────────────────────────────────────────────
 
@@ -265,26 +273,6 @@ export const adminPreviewService = new (class extends AdminPreviewService {
       approved_batches: approved,
       pending_review_batches: pending,
       synthetic_demo: true,
-    };
-  }
-
-  // D. Privacy filter — inline synthetic preview
-  getPrivacyFilterPreview(): PrivacyFilterPreview {
-    return {
-      sensitive_fields_detected: 14,
-      sensitive_fields_excluded: 14,
-      excluded_categories: [
-        'Email addresses',
-        'Phone numbers',
-        'Postal addresses',
-        'Tax identifiers (codice fiscale)',
-        'Health and clinical details',
-        'Free-text personal notes',
-        'Diagnostic or therapist references',
-      ],
-      no_external_llm_on_hr_data: true,
-      no_employer_access_individual: true,
-      pseudonymization_applied: true,
     };
   }
 

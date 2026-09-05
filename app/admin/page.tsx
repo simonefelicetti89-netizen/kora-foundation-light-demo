@@ -1,6 +1,8 @@
 // A-01: KORA Control Tower™ — narrative-first admin operating console
 // B82-B: Structural LIVE / DEMO separation.
-// Structure: LIVE PLATFORM block → Priority Queue (DEMO) → Company Readiness Matrix (DEMO) → Intelligence Grid (DEMO) → GTM (DEMO) → Governance
+// Structure (post CC-00 Admin Console canonicalization, 2026-09-19):
+// LIVE PLATFORM block → Priority Queue (LIVE) → Company Readiness Matrix (LIVE)
+// → Intelligence Grid (LIVE) → Methodology Governance (static, accurate)
 //
 // CC-00 — B-TRUTH / ONE PRODUCT, ONE TRUTH — AdminPreview Cross-Company
 // Canonicalization, Phase 1 (2026-09-06): the Platform Analytics panel's
@@ -38,6 +40,43 @@
 // demo_note had no canonical equivalent and are not carried forward — see
 // lib/architecture/registry.ts's svc.admin-preview entry for the full
 // field-by-field disposition.
+//
+// CC-00 — Admin Console panel-by-panel canonicalization (2026-09-19):
+// "No panel survives merely because it exists today." Every remaining
+// AdminPreviewService-fed panel was re-classified:
+//   - Priority Queue: the "pending batches" signal now reads
+//     analytics.source_batches_total - analytics.source_batches_approved
+//     (already fetched above, zero new query) instead of
+//     getAIOnboardingPreview()'s single-fake-company count. The "scoring
+//     blocked" signal is DROPPED, not migrated — it was a per-tenant
+//     readiness heuristic with no honest multi-tenant translation; forcing
+//     one would invent product semantics this slice does not authorize.
+//   - Intelligence Grid: "Advisor Network" and "Partner Network" panels are
+//     REMOVED — both showed fully fictional operator-facing data (advisor
+//     names/pending-reviews with no canonical advisor_profile model behind
+//     ADVISOR the role at all; partner evidence_protocol_status/
+//     active_programs with no equivalent on the real, canonical
+//     network.partner_profile table). Both capabilities are deferred as
+//     real, future NETWORK-track work — see lib/architecture/registry.ts.
+//     "Platform Analytics" keeps its data (already canonical since Phase 1)
+//     but drops its "DEMO · dati sintetici" badge — a leftover mislabeling
+//     bug, not accurate. The whole section's SectionHead is now "LIVE".
+//   - The old GTM founder-pipeline section is REMOVED outright — it
+//     duplicated a real, already-existing, richer internal tool at
+//     app/admin/founder-validation (already linked from admin nav),
+//     replaced by a single link, not a redesigned panel.
+//   - "Billing & Revenue (mock)" block REMOVED outright — Foundation Light
+//     has zero billing/payment product authority (CLAUDE.md Red Line), it
+//     had no demo caller, and its own title already called it "(mock)".
+//   - "Gate & Methodology" is kept as-is: real, accurate, static project
+//     governance state (matches CLAUDE.md's own gate-status footer) — not
+//     synthetic, so its former "DEMO" section badge is dropped too.
+// getBenchmarkPreview(), getAdvisorNetworkPreview(), getFounderValidationPreview(),
+// getGateStatusPreview(), and getAIOnboardingPreview() are NOT deleted from
+// AdminPreviewService.ts — each still has a legitimate /demo/** caller.
+// getPartnerNetworkPreview() and getBillingRevenuePreview() (zero remaining
+// callers once removed here) and getPrivacyFilterPreview() (moved inline to
+// its sole caller) are deleted/relocated there. DEMO_VIEWER role untouched.
 
 import Link from 'next/link';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
@@ -130,16 +169,12 @@ export default async function KoraControlTower() {
   const registry = buildIndexRegistryView(typedTenantRows, typedCurrentResultRows);
 
   const gates      = adminPreviewService.getGateStatusPreview();
-  const billing    = adminPreviewService.getBillingRevenuePreview();
-  const gtm        = adminPreviewService.getFounderValidationPreview();
-  const advisors   = adminPreviewService.getAdvisorNetworkPreview();
-  const partners   = adminPreviewService.getPartnerNetworkPreview();
-  const onb        = adminPreviewService.getAIOnboardingPreview();
 
   const clearCount   = analytics.safeguard_distribution.CLEAR;
   const warningCount = analytics.safeguard_distribution.WARNING;
   const flaggedCount = analytics.safeguard_distribution.FLAGGED;
   const totalC       = clearCount + warningCount + flaggedCount;
+  const pendingBatches = analytics.source_batches_total - analytics.source_batches_approved;
 
   // ── Derive priority queue from live data ──────────────────────────────────
   const priorityItems: PriorityItem[] = [];
@@ -168,40 +203,15 @@ export default async function KoraControlTower() {
     });
   }
 
-  if (onb.pending_review_batches > 0) {
+  if (pendingBatches > 0) {
     priorityItems.push({
       id: 'pending-batches',
       urgency: 'media',
       type: 'Data Pipeline',
-      title: `${onb.pending_review_batches} batch fonti in attesa di revisione`,
+      title: `${pendingBatches} batch fonti in attesa di revisione`,
       detail: 'Batch caricati da company non ancora processati. Avviare data intake review.',
       href: '/admin/data-intake',
       action: 'Rivedi',
-    });
-  }
-
-  if (onb.scoring_readiness === 'blocked') {
-    priorityItems.push({
-      id: 'scoring',
-      urgency: 'media',
-      type: 'Scoring Readiness',
-      title: 'Pipeline non pronta per scoring',
-      detail: 'Le fonti dati non sono ancora sufficienti per avviare il calcolo del KORA Index™.',
-      href: '/admin/uef-review',
-      action: 'Verifica UEF',
-    });
-  }
-
-  const pendingAdvisorReviews = advisors.reduce((s, a) => s + (a.pending_reviews ?? 0), 0);
-  if (pendingAdvisorReviews > 0) {
-    priorityItems.push({
-      id: 'advisor-queue',
-      urgency: 'bassa',
-      type: 'Advisor Network',
-      title: `${pendingAdvisorReviews} revisioni advisor in attesa`,
-      detail: 'Review protocollo evidenze e audit processo non ancora completati.',
-      href: '/demo/network',
-      action: 'Verifica',
     });
   }
 
@@ -391,12 +401,12 @@ export default async function KoraControlTower() {
               <p style={{ fontFamily: FONT, fontSize: '1.25rem', color: TOKENS.ink, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
                 Coda priorità
               </p>
-              <span style={{ borderRadius: 4, padding: '2px 7px', fontSize: '9px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: '#fff7ed', color: '#9a3412', border: '1px solid #fed7aa' }}>
-                DEMO · sintetico
+              <span style={{ borderRadius: 4, padding: '2px 7px', fontSize: '9px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' }}>
+                LIVE
               </span>
             </div>
             <p style={{ fontFamily: FONT, fontSize: '11px', color: TOKENS.accent, fontWeight: 600, marginTop: 4 }}>
-              Anteprima sintetica — non operativa
+              Derivata da dati canonici — azioni operative reali
             </p>
             <p style={{ fontFamily: FONT, fontSize: '11px', color: TOKENS.inkHint, marginTop: 2 }}>
               {priorityItems.length > 0
@@ -475,7 +485,7 @@ export default async function KoraControlTower() {
       {/* SECTION 4: INTELLIGENCE GRID                            */}
       {/* ════════════════════════════════════════════════════════ */}
 
-      <SectionHead label="Intelligence operativa" badgeMode="DEMO" />
+      <SectionHead label="Intelligence operativa" badgeMode="LIVE" />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
 
@@ -501,29 +511,11 @@ export default async function KoraControlTower() {
           </div>
         </Panel>
 
-        {/* Advisor Network */}
-        <Panel n="02" title="Advisor Network" href="/demo/network" hrefLabel="Rete advisor" badgeLabel="DEMO · dati sintetici">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {advisors.map((a) => (
-              <div key={a.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <span style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, flex: 1, minWidth: 0 }}>{a.name.split(' ').slice(-1)[0]}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                  {a.pending_reviews > 0 && (
-                    <span style={{ borderRadius: 999, padding: '2px 8px', fontSize: '9px', fontWeight: 700, background: TOKENS.safeguard.watch.bg, color: TOKENS.safeguard.watch.text, border: `1px solid ${TOKENS.safeguard.watch.dot}40` }}>
-                      {a.pending_reviews} review
-                    </span>
-                  )}
-                  <span style={{ borderRadius: 999, padding: '2px 8px', fontSize: '9px', fontWeight: 600, ...(a.status === 'active' ? { background: TOKENS.safeguard.pass.bg, color: TOKENS.safeguard.pass.text, border: `1px solid ${TOKENS.safeguard.pass.dot}40` } : { background: TOKENS.inkBorder, color: TOKENS.inkHint, border: TOKENS.cardBorder }) }}>
-                    {a.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Panel>
-
-        {/* Platform Analytics */}
-        <Panel n="03" title="Platform Analytics" badgeLabel="DEMO · dati sintetici">
+        {/* Platform Analytics — canonical (CC-00 Phase 1). No badge: this
+            data is real (analytics.kora_index_result/confidence_result),
+            not synthetic — the "DEMO · dati sintetici" label here before
+            this slice was a leftover mislabeling bug, not accurate. */}
+        <Panel n="02" title="Platform Analytics">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
               ['Confidence Score™ medio',  analytics.avg_confidence_score != null ? `${(analytics.avg_confidence_score * 100).toFixed(0)}%` : '—'],
@@ -538,53 +530,26 @@ export default async function KoraControlTower() {
           </div>
         </Panel>
 
-        {/* Partner Network */}
-        <Panel n="04" title="Partner Network" href="/demo/network" hrefLabel="Rete partner" badgeLabel="DEMO · dati sintetici">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {partners.slice(0, 4).map((p) => (
-              <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <span style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
-                <span style={{ fontSize: '10px', color: TOKENS.inkHint, flexShrink: 0 }}>{p.pillars[0]}</span>
-              </div>
-            ))}
-          </div>
-        </Panel>
-
       </div>
 
-      {/* ════════════════════════════════════════════════════════ */}
-      {/* SECTION 5: GTM COCKPIT                                   */}
-      {/* ════════════════════════════════════════════════════════ */}
-
-      <SectionHead label="GTM Founder Cockpit" badgeMode="DEMO" />
-
-      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, overflow: 'hidden' }}>
-        {gtm.slice(0, 5).map((e, i) => (
-          <div key={e.company_name} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px', borderBottom: i < gtm.length - 1 ? TOKENS.cardBorder : 'none' }}>
-            <span style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.company_name}</span>
-            <span style={{
-              borderRadius: 999, padding: '2px 8px', fontSize: '9px', fontWeight: 600, flexShrink: 0,
-              ...(e.stage === 'pilot_active'   ? { background: TOKENS.safeguard.pass.bg,  color: TOKENS.safeguard.pass.text,  border: `1px solid ${TOKENS.safeguard.pass.dot}40`  }
-                : e.stage === 'pilot_proposed' ? { background: 'rgba(43,92,230,0.10)', color: '#1E4A8A', border: '1px solid rgba(43,92,230,0.22)' }
-                : e.stage === 'demo_shown'     ? { background: TOKENS.accentSoft, color: TOKENS.accent, border: `1px solid rgba(199,111,61,0.25)` }
-                                               : { background: TOKENS.inkBorder, color: TOKENS.inkHint, border: TOKENS.cardBorder }),
-            }}>
-              {e.stage.replace(/_/g, ' ')}
-            </span>
-          </div>
-        ))}
-      </div>
+      {/* Founder Validation Cockpit — real internal tool (app/admin/founder-validation),
+          not represented inline here. CC-00 Admin Console canonicalization
+          (2026-09-19) removed the fake GTM founder-pipeline panel that used
+          to duplicate this with fictional pipeline data — see this slice's
+          own regression test. */}
       <div style={{ marginTop: 8, textAlign: 'right' }}>
-        <Link href="/demo/gtm" style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>Pipeline GTM →</Link>
+        <Link href="/admin/founder-validation" style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>
+          Founder Validation Cockpit →
+        </Link>
       </div>
 
       {/* ════════════════════════════════════════════════════════ */}
       {/* SECTION 6: METHODOLOGY GOVERNANCE                        */}
       {/* ════════════════════════════════════════════════════════ */}
 
-      <SectionHead label="Methodology governance" badgeMode="DEMO" />
+      <SectionHead label="Methodology governance" />
 
-      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: '20px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24 }}>
+      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: '20px 24px' }}>
         <div>
           <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKENS.inkHint, marginBottom: 10 }}>
             Gate & Methodology
@@ -602,22 +567,6 @@ export default async function KoraControlTower() {
           <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '10px', color: TOKENS.inkHint, marginTop: 10 }}>
             {gates.methodology_version_id} · {gates.calibration_status}
           </p>
-        </div>
-        <div>
-          <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKENS.inkHint, marginBottom: 10 }}>
-            Billing & Revenue (mock)
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {billing.slice(0, 3).map((b) => (
-              <div key={b.company_name} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                <span style={{ fontSize: '11.5px', color: TOKENS.inkSecondary }}>{b.company_name.split(' ')[0]}</span>
-                <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '11px', color: TOKENS.inkHint }}>
-                  €{(b.setup_fee_eur + b.monthly_fee_eur * 12 + b.advisory_fee_eur).toLocaleString('it-IT')}/yr
-                </span>
-              </div>
-            ))}
-          </div>
-          <p style={{ fontSize: '9px', color: TOKENS.inkHint, fontStyle: 'italic', marginTop: 8 }}>No Stripe · No wallet · Mock only</p>
         </div>
       </div>
 
