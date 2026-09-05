@@ -14,11 +14,32 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 18 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// CC-00 — Public Landing canonicalization (2026-09-26): app/page.tsx
+// retired both of its synthetic imports (data/synthetic/kora-index-outputs.json,
+// data/synthetic/company-aggregates.json) — it previously read a specific
+// fictional company's ("Meridiana Group", scenario S1) KORA Index value,
+// Confidence Score, Safeguard status, per-macroblock score, and per-pillar
+// IU share and displayed them as if illustrating a real product result. The
+// page now shows only real, static, canonical methodology facts (macroblock
+// weights from lib/methodology-config/v0.1.ts, pillar definitions) — no
+// per-company or per-tenant value at all, so no synthetic import is needed.
+// File removed from this allowlist entirely (12->11 files). Neither fixture
+// became zero-consumer overall — kora-index-outputs.json remains needed by
+// 5 other real consumers (app/demo/page.tsx, app/demo/gtm/page.tsx,
+// components/demo/DemoGuideContent.tsx, services/scoring/DemoScoringAdapter.ts,
+// services/scoring-simulator/ScoringSimulatorService.ts), and
+// company-aggregates.json remains needed by services/demo-data/DemoDataService.ts,
+// services/worker-pillar-adoption/WorkerPillarAdoptionService.ts, and
+// services/scoring-simulator/ScoringSimulatorService.ts — verified by direct
+// repo-wide grep before this change, not assumed. Import count 18->16 (2
+// fewer imports, both from this one removed file). See
+// tests/unit/cc00-public-landing-canonicalization.test.ts.
 //
 // CC-00 — Company Portfolio capability salvage + canonicalization
 // (2026-09-12): getCompanyPortfolioPreview() retired from
@@ -530,7 +551,6 @@ export interface SyntheticImportAllowlistEntry {
 }
 
 export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
-  { file: 'app/page.tsx', reason: 'Public marketing landing page — displays canonical S1/Meridiana example numbers, outside /demo namespace.' },
   { file: 'app/demo/page.tsx', reason: 'Demo entry surface — reads pre-computed S1 KORA Index output.' },
   { file: 'app/demo/gtm/page.tsx', reason: 'Demo GTM surface — reads pre-computed KORA Index output for pitch numbers.' },
   { file: 'components/demo/DemoGuideContent.tsx', reason: 'Demo guide component — reads pre-computed KORA Index output.' },
