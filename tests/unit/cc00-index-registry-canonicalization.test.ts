@@ -202,20 +202,30 @@ describe('CC-00 Index Registry canonicalization — scope boundary (one PR = one
     expect(existsSync(resolve(root, 'app/demo/portfolio'))).toBe(false);
   });
 
-  it('getAIOnboardingPreview and getPrivacyFilterPreview are untouched', () => {
-    const src = read('services/admin-preview/AdminPreviewService.ts');
+  // getPrivacyFilterPreview was accurately untouched at the time this test
+  // was written. CC-00 Admin Console canonicalization (2026-09-19) later,
+  // separately, moved it out entirely — see
+  // tests/unit/cc00-admin-console-canonicalization.test.ts.
+  it('getAIOnboardingPreview is untouched; getPrivacyFilterPreview has since been separately moved out (historical note)', () => {
+    const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
     expect(src).toContain('getAIOnboardingPreview(): CompanyOnboardingStatus');
-    expect(src).toContain('getPrivacyFilterPreview(): PrivacyFilterPreview');
+    expect(src).not.toContain('getPrivacyFilterPreview(');
   });
 
-  it('Tier C methods are untouched', () => {
-    const src = read('services/admin-preview/AdminPreviewService.ts');
+  // getPartnerNetworkPreview and getBillingRevenuePreview were accurately
+  // untouched at the time this test was written. CC-00 Admin Console
+  // canonicalization (2026-09-19) later, separately, retired both outright.
+  // See tests/unit/cc00-admin-console-canonicalization.test.ts.
+  it('Tier C methods are untouched; partner network and billing have since been separately retired', () => {
+    const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
     for (const method of [
-      'getBenchmarkPreview', 'getAdvisorNetworkPreview', 'getPartnerNetworkPreview',
-      'getBillingRevenuePreview', 'getFounderValidationPreview', 'getGateStatusPreview',
+      'getBenchmarkPreview', 'getAdvisorNetworkPreview',
+      'getFounderValidationPreview', 'getGateStatusPreview',
     ]) {
       expect(src).toContain(`${method}(`);
     }
+    expect(src).not.toContain('getPartnerNetworkPreview(');
+    expect(src).not.toContain('getBillingRevenuePreview(');
   });
 
   // app/demo/partner/page.tsx was accurately in this list as of this test's

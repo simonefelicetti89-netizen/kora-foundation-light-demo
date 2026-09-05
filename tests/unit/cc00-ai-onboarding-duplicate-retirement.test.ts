@@ -162,10 +162,18 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — app/demo/ai-onboarding/pa
     }
   });
 
-  it('the page still calls its two remaining, untouched methods', () => {
+  // getPrivacyFilterPreview() was accurately called via adminPreviewService
+  // at the time this test was written. CC-00 Admin Console canonicalization
+  // (2026-09-19) later, separately, moved its content out of
+  // AdminPreviewService.ts entirely (it was real, accurate, always-true
+  // privacy policy, not a synthetic preview) — inlined as a local
+  // PRIVACY_FILTER constant directly in this same page. See
+  // tests/unit/cc00-admin-console-canonicalization.test.ts.
+  it('the page still calls getAIOnboardingPreview; getPrivacyFilterPreview has since been inlined locally (historical note)', () => {
     const src = read('app/demo/ai-onboarding/page.tsx');
     expect(src).toContain('adminPreviewService.getAIOnboardingPreview()');
-    expect(src).toContain('adminPreviewService.getPrivacyFilterPreview()');
+    expect(src).not.toContain('adminPreviewService.getPrivacyFilterPreview()');
+    expect(src).toContain('PRIVACY_FILTER');
   });
 
   it('no live Supabase/DB query was introduced into the demo page (no live data added to /demo)', () => {
@@ -187,12 +195,16 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — app/demo/ai-onboarding/pa
 });
 
 describe('CC-00 AI-Onboarding Duplicate Retirement — scope boundary (one PR = one bounded step)', () => {
-  it('getAIOnboardingPreview and getPrivacyFilterPreview are untouched — still defined, unchanged shape', () => {
-    const src = read('services/admin-preview/AdminPreviewService.ts');
+  // getPrivacyFilterPreview()/PrivacyFilterPreview were accurately still
+  // defined here at the time this test was written. CC-00 Admin Console
+  // canonicalization (2026-09-19) later, separately, moved both out of this
+  // file entirely — see tests/unit/cc00-admin-console-canonicalization.test.ts.
+  it('getAIOnboardingPreview is untouched; getPrivacyFilterPreview has since been separately moved out (historical note)', () => {
+    const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
     expect(src).toContain('getAIOnboardingPreview(): CompanyOnboardingStatus');
-    expect(src).toContain('getPrivacyFilterPreview(): PrivacyFilterPreview');
     expect(src).toContain('export interface CompanyOnboardingStatus');
-    expect(src).toContain('export interface PrivacyFilterPreview');
+    expect(src).not.toContain('getPrivacyFilterPreview(');
+    expect(src).not.toContain('export interface PrivacyFilterPreview');
   });
 
   // getIndexRegistryPreview was accurately untouched, with both real
@@ -220,14 +232,20 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — scope boundary (one PR = 
     expect(existsSync(resolve(root, 'app/demo/portfolio'))).toBe(false);
   });
 
-  it('Tier C methods (benchmark, advisor network, partner network, billing, founder-validation, gate status) are untouched', () => {
-    const src = read('services/admin-preview/AdminPreviewService.ts');
+  // getPartnerNetworkPreview and getBillingRevenuePreview were accurately
+  // untouched at the time this test was written. CC-00 Admin Console
+  // canonicalization (2026-09-19) later, separately, retired both outright.
+  // See tests/unit/cc00-admin-console-canonicalization.test.ts.
+  it('Tier C methods (benchmark, advisor network, founder-validation, gate status) are untouched; partner network and billing have since been separately retired', () => {
+    const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
     for (const method of [
-      'getBenchmarkPreview', 'getAdvisorNetworkPreview', 'getPartnerNetworkPreview',
-      'getBillingRevenuePreview', 'getFounderValidationPreview', 'getGateStatusPreview',
+      'getBenchmarkPreview', 'getAdvisorNetworkPreview',
+      'getFounderValidationPreview', 'getGateStatusPreview',
     ]) {
       expect(src).toContain(`${method}(`);
     }
+    expect(src).not.toContain('getPartnerNetworkPreview(');
+    expect(src).not.toContain('getBillingRevenuePreview(');
   });
 
   it('no DEMO_VIEWER/auth policy file was touched — requireDemoAccess/requireDemoGate unchanged in shape', () => {

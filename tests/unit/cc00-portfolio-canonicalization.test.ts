@@ -315,20 +315,32 @@ describe('CC-00 Portfolio canonicalization — gated /demo/** layout count drops
 // ── 12. Scope boundary — untouched surfaces ──────────────────────────────────
 
 describe('CC-00 Portfolio canonicalization — untouched surfaces', () => {
-  it('AI Onboarding untouched — getAIOnboardingPreview and getPrivacyFilterPreview still exist', () => {
+  // getPrivacyFilterPreview was accurately still on this service at the
+  // time this test was written. CC-00 Admin Console canonicalization
+  // (2026-09-19) later, separately, moved it out entirely (real, accurate,
+  // always-true privacy policy, not a synthetic preview) — inlined in its
+  // sole caller, app/demo/ai-onboarding/page.tsx. See
+  // tests/unit/cc00-admin-console-canonicalization.test.ts.
+  it('AI Onboarding untouched — getAIOnboardingPreview still exists; getPrivacyFilterPreview has since been separately moved out (historical note)', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
     expect(src).toContain('getAIOnboardingPreview(');
-    expect(src).toContain('getPrivacyFilterPreview(');
+    expect(src).not.toContain('getPrivacyFilterPreview(');
   });
 
-  it('Tier C methods (benchmark, advisor network, partner network, billing, founder-validation, gate status) are untouched', () => {
+  // getPartnerNetworkPreview and getBillingRevenuePreview were accurately
+  // untouched at the time this test was written. CC-00 Admin Console
+  // canonicalization (2026-09-19) later, separately, retired both outright.
+  // See tests/unit/cc00-admin-console-canonicalization.test.ts.
+  it('Tier C methods (benchmark, advisor network, founder-validation, gate status) are untouched; partner network and billing have since been separately retired', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
     for (const method of [
-      'getBenchmarkPreview', 'getAdvisorNetworkPreview', 'getPartnerNetworkPreview',
-      'getBillingRevenuePreview', 'getFounderValidationPreview', 'getGateStatusPreview',
+      'getBenchmarkPreview', 'getAdvisorNetworkPreview',
+      'getFounderValidationPreview', 'getGateStatusPreview',
     ]) {
       expect(src).toContain(`${method}(`);
     }
+    expect(src).not.toContain('getPartnerNetworkPreview(');
+    expect(src).not.toContain('getBillingRevenuePreview(');
   });
 
   it('B-WORKER, My KORA, and final scoring are untouched', () => {

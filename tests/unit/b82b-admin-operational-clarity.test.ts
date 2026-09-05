@@ -160,29 +160,34 @@ describe('B82-B Task 6 — LIVE admin pages have LIVE BoundaryBadge', () => {
 });
 
 // ── Task 7: Admin landing section labels have provenance ─────────────────────
+//
+// CC-00 Admin Console panel-by-panel canonicalization (2026-09-19) removed
+// every remaining synthetic-data panel from Admin Home ("No panel survives
+// merely because it exists today") — Company Readiness Matrix (already LIVE
+// since CC-00 Portfolio canonicalization), Intelligence Grid, and Priority
+// Queue are now 100% canonical; GTM Founder Cockpit and Billing & Revenue
+// were removed outright (redundant with the real app/admin/founder-validation
+// tool, and zero product authority, respectively). Zero `badgeMode="DEMO"`
+// remains anywhere on Admin Home as of this slice. See
+// tests/unit/cc00-admin-console-canonicalization.test.ts for the current,
+// correct state.
 
-describe('B82-B Task 7 — Admin landing section labels expose provenance', () => {
+describe('B82-B Task 7 — Admin landing section labels expose provenance (historical: was DEMO, now LIVE/canonical)', () => {
   const landing = read('app/admin/page.tsx');
 
-  it('Company Readiness Matrix section has DEMO badge mode', () => {
-    expect(landing).toContain("badgeMode=\"DEMO\"");
+  it('Company Readiness Matrix section has LIVE badge mode (historical note: was DEMO)', () => {
+    expect(landing).toContain('label="Company Readiness Matrix" badgeMode="LIVE"');
   });
 
-  it('Intelligence operativa section has DEMO label', () => {
+  it('Intelligence operativa section has LIVE label (historical note: was DEMO)', () => {
     const idx = landing.indexOf('Intelligence operativa');
     expect(idx).toBeGreaterThan(-1);
-    // badgeMode appears nearby
     const segment = landing.slice(idx - 20, idx + 80);
-    expect(segment).toMatch(/badgeMode|DEMO/);
+    expect(segment).toContain('badgeMode="LIVE"');
   });
 
-  it('GTM Founder Cockpit section has DEMO badge mode', () => {
-    expect(landing).toContain('GTM Founder Cockpit');
-    // SectionHead badgeMode="DEMO" must appear for GTM
-    const gtmIdx = landing.indexOf("label=\"GTM Founder Cockpit\"");
-    expect(gtmIdx).toBeGreaterThan(-1);
-    const segment = landing.slice(gtmIdx, gtmIdx + 60);
-    expect(segment).toContain('badgeMode="DEMO"');
+  it('GTM Founder Cockpit section no longer exists (historical note, not a live assertion)', () => {
+    expect(landing).not.toContain('GTM Founder Cockpit');
   });
 
   it('LIVE PLATFORM section exists on admin landing', () => {
@@ -191,58 +196,47 @@ describe('B82-B Task 7 — Admin landing section labels expose provenance', () =
   });
 });
 
-// ── Task 8: Priority Queue disclaimer ────────────────────────────────────────
+// ── Task 8: Priority Queue is now LIVE, not a synthetic preview ─────────────
 
-describe('B82-B Task 8 — Priority Queue disclaimer rendered', () => {
+describe('B82-B Task 8 — Priority Queue is LIVE (historical note: used to show a synthetic-preview disclaimer)', () => {
   const landing = read('app/admin/page.tsx');
 
-  it('shows "Anteprima sintetica — non operativa" disclaimer', () => {
-    expect(landing).toContain('Anteprima sintetica');
-    expect(landing).toContain('non operativa');
-  });
-
-  it('priority queue section has DEMO label', () => {
+  it('no longer shows "Anteprima sintetica — non operativa" — every remaining signal is canonical', () => {
+    expect(landing).not.toContain('Anteprima sintetica — non operativa');
     expect(landing).toContain('Coda priorità');
-    // DEMO badge appears near priority queue
     const queueIdx = landing.indexOf('Coda priorità');
     const segment = landing.slice(queueIdx, queueIdx + 400);
-    expect(segment).toContain('DEMO');
+    expect(segment).toContain('LIVE');
+    expect(segment).not.toContain('DEMO');
   });
 });
 
-// ── Task 9: Intelligence Grid panels have DEMO provenance ────────────────────
+// ── Task 9: Intelligence Grid panels — only 2 remain, both canonical ────────
 
-describe('B82-B Task 9 — Intelligence Grid panels expose DEMO provenance', () => {
+describe('B82-B Task 9 — Intelligence Grid panels (historical note: 4 panels, 2 DEMO; now 2 panels, both canonical)', () => {
   const landing = read('app/admin/page.tsx');
 
-  it('KORA Index Registry panel has DEMO label', () => {
-    expect(landing).toContain('badgeLabel="DEMO · dati sintetici"');
-  });
-
-  it('Advisor Network panel has DEMO label', () => {
-    expect(landing).toContain('title="Advisor Network"');
-    // The Panel component invocation for Advisor Network must carry badgeLabel
-    const panelStr = 'title="Advisor Network"';
-    const idx = landing.indexOf(panelStr);
+  it('KORA Index Registry panel carries no DEMO badge (it is canonical)', () => {
+    const idx = landing.indexOf('title="KORA Index™ Registry"');
     expect(idx).toBeGreaterThan(-1);
-    const segment = landing.slice(idx, idx + 120);
-    expect(segment).toContain('badgeLabel');
+    const segment = landing.slice(idx, idx + 60);
+    expect(segment).not.toContain('badgeLabel');
   });
 
-  it('Platform Analytics panel has DEMO label', () => {
+  it('Advisor Network panel no longer exists (historical note: removed, no canonical advisor model exists)', () => {
+    expect(landing).not.toContain('title="Advisor Network"');
+  });
+
+  it('Platform Analytics panel carries no DEMO badge (historical note: was mislabeled DEMO despite being canonical since Phase 1)', () => {
     const panelStr = 'title="Platform Analytics"';
     const idx = landing.indexOf(panelStr);
     expect(idx).toBeGreaterThan(-1);
-    const segment = landing.slice(idx, idx + 120);
-    expect(segment).toContain('badgeLabel');
+    const segment = landing.slice(idx, idx + 60);
+    expect(segment).not.toContain('badgeLabel');
   });
 
-  it('Partner Network panel has DEMO label', () => {
-    const panelStr = 'title="Partner Network"';
-    const idx = landing.indexOf(panelStr);
-    expect(idx).toBeGreaterThan(-1);
-    const segment = landing.slice(idx, idx + 120);
-    expect(segment).toContain('badgeLabel');
+  it('Partner Network panel no longer exists (historical note: removed, no canonical evidence-protocol/active-programs model exists)', () => {
+    expect(landing).not.toContain('title="Partner Network"');
   });
 });
 

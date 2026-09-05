@@ -204,15 +204,19 @@ describe('CC-00 Phase 1 — this slice touched ONLY the two authorized methods (
   // the time this test was written. CC-00 AI-Onboarding Duplicate Retirement
   // (2026-09-06) later, separately, retired all 5 — they duplicated
   // already-canonical, already-live capability (app/admin/data-intake,
-  // app/admin/uef-review, app/admin/pipeline). getAIOnboardingPreview and
-  // getPrivacyFilterPreview remain, deferred, unchanged. See
-  // tests/unit/cc00-ai-onboarding-duplicate-retirement.test.ts for the
-  // current, correct state.
-  it('getAIOnboardingPreview and getPrivacyFilterPreview remain — the other 5 AI-onboarding-cluster methods have since been separately retired (historical note)', () => {
-    const src = read('services/admin-preview/AdminPreviewService.ts');
-    for (const method of ['getAIOnboardingPreview', 'getPrivacyFilterPreview']) {
-      expect(src).toContain(`${method}(`);
-    }
+  // app/admin/uef-review, app/admin/pipeline). getAIOnboardingPreview
+  // remained, deferred, unchanged at that time. CC-00 Admin Console
+  // canonicalization (2026-09-19) later, separately, moved
+  // getPrivacyFilterPreview() out of this file entirely — its content was
+  // real, accurate, always-true privacy policy, not a synthetic preview, so
+  // it never belonged in a Preview-simulation service; it is now inlined
+  // directly in its sole caller, app/demo/ai-onboarding/page.tsx. See
+  // tests/unit/cc00-admin-console-canonicalization.test.ts for the current,
+  // correct state.
+  it('getAIOnboardingPreview remains; getPrivacyFilterPreview has since been separately moved out of this file (historical note)', () => {
+    const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
+    expect(src).toContain('getAIOnboardingPreview(');
+    expect(src).not.toContain('getPrivacyFilterPreview(');
     for (const method of [
       'getSourceIntakePreview', 'getMappingIntelligencePreview',
       'getUefDraftQueuePreview', 'getHumanReviewPreview', 'getScoringReadinessPreview',
@@ -222,14 +226,21 @@ describe('CC-00 Phase 1 — this slice touched ONLY the two authorized methods (
     expect(src).toContain("'meridiana-group'");
   });
 
-  it('Tier C methods (benchmark, advisor network, partner network, billing, founder-validation) are untouched — still fully hardcoded', () => {
-    const src = read('services/admin-preview/AdminPreviewService.ts');
+  // getPartnerNetworkPreview and getBillingRevenuePreview were accurately
+  // untouched, still fully hardcoded, at the time this test was written.
+  // CC-00 Admin Console canonicalization (2026-09-19) later, separately,
+  // retired both outright — see
+  // tests/unit/cc00-admin-console-canonicalization.test.ts.
+  it('Tier C methods (benchmark, advisor network, founder-validation, gate status) are untouched — still fully hardcoded; partner network and billing have since been separately retired', () => {
+    const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
     for (const method of [
-      'getBenchmarkPreview', 'getAdvisorNetworkPreview', 'getPartnerNetworkPreview',
-      'getBillingRevenuePreview', 'getFounderValidationPreview', 'getGateStatusPreview',
+      'getBenchmarkPreview', 'getAdvisorNetworkPreview',
+      'getFounderValidationPreview', 'getGateStatusPreview',
     ]) {
       expect(src).toContain(`${method}(`);
     }
+    expect(src).not.toContain('getPartnerNetworkPreview(');
+    expect(src).not.toContain('getBillingRevenuePreview(');
   });
 
   // app/demo/index-registry/page.tsx was accurately untouched at the time
