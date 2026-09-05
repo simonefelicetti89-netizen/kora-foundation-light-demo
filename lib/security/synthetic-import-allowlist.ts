@@ -14,11 +14,46 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// CC-00 — Residual /demo/** controlled retirement (2026-09-26, later the
+// same day): "No demo route survives merely because it still has a
+// caller." app/demo/gtm/page.tsx, services/admin-preview/AdminPreviewService.ts,
+// and components/demo/DemoGuideContent.tsx are ALL removed from this
+// allowlist entirely (11->8 files, 16->13 imports):
+//   - app/demo/gtm/page.tsx retired outright — its GTM Pipeline and Gate
+//     Status sections duplicated real internal tools that already exist
+//     (app/admin/founder-validation; Admin Home's own Methodology
+//     Governance panel); its Pilot Package substantially duplicated the
+//     real public /pilot page; its Scenario Presenter was pure sales
+//     narrative with no product-truth role. Its one genuinely unique piece
+//     — a presenter script for 15/30/60-minute demo walkthroughs — is
+//     recorded as a deferred, low-stakes capability (documentation track,
+//     not a coded page), per this slice's own explicit instruction not to
+//     preserve /demo/gtm solely because it is useful to the founder.
+//   - services/admin-preview/AdminPreviewService.ts: its last remaining
+//     synthetic-backed method, getAIOnboardingPreview(), is retired (its
+//     sole caller, app/demo/ai-onboarding/page.tsx, is retired) — along
+//     with its sole synthetic import, data/synthetic/source-batches.json
+//     (deleted — zero-consumer repo-wide, verified before deletion). The
+//     file's only surviving method, getGateStatusPreview(), is real,
+//     accurate, static project-governance config with a real non-demo
+//     caller (Admin Home) — it was never synthetic-backed, so the file now
+//     has zero data/synthetic/** imports.
+//   - components/demo/DemoGuideContent.tsx was found to be fully orphaned
+//     dead code, independent of any route decision in this slice — zero
+//     importers anywhere (confirmed by repo-wide grep before deletion; it
+//     was superseded by app/demo/guide/page.tsx's own inline JSX at some
+//     earlier, undocumented point and never removed). Deleted along with
+//     its 3 sub-components that had no other consumers either
+//     (PipelineConnectorBanner.tsx, WorkspaceSwitcher.tsx,
+//     StakeholderPaths.tsx — none of which imported synthetic data
+//     themselves).
+// See tests/unit/cc00-residual-demo-retirement.test.ts.
 //
 // CC-00 — Public Landing canonicalization (2026-09-26): app/page.tsx
 // retired both of its synthetic imports (data/synthetic/kora-index-outputs.json,
@@ -552,11 +587,8 @@ export interface SyntheticImportAllowlistEntry {
 
 export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'app/demo/page.tsx', reason: 'Demo entry surface — reads pre-computed S1 KORA Index output.' },
-  { file: 'app/demo/gtm/page.tsx', reason: 'Demo GTM surface — reads pre-computed KORA Index output for pitch numbers.' },
-  { file: 'components/demo/DemoGuideContent.tsx', reason: 'Demo guide component — reads pre-computed KORA Index output.' },
   { file: 'services/account/AccountProvisioningService.ts', reason: 'Demo account registry — reads synthetic user accounts.' },
   { file: 'services/activation-safeguard/ActivationSafeguardService.ts', reason: 'Reads pre-computed synthetic Activation Safeguard results (demo scoring path).' },
-  { file: 'services/admin-preview/AdminPreviewService.ts', reason: 'Admin demo preview shaping — companies, KORA Index outputs, source batches.' },
   { file: 'services/demo-data/DemoDataService.ts', reason: 'Central synthetic seed reader — companies, departments/sites, programs, aggregates. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
   { file: 'services/founder-validation/FounderValidationService.ts', reason: 'Internal/admin-only founder validation leads seed.' },
   { file: 'services/scoring-simulator/ScoringSimulatorService.ts', reason: 'Demo scoring path — KORA Index outputs, company aggregates, confidence records. Master Plan §32: scheduled for removal at end of B-TRUTH.' },

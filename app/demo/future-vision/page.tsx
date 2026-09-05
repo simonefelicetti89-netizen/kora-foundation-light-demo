@@ -431,11 +431,11 @@ export default function FutureVision() {
       {/* ── CTA — link live disabilitati per DEMO_VIEWER, solo KORA_ADMIN può accedere al workspace company ── */}
       <div className="flex flex-wrap items-center gap-4">
         <Link
-          href="/demo/guide"
+          href="/demo"
           className="rounded-xl px-4 py-2 text-xs font-semibold text-white transition-colors"
           style={{ background: TOKENS.ink }}
         >
-          ← Demo Guide
+          ← Demo
         </Link>
         <span
           className="text-xs font-semibold"

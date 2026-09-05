@@ -124,17 +124,13 @@ describe('B129 Fase 3 — company layout: kora-index removed from DEMO_DRIVEN_RO
 
 // ── Group 6: Demo guide — usa /company/kora-index canonical (B171) ───────────
 
-describe('B171 — demo guide: usa /company/kora-index canonical', () => {
-  const GUIDE = 'app/demo/guide/page.tsx';
-
-  it('demo guide punta a /company/kora-index (canonical, B171)', () => {
-    const src = readFile(GUIDE);
-    expect(src).toContain("'/company/kora-index'");
-  });
-
-  it('demo guide non punta più a /demo/company/kora-index (RIDONDANTE rimossa)', () => {
-    const src = readFile(GUIDE);
-    expect(src).not.toContain('/demo/company/kora-index');
+// app/demo/guide/page.tsx existed here accurately as of B171. CC-00
+// Residual /demo/** controlled retirement (2026-09-26) later, separately,
+// retired the entire route — pure navigation/doctrine duplicate of the
+// /demo root hub, which itself still links /company/kora-index (Group 7).
+describe('B171 — demo guide: usa /company/kora-index canonical (historical note, not a live assertion)', () => {
+  it('app/demo/guide/ non esiste più', () => {
+    expect(fileExists('app/demo/guide')).toBe(false);
   });
 });
 
@@ -146,9 +142,11 @@ describe('B171 — demo reachability: KORA Index accessibile via /company/kora-i
     expect(src).toContain('/company/kora-index');
   });
 
-  it('app/demo/guide/page.tsx punta a /company/kora-index (canonical)', () => {
-    const src = readFile('app/demo/guide/page.tsx');
-    expect(src).toContain('/company/kora-index');
+  // app/demo/guide/page.tsx was accurately checked here too. Retired by
+  // CC-00 Residual /demo/** controlled retirement (2026-09-26) — see the
+  // Group 6 historical note above.
+  it('app/demo/guide/ has since been separately retired (historical note, not a live assertion)', () => {
+    expect(fileExists('app/demo/guide')).toBe(false);
   });
 });
 

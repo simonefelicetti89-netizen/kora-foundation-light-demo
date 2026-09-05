@@ -154,43 +154,14 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — canonical replacements ar
   });
 });
 
-describe('CC-00 AI-Onboarding Duplicate Retirement — app/demo/ai-onboarding/page.tsx trimmed, no new synthetic or live data introduced', () => {
-  it('the page no longer calls any of the five retired methods', () => {
-    const src = read('app/demo/ai-onboarding/page.tsx');
-    for (const method of RETIRED_METHODS) {
-      expect(src).not.toContain(method);
-    }
-  });
-
-  // getPrivacyFilterPreview() was accurately called via adminPreviewService
-  // at the time this test was written. CC-00 Admin Console canonicalization
-  // (2026-09-19) later, separately, moved its content out of
-  // AdminPreviewService.ts entirely (it was real, accurate, always-true
-  // privacy policy, not a synthetic preview) — inlined as a local
-  // PRIVACY_FILTER constant directly in this same page. See
-  // tests/unit/cc00-admin-console-canonicalization.test.ts.
-  it('the page still calls getAIOnboardingPreview; getPrivacyFilterPreview has since been inlined locally (historical note)', () => {
-    const src = read('app/demo/ai-onboarding/page.tsx');
-    expect(src).toContain('adminPreviewService.getAIOnboardingPreview()');
-    expect(src).not.toContain('adminPreviewService.getPrivacyFilterPreview()');
-    expect(src).toContain('PRIVACY_FILTER');
-  });
-
-  it('no live Supabase/DB query was introduced into the demo page (no live data added to /demo)', () => {
-    const src = read('app/demo/ai-onboarding/page.tsx');
-    expect(src).not.toContain('getSupabaseServiceClient');
-    expect(src).not.toContain('getSupabaseServerClient');
-    expect(src).not.toMatch(/from\(['"]analytics/);
-  });
-
-  it('no new data/synthetic/** import was added to the demo page', () => {
-    const src = read('app/demo/ai-onboarding/page.tsx');
-    expect(src).not.toMatch(/from\s+['"][^'"]*data\/synthetic\//);
-  });
-
-  it('no new admin route link was introduced (no telling DEMO_VIEWER to visit a KORA_ADMIN-only route)', () => {
-    const src = read('app/demo/ai-onboarding/page.tsx');
-    expect(src).not.toMatch(/href=["']\/admin/);
+// app/demo/ai-onboarding/page.tsx's trimmed content (no retired methods, no
+// new live/synthetic data, no new admin links) was accurately verified here
+// at the time this test was written. CC-00 Residual /demo/** controlled
+// retirement (2026-09-26, a later, separate slice) retired the entire
+// route — there is no page left to check.
+describe('CC-00 AI-Onboarding Duplicate Retirement — app/demo/ai-onboarding/page.tsx has since been separately retired (historical note, not a live assertion)', () => {
+  it('app/demo/ai-onboarding/ no longer exists', () => {
+    expect(existsSync(resolve(root, 'app/demo/ai-onboarding'))).toBe(false);
   });
 });
 
@@ -199,10 +170,15 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — scope boundary (one PR = 
   // defined here at the time this test was written. CC-00 Admin Console
   // canonicalization (2026-09-19) later, separately, moved both out of this
   // file entirely — see tests/unit/cc00-admin-console-canonicalization.test.ts.
-  it('getAIOnboardingPreview is untouched; getPrivacyFilterPreview has since been separately moved out (historical note)', () => {
+  // getAIOnboardingPreview()/CompanyOnboardingStatus were accurately still
+  // defined here, with getPrivacyFilterPreview already moved out, at the
+  // time this test was written. CC-00 Residual /demo/** controlled
+  // retirement (2026-09-26, a later, separate slice) retired
+  // app/demo/ai-onboarding/ entirely and removed both along with it.
+  it('getAIOnboardingPreview has since been separately retired too (historical note)', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
-    expect(src).toContain('getAIOnboardingPreview(): CompanyOnboardingStatus');
-    expect(src).toContain('export interface CompanyOnboardingStatus');
+    expect(src).not.toContain('getAIOnboardingPreview(');
+    expect(src).not.toContain('export interface CompanyOnboardingStatus');
     expect(src).not.toContain('getPrivacyFilterPreview(');
     expect(src).not.toContain('export interface PrivacyFilterPreview');
   });
@@ -236,16 +212,21 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — scope boundary (one PR = 
   // untouched at the time this test was written. CC-00 Admin Console
   // canonicalization (2026-09-19) later, separately, retired both outright.
   // See tests/unit/cc00-admin-console-canonicalization.test.ts.
-  it('Tier C methods (benchmark, advisor network, founder-validation, gate status) are untouched; partner network and billing have since been separately retired', () => {
+  // getBenchmarkPreview, getAdvisorNetworkPreview, and
+  // getFounderValidationPreview were accurately untouched Tier C methods at
+  // the time this test was written. CC-00 Residual /demo/** controlled
+  // retirement (2026-09-26, a later, separate slice) retired their sole
+  // remaining callers and removed all 3 — getGateStatusPreview is the only
+  // method left on AdminPreviewService.ts.
+  it('Tier C methods have since been separately narrowed to getGateStatusPreview only (historical note)', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
+    expect(src).toContain('getGateStatusPreview(');
     for (const method of [
-      'getBenchmarkPreview', 'getAdvisorNetworkPreview',
-      'getFounderValidationPreview', 'getGateStatusPreview',
+      'getBenchmarkPreview', 'getAdvisorNetworkPreview', 'getFounderValidationPreview',
+      'getPartnerNetworkPreview', 'getBillingRevenuePreview',
     ]) {
-      expect(src).toContain(`${method}(`);
+      expect(src).not.toContain(`${method}(`);
     }
-    expect(src).not.toContain('getPartnerNetworkPreview(');
-    expect(src).not.toContain('getBillingRevenuePreview(');
   });
 
   it('no DEMO_VIEWER/auth policy file was touched — requireDemoAccess/requireDemoGate unchanged in shape', () => {
@@ -303,22 +284,28 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — I9 unaffected (retirement
   // canonicalization (2026-09-26) later reduced it further to 11 files / 16
   // imports (app/page.tsx dropped both its synthetic imports). See
   // tests/unit/cc00-public-landing-canonicalization.test.ts.
-  it('allowlist header count reflects the current total — source-batches.json remains needed by getAIOnboardingPreview', () => {
+  // CC-00 Residual /demo/** controlled retirement (2026-09-26, same day,
+  // later slice) retired getAIOnboardingPreview's sole caller
+  // (app/demo/ai-onboarding/) and removed source-batches.json along with
+  // it — AdminPreviewService.ts is no longer an allowlist entry at all,
+  // and the count reduces further to 8 files / 13 imports.
+  it('allowlist header count reflects the current total — source-batches.json is gone (historical note: used to remain needed by getAIOnboardingPreview)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements');
-    expect(allowlist).toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 
-  // companies.json and kora-index-outputs.json were accurately imported by
-  // AdminPreviewService.ts at the time this test was written. CC-00 Company
-  // Portfolio capability salvage + canonicalization (2026-09-12) later,
-  // separately, removed both when it retired getCompanyPortfolioPreview() —
-  // source-batches.json is the only one that remains, still needed by the
-  // non-retired getAIOnboardingPreview.
-  it('AdminPreviewService.ts imports only its remaining needed synthetic fixture (historical note: used to import 3, now 1)', () => {
+  // companies.json and kora-index-outputs.json were accurately removed
+  // already at the time this test was written; source-batches.json was
+  // still imported, needed by getAIOnboardingPreview. CC-00 Residual
+  // /demo/** controlled retirement (2026-09-26) retired that method's sole
+  // caller and removed source-batches.json too — AdminPreviewService.ts
+  // now imports zero data/synthetic/** fixtures.
+  it('AdminPreviewService.ts imports zero synthetic fixtures (historical note: used to import 3, then 1, now 0)', () => {
     const src = read('services/admin-preview/AdminPreviewService.ts');
     expect(src).not.toContain("from '@/data/synthetic/companies.json'");
     expect(src).not.toContain("from '@/data/synthetic/kora-index-outputs.json'");
-    expect(src).toContain("from '@/data/synthetic/source-batches.json'");
+    expect(src).not.toContain("from '@/data/synthetic/source-batches.json'");
+    expect(existsSync(resolve(root, 'data/synthetic/source-batches.json'))).toBe(false);
   });
 });

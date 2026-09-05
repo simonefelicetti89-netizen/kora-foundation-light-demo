@@ -168,19 +168,30 @@ describe('CC-00 Public Landing canonicalization — safety', () => {
     expect(body).toContain("koraRole === 'KORA_ADMIN'");
   });
 
-  it('no /demo/** route was retired or touched by this slice', () => {
-    const routes = [
+  // This test's own routes list was accurate at the time this slice
+  // landed (no /demo/** route was retired BY THIS slice). CC-00 Residual
+  // /demo/** controlled retirement (2026-09-26) is a later, separate slice
+  // that did retire 6 of these 8 routes — updated here to a
+  // still/since-retired split rather than silently dropping the historical
+  // claim.
+  it('no /demo/** route was retired or touched by THIS slice (historical note: a later slice retired 6 of these 8)', () => {
+    const stillExist = [
+      'app/demo/future-vision/page.tsx',
+      'app/demo/page.tsx',
+    ];
+    for (const route of stillExist) {
+      expect(exists(route)).toBe(true);
+    }
+    const sinceRetired = [
       'app/demo/advisor/page.tsx',
       'app/demo/ai-onboarding/page.tsx',
       'app/demo/benchmarks/page.tsx',
-      'app/demo/future-vision/page.tsx',
       'app/demo/gtm/page.tsx',
       'app/demo/guide/page.tsx',
       'app/demo/network/page.tsx',
-      'app/demo/page.tsx',
     ];
-    for (const route of routes) {
-      expect(exists(route)).toBe(true);
+    for (const route of sinceRetired) {
+      expect(exists(route)).toBe(false);
     }
   });
 });
@@ -242,16 +253,24 @@ describe('CC-00 Public Landing canonicalization — untouched surfaces', () => {
 // ── 8. I9 reflects the import removal ────────────────────────────────────────
 
 describe('CC-00 Public Landing canonicalization — I9 reflects the import removal', () => {
-  it('allowlist header reflects 11 files / 16 import statements', () => {
+  // 11 files / 16 imports was accurate at the time this slice landed.
+  // CC-00 Residual /demo/** controlled retirement (2026-09-26, a later,
+  // separate slice) reduced it further to 8 files / 13 imports. See
+  // tests/unit/cc00-residual-demo-retirement.test.ts.
+  it('allowlist header reflects 8 files / 13 import statements (historical note: was 16 imports at the time this slice landed)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
   });
 
+  // app/demo/gtm/page.tsx and components/demo/DemoGuideContent.tsx were
+  // both accurately kora-index-outputs.json consumers at the time this
+  // slice landed. CC-00 Residual /demo/** controlled retirement
+  // (2026-09-26) retired both files entirely — removed from this list, not
+  // replaced (app/demo/page.tsx and ScoringSimulatorService.ts remain
+  // real, live consumers).
   it('neither fixture became zero-consumer overall — both remain needed by other real consumers', () => {
     const koraIndexOutputsConsumers = [
       'app/demo/page.tsx',
-      'app/demo/gtm/page.tsx',
-      'components/demo/DemoGuideContent.tsx',
       'services/scoring-simulator/ScoringSimulatorService.ts',
     ];
     for (const file of koraIndexOutputsConsumers) {

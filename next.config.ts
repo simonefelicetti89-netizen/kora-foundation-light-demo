@@ -60,9 +60,16 @@ const nextConfig: NextConfig = {
   // 308 (permanent) so browser caches the new location and bookmarks update.
   async redirects() {
     return [
-      { source: '/advisor',              destination: '/demo/advisor',        permanent: true },
-      { source: '/advisor/:path*',       destination: '/demo/advisor/:path*', permanent: true },
-      { source: '/demo-guide',           destination: '/demo/guide',          permanent: true },
+      // CC-00 Residual demo retirement (2026-09-26): /demo/advisor is retired
+      // (ADVISOR is a real active role, but no canonical advisor workspace
+      // model exists yet — deferred, NETWORK track) — old bookmarks land on
+      // the /demo hub instead of a route that no longer exists.
+      { source: '/advisor',              destination: '/demo',                permanent: true },
+      { source: '/advisor/:path*',       destination: '/demo',                permanent: true },
+      // CC-00 Residual demo retirement (2026-09-26): /demo/guide is retired
+      // (pure navigation/doctrine duplicate of /demo root + CLAUDE.md) — old
+      // bookmarks of the legacy /demo-guide path now land on /demo instead.
+      { source: '/demo-guide',           destination: '/demo',                permanent: true },
       { source: '/future-vision',        destination: '/demo/future-vision',  permanent: true },
       { source: '/future-vision/:path*', destination: '/demo/future-vision/:path*', permanent: true },
       // CC-00 Company Portfolio canonicalization (2026-09-12): /demo/portfolio
@@ -70,16 +77,24 @@ const nextConfig: NextConfig = {
       // Console), so old bookmarks of the pre-B129 /admin/portfolio path now
       // redirect there instead.
       { source: '/admin/portfolio',      destination: '/admin/companies',     permanent: true },
-      { source: '/admin/benchmarks',     destination: '/demo/benchmarks',     permanent: true },
-      { source: '/admin/network',        destination: '/demo/network',        permanent: true },
-      { source: '/admin/gtm',            destination: '/demo/gtm',            permanent: true },
+      // CC-00 Residual demo retirement (2026-09-26): /demo/benchmarks,
+      // /demo/network, and /demo/gtm are all retired this same slice —
+      // benchmark and network/advisor requirements are deferred (see
+      // lib/architecture/registry.ts); GTM's real internal capability
+      // already exists at /admin/founder-validation.
+      { source: '/admin/benchmarks',     destination: '/demo',                permanent: true },
+      { source: '/admin/network',        destination: '/demo',                permanent: true },
+      { source: '/admin/gtm',            destination: '/admin/founder-validation', permanent: true },
       // Pre-existing bug found and fixed while editing this array (CC-00
       // Company Portfolio canonicalization, 2026-09-12): /demo/index-registry
       // was retired by CC-00 Index Registry canonicalization (2026-09-06),
       // but this redirect target was left stale, pointing old bookmarks at a
       // route that no longer exists. Its real value lives on /admin itself.
       { source: '/admin/index-registry', destination: '/admin',               permanent: true },
-      { source: '/admin/ai-onboarding',  destination: '/demo/ai-onboarding',  permanent: true },
+      // CC-00 Residual demo retirement (2026-09-26): /demo/ai-onboarding is
+      // retired — the real onboarding/intake signal already lives at
+      // /admin/data-intake (CC-00 AI-Onboarding Duplicate Retirement, 2026-09-06).
+      { source: '/admin/ai-onboarding',  destination: '/admin/data-intake',   permanent: true },
     ];
   },
 };

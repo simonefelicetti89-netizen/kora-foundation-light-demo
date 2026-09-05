@@ -150,7 +150,12 @@ describe('B132-B — boundary: nessun href verso route riservate', () => {
     expect(src).not.toMatch(/href[=:\s]*['"]\/api\//);
   });
 
-  it('CTA Demo Guide intatta', () => {
-    expect(src).toContain('href="/demo/guide"');
+  // The CTA pointed at /demo/guide accurately at the time this test was
+  // written. CC-00 Residual /demo/** controlled retirement (2026-09-26)
+  // retired app/demo/guide entirely; the back-link now points at /demo
+  // (its root hub successor) — see app/demo/future-vision/page.tsx.
+  it('CTA Demo (già "Demo Guide") intatta — retargeted to /demo', () => {
+    expect(src).toContain('href="/demo"');
+    expect(src).not.toContain('href="/demo/guide"');
   });
 });

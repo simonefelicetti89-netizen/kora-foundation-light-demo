@@ -5,6 +5,16 @@
 //   S1 (Meridiana): letti da data/synthetic/kora-index-outputs.json[0]
 //   S2 (Ferretti):  nessuna voce seed — STOP-AND-REPORT: seed S2 Ferretti non ancora creato.
 //                   Valore conservato temporaneamente; creare voce seed prima del merge.
+//
+// CC-00 — Residual /demo/** controlled retirement (2026-09-26): the
+// "Ecosistema & Advisor" (advisor, network, benchmark), "Pipeline &
+// Classificazione" (ai-onboarding, guide), and "Uso interno KORA" (gtm)
+// sections are removed — every route they linked to is retired this same
+// slice (see lib/architecture/registry.ts's app-surface.demo entry for the
+// full route-by-route disposition). "Intelligence Aziendale" (real
+// canonical company surfaces) and "Roadmap" (Future Vision — a
+// constitutionally-designated category per CLAUDE.md §10/§16/Red Line #10,
+// not an ordinary demo preview) are untouched.
 
 export const dynamic = 'force-static';
 
@@ -63,23 +73,8 @@ const SECTION_INTELLIGENCE: DemoSurface[] = [
   { label: 'Status Center',           href: '/company/status',     desc: 'Stato operativo aziendale: pipeline, checklist onboarding, submission, Worker Space.' },
 ];
 
-const SECTION_ECOSYSTEM: DemoSurface[] = [
-  { label: 'Advisor Workspace',     href: '/demo/advisor',        desc: 'Revisione evidenze, raccomandazioni governance, queue priorità.' },
-  { label: 'Activation Network',    href: '/demo/network',        desc: 'Copertura territoriale partner & advisor, protocolli attivi.' },
-  { label: 'Benchmark',             href: '/demo/benchmarks',     desc: 'Posizionamento KORA Index vs cluster sintetici di riferimento.' },
-];
-
-const SECTION_PIPELINE: DemoSurface[] = [
-  { label: 'KORA Classification Engine™', href: '/demo/ai-onboarding', desc: 'Pipeline di ingestione: tassonomia BCM rule-based, nessun LLM esterno su dati HR.' },
-  { label: 'Demo Guide',                  href: '/demo/guide',          desc: 'Percorso guidato per presentare KORA a un nuovo interlocutore.' },
-];
-
 const SECTION_ROADMAP: DemoSurface[] = [
   { label: 'Future Vision', href: '/demo/future-vision', desc: 'Roadmap architetturale — non attiva in Foundation Light.' },
-];
-
-const INTERNAL_TOOLS: DemoSurface[] = [
-  { label: 'GTM Console', href: '/demo/gtm', desc: 'Demo script, pilot package, pipeline commerciale — uso interno KORA.' },
 ];
 
 function SurfaceLink({ surface }: { surface: DemoSurface }) {
@@ -189,29 +184,7 @@ export default function DemoHomePage() {
         </div>
       </section>
 
-      {/* ── Sezione 2: Ecosistema & Advisor ───────────────────────────────── */}
-      <section data-testid="demo-section-ecosystem" style={{ marginBottom: 40 }}>
-        <SectionHeading
-          label="Ecosistema & Advisor"
-          subtitle="Network, benchmark e governance delle evidenze."
-        />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {SECTION_ECOSYSTEM.map((s) => <SurfaceLink key={s.href} surface={s} />)}
-        </div>
-      </section>
-
-      {/* ── Sezione 3: Pipeline & Classificazione ─────────────────────────── */}
-      <section data-testid="demo-section-pipeline" style={{ marginBottom: 40 }}>
-        <SectionHeading
-          label="Pipeline & Classificazione"
-          subtitle="Come funziona la pipeline KORA — dal dato grezzo al KORA Index™."
-        />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {SECTION_PIPELINE.map((s) => <SurfaceLink key={s.href} surface={s} />)}
-        </div>
-      </section>
-
-      {/* ── Sezione 4: Roadmap ────────────────────────────────────────────── */}
+      {/* ── Sezione 2: Roadmap ────────────────────────────────────────────── */}
       <section data-testid="demo-section-roadmap" style={{ marginBottom: 48 }}>
         <SectionHeading
           label="Roadmap"
@@ -254,33 +227,6 @@ export default function DemoHomePage() {
           Methodology v0.1 pre-empirical calibration · Non certificato, non regulatory-grade ·
           KORA misura organizzazioni, mai individui · Nessun dato aziendale reale caricato.
         </p>
-      </div>
-
-      {/* ── Uso interno KORA ──────────────────────────────────────────────── */}
-      <div data-testid="demo-internal-tools" style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 16 }}>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.30)', marginBottom: 10 }}>
-          Uso interno KORA
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {INTERNAL_TOOLS.map((s) => (
-            <Link
-              key={s.href}
-              href={s.href}
-              style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '10px 14px', background: 'transparent',
-                border: '1px solid rgba(6,3,43,0.07)', borderRadius: 10,
-                textDecoration: 'none', gap: 16,
-              }}
-            >
-              <div>
-                <p style={{ fontWeight: 600, fontSize: 13, color: 'rgba(6,3,43,0.55)', marginBottom: 2 }}>{s.label}</p>
-                <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.38)', lineHeight: 1.5 }}>{s.desc}</p>
-              </div>
-              <span style={{ fontSize: 14, color: 'rgba(6,3,43,0.20)', flexShrink: 0 }}>→</span>
-            </Link>
-          ))}
-        </div>
       </div>
 
     </div>

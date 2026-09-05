@@ -30,16 +30,24 @@ function fileExists(rel: string): boolean {
 // ── Group 1: New /demo/* pages exist ─────────────────────────────────────────
 
 describe('B129 Fase 2 — new demo pages exist at new paths', () => {
-  it('app/demo/guide/page.tsx exists', () => {
-    expect(fileExists('app/demo/guide/page.tsx')).toBe(true);
-  });
-
-  it('app/demo/advisor/page.tsx exists', () => {
-    expect(fileExists('app/demo/advisor/page.tsx')).toBe(true);
-  });
-
   it('app/demo/future-vision/page.tsx exists', () => {
     expect(fileExists('app/demo/future-vision/page.tsx')).toBe(true);
+  });
+
+  // app/demo/guide/page.tsx, app/demo/advisor/page.tsx,
+  // app/demo/benchmarks/page.tsx, app/demo/network/page.tsx, and
+  // app/demo/gtm/page.tsx existed here accurately as of B129 Fase 2.
+  // CC-00 Residual /demo/** controlled retirement (2026-09-26) later,
+  // separately, retired all 5 — see
+  // tests/unit/cc00-residual-demo-retirement.test.ts for current, correct
+  // state and lib/architecture/registry.ts's app-surface.demo entry for
+  // the full route-by-route disposition.
+  it('app/demo/guide/page.tsx has since been separately retired (historical note, not a live assertion)', () => {
+    expect(fileExists('app/demo/guide/page.tsx')).toBe(false);
+  });
+
+  it('app/demo/advisor/page.tsx has since been separately retired (historical note, not a live assertion)', () => {
+    expect(fileExists('app/demo/advisor/page.tsx')).toBe(false);
   });
 
   // app/demo/portfolio/page.tsx existed here accurately as of B129 Fase 2.
@@ -51,16 +59,16 @@ describe('B129 Fase 2 — new demo pages exist at new paths', () => {
     expect(fileExists('app/demo/portfolio/page.tsx')).toBe(false);
   });
 
-  it('app/demo/benchmarks/page.tsx exists', () => {
-    expect(fileExists('app/demo/benchmarks/page.tsx')).toBe(true);
+  it('app/demo/benchmarks/page.tsx has since been separately retired (historical note, not a live assertion)', () => {
+    expect(fileExists('app/demo/benchmarks/page.tsx')).toBe(false);
   });
 
-  it('app/demo/network/page.tsx exists', () => {
-    expect(fileExists('app/demo/network/page.tsx')).toBe(true);
+  it('app/demo/network/page.tsx has since been separately retired (historical note, not a live assertion)', () => {
+    expect(fileExists('app/demo/network/page.tsx')).toBe(false);
   });
 
-  it('app/demo/gtm/page.tsx exists', () => {
-    expect(fileExists('app/demo/gtm/page.tsx')).toBe(true);
+  it('app/demo/gtm/page.tsx has since been separately retired (historical note, not a live assertion)', () => {
+    expect(fileExists('app/demo/gtm/page.tsx')).toBe(false);
   });
 
   // app/demo/index-registry/page.tsx existed here accurately as of B129
@@ -72,8 +80,11 @@ describe('B129 Fase 2 — new demo pages exist at new paths', () => {
     expect(fileExists('app/demo/index-registry/page.tsx')).toBe(false);
   });
 
-  it('app/demo/ai-onboarding/page.tsx exists', () => {
-    expect(fileExists('app/demo/ai-onboarding/page.tsx')).toBe(true);
+  // app/demo/ai-onboarding/page.tsx existed here accurately as of B129
+  // Fase 2. CC-00 Residual /demo/** controlled retirement (2026-09-26)
+  // later, separately, retired the entire route.
+  it('app/demo/ai-onboarding/page.tsx has since been separately retired (historical note, not a live assertion)', () => {
+    expect(fileExists('app/demo/ai-onboarding/page.tsx')).toBe(false);
   });
 });
 
@@ -122,15 +133,22 @@ describe('B129 Fase 2 — old page files deleted', () => {
 describe('B129 Fase 2 — next.config.ts: 9 redirect entries', () => {
   const config = readFile('next.config.ts');
 
-  it('redirects /advisor → /demo/advisor (permanent)', () => {
+  // /advisor's destination was accurately /demo/advisor as of B129 Fase 2.
+  // CC-00 Residual /demo/** controlled retirement (2026-09-26) retired
+  // app/demo/advisor entirely — the redirect now points at /demo, the
+  // route's real successor.
+  it('redirects /advisor → /demo (permanent, since CC-00 residual demo retirement)', () => {
     expect(config).toContain("source: '/advisor'");
-    expect(config).toContain("destination: '/demo/advisor'");
+    expect(config).toContain("destination: '/demo'");
     expect(config).toContain('permanent: true');
   });
 
-  it('redirects /demo-guide → /demo/guide (permanent)', () => {
+  // /demo-guide's destination was accurately /demo/guide as of B129 Fase 2.
+  // CC-00 Residual /demo/** controlled retirement (2026-09-26) retired
+  // app/demo/guide entirely — the redirect now points at /demo.
+  it('redirects /demo-guide → /demo (permanent, since CC-00 residual demo retirement)', () => {
     expect(config).toContain("source: '/demo-guide'");
-    expect(config).toContain("destination: '/demo/guide'");
+    expect(config).toContain("destination: '/demo'");
   });
 
   it('redirects /future-vision → /demo/future-vision AND all 9 source paths declared', () => {
@@ -154,14 +172,13 @@ describe('B129 Fase 2 — /demo/* pages have no Supabase client imports', () => 
   // page left to check). app/demo/portfolio/page.tsx was also accurately
   // in this list; CC-00 Company Portfolio capability salvage +
   // canonicalization (2026-09-12) retired it too, for the same reason.
+  // app/demo/guide/page.tsx, app/demo/advisor/page.tsx,
+  // app/demo/benchmarks/page.tsx, app/demo/network/page.tsx,
+  // app/demo/gtm/page.tsx, and app/demo/ai-onboarding/page.tsx were all
+  // accurately in this list too; CC-00 Residual /demo/** controlled
+  // retirement (2026-09-26) retired every one of them — none left to check.
   const DEMO_PAGES = [
-    'app/demo/guide/page.tsx',
-    'app/demo/advisor/page.tsx',
     'app/demo/future-vision/page.tsx',
-    'app/demo/benchmarks/page.tsx',
-    'app/demo/network/page.tsx',
-    'app/demo/gtm/page.tsx',
-    'app/demo/ai-onboarding/page.tsx',
   ];
 
   for (const page of DEMO_PAGES) {
@@ -275,8 +292,10 @@ describe('B129 Fase 2 — anti-regression: Fase 1 constraints', () => {
     expect(demoLayout).not.toContain('getSupabaseServiceClient');
   });
 
-  it('demo/advisor/page.tsx does not import requireKoraAdmin directly (guard via demo layout)', () => {
-    const advisorPage = readFile('app/demo/advisor/page.tsx');
-    expect(advisorPage).not.toContain('requireKoraAdmin');
+  // app/demo/advisor/page.tsx was accurately checked here as of B129 Fase 2.
+  // CC-00 Residual /demo/** controlled retirement (2026-09-26) retired the
+  // entire route — replaced with an existence check, not a content check.
+  it('app/demo/advisor/ has since been separately retired (historical note, not a live assertion)', () => {
+    expect(fileExists('app/demo/advisor')).toBe(false);
   });
 });

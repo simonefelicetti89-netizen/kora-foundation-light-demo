@@ -206,26 +206,33 @@ describe('CC-00 Index Registry canonicalization — scope boundary (one PR = one
   // was written. CC-00 Admin Console canonicalization (2026-09-19) later,
   // separately, moved it out entirely — see
   // tests/unit/cc00-admin-console-canonicalization.test.ts.
-  it('getAIOnboardingPreview is untouched; getPrivacyFilterPreview has since been separately moved out (historical note)', () => {
+  // getAIOnboardingPreview existed on AdminPreviewService.ts at the time
+  // this test was written; getPrivacyFilterPreview had already been moved
+  // out. CC-00 Residual /demo/** controlled retirement (2026-09-26, a
+  // later, separate slice) retired app/demo/ai-onboarding/ entirely and
+  // removed getAIOnboardingPreview along with it.
+  it('AI Onboarding has since been separately retired — getAIOnboardingPreview no longer exists (historical note)', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
-    expect(src).toContain('getAIOnboardingPreview(): CompanyOnboardingStatus');
+    expect(src).not.toContain('getAIOnboardingPreview(');
     expect(src).not.toContain('getPrivacyFilterPreview(');
   });
 
-  // getPartnerNetworkPreview and getBillingRevenuePreview were accurately
-  // untouched at the time this test was written. CC-00 Admin Console
-  // canonicalization (2026-09-19) later, separately, retired both outright.
-  // See tests/unit/cc00-admin-console-canonicalization.test.ts.
-  it('Tier C methods are untouched; partner network and billing have since been separately retired', () => {
+  // getBenchmarkPreview, getAdvisorNetworkPreview, and
+  // getFounderValidationPreview were accurately untouched Tier C methods at
+  // the time this test was written (getPartnerNetworkPreview and
+  // getBillingRevenuePreview had already been retired). CC-00 Residual
+  // /demo/** controlled retirement (2026-09-26, a later, separate slice)
+  // retired their sole remaining callers and removed all 3 methods —
+  // getGateStatusPreview is the only method left on AdminPreviewService.ts.
+  it('Tier C methods have since been separately narrowed to getGateStatusPreview only (historical note)', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
+    expect(src).toContain('getGateStatusPreview(');
     for (const method of [
-      'getBenchmarkPreview', 'getAdvisorNetworkPreview',
-      'getFounderValidationPreview', 'getGateStatusPreview',
+      'getBenchmarkPreview', 'getAdvisorNetworkPreview', 'getFounderValidationPreview',
+      'getPartnerNetworkPreview', 'getBillingRevenuePreview', 'getAIOnboardingPreview',
     ]) {
-      expect(src).toContain(`${method}(`);
+      expect(src).not.toContain(`${method}(`);
     }
-    expect(src).not.toContain('getPartnerNetworkPreview(');
-    expect(src).not.toContain('getBillingRevenuePreview(');
   });
 
   // app/demo/partner/page.tsx was accurately in this list as of this test's
@@ -240,16 +247,22 @@ describe('CC-00 Index Registry canonicalization — scope boundary (one PR = one
   // later the same day) separately retired it as well — its real capability
   // already existed, canonically, at app/admin/companies/page.tsx. See
   // tests/unit/cc00-portfolio-canonicalization.test.ts.
-  it('other /demo/** routes are untouched — network, advisor, ai-onboarding, gtm, benchmarks, guide, future-vision still exist; partner and portfolio have since been separately retired', () => {
+  // network, advisor, ai-onboarding, gtm, benchmarks, and guide were
+  // accurately untouched at the time this test was written. CC-00
+  // Residual /demo/** controlled retirement (2026-09-26, a later, separate
+  // slice) retired all 6 of them.
+  it('other /demo/** routes untouched at the time this test was written (historical note: a later slice retired 6 of them); partner and portfolio have since been separately retired', () => {
+    for (const route of ['app/demo/future-vision/page.tsx', 'app/demo/page.tsx']) {
+      expect(existsSync(resolve(root, route))).toBe(true);
+    }
     for (const route of [
       'app/demo/network/page.tsx', 'app/demo/advisor/page.tsx',
       'app/demo/ai-onboarding/page.tsx', 'app/demo/gtm/page.tsx',
-      'app/demo/benchmarks/page.tsx', 'app/demo/guide/page.tsx', 'app/demo/future-vision/page.tsx', 'app/demo/page.tsx',
+      'app/demo/benchmarks/page.tsx', 'app/demo/guide/page.tsx',
+      'app/demo/partner/page.tsx', 'app/demo/portfolio/page.tsx',
     ]) {
-      expect(existsSync(resolve(root, route))).toBe(true);
+      expect(existsSync(resolve(root, route))).toBe(false);
     }
-    expect(existsSync(resolve(root, 'app/demo/partner/page.tsx'))).toBe(false);
-    expect(existsSync(resolve(root, 'app/demo/portfolio/page.tsx'))).toBe(false);
   });
 
   it('DEMO_VIEWER role is untouched — still defined, still admitted by requireDemoAccess()', () => {
@@ -265,14 +278,19 @@ describe('CC-00 Index Registry canonicalization — scope boundary (one PR = one
   // app/demo/partner/layout.tsx — see
   // tests/unit/cc00-partner-demo-retirement.test.ts and
   // tests/unit/cc00-portfolio-canonicalization.test.ts.
-  it('the remaining 3 gated /demo/** layouts still call requireDemoGate()', () => {
+  // The 3 gated layouts below (network, advisor, ai-onboarding) still
+  // called requireDemoGate() accurately at the time this test was written.
+  // CC-00 Residual /demo/** controlled retirement (2026-09-26, a later,
+  // separate slice) retired all 3 routes along with their layouts — zero
+  // gated /demo/** layouts remain.
+  it('the 3 layouts gated at the time this test was written have since been separately retired', () => {
     for (const layout of [
       'app/demo/network/layout.tsx',
       'app/demo/advisor/layout.tsx', 'app/demo/ai-onboarding/layout.tsx',
+      'app/demo/portfolio/layout.tsx',
     ]) {
-      expect(read(layout)).toContain('await requireDemoGate()');
+      expect(existsSync(resolve(root, layout))).toBe(false);
     }
-    expect(existsSync(resolve(root, 'app/demo/portfolio/layout.tsx'))).toBe(false);
   });
 
   it('B-WORKER, My KORA, and final scoring are untouched', () => {
@@ -328,9 +346,14 @@ describe('CC-00 Index Registry canonicalization — I9 unaffected (method remova
   // not this one). CC-00 Public Landing canonicalization (2026-09-26) later
   // reduced it further to 11 files / 16 imports. See
   // tests/unit/cc00-public-landing-canonicalization.test.ts.
-  it('allowlist header count reflects the current total (historical note: was 20, then 18, now 16 imports)', () => {
+  // CC-00 Residual /demo/** controlled retirement (2026-09-26, same day,
+  // later slice) reduced it further to 8 files / 13 imports and rewrote
+  // AdminPreviewService.ts down to zero synthetic imports — it is no
+  // longer an allowlist entry at all. See
+  // tests/unit/cc00-residual-demo-retirement.test.ts.
+  it('allowlist header count reflects the current total (historical note: was 20, then 18, then 16, now 13 imports)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements');
-    expect(allowlist).toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 });

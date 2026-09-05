@@ -272,36 +272,44 @@ describe('CC-00 Portfolio canonicalization — DEMO_VIEWER role untouched', () =
     expect(body).toContain("koraRole === 'KORA_ADMIN'");
   });
 
-  it('other /demo/** routes are untouched — advisor, ai-onboarding, benchmarks, future-vision, gtm, guide, network', () => {
-    const routes = [
+  // advisor, ai-onboarding, benchmarks, gtm, and guide were accurately
+  // untouched at the time this slice landed. CC-00 Residual /demo/**
+  // controlled retirement (2026-09-26, a later, separate slice) retired
+  // all 6 of them.
+  it('other /demo/** routes untouched by THIS slice (historical note: a later slice retired 6 of them)', () => {
+    const stillExist = ['app/demo/future-vision/page.tsx', 'app/demo/page.tsx'];
+    for (const route of stillExist) {
+      expect(exists(route)).toBe(true);
+    }
+    const sinceRetired = [
       'app/demo/advisor/page.tsx',
       'app/demo/ai-onboarding/page.tsx',
       'app/demo/benchmarks/page.tsx',
-      'app/demo/future-vision/page.tsx',
       'app/demo/gtm/page.tsx',
       'app/demo/guide/page.tsx',
       'app/demo/network/page.tsx',
-      'app/demo/page.tsx',
     ];
-    for (const route of routes) {
-      expect(exists(route)).toBe(true);
+    for (const route of sinceRetired) {
+      expect(exists(route)).toBe(false);
     }
   });
 });
 
 // ── 11. Gated /demo/** layout count: 4 → 3 ───────────────────────────────────
 
-describe('CC-00 Portfolio canonicalization — gated /demo/** layout count drops from 4 to 3', () => {
-  const REMAINING_GATED_LAYOUTS = [
-    'app/demo/advisor/layout.tsx',
-    'app/demo/ai-onboarding/layout.tsx',
-    'app/demo/network/layout.tsx',
-  ];
-
-  it('exactly 3 remaining gated layouts exist and each calls requireDemoGate()', () => {
-    for (const layout of REMAINING_GATED_LAYOUTS) {
-      expect(exists(layout)).toBe(true);
-      expect(read(layout)).toContain('requireDemoGate');
+// The 3 remaining gated layouts (advisor, ai-onboarding, network) were
+// accurate at the time this slice landed. CC-00 Residual /demo/**
+// controlled retirement (2026-09-26, a later, separate slice) retired all
+// 3 routes along with their layouts — zero gated /demo/** layouts remain.
+// See tests/unit/cc00-residual-demo-retirement.test.ts.
+describe('CC-00 Portfolio canonicalization — gated /demo/** layout count drops from 4 to 3 (historical: now 0)', () => {
+  it('the 3 layouts that were gated at the time this slice landed have since been separately retired', () => {
+    for (const layout of [
+      'app/demo/advisor/layout.tsx',
+      'app/demo/ai-onboarding/layout.tsx',
+      'app/demo/network/layout.tsx',
+    ]) {
+      expect(exists(layout)).toBe(false);
     }
   });
 
@@ -321,26 +329,35 @@ describe('CC-00 Portfolio canonicalization — untouched surfaces', () => {
   // always-true privacy policy, not a synthetic preview) — inlined in its
   // sole caller, app/demo/ai-onboarding/page.tsx. See
   // tests/unit/cc00-admin-console-canonicalization.test.ts.
-  it('AI Onboarding untouched — getAIOnboardingPreview still exists; getPrivacyFilterPreview has since been separately moved out (historical note)', () => {
+  // getAIOnboardingPreview existed on AdminPreviewService.ts, and
+  // getPrivacyFilterPreview had already been moved out, accurately, at the
+  // time this test was written. CC-00 Residual /demo/** controlled
+  // retirement (2026-09-26, a later, separate slice) retired
+  // app/demo/ai-onboarding/ entirely (its sole caller) and removed
+  // getAIOnboardingPreview along with it.
+  it('AI Onboarding has since been separately retired — getAIOnboardingPreview no longer exists (historical note)', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
-    expect(src).toContain('getAIOnboardingPreview(');
+    expect(src).not.toContain('getAIOnboardingPreview(');
     expect(src).not.toContain('getPrivacyFilterPreview(');
   });
 
-  // getPartnerNetworkPreview and getBillingRevenuePreview were accurately
-  // untouched at the time this test was written. CC-00 Admin Console
-  // canonicalization (2026-09-19) later, separately, retired both outright.
-  // See tests/unit/cc00-admin-console-canonicalization.test.ts.
-  it('Tier C methods (benchmark, advisor network, founder-validation, gate status) are untouched; partner network and billing have since been separately retired', () => {
+  // getBenchmarkPreview, getAdvisorNetworkPreview, and
+  // getFounderValidationPreview were all accurately untouched Tier C
+  // methods at the time this test was written (getPartnerNetworkPreview
+  // and getBillingRevenuePreview had already been retired). CC-00
+  // Residual /demo/** controlled retirement (2026-09-26, a later, separate
+  // slice) retired their sole remaining callers (app/demo/benchmarks,
+  // app/demo/network, app/demo/gtm) and removed all 3 methods —
+  // getGateStatusPreview is the only method left on AdminPreviewService.ts.
+  it('Tier C methods have since been separately narrowed to getGateStatusPreview only (historical note)', () => {
     const src = stripComments(read('services/admin-preview/AdminPreviewService.ts'));
+    expect(src).toContain('getGateStatusPreview(');
     for (const method of [
-      'getBenchmarkPreview', 'getAdvisorNetworkPreview',
-      'getFounderValidationPreview', 'getGateStatusPreview',
+      'getBenchmarkPreview', 'getAdvisorNetworkPreview', 'getFounderValidationPreview',
+      'getPartnerNetworkPreview', 'getBillingRevenuePreview', 'getAIOnboardingPreview',
     ]) {
-      expect(src).toContain(`${method}(`);
+      expect(src).not.toContain(`${method}(`);
     }
-    expect(src).not.toContain('getPartnerNetworkPreview(');
-    expect(src).not.toContain('getBillingRevenuePreview(');
   });
 
   it('B-WORKER, My KORA, and final scoring are untouched', () => {
@@ -356,9 +373,12 @@ describe('CC-00 Portfolio canonicalization — untouched surfaces', () => {
     expect(read('app/my-kora/page.tsx')).toContain('getCurrentDemoUser');
   });
 
-  it('benchmark/network/advisor routes untouched — app/demo/benchmarks, app/demo/network, app/demo/advisor still exist unmodified in role', () => {
+  // benchmark/network/advisor routes were accurately untouched at the time
+  // this slice landed. CC-00 Residual /demo/** controlled retirement
+  // (2026-09-26, a later, separate slice) retired all 3.
+  it('benchmark/network/advisor routes have since been separately retired (historical note, not a live assertion)', () => {
     for (const layout of ['app/demo/network/layout.tsx', 'app/demo/advisor/layout.tsx']) {
-      expect(read(layout)).toContain('requireDemoGate');
+      expect(exists(layout)).toBe(false);
     }
   });
 
@@ -406,31 +426,45 @@ describe('CC-00 Portfolio canonicalization — I9 reflects the import reduction'
   // reduced the count further (app/page.tsx dropped both its synthetic
   // imports) — unrelated to this slice's own scope. See
   // tests/unit/cc00-public-landing-canonicalization.test.ts.
-  it('allowlist header reflects 11 files / 16 import statements (historical note: was 18 imports at the time this slice landed)', () => {
+  // 11 files / 16 imports (down from 18) was accurate at the time this
+  // slice landed, and AdminPreviewService.ts was still an allowlist entry
+  // (via source-batches.json, for getAIOnboardingPreview). CC-00 Public
+  // Landing canonicalization (2026-09-26) reduced it further to 8/13's
+  // predecessor count, and CC-00 Residual /demo/** controlled retirement
+  // (2026-09-26, same day, later slice) retired getAIOnboardingPreview's
+  // sole caller and rewrote AdminPreviewService.ts to zero synthetic
+  // imports — it is no longer an allowlist entry at all.
+  it('allowlist header reflects 8 files / 13 import statements (historical note: was 16 imports at the time this slice landed)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 11 files / 16 import statements');
-    expect(allowlist).toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 8 files / 13 import statements');
+    expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 
-  it('AdminPreviewService.ts no longer imports companies.json or kora-index-outputs.json, still imports source-batches.json', () => {
+  // source-batches.json itself was deleted along with getAIOnboardingPreview
+  // — AdminPreviewService.ts now imports zero data/synthetic/** fixtures.
+  it('AdminPreviewService.ts no longer imports companies.json, kora-index-outputs.json, or source-batches.json (historical note: used to still import the latter)', () => {
     const src = read('services/admin-preview/AdminPreviewService.ts');
     expect(src).not.toContain("from '@/data/synthetic/companies.json'");
     expect(src).not.toContain("from '@/data/synthetic/kora-index-outputs.json'");
-    expect(src).toContain("from '@/data/synthetic/source-batches.json'");
+    expect(src).not.toContain("from '@/data/synthetic/source-batches.json'");
+    expect(exists('data/synthetic/source-batches.json')).toBe(false);
   });
 
-  // app/page.tsx was accurately one of kora-index-outputs.json's other real
-  // consumers at the time this test was written. CC-00 Public Landing
-  // canonicalization (2026-09-26) later, separately, removed BOTH of
-  // app/page.tsx's synthetic imports entirely — removed from this list, not
-  // replaced (there is no import left to check). See
-  // tests/unit/cc00-public-landing-canonicalization.test.ts.
+  // app/page.tsx, app/demo/gtm/page.tsx, and
+  // components/demo/DemoGuideContent.tsx were accurately kora-index-
+  // outputs.json's other real consumers at the time this test was
+  // written. CC-00 Public Landing canonicalization (2026-09-26) removed
+  // app/page.tsx's synthetic imports, and CC-00 Residual /demo/**
+  // controlled retirement (2026-09-26, same day, later slice) deleted
+  // both app/demo/gtm/page.tsx and DemoGuideContent.tsx entirely — removed
+  // from this list, not replaced (app/demo/page.tsx and
+  // ScoringSimulatorService.ts remain real, live consumers). See
+  // tests/unit/cc00-public-landing-canonicalization.test.ts and
+  // tests/unit/cc00-residual-demo-retirement.test.ts.
   it('neither fixture became zero-consumer overall — both remain needed by other real consumers', () => {
     expect(read('services/demo-data/DemoDataService.ts')).toContain('companies.json');
     const otherConsumers = [
       'app/demo/page.tsx',
-      'app/demo/gtm/page.tsx',
-      'components/demo/DemoGuideContent.tsx',
       'services/scoring-simulator/ScoringSimulatorService.ts',
     ];
     for (const file of otherConsumers) {
