@@ -229,12 +229,16 @@ describe('CC-00 AI-Onboarding Duplicate Retirement — scope boundary (one PR = 
     }
   });
 
-  it('no DEMO_VIEWER/auth policy file was touched — requireDemoAccess/requireDemoGate unchanged in shape', () => {
+  // DEMO_VIEWER/auth policy files were accurately untouched, with
+  // requireDemoAccess/requireDemoGate unchanged in shape, at the time this
+  // test was written. CC-00 DEMO_VIEWER role retirement (2026-09-26, a
+  // later, separate slice) retired the role and both functions entirely —
+  // not replaced by another role with a different name.
+  it('DEMO_VIEWER/auth policy files have since been separately retired (historical note, not a live assertion)', () => {
     const src = read('lib/auth/kora-session.ts');
-    expect(src).toContain('DEMO_VIEWER');
-    expect(src).toContain('KORA_ADMIN is admitted for preview purposes');
-    const guardSrc = read('lib/auth/demo-guard.tsx');
-    expect(guardSrc).toContain('requireDemoAccess');
+    const codeOnly = src.split('\n').filter((line) => !line.trim().startsWith('//')).join('\n');
+    expect(codeOnly).not.toContain('requireDemoAccess');
+    expect(existsSync(resolve(root, 'lib/auth/demo-guard.tsx'))).toBe(false);
   });
 
   it('B-WORKER, My KORA, and final scoring are untouched — still exist, unmodified reachability', () => {

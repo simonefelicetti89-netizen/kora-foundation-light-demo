@@ -14,7 +14,9 @@
 // requirePartnerUser() gate — no enforcement change). The synthetic dashboard
 // moved to app/demo/partner/page.tsx, gated like every other /demo/* route
 // (requireDemoGate() — DEMO_VIEWER/KORA_ADMIN only, never a real PARTNER
-// session), so it can no longer be mistaken for the live workspace.
+// session), so it can no longer be mistaken for the live workspace. (Both
+// app/demo/partner/page.tsx and requireDemoGate()/DEMO_VIEWER have since
+// been separately retired — see section 3 and section 5 below.)
 //
 // Static/source-level tests — consistent with this codebase's existing
 // convention for auth-layout guards (see b137-auth-layout-guard.test.ts,
@@ -43,7 +45,6 @@ const partnerLayoutSrc  = read('app/partner/layout.tsx');
 const partnerRootSrc    = read('app/partner/page.tsx');
 const partnerWorkspaceSrc = read('app/partner/workspace/page.tsx');
 const partnerKoraLinkSrc  = read('app/partner/kora-link/page.tsx');
-const demoGuardSrc         = read('lib/auth/demo-guard.tsx');
 
 // ── 1. PARTNER remains an active role ────────────────────────────────────────
 
@@ -102,13 +103,14 @@ describe('PARTNER-01 — demo partner preview has since been separately retired 
     expect(exists('app/demo/partner/page.tsx')).toBe(false);
   });
 
-  it('requireDemoGate() (still shared by /demo/network, /demo/advisor, /demo/ai-onboarding) only admits DEMO_VIEWER/KORA_ADMIN via requireDemoAccess', () => {
-    expect(demoGuardSrc).toContain('requireDemoAccess');
-    // requireDemoAccess itself (kora-session.ts) explicitly enumerates DEMO_VIEWER and KORA_ADMIN as the only admitted roles.
-    const start = sessionSrc.indexOf('export async function requireDemoAccess');
-    const body = sessionSrc.slice(start, start + 1200);
-    expect(body).toContain("koraRole === 'DEMO_VIEWER'");
-    expect(body).toContain("koraRole === 'KORA_ADMIN'");
+  // requireDemoGate()/requireDemoAccess() (DEMO_VIEWER/KORA_ADMIN admission)
+  // were accurately checked here as of this test's writing. CC-00
+  // DEMO_VIEWER role retirement (2026-09-26) retired both entirely —
+  // DEMO_VIEWER no longer exists as a runtime role.
+  it('requireDemoGate()/requireDemoAccess() have since been separately retired (historical note, not a live assertion)', () => {
+    expect(exists('lib/auth/demo-guard.tsx')).toBe(false);
+    const codeOnly = sessionSrc.split('\n').filter((line) => !line.trim().startsWith('//')).join('\n');
+    expect(codeOnly).not.toContain('requireDemoAccess');
   });
 });
 
@@ -146,12 +148,15 @@ describe('PARTNER-01 — partner-facing pages never render worker-level identifi
 
 // ── 5. Non-partner roles are not treated as partners ─────────────────────────
 
-describe('PARTNER-01 — COMPANY_ADMIN/WORKER/ADVISOR/DEMO_VIEWER are not treated as partners', () => {
-  it('requirePartnerUser() has no bypass for COMPANY_ADMIN, WORKER, ADVISOR, or DEMO_VIEWER', () => {
+// DEMO_VIEWER was accurately checked here too. CC-00 DEMO_VIEWER role
+// retirement (2026-09-26) removed it from the runtime role model entirely —
+// removed from this list, not replaced.
+describe('PARTNER-01 — COMPANY_ADMIN/WORKER/ADVISOR are not treated as partners (historical note: used to also check DEMO_VIEWER)', () => {
+  it('requirePartnerUser() has no bypass for COMPANY_ADMIN, WORKER, or ADVISOR', () => {
     const start = sessionSrc.indexOf('export async function requirePartnerUser');
     const end   = sessionSrc.indexOf('export async function getCurrentPartnerUser');
     const fn    = sessionSrc.slice(start, end);
-    for (const role of ['COMPANY_ADMIN', 'WORKER', 'ADVISOR', 'DEMO_VIEWER']) {
+    for (const role of ['COMPANY_ADMIN', 'WORKER', 'ADVISOR']) {
       expect(fn).not.toContain(`'${role}'`);
     }
     // The only strict-equality role check inside is the PARTNER requirement itself.

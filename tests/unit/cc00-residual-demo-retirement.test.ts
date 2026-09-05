@@ -209,14 +209,24 @@ describe('CC-00 Residual demo retirement — public landing CTA retargeted, not 
   });
 });
 
-// ── 7. No live data exposed to DEMO_VIEWER; role itself untouched ───────────
+// ── 7. No live data exposed to DEMO_VIEWER; role itself has since been retired ─
+// DEMO_VIEWER was accurately still defined and still admitted by
+// requireDemoAccess() at the time this test was written. CC-00 DEMO_VIEWER
+// role retirement (2026-09-26, a later, separate slice) retired the role
+// entirely from the runtime role model — not replaced by another role with
+// a different name. See tests/unit/cc00-demo-viewer-retirement.test.ts for
+// the current, correct state.
 
-describe('CC-00 Residual demo retirement — DEMO_VIEWER safety and role untouched', () => {
-  it('DEMO_VIEWER role is still defined and still admitted by requireDemoAccess()', () => {
+describe('CC-00 Residual demo retirement — DEMO_VIEWER role has since been separately retired (historical note, not a live assertion)', () => {
+  it('DEMO_VIEWER no longer exists in lib/constants/kora.ts, requireDemoAccess no longer exists', () => {
     const constants = read('lib/constants/kora.ts');
-    expect(constants).toContain('DEMO_VIEWER');
+    expect(constants).not.toContain('DEMO_KORA_ROLES');
+    const koraRolesStart = constants.indexOf('export const KORA_ROLES');
+    const koraRolesBlock = constants.slice(koraRolesStart, constants.indexOf('as const;', koraRolesStart));
+    expect(koraRolesBlock).not.toContain('DEMO_VIEWER');
     const session = read('lib/auth/kora-session.ts');
-    expect(session).toContain("koraRole === 'DEMO_VIEWER'");
+    const sessionCodeOnly = session.split('\n').filter((line) => !line.trim().startsWith('//')).join('\n');
+    expect(sessionCodeOnly).not.toContain('requireDemoAccess');
   });
 
   it('zero gated /demo/** layouts remain anywhere in the repo', () => {

@@ -428,7 +428,7 @@ export default function FutureVision() {
         </ul>
       </div>
 
-      {/* ── CTA — link live disabilitati per DEMO_VIEWER, solo KORA_ADMIN può accedere al workspace company ── */}
+      {/* ── CTA — Executive Cockpit link always disabled here (static presentation, no session/role check) ── */}
       <div className="flex flex-wrap items-center gap-4">
         <Link
           href="/demo"

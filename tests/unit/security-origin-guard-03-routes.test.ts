@@ -104,8 +104,13 @@ describe('SECURITY-ORIGIN-GUARD-03 — nessuna doppia protezione e GET non tocca
   });
 });
 
+// app/api/admin/demo/provision-viewer/route.ts was accurately one of the 45
+// routes in this inventory at the time this test was written. CC-00
+// DEMO_VIEWER role retirement (2026-09-26) deleted the route entirely (its
+// sole purpose was provisioning DEMO_VIEWER accounts) — removed from this
+// list, not replaced. 44 routes / 45 methods remain.
 describe('SECURITY-ORIGIN-GUARD-03 — inventario completo: ogni route mutante nel repo ha la guard', () => {
-  it('tutte le 45 route mutanti individuate nello sprint importano ed eseguono assertSameOrigin', () => {
+  it('tutte le 44 route mutanti individuate nello sprint importano ed eseguono assertSameOrigin (historical note: era 45)', () => {
     const routes: Array<{ path: string; methods: string[] }> = [
       { path: 'app/api/admin/commons/bookings/[id]/route.ts', methods: ['PATCH'] },
       { path: 'app/api/admin/companies/provision/route.ts', methods: ['POST'] },
@@ -116,7 +121,6 @@ describe('SECURITY-ORIGIN-GUARD-03 — inventario completo: ogni route mutante n
       { path: 'app/api/admin/data-lifecycle/archive/route.ts', methods: ['POST'] },
       { path: 'app/api/admin/data-lifecycle/delete/route.ts', methods: ['POST'] },
       { path: 'app/api/admin/decision-pack/status/route.ts', methods: ['POST'] },
-      { path: 'app/api/admin/demo/provision-viewer/route.ts', methods: ['POST'] },
       { path: 'app/api/admin/evidence-attachments/lifecycle/route.ts', methods: ['POST'] },
       { path: 'app/api/admin/evidence-attachments/preview/route.ts', methods: ['POST'] },
       { path: 'app/api/admin/evidence-attachments/register/route.ts', methods: ['POST'] },
@@ -154,9 +158,9 @@ describe('SECURITY-ORIGIN-GUARD-03 — inventario completo: ogni route mutante n
       { path: 'app/link/[token]/activate/route.ts', methods: ['POST'] },
     ];
 
-    expect(routes.length).toBe(45);
+    expect(routes.length).toBe(44);
     const totalMethods = routes.reduce((n, r) => n + r.methods.length, 0);
-    expect(totalMethods).toBe(46);
+    expect(totalMethods).toBe(45);
 
     for (const { path, methods } of routes) {
       const src = read(path);

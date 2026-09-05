@@ -3,6 +3,8 @@
 // Pure function: no DB, no runtime, no Supabase.
 
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import { canAccess } from '@/lib/auth/access-matrix';
 import type { KoraRole, AccessResource, KoraEnvironment } from '@/lib/auth/access-matrix';
 
@@ -123,9 +125,12 @@ describe('canAccess — worker individual (WORKER: ALLOW own)', () => {
 // personal_pseudonym_map — DENY per tutti
 // ─────────────────────────────────────────────────────────────────────────────
 
+// DEMO_VIEWER was accurately part of allRoles here. CC-00 DEMO_VIEWER role
+// retirement (2026-09-26) removed it from KoraRole entirely — removed from
+// this list too (there is no role literal left to check).
 describe('canAccess — personal_pseudonym_map (DENY per tutti)', () => {
   const allRoles: KoraRole[] = [
-    'KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'PARTNER', 'DEMO_VIEWER', 'ADVISOR',
+    'KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'PARTNER', 'ADVISOR',
   ];
 
   for (const role of allRoles) {
@@ -161,8 +166,14 @@ describe('canAccess — aggregates_n_ge_10', () => {
   it('PARTNER non accede', () => {
     expect(canAccess('PARTNER', 'aggregates_n_ge_10', 'live').allowed).toBe(false);
   });
-  it('DEMO_VIEWER non accede', () => {
-    expect(canAccess('DEMO_VIEWER', 'aggregates_n_ge_10', 'live').allowed).toBe(false);
+  // DEMO_VIEWER was accurately checked here too. CC-00 DEMO_VIEWER role
+  // retirement (2026-09-26) removed it from KoraRole entirely — replaced
+  // with a structural check that no trace of it remains in the matrix.
+  it('DEMO_VIEWER no longer exists as a role (historical note: it used to be checked here as always denied)', () => {
+    const accessMatrixSrc = readFileSync(resolve(process.cwd(), 'lib/auth/access-matrix.ts'), 'utf8');
+    const matrixStart = accessMatrixSrc.indexOf('const MATRIX');
+    const matrixBody = accessMatrixSrc.slice(matrixStart, accessMatrixSrc.indexOf('\n};', matrixStart));
+    expect(matrixBody).not.toContain('DEMO_VIEWER');
   });
 });
 

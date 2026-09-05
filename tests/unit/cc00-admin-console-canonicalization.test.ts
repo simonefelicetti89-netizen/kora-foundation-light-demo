@@ -260,14 +260,22 @@ describe('CC-00 Admin Console canonicalization — safety', () => {
     expect(tenantQuerySlice).not.toContain('tenant_kind');
   });
 
-  it('DEMO_VIEWER role is untouched — still defined, still admitted by requireDemoAccess()', () => {
+  // DEMO_VIEWER was accurately untouched, still defined and still admitted
+  // by requireDemoAccess(), at the time this test was written. CC-00
+  // DEMO_VIEWER role retirement (2026-09-26, a later, separate slice)
+  // retired the role entirely from the runtime role model — not replaced by
+  // another role with a different name. See
+  // tests/unit/cc00-demo-viewer-retirement.test.ts for the current, correct
+  // state.
+  it('DEMO_VIEWER role has since been separately retired (historical note, not a live assertion)', () => {
     const constants = read('lib/constants/kora.ts');
-    expect(constants).toContain('DEMO_VIEWER');
+    expect(constants).not.toContain('DEMO_KORA_ROLES');
+    const koraRolesStart = constants.indexOf('export const KORA_ROLES');
+    const koraRolesBlock = constants.slice(koraRolesStart, constants.indexOf('as const;', koraRolesStart));
+    expect(koraRolesBlock).not.toContain('DEMO_VIEWER');
     const session = read('lib/auth/kora-session.ts');
-    const start = session.indexOf('export async function requireDemoAccess');
-    const body = session.slice(start, start + 1200);
-    expect(body).toContain("koraRole === 'DEMO_VIEWER'");
-    expect(body).toContain("koraRole === 'KORA_ADMIN'");
+    const sessionCodeOnly = session.split('\n').filter((line) => !line.trim().startsWith('//')).join('\n');
+    expect(sessionCodeOnly).not.toContain('requireDemoAccess');
   });
 
   // app/demo/ai-onboarding/page.tsx was the page touched by this slice and
