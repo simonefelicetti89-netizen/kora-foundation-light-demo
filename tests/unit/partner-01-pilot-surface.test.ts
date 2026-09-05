@@ -43,8 +43,6 @@ const partnerLayoutSrc  = read('app/partner/layout.tsx');
 const partnerRootSrc    = read('app/partner/page.tsx');
 const partnerWorkspaceSrc = read('app/partner/workspace/page.tsx');
 const partnerKoraLinkSrc  = read('app/partner/kora-link/page.tsx');
-const demoPartnerLayoutSrc = read('app/demo/partner/layout.tsx');
-const demoPartnerPageSrc   = read('app/demo/partner/page.tsx');
 const demoGuardSrc         = read('lib/auth/demo-guard.tsx');
 
 // ── 1. PARTNER remains an active role ────────────────────────────────────────
@@ -87,30 +85,24 @@ describe('PARTNER-01 — /partner root redirects to the guarded live workspace',
 });
 
 // ── 3. Demo partner content is not confused with the live workspace ─────────
+//
+// This describe block originally asserted app/demo/partner/{layout,page}.tsx
+// existed and were clearly separated from the live workspace (PARTNER-01,
+// this file's original purpose). CC-00 partner demo capability salvage +
+// controlled retirement (2026-09-12) later, separately, retired the entire
+// /demo/partner route: every capability it showed was already duplicated
+// (usually better, with live data) on the real app/partner/** surface — see
+// tests/unit/cc00-partner-demo-retirement.test.ts for the retirement proof.
+// The "is not confused with the live workspace" question this block asked
+// is now moot: there is no synthetic dashboard left to confuse it with.
 
-describe('PARTNER-01 — demo partner preview is clearly separated from the live workspace', () => {
-  it('app/demo/partner/layout.tsx exists and gates via requireDemoGate() (DEMO_VIEWER/KORA_ADMIN only)', () => {
-    expect(exists('app/demo/partner/layout.tsx')).toBe(true);
-    expect(demoPartnerLayoutSrc).toContain('requireDemoGate');
-    expect(demoPartnerLayoutSrc).not.toContain('requirePartnerUser');
+describe('PARTNER-01 — demo partner preview has since been separately retired (historical note, not a live assertion)', () => {
+  it('app/demo/partner/ no longer exists', () => {
+    expect(exists('app/demo/partner/layout.tsx')).toBe(false);
+    expect(exists('app/demo/partner/page.tsx')).toBe(false);
   });
 
-  it('app/demo/partner/page.tsx exists, carries a DEMO badge, and never imports requirePartnerUser', () => {
-    expect(exists('app/demo/partner/page.tsx')).toBe(true);
-    expect(demoPartnerPageSrc).toContain('BoundaryBadge');
-    expect(demoPartnerPageSrc).toContain('mode="DEMO"');
-    // The page's own header comment explains the live/demo distinction and
-    // legitimately mentions requirePartnerUser() in prose — check it's never
-    // imported as code instead of banning the word outright.
-    expect(demoPartnerPageSrc).not.toMatch(/import\s*\{[^}]*requirePartnerUser/);
-    expect(demoPartnerPageSrc).not.toContain("from '@/lib/auth/kora-session'");
-  });
-
-  it('demo partner preview explicitly documents it is not the live workspace', () => {
-    expect(demoPartnerPageSrc.toLowerCase()).toContain('non è il workspace live'.toLowerCase());
-  });
-
-  it('requireDemoGate() (shared by /demo/partner, /demo/network, /demo/advisor) only admits DEMO_VIEWER/KORA_ADMIN via requireDemoAccess', () => {
+  it('requireDemoGate() (still shared by /demo/network, /demo/advisor, /demo/portfolio, /demo/ai-onboarding) only admits DEMO_VIEWER/KORA_ADMIN via requireDemoAccess', () => {
     expect(demoGuardSrc).toContain('requireDemoAccess');
     // requireDemoAccess itself (kora-session.ts) explicitly enumerates DEMO_VIEWER and KORA_ADMIN as the only admitted roles.
     const start = sessionSrc.indexOf('export async function requireDemoAccess');
@@ -124,11 +116,14 @@ describe('PARTNER-01 — demo partner preview is clearly separated from the live
 
 describe('PARTNER-01 — partner-facing pages never render worker-level identifiers', () => {
   const forbidden = ['worker_id', 'kora_worker_id', 'token_digest', 'link_id'];
+  // app/demo/partner/page.tsx was accurately checked here as of this test's
+  // writing. CC-00 partner demo capability salvage + controlled retirement
+  // (2026-09-12) later, separately, retired that route entirely — removed
+  // from this list, not replaced (there is no page left to check).
   const pages: Array<[string, string]> = [
     ['app/partner/workspace/page.tsx', partnerWorkspaceSrc],
     ['app/partner/page.tsx', partnerRootSrc],
     ['app/partner/kora-link/page.tsx', partnerKoraLinkSrc],
-    ['app/demo/partner/page.tsx', demoPartnerPageSrc],
   ];
 
   for (const [name, src] of pages) {
