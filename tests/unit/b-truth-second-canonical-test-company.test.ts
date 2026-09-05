@@ -208,8 +208,13 @@ describe('B-TRUTH — scope safety: no AdminPreview, no UI, no B-WORKER, no fina
     expect(src).not.toContain('Bosco Verde');
   });
 
+  // app/demo/portfolio/page.tsx was accurately checked here as of this
+  // test's writing. CC-00 Company Portfolio capability salvage +
+  // canonicalization (2026-09-12) later, separately, retired that route
+  // entirely — removed from this list, not replaced (there is no page left
+  // to check).
   it('no /demo or /admin UI file references the second tenant (no UI change in this PR)', () => {
-    for (const file of ['app/demo/portfolio/page.tsx', 'app/demo/benchmarks/page.tsx', 'app/demo/network/page.tsx', 'app/admin/page.tsx']) {
+    for (const file of ['app/demo/benchmarks/page.tsx', 'app/demo/network/page.tsx', 'app/admin/page.tsx']) {
       const src = read(file);
       expect(src).not.toContain('BOSCOVERDE');
       expect(src).not.toContain('boscoverde');
@@ -253,9 +258,14 @@ describe('B-TRUTH — no benchmark/percentile claim introduced by this PR', () =
 });
 
 describe('B-TRUTH — I9 and registry reflect an additive, non-migrating change', () => {
-  it('I9 allowlist is completely unaffected — this PR adds no new data/synthetic/** consumer and removes none', () => {
+  // The header count was accurately "12 files / 20 import statements" at
+  // the time this test was written (this PR made no I9 change). CC-00
+  // Company Portfolio capability salvage + canonicalization (2026-09-12)
+  // later, separately, reduced the import count to 18 — unrelated to this
+  // PR's own scope. See tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('I9 allowlist is completely unaffected by THIS PR — this PR adds no new data/synthetic/** consumer and removes none (historical note: a later, unrelated PR changed the count)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 20 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 12 files / 18 import statements');
     expect(allowlist).not.toMatch(/\{\s*file:\s*'scripts\/koratest-canonical-seed\.ts'/);
   });
 

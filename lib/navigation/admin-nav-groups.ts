@@ -77,7 +77,6 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { label: 'Guided Demo (ACME-001)',   href: '/admin/demo/acme-001' },
       { label: 'KORA Commons Network',     href: '/commons' },
-      { label: 'Portfolio Aziende',        href: '/demo/portfolio' },
       { label: 'Rete Advisor & Partner',   href: '/demo/network' },
       { label: 'Demo Scoring (Synthetic)', href: '/admin/operator' },
       { label: 'Anteprima Classificazione',href: '/demo/ai-onboarding' },

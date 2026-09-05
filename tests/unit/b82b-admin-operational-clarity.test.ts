@@ -100,8 +100,13 @@ describe('B82-B Task 4 — Demo Lab routes in navigation (B169 FASE 4)', () => {
     expect(adminNavGroups).not.toContain("href: '/demo/index-registry'");
   });
 
-  it('Demo Lab includes /demo/portfolio', () => {
-    expect(adminNavGroups).toContain("href: '/demo/portfolio'");
+  // /demo/portfolio was accurately in the Demo Lab nav group as of this
+  // test's writing. CC-00 Company Portfolio capability salvage +
+  // canonicalization (2026-09-12) later, separately, retired the entire
+  // route and removed its nav entry — its real value moved into
+  // app/admin/companies/page.tsx (already-existing Company Console).
+  it('Demo Lab no longer includes /demo/portfolio (historical note, not a live assertion)', () => {
+    expect(adminNavGroups).not.toContain("href: '/demo/portfolio'");
   });
 });
 

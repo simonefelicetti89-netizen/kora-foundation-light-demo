@@ -44,26 +44,27 @@
 // founder-validation, gate status) is untouched — separate, later CC-00
 // slices, no opportunistic cleanup. This service remains alive, NARROWED,
 // not retired.
-import companiesRaw from '@/data/synthetic/companies.json';
-import koraIndexRaw from '@/data/synthetic/kora-index-outputs.json';
+// CC-00 — Company Portfolio capability salvage + canonicalization
+// (2026-09-12): getCompanyPortfolioPreview() is RETIRED, not migrated —
+// re-verification found the real capability it simulated already exists,
+// canonically, at app/admin/companies/page.tsx ("Company Console" — real,
+// KORA_ADMIN-gated, DB-backed live tenant registry with lifecycle status,
+// users, workforce headcount via personal.workforce_baseline, current KORA
+// Index + Confidence Score + Safeguard, submissions, and Decision Pack
+// status — every dimension this method simulated, and several more).
+// app/admin/page.tsx's own "Company Readiness Matrix" panel (its other real
+// caller) now reads the SAME already-fetched, already-canonical `registry`
+// array (analytics.tenant + analytics.kora_index_result, via
+// lib/live/admin-cross-company-view.ts's buildIndexRegistryView() — already
+// proven by tests/integration/rls-20-admin-cross-company-analytics.test.ts)
+// it already fetches for the Intelligence Grid's KORA Index™ Registry panel
+// — no second query, no new method. Fields that had no canonical home
+// (sector, territory, is_primary_demo, demo_note) were not migrated — see
+// this slice's own regression test and lib/architecture/registry.ts's
+// svc.admin-preview entry for the full field-by-field disposition.
 import sourceBatchesRaw from '@/data/synthetic/source-batches.json';
 
 // ─── Raw seed shapes ───────────────────────────────────────────────────────────
-
-interface SeedCompany {
-  id: string; company_name?: string; sector?: string; country?: string;
-  territory?: string; headcount?: number; headcount_in_scope?: number;
-  program_status?: string; foundation_light_status?: string;
-  data_completeness?: number; welfare_budget_eur_approx?: number;
-  is_primary_demo_company?: boolean; demo_narrative?: string;
-}
-
-interface SeedKoraIndex {
-  id: string; company_id: string; scenario_id: string;
-  reporting_period: string; kora_index_value: number;
-  safeguard_status: string; confidence_score: number;
-  methodology_version_id: string; calibration_status: string;
-}
 
 interface SeedBatch {
   id: string; company_id: string; scenario_id: string;
@@ -73,26 +74,9 @@ interface SeedBatch {
   evidence_attached_pct?: number; pending_review_count?: number;
 }
 
-const companies   = (companiesRaw as { data: SeedCompany[] }).data;
-const koraOutputs = (koraIndexRaw as { data: SeedKoraIndex[] }).data;
 const batches     = (sourceBatchesRaw as { data: SeedBatch[] }).data;
 
 // ─── Public interfaces ────────────────────────────────────────────────────────
-
-export interface CompanyPortfolioEntry {
-  id: string;
-  company_name: string;
-  sector: string;
-  territory: string;
-  headcount: number;
-  data_completeness: number;
-  status: string;
-  kora_index_value: number | null;
-  confidence_score: number | null;
-  safeguard_status: string | null;
-  is_primary_demo: boolean;
-  demo_note: string;
-}
 
 export interface BenchmarkPreview {
   dimension: string;
@@ -152,51 +136,13 @@ export interface GateStatusPreview {
   synthetic_demo: true;
 }
 
-// ─── Synthetic supplement for companies without scoring outputs ───────────────
-// These values are consistent with the demo narratives in companies.json.
-const SYNTHETIC_INDEX: Record<string, { kora_index_value: number; confidence_score: number; safeguard_status: string }> = {
-  'nexo-digital':        { kora_index_value: 72, confidence_score: 0.82, safeguard_status: 'CLEAR' },
-  'fortis-industrial':   { kora_index_value: 28, confidence_score: 0.45, safeguard_status: 'FLAGGED' },
-  'communitas-cooperativa': { kora_index_value: 58, confidence_score: 0.61, safeguard_status: 'WARNING' },
-};
-
-const COMPANY_NAME_MAP: Record<string, string> = {
-  'meridiana-group':       'Meridiana Group S.r.l.',
-  'nexo-digital':          'Nexo Digital S.p.A.',
-  'fortis-industrial':     'Fortis Industrial S.p.A.',
-  'communitas-cooperativa': 'Communitas Cooperativa',
-};
-
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 class AdminPreviewService {
-  // 1. Company Portfolio
-  getCompanyPortfolioPreview(): CompanyPortfolioEntry[] {
-    return companies.map((c): CompanyPortfolioEntry => {
-      const realOutput = koraOutputs.find(
-        (o) => o.company_id === c.id && o.scenario_id === 'S2',
-      );
-      const synthetic = SYNTHETIC_INDEX[c.id];
-      const indexVal = realOutput?.kora_index_value ?? synthetic?.kora_index_value ?? null;
-      const cs       = realOutput?.confidence_score ?? synthetic?.confidence_score ?? null;
-      const safeguard = realOutput?.safeguard_status ?? synthetic?.safeguard_status ?? null;
-
-      return {
-        id: c.id,
-        company_name: c.company_name ?? COMPANY_NAME_MAP[c.id] ?? c.id,
-        sector: c.sector ?? '—',
-        territory: c.territory ?? '—',
-        headcount: c.headcount_in_scope ?? c.headcount ?? 0,
-        data_completeness: c.data_completeness ?? 0,
-        status: c.foundation_light_status ?? c.program_status ?? 'active',
-        kora_index_value: indexVal,
-        confidence_score: cs,
-        safeguard_status: safeguard,
-        is_primary_demo: c.is_primary_demo_company ?? false,
-        demo_note: c.demo_narrative ?? '',
-      };
-    });
-  }
+  // 1. Company Portfolio — RETIRED (2026-09-12, CC-00 Company Portfolio
+  // capability salvage + canonicalization). See the header comment above
+  // and lib/architecture/registry.ts's svc.admin-preview entry for the
+  // full rationale and field-by-field disposition.
 
   // 3. Benchmarks
   getBenchmarkPreview(): BenchmarkPreview[] {

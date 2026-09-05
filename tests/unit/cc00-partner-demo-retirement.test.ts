@@ -177,7 +177,13 @@ describe('CC-00 Partner demo retirement — DEMO_VIEWER role untouched', () => {
     expect(body).toContain("koraRole === 'KORA_ADMIN'");
   });
 
-  it('other /demo/** routes are untouched — advisor, ai-onboarding, benchmarks, future-vision, gtm, guide, network, portfolio', () => {
+  // app/demo/portfolio/page.tsx was accurately untouched at the time this
+  // test was written. CC-00 Company Portfolio capability salvage +
+  // canonicalization (2026-09-12, later the same day) separately retired
+  // it too — its real capability already existed, canonically, at
+  // app/admin/companies/page.tsx. See
+  // tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('other /demo/** routes are untouched — advisor, ai-onboarding, benchmarks, future-vision, gtm, guide, network; portfolio has since been separately retired', () => {
     const routes = [
       'app/demo/advisor/page.tsx',
       'app/demo/ai-onboarding/page.tsx',
@@ -186,30 +192,36 @@ describe('CC-00 Partner demo retirement — DEMO_VIEWER role untouched', () => {
       'app/demo/gtm/page.tsx',
       'app/demo/guide/page.tsx',
       'app/demo/network/page.tsx',
-      'app/demo/portfolio/page.tsx',
       'app/demo/page.tsx',
     ];
     for (const route of routes) {
       expect(exists(route)).toBe(true);
     }
+    expect(exists('app/demo/portfolio/page.tsx')).toBe(false);
   });
 });
 
-// ── 6. Gated /demo/** layout count: 5 → 4 ────────────────────────────────────
+// ── 6. Gated /demo/** layout count: originally 5, now 3 (portfolio ─────────
+//    separately retired by CC-00 Company Portfolio canonicalization) ───────
 
-describe('CC-00 Partner demo retirement — gated /demo/** layout count drops from 5 to 4', () => {
+describe('CC-00 Partner demo retirement — gated /demo/** layout count drops from 5 to 4 (historical: now 3)', () => {
   const REMAINING_GATED_LAYOUTS = [
     'app/demo/advisor/layout.tsx',
     'app/demo/ai-onboarding/layout.tsx',
     'app/demo/network/layout.tsx',
-    'app/demo/portfolio/layout.tsx',
   ];
 
-  it('exactly 4 remaining gated layouts exist and each calls requireDemoGate()', () => {
+  // app/demo/portfolio/layout.tsx was accurately one of the 4 remaining
+  // gated layouts at the time this test was written. CC-00 Company
+  // Portfolio capability salvage + canonicalization (2026-09-12) later,
+  // separately, retired it too — see
+  // tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('exactly 3 remaining gated layouts exist and each calls requireDemoGate(); portfolio has since been separately retired', () => {
     for (const layout of REMAINING_GATED_LAYOUTS) {
       expect(exists(layout)).toBe(true);
       expect(read(layout)).toContain('requireDemoGate');
     }
+    expect(exists('app/demo/portfolio/layout.tsx')).toBe(false);
   });
 
   it('app/demo/partner/layout.tsx and app/demo/index-registry/layout.tsx are both gone (2 of the original 6 gated layouts retired)', () => {
@@ -226,13 +238,21 @@ describe('CC-00 Partner demo retirement — architecture registry updated', () =
     expect(src).toContain('PARTNER DEMO CAPABILITY SALVAGE');
   });
 
-  it('registry purpose no longer lists partner as a live /demo subdirectory', () => {
+  // CC-00 Company Portfolio capability salvage + canonicalization
+  // (2026-09-12) later, separately, retired portfolio too, and rephrased
+  // this purpose string to "(7 subdirectories: ... — index-registry,
+  // partner, and portfolio all retired ...)" — 'partner' now legitimately
+  // appears once, inside that "retired" clause, not the live list. Anchor
+  // on the live-subdirectory segment only (before the em-dash) rather than
+  // the whole parenthetical, so this test still checks what it originally
+  // meant to check.
+  it('registry purpose no longer lists partner as a LIVE /demo subdirectory (it may legitimately appear in the retired-routes clause)', () => {
     const src = read('lib/architecture/registry.ts');
     const start = src.indexOf("id: 'app-surface.demo'");
     const entry = src.slice(start, start + 600);
     const subdirsMatch = entry.match(/subdirectories: ([^)]*)\)/);
     expect(subdirsMatch).not.toBeNull();
-    const subdirsList = subdirsMatch![1];
-    expect(subdirsList.split(',').map((s) => s.trim())).not.toContain('partner');
+    const liveSegment = subdirsMatch![1].split('—')[0];
+    expect(liveSegment.split(',').map((s) => s.trim())).not.toContain('partner');
   });
 });

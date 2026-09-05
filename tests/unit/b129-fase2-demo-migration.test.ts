@@ -42,8 +42,13 @@ describe('B129 Fase 2 — new demo pages exist at new paths', () => {
     expect(fileExists('app/demo/future-vision/page.tsx')).toBe(true);
   });
 
-  it('app/demo/portfolio/page.tsx exists', () => {
-    expect(fileExists('app/demo/portfolio/page.tsx')).toBe(true);
+  // app/demo/portfolio/page.tsx existed here accurately as of B129 Fase 2.
+  // CC-00 Company Portfolio capability salvage + canonicalization
+  // (2026-09-12) later, separately, retired the entire route — its real
+  // value already existed, canonically, at app/admin/companies/page.tsx.
+  // See tests/unit/cc00-portfolio-canonicalization.test.ts.
+  it('app/demo/portfolio/page.tsx has since been separately retired (historical note, not a live assertion)', () => {
+    expect(fileExists('app/demo/portfolio/page.tsx')).toBe(false);
   });
 
   it('app/demo/benchmarks/page.tsx exists', () => {
@@ -146,12 +151,13 @@ describe('B129 Fase 2 — /demo/* pages have no Supabase client imports', () => 
   // app/demo/index-registry/page.tsx was accurately in this list as of B129
   // Fase 2. CC-00 Index Registry canonicalization (2026-09-06) retired the
   // route entirely — removed from this list, not replaced (there is no
-  // page left to check).
+  // page left to check). app/demo/portfolio/page.tsx was also accurately
+  // in this list; CC-00 Company Portfolio capability salvage +
+  // canonicalization (2026-09-12) retired it too, for the same reason.
   const DEMO_PAGES = [
     'app/demo/guide/page.tsx',
     'app/demo/advisor/page.tsx',
     'app/demo/future-vision/page.tsx',
-    'app/demo/portfolio/page.tsx',
     'app/demo/benchmarks/page.tsx',
     'app/demo/network/page.tsx',
     'app/demo/gtm/page.tsx',

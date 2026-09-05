@@ -25,6 +25,19 @@
 // method remain untouched, still synthetic-backed, still their own
 // separate, later CC-00 slices. The DEMO_VIEWER role itself is not removed
 // in this change.
+//
+// CC-00 — Company Portfolio capability salvage + canonicalization
+// (2026-09-12): getCompanyPortfolioPreview() is retired outright, not
+// migrated — its real capability already exists, canonically, at
+// app/admin/companies/page.tsx ("Company Console"). The "Company Readiness
+// Matrix" panel below now reads the SAME `registry` array already fetched
+// for the Intelligence Grid's KORA Index™ Registry panel (no second query)
+// via buildIndexRegistryView(). Two dead/decorative columns are dropped:
+// "CS™" (always rendered "—" — never actually wired to real data) and
+// "Fonte" (always hardcoded "Demo"). sector/territory/is_primary_demo/
+// demo_note had no canonical equivalent and are not carried forward — see
+// lib/architecture/registry.ts's svc.admin-preview entry for the full
+// field-by-field disposition.
 
 import Link from 'next/link';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
@@ -116,7 +129,6 @@ export default async function KoraControlTower() {
   );
   const registry = buildIndexRegistryView(typedTenantRows, typedCurrentResultRows);
 
-  const portfolio  = adminPreviewService.getCompanyPortfolioPreview();
   const gates      = adminPreviewService.getGateStatusPreview();
   const billing    = adminPreviewService.getBillingRevenuePreview();
   const gtm        = adminPreviewService.getFounderValidationPreview();
@@ -405,46 +417,50 @@ export default async function KoraControlTower() {
       {/* SECTION 3: COMPANY READINESS MATRIX                     */}
       {/* ════════════════════════════════════════════════════════ */}
 
-      <SectionHead label="Company Readiness Matrix" badgeMode="DEMO" />
+      <SectionHead label="Company Readiness Matrix" badgeMode="LIVE" />
 
       <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, overflow: 'hidden' }}>
         {/* Table header */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px 80px', gap: 8, padding: '10px 20px', borderBottom: TOKENS.cardBorder, background: TOKENS.taupe }}>
-          {['Azienda', 'Safeguard™', 'Score', 'CS™', 'Fonte'].map((h, i) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px', gap: 8, padding: '10px 20px', borderBottom: TOKENS.cardBorder, background: TOKENS.taupe }}>
+          {['Azienda', 'Safeguard™', 'Score'].map((h, i) => (
             <p key={h} style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKENS.inkHint, textAlign: i > 0 ? 'center' : 'left' }}>
               {h}
             </p>
           ))}
         </div>
 
-        {portfolio.map((c, i) => (
+        {registry.length === 0 && (
+          <p style={{ fontFamily: FONT, fontSize: '11px', color: TOKENS.inkHint, padding: '14px 20px' }}>
+            Nessun risultato KORA Index™ corrente.
+          </p>
+        )}
+
+        {registry.map((e, i) => (
           <div
-            key={c.id}
+            key={e.tenantId}
             style={{
               display:     'grid',
-              gridTemplateColumns: '1fr 80px 80px 80px 80px',
+              gridTemplateColumns: '1fr 80px 80px',
               gap:          8,
               padding:      '12px 20px',
-              borderBottom: i < portfolio.length - 1 ? TOKENS.cardBorder : 'none',
+              borderBottom: i < registry.length - 1 ? TOKENS.cardBorder : 'none',
               alignItems:   'center',
             }}
           >
-            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '12px', fontWeight: 500, color: TOKENS.inkSecondary }}>{c.company_name}</p>
+            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '12px', fontWeight: 500, color: TOKENS.inkSecondary }}>{e.companyName}</p>
             <div style={{ textAlign: 'center' }}>
-              {c.safeguard_status ? (
+              {e.safeguardStatus ? (
                 <span style={{
                   borderRadius: 999, padding: '3px 8px', fontSize: '9px', fontWeight: 700,
-                  ...(SAFEGUARD_PILL[c.safeguard_status] ?? { background: TOKENS.inkBorder, color: TOKENS.inkHint, border: TOKENS.cardBorder }),
+                  ...(SAFEGUARD_PILL[e.safeguardStatus] ?? { background: TOKENS.inkBorder, color: TOKENS.inkHint, border: TOKENS.cardBorder }),
                 }}>
-                  {c.safeguard_status}
+                  {e.safeguardStatus}
                 </span>
               ) : <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>—</span>}
             </div>
             <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '13px', fontWeight: 700, textAlign: 'center', color: TOKENS.ink }}>
-              {c.kora_index_value ?? '—'}
+              {e.koraIndexValue ?? '—'}
             </p>
-            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', textAlign: 'center', color: TOKENS.inkSecondary }}>—</p>
-            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', textAlign: 'center', color: TOKENS.inkHint }}>Demo</p>
           </div>
         ))}
       </div>
