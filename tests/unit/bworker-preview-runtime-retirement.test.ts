@@ -272,49 +272,31 @@ describe('B-WORKER preview retirement — PR #168 hardening intact (regression)'
 // etc.), not requiring any schema/product decision. It is NOT deleted here
 // per this pass's explicit instruction not to canonicalize or delete either
 // residual in this PR — this is a corrected-accounting record, not an action.
-describe('B-WORKER preview retirement — I9 allowlist reflects verified reality (corrected accounting)', () => {
-  // PRIOR HISTORY (accurate as of this file's first version, preserved as a
-  // record): recorded 2 B_WORKER-owned entries (AccountProvisioningService,
-  // WorkerProvisioningService), with AccountProvisioningService proven
-  // zero-caller but deliberately NOT deleted, per that pass's explicit
-  // instruction not to act on the finding. B-WORKER AccountProvisioning
-  // dead-code retirement (2026-09-06, the very next slice) acted on it:
-  // AccountProvisioningService.ts and its seed are deleted, removed from
-  // the allowlist entirely. 1 B_WORKER-owned entry remains.
-  it('exactly 1 B_WORKER-owned entry remains: WorkerProvisioningService', () => {
+// PRIOR HISTORY (accurate as of this file's first version, preserved as a
+// record): recorded 2 B_WORKER-owned entries (AccountProvisioningService,
+// WorkerProvisioningService), with AccountProvisioningService proven
+// zero-caller but deliberately NOT deleted. B-WORKER AccountProvisioning
+// dead-code retirement (2026-09-06) deleted it — 1 entry remained. B-WORKER
+// WorkerProvisioning Canonicalization (2026-09-06, the final B-WORKER
+// implementation slice) retired that last entry too — the allowlist is now
+// empty (I9 = 0). See tests/unit/bworker-workerprovisioning-canonicalization.test.ts.
+describe('B-WORKER preview retirement — I9 allowlist now empty (I9 = 0)', () => {
+  it('the allowlist is now empty', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
     const arrayStart = allowlist.indexOf('export const SYNTHETIC_IMPORT_ALLOWLIST');
     const arrayEnd = allowlist.indexOf('];', arrayStart);
     const arrayBody = allowlist.slice(arrayStart, arrayEnd);
     const matches = arrayBody.match(/owner: 'B_WORKER'/g) ?? [];
-    expect(matches.length).toBe(1);
+    expect(matches.length).toBe(0);
     const files = [...arrayBody.matchAll(/file: '([^']+)'/g)].map((m) => m[1]);
-    expect(files.sort()).toEqual([
-      'services/worker-provisioning/WorkerProvisioningService.ts',
-    ]);
+    expect(files).toEqual([]);
   });
 
-  it('AccountProvisioningService.ts and its seed fixture no longer exist', () => {
+  it('AccountProvisioningService.ts and WorkerProvisioningService.ts and their seed fixtures no longer exist', () => {
     expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
     expect(exists('data/synthetic/user-accounts.json')).toBe(false);
-  });
-
-  it('WorkerProvisioningService still has real callers across the admin roster/provisioning UI', () => {
-    for (const file of [
-      'app/admin/pipeline/_components/PilotLifecycleClient.tsx',
-      'app/admin/companies/_components/RosterImportModal.tsx',
-      'components/admin/WorkforceQuickAccessPanel.tsx',
-      'components/company/cockpit/WorkerAdoptionPanel.tsx',
-    ]) {
-      expect(read(file)).toContain('workerProvisioningService');
-    }
-  });
-
-  it('the canonical worker list API genuinely lacks department/site/my_kora_enabled/pib_private_enabled — a schema gap, not fabricated', () => {
-    const src = read('app/api/admin/workers/list/route.ts');
-    expect(src).not.toContain('department');
-    expect(src).not.toContain('my_kora_enabled');
-    expect(src).not.toContain('pib_private_enabled');
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
+    expect(exists('data/synthetic/worker-roster.json')).toBe(false);
   });
 });
 

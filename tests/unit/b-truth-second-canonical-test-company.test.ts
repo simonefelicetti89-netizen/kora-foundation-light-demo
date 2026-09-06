@@ -225,7 +225,12 @@ describe('B-TRUTH — scope safety: no AdminPreview, no UI, no B-WORKER, no fina
 
   it('B-WORKER services are untouched — still exist, unmodified reachability', () => {
     for (const file of [
-      'services/worker-provisioning/WorkerProvisioningService.ts',
+      // PRIOR HISTORY: 'services/worker-provisioning/WorkerProvisioningService.ts'
+      // was asserted to exist here (unmodified by this PR, at the time). B-WORKER
+      // WorkerProvisioning Canonicalization (2026-09-06) retired it entirely (its 2
+      // real callers migrated to canonical personal.worker_identity reads) —
+      // removed from this list; this is that later, separately-authorized
+      // retirement, not an unrelated-PR regression of this PR's own scope boundary.
       // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
       // was asserted to exist here (unmodified by this PR, at the time). B-WORKER
       // "One Product / No Demo Runtime" correction (2026-09-06) deleted it entirely
@@ -286,7 +291,7 @@ describe('B-TRUTH — I9 and registry reflect an additive, non-migrating change'
   // PR's own scope. See tests/unit/cc00-residual-demo-retirement.test.ts.
   it('I9 allowlist is completely unaffected by THIS PR — this PR adds no new data/synthetic/** consumer and removes none (historical note: later, unrelated PRs changed the count)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 1 files / 1 import statements'); // B-WORKER AccountProvisioning dead-code retirement (2026-09-06): AccountProvisioningService.ts removed from the allowlist (deleted, zero callers) — 2/2 -> 1/1, unrelated to this PR.
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 0 files / 0 import statements'); // B-WORKER AccountProvisioning dead-code retirement (2026-09-06): AccountProvisioningService.ts removed from the allowlist (deleted, zero callers) — 2/2 -> 1/1, unrelated to this PR.
     expect(allowlist).not.toMatch(/\{\s*file:\s*'scripts\/koratest-canonical-seed\.ts'/);
   });
 

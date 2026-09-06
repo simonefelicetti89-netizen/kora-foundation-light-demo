@@ -9,7 +9,9 @@
 // 5. Boolean normalization (my_kora_enabled)
 // 6. Duplicate employee_code blocking
 // 7. N<10 segment warnings
-// 8. WorkerProvisioningService.importDemoRoster invariants
+// 8. buildRosterRecordsFromValidatedRows invariants (relocated, unchanged,
+//    from WorkerProvisioningService.importDemoRoster — see
+//    lib/roster-import/roster-record-builder.ts)
 // 9. employer_can_view_individual_pib always false
 // 10. worker_account_status always draft
 // 11. No auth/email fields created
@@ -24,7 +26,7 @@ import {
   FORBIDDEN_PATTERNS,
 } from '../../lib/roster-import/roster-parser';
 import { validateRoster } from '../../lib/roster-import/roster-validation';
-import { workerProvisioningService } from '../../services/worker-provisioning/WorkerProvisioningService';
+import { buildRosterRecordsFromValidatedRows } from '../../lib/roster-import/roster-record-builder';
 import type { RosterParseResult } from '../../lib/roster-import/types';
 
 // ── Test helpers ──────────────────────────────────────────────────────────────
@@ -440,7 +442,7 @@ describe('validateRoster — segment size warnings', () => {
 
 // ── 11. importDemoRoster — privacy invariants ─────────────────────────────────
 
-describe('WorkerProvisioningService.importDemoRoster — invariants', () => {
+describe('buildRosterRecordsFromValidatedRows — invariants', () => {
   const baseRow = {
     employee_code:    'EMP-TEST-01',
     display_name:     'Test Lavoratore',
@@ -458,13 +460,13 @@ describe('WorkerProvisioningService.importDemoRoster — invariants', () => {
   };
 
   it('returns an array of WorkerRosterRecord', () => {
-    const records = workerProvisioningService.importDemoRoster('test-co', 'tenant-test', [baseRow]);
+    const records = buildRosterRecordsFromValidatedRows('test-co', 'tenant-test', [baseRow]);
     expect(Array.isArray(records)).toBe(true);
     expect(records).toHaveLength(1);
   });
 
   it('employer_can_view_individual_pib is ALWAYS false', () => {
-    const records = workerProvisioningService.importDemoRoster('test-co', 'tenant-test', [
+    const records = buildRosterRecordsFromValidatedRows('test-co', 'tenant-test', [
       baseRow,
       { ...baseRow, employee_code: 'EMP-TEST-02', my_kora_enabled: true },
     ]);
@@ -474,58 +476,58 @@ describe('WorkerProvisioningService.importDemoRoster — invariants', () => {
   });
 
   it('worker_account_status is ALWAYS draft', () => {
-    const records = workerProvisioningService.importDemoRoster('test-co', 'tenant-test', [baseRow]);
+    const records = buildRosterRecordsFromValidatedRows('test-co', 'tenant-test', [baseRow]);
     expect(records[0]?.worker_account_status).toBe('draft');
   });
 
   it('consent_status is ALWAYS not_collected', () => {
-    const records = workerProvisioningService.importDemoRoster('test-co', 'tenant-test', [baseRow]);
+    const records = buildRosterRecordsFromValidatedRows('test-co', 'tenant-test', [baseRow]);
     expect(records[0]?.consent_status).toBe('not_collected');
   });
 
   it('pib_private_enabled is ALWAYS false', () => {
-    const records = workerProvisioningService.importDemoRoster('test-co', 'tenant-test', [baseRow]);
+    const records = buildRosterRecordsFromValidatedRows('test-co', 'tenant-test', [baseRow]);
     expect(records[0]?.pib_private_enabled).toBe(false);
   });
 
   it('my_kora_enabled reflects the validated row value', () => {
     const withKora    = { ...baseRow, employee_code: 'EMP-A', my_kora_enabled: true  };
     const withoutKora = { ...baseRow, employee_code: 'EMP-B', my_kora_enabled: false };
-    const records = workerProvisioningService.importDemoRoster('test-co', 'tenant-test', [withKora, withoutKora]);
+    const records = buildRosterRecordsFromValidatedRows('test-co', 'tenant-test', [withKora, withoutKora]);
     expect(records[0]?.my_kora_enabled).toBe(true);
     expect(records[1]?.my_kora_enabled).toBe(false);
   });
 
   it('worker_id starts with WRK-IMP-', () => {
-    const records = workerProvisioningService.importDemoRoster('test-co', 'tenant-test', [baseRow]);
+    const records = buildRosterRecordsFromValidatedRows('test-co', 'tenant-test', [baseRow]);
     expect(records[0]?.worker_id.startsWith('WRK-IMP-')).toBe(true);
   });
 
   it('worker_id is deterministic from employee_code (dedup key)', () => {
-    const r1 = workerProvisioningService.importDemoRoster('co', 'tenant', [baseRow]);
-    const r2 = workerProvisioningService.importDemoRoster('co', 'tenant', [baseRow]);
+    const r1 = buildRosterRecordsFromValidatedRows('co', 'tenant', [baseRow]);
+    const r2 = buildRosterRecordsFromValidatedRows('co', 'tenant', [baseRow]);
     expect(r1[0]?.worker_id).toBe(r2[0]?.worker_id);
   });
 
   it('company_id and tenant_id are correctly set', () => {
-    const records = workerProvisioningService.importDemoRoster('acme-corp', 'tenant-acme', [baseRow]);
+    const records = buildRosterRecordsFromValidatedRows('acme-corp', 'tenant-acme', [baseRow]);
     expect(records[0]?.company_id).toBe('acme-corp');
     expect(records[0]?.tenant_id).toBe('tenant-acme');
   });
 
   it('no email field on any imported record', () => {
-    const records = workerProvisioningService.importDemoRoster('test-co', 'tenant-test', [baseRow]);
+    const records = buildRosterRecordsFromValidatedRows('test-co', 'tenant-test', [baseRow]);
     // WorkerRosterRecord has optional email field — must be absent
     expect((records[0] as unknown as Record<string, unknown>)['email']).toBeUndefined();
   });
 
   it('included_in_aggregates is true for imported workers', () => {
-    const records = workerProvisioningService.importDemoRoster('test-co', 'tenant-test', [baseRow]);
+    const records = buildRosterRecordsFromValidatedRows('test-co', 'tenant-test', [baseRow]);
     expect(records[0]?.included_in_aggregates).toBe(true);
   });
 
   it('returns empty array for empty input', () => {
-    const records = workerProvisioningService.importDemoRoster('test-co', 'tenant-test', []);
+    const records = buildRosterRecordsFromValidatedRows('test-co', 'tenant-test', []);
     expect(records).toHaveLength(0);
   });
 
@@ -535,7 +537,7 @@ describe('WorkerProvisioningService.importDemoRoster — invariants', () => {
       employee_code: `EMP-BULK-${i}`,
       display_name:  `Lavoratore EMP-BULK-${i}`,
     }));
-    const records = workerProvisioningService.importDemoRoster('bulk-co', 'tenant-bulk', rows);
+    const records = buildRosterRecordsFromValidatedRows('bulk-co', 'tenant-bulk', rows);
     expect(records).toHaveLength(100);
     for (const r of records) {
       expect(r.employer_can_view_individual_pib).toBe(false);

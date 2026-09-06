@@ -169,27 +169,39 @@ describe('B81-B Task 4 — WorkerSpaceCapabilityService source', () => {
   });
 });
 
+// PRIOR HISTORY (accurate as of B81-B, preserved as a record, not verbatim):
+// this section called getCapabilityByCompanyId(companyId), which internally
+// fetched a synthetic roster by companyId string (e.g. 'meridiana-group',
+// 'UNKNOWN-COMPANY-99999') via WorkerProvisioningService. B-WORKER
+// WorkerProvisioning Canonicalization (2026-09-06): that method and its
+// synthetic roster are both retired — getCapabilityFromCounts() now takes
+// pre-computed (myKoraEnabledCount, totalWorkers) directly, matching
+// lib/live/worker-provisioning-status-view.ts's real
+// personal.worker_identity-derived counts. The same 3 assertions (empty →
+// NOT_ENABLED, mode is always 'preview' via this entry point — never
+// 'pilot_ready', pibSupported is always false via this entry point) still
+// hold, now proven directly against the counts rather than a synthetic
+// company_id lookup.
 describe('B81-B Task 4 — WorkerSpaceCapabilityService runtime', () => {
-  it('getCapabilityByCompanyId returns not_enabled for unknown company', async () => {
+  it('getCapabilityFromCounts returns not_enabled for zero workers', async () => {
     const { workerSpaceCapabilityService } = await import('../../services/worker-space/WorkerSpaceCapabilityService');
-    const cap = workerSpaceCapabilityService.getCapabilityByCompanyId('UNKNOWN-COMPANY-99999');
+    const cap = workerSpaceCapabilityService.getCapabilityFromCounts(0, 0);
     expect(cap.status).toBe('NOT_ENABLED');
     expect(cap.enabled).toBe(false);
     expect(cap.pibSupported).toBe(false);
   });
 
-  it('getCapabilityByCompanyId returns mode=preview (never pilot_ready) for known companies', async () => {
+  it('getCapabilityFromCounts returns mode=preview (never pilot_ready)', async () => {
     const { workerSpaceCapabilityService } = await import('../../services/worker-space/WorkerSpaceCapabilityService');
-    // Meridiana is a known synthetic company (S1 — company_id: 'meridiana-group')
-    const cap = workerSpaceCapabilityService.getCapabilityByCompanyId('meridiana-group');
+    const cap = workerSpaceCapabilityService.getCapabilityFromCounts(3, 10);
     expect(cap.mode).toBe('preview');
     expect(cap.mode).not.toBe('pilot_ready');
   });
 
-  it('pibSupported is never true (per-worker PIB blocked in Foundation Light)', async () => {
+  it('pibSupported is never true via getCapabilityFromCounts (per-worker PIB blocked in Foundation Light preview)', async () => {
     const { workerSpaceCapabilityService } = await import('../../services/worker-space/WorkerSpaceCapabilityService');
-    for (const companyId of ['meridiana-spa', 'acme-demo', 'UNKNOWN-X']) {
-      const cap = workerSpaceCapabilityService.getCapabilityByCompanyId(companyId);
+    for (const [enabled, total] of [[0, 0], [5, 20], [0, 3]] as const) {
+      const cap = workerSpaceCapabilityService.getCapabilityFromCounts(enabled, total);
       expect(cap.pibSupported).toBe(false);
     }
   });

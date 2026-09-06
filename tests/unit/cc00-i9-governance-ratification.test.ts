@@ -70,10 +70,11 @@ void _HISTORICAL_EXPECTED_BTRUTH_FILES;
 // canonical redirects) and removed it from the allowlist — 2 files remained.
 // B-WORKER AccountProvisioning dead-code retirement (2026-09-06, the next
 // slice) deleted 'services/account/AccountProvisioningService.ts' too (zero
-// real callers of any of its 18 methods) — 1 file remains.
-const EXPECTED_BWORKER_FILES = [
-  'services/worker-provisioning/WorkerProvisioningService.ts',
-].sort();
+// real callers of any of its 18 methods) — 1 file remained.
+// B-WORKER WorkerProvisioning Canonicalization (2026-09-06, the final
+// B-WORKER implementation slice) retired the last entry too — the
+// B_WORKER-owned set is now empty (BWORKER_I9 = 0).
+const EXPECTED_BWORKER_FILES: string[] = [].sort();
 
 // ── 1. Every importer has an owner; no UNKNOWN ──────────────────────────────
 
@@ -122,9 +123,15 @@ describe('CC-00 I9 Governance Ratification — CC-022 gate is B-TRUTH-scoped', (
   // Canonicalization (2026-09-05) exercised exactly that divergence: the
   // B-TRUTH count dropped to 0 while the total dropped only to 3 (the
   // B-WORKER-owned subset, untouched).
-  it('the B-TRUTH-scoped count (the CC-022 closure gate) is independent of the total allowlist count — B-TRUTH is now 0, total is 1', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
+  // "B-TRUTH is now 0, total is 1" (the sole remaining entry being
+  // WorkerProvisioningService, B_WORKER-owned). B-WORKER WorkerProvisioning
+  // Canonicalization (2026-09-06) retired that last entry too — total is
+  // now 0 as well, though the two counts remain independently measurable
+  // and were shown to diverge (0 vs 1) for a time.
+  it('the B-TRUTH-scoped count (the CC-022 closure gate) is independent of the total allowlist count — both are now 0', () => {
     expect(BTRUTH_OWNED_SYNTHETIC_IMPORTS.length).toBe(0);
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(1);
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(0);
   });
 
   it('the Master Plan records the B-TRUTH-scoped reinterpretation of CC-022 without erasing the original "I9 = 0" wording', () => {
@@ -155,17 +162,28 @@ describe('CC-00 I9 Governance Ratification — CC-022 gate is B-TRUTH-scoped', (
 // preserved verbatim): "3 files / 3 imports." B-WORKER "One Product / No
 // Demo Runtime" correction (2026-09-06) retired WorkerAchievementService.ts
 // (zero real callers) — 2 files remain.
+// PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,
+// preserved verbatim): "2 files remain." B-WORKER "One Product / No Demo
+// Runtime" correction (2026-09-06) then AccountProvisioning dead-code
+// retirement (2026-09-06) reduced this to 1; B-WORKER WorkerProvisioning
+// Canonicalization (2026-09-06, this slice) reduced it to 0.
 describe('CC-00 I9 Governance Ratification — visibility preserved', () => {
   it('the total allowlist count remains fully visible (not hidden behind the ownership split)', () => {
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(1);
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(0);
   });
 });
 
 // ── 6. No generic exemption or wildcard exists ──────────────────────────────
 
 describe('CC-00 I9 Governance Ratification — no generic exemption', () => {
-  it('exactly 1 named file carries owner B_WORKER — not a pattern, not a wildcard (WorkerAchievementService and AccountProvisioningService both retired since)', () => {
-    expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBe(1);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
+  // "exactly 1 named file carries owner B_WORKER" (WorkerProvisioningService,
+  // after WorkerAchievementService and AccountProvisioningService were both
+  // retired). B-WORKER WorkerProvisioning Canonicalization (2026-09-06)
+  // retired that last named file too — zero named files remain, not a
+  // pattern or wildcard exemption.
+  it('zero named files carry owner B_WORKER — the set is empty, not a pattern or wildcard exemption', () => {
+    expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBe(0);
     expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.map((e) => e.file).sort()).toEqual(EXPECTED_BWORKER_FILES);
   });
 
@@ -189,8 +207,17 @@ describe('CC-00 I9 Governance Ratification — no generic exemption', () => {
 // ── 7. Worker residuals still fail B-WORKER closure until removed ──────────
 
 describe('CC-00 I9 Governance Ratification — B-WORKER residuals remain open, not permanent', () => {
-  it('B-WORKER-owned residuals are non-zero today — the transfer does not close B-WORKER, it only reassigns the blocker', () => {
-    expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBeGreaterThan(0);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
+  // BWORKER_OWNED_SYNTHETIC_IMPORTS.length > 0 — "the transfer does not close
+  // B-WORKER, it only reassigns the blocker." B-WORKER WorkerProvisioning
+  // Canonicalization (2026-09-06) closed the I9-specific blocker
+  // (BWORKER_I9 = 0) via real canonicalization, not via exemption or
+  // deletion-without-replacement — but per Master Plan §32a and the task's
+  // own explicit instruction, reaching I9 = 0 is NOT the same as full
+  // B-WORKER adversarial closure (product/functionality verification is
+  // separate and still pending).
+  it('B-WORKER-owned residuals have reached zero (BWORKER_I9 = 0) — this closes the I9 blocker specifically, not full B-WORKER closure', () => {
+    expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBe(0);
   });
 
   // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
@@ -203,19 +230,21 @@ describe('CC-00 I9 Governance Ratification — B-WORKER residuals remain open, n
   // "permanent/canonical/exempt" either — it is the opposite (marked
   // retired, already actioned). The one remaining real I9 blocker,
   // svc.worker-provisioning, stays CONSOLIDATE, not permanent.
-  it('no B-WORKER-owned entry is marked permanent, canonical, or exempt in the registry', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
+  // svc.worker-provisioning was status CONSOLIDATE (open, not permanent) while
+  // svc.account was already DEAD (retired). B-WORKER WorkerProvisioning
+  // Canonicalization (2026-09-06) retired svc.worker-provisioning too — it is
+  // now DEAD, same as svc.account. DEAD is not "permanent/canonical/exempt"
+  // — it is the opposite (marked retired, already actioned, file deleted).
+  it('svc.worker-provisioning and svc.account are both marked DEAD (retired, actioned) — neither is CANONICAL or FROZEN', () => {
     const registry = read('lib/architecture/registry.ts');
-    for (const id of ["id: 'svc.worker-provisioning'"]) {
+    for (const id of ["id: 'svc.worker-provisioning'", "id: 'svc.account'"]) {
       const idx = registry.indexOf(id);
       expect(idx).toBeGreaterThan(-1);
       const entry = registry.slice(idx, registry.indexOf('{ id:', idx + 10));
-      expect(entry).toMatch(/status:\s*'CONSOLIDATE'/);
+      expect(entry).toMatch(/status:\s*'DEAD'/);
       expect(entry).not.toMatch(/status:\s*'CANONICAL'|status:\s*'FROZEN'/);
     }
-    const accountIdx = registry.indexOf("id: 'svc.account'");
-    expect(accountIdx).toBeGreaterThan(-1);
-    const accountEntry = registry.slice(accountIdx, registry.indexOf('{ id:', accountIdx + 10));
-    expect(accountEntry).toMatch(/status:\s*'DEAD'/);
   });
 });
 
@@ -242,28 +271,34 @@ describe('CC-00 I9 Governance Ratification — runtime: B-TRUTH retired, B-WORKE
     expect(codeOnly).not.toContain('evaluateFromSeed');
   });
 
-  it('the remaining B-WORKER worker cluster file still exists and still carries its original synthetic import (no runtime change); WorkerAchievementService and AccountProvisioningService both retired since', () => {
-    for (const file of EXPECTED_BWORKER_FILES) {
-      expect(exists(file)).toBe(true);
-    }
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
+  // the remaining B-WORKER worker cluster file (WorkerProvisioningService.ts)
+  // still existed and still carried its original synthetic import, while
+  // WorkerAchievementService and AccountProvisioningService were both already
+  // retired. B-WORKER WorkerProvisioning Canonicalization (2026-09-06)
+  // retired the last one too — all 3 are now gone.
+  it('the entire B-WORKER worker/account cluster (WorkerAchievementService, AccountProvisioningService, WorkerProvisioningService) is now retired', () => {
+    expect(EXPECTED_BWORKER_FILES).toEqual([]);
     const liveFiles = new Set(SYNTHETIC_IMPORT_ALLOWLIST.map((e) => e.file));
-    for (const file of EXPECTED_BWORKER_FILES) expect(liveFiles.has(file)).toBe(true);
+    expect(liveFiles.size).toBe(0);
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
     expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
-  // all 3 reason strings, including WorkerAchievementService's, were present.
-  // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) removed
-  // that entry (and its reason string) entirely along with the file.
-  // B-WORKER AccountProvisioning dead-code retirement (2026-09-06, the next
-  // slice) removed AccountProvisioningService's entry (and its reason
-  // string) too.
-  it('WorkerProvisioningService source file is unmodified in behavior (reason text unchanged since this slice)', () => {
+  // WorkerProvisioningService's reason string was still present while
+  // AccountProvisioningService's and WorkerAchievementService's were already
+  // absent. B-WORKER WorkerProvisioning Canonicalization (2026-09-06) removed
+  // the last reason string too — the allowlist body is now empty.
+  it('no B-WORKER reason string remains in the allowlist — it is empty', () => {
     const allowlistSrc = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlistSrc).toContain("reason: 'Demo worker roster seed for provisioning flows.'");
-    expect(allowlistSrc).not.toContain("reason: 'Demo account registry — reads synthetic user accounts.'");
-    expect(allowlistSrc).not.toContain("reason: 'Worker-private demo achievements seed.'");
+    const arrayStart = allowlistSrc.indexOf('export const SYNTHETIC_IMPORT_ALLOWLIST');
+    const arrayEnd = allowlistSrc.indexOf('];', arrayStart);
+    const arrayBody = allowlistSrc.slice(arrayStart, arrayEnd);
+    expect(arrayBody).not.toContain("reason: 'Demo worker roster seed for provisioning flows.'");
+    expect(arrayBody).not.toContain("reason: 'Demo account registry — reads synthetic user accounts.'");
+    expect(arrayBody).not.toContain("reason: 'Worker-private demo achievements seed.'");
   });
 });
 
@@ -284,14 +319,15 @@ describe('CC-00 I9 Governance Ratification — B-WORKER not started', () => {
   });
 
   // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
-  // both worker roster and worker achievements still read from
-  // data/synthetic/**. B-WORKER "One Product / No Demo Runtime" correction
-  // (2026-09-06) retired WorkerAchievementService.ts entirely — only the
-  // worker roster (WorkerProvisioningService, the genuine remaining I9
-  // blocker) still reads synthetic data.
-  it('worker roster still reads from data/synthetic/** (still 100% synthetic, not migrated); worker achievements retired', () => {
-    const rosterSrc = read('services/worker-provisioning/WorkerProvisioningService.ts');
-    expect(rosterSrc).toMatch(/from ['"][^'"]*\/data\/synthetic\/worker-roster\.json['"]/);
+  // worker roster still read from data/synthetic/** while worker achievements
+  // was already retired. B-WORKER WorkerProvisioning Canonicalization
+  // (2026-09-06) retired the worker roster too — its 2 real callers were
+  // migrated to lib/live/worker-provisioning-status-view.ts, reading
+  // personal.worker_identity; no schema change was needed.
+  it('worker roster no longer reads from data/synthetic/** — migrated to the canonical view builder; worker achievements retired too', () => {
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
+    expect(exists('data/synthetic/worker-roster.json')).toBe(false);
+    expect(exists('lib/live/worker-provisioning-status-view.ts')).toBe(true);
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 });

@@ -202,11 +202,13 @@ describe("CC-020A — CompanyIntelligenceService's other 4 former dependencies w
     expect(existsSync(resolve(root, 'services/company-data-intake/CompanyDataIntakeService.ts'))).toBe(false);
   });
 
-  it('WorkerProvisioningService.ts still exists with its other callers intact', () => {
-    expect(existsSync(resolve(root, 'services/worker-provisioning/WorkerProvisioningService.ts'))).toBe(true);
-    for (const file of ['app/admin/pipeline/_components/PilotLifecycleClient.tsx', 'components/admin/WorkforceQuickAccessPanel.tsx']) {
-      expect(read(file)).toContain('workerProvisioningService');
-    }
+  // PRIOR HISTORY (accurate as of this audit, preserved verbatim):
+  // "WorkerProvisioningService.ts still exists with its other callers
+  // intact." B-WORKER WorkerProvisioning Canonicalization (2026-09-06)
+  // retired it entirely — both named callers migrated to canonical
+  // personal.worker_identity reads via lib/live/worker-provisioning-status-view.ts.
+  it('WorkerProvisioningService.ts no longer exists — its callers migrated to canonical reads', () => {
+    expect(existsSync(resolve(root, 'services/worker-provisioning/WorkerProvisioningService.ts'))).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of its own time, preserved verbatim):

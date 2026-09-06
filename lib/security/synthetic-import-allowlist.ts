@@ -34,13 +34,16 @@
 // empty LEADS array — the tool itself, and every derived view, is
 // unchanged; no founder CRM schema was invented.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 1 files / 1 import statements
-// (B-WORKER AccountProvisioning dead-code retirement, 2026-09-06:
-// AccountProvisioningService.ts removed from this allowlist — file
-// deleted, zero real callers of any of its 18 methods. Prior to that,
-// WorkerAchievementService.ts was removed the same day — file deleted,
-// zero real callers. See lib/architecture/registry.ts svc.account and
-// svc.worker-achievements.)
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 0 files / 0 import statements
+// (B-WORKER WorkerProvisioning Canonicalization, 2026-09-06:
+// WorkerProvisioningService.ts removed from this allowlist — file deleted,
+// its 2 real callers (getWorkersForCompany, getWorkerProvisioningSummary)
+// migrated to canonical personal.worker_identity reads. This was the final
+// B-WORKER I9 residual — BWORKER_I9 = 0, BTRUTH_I9 = 0. Earlier the same
+// day: AccountProvisioningService.ts removed — file deleted, zero real
+// callers of any of its 18 methods; WorkerAchievementService.ts removed —
+// file deleted, zero real callers. See lib/architecture/registry.ts
+// svc.worker-provisioning, svc.account, svc.worker-achievements.)
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
@@ -692,14 +695,57 @@ export interface SyntheticImportAllowlistEntry {
 // needed. services/account/AccountProvisioningService.ts and its sole
 // seed file, data/synthetic/user-accounts.json, are both deleted. Removed
 // from this allowlist entirely: 2 B_WORKER-owned entries -> 1.
-// WorkerProvisioningService.ts is now the sole remaining B_WORKER-owned
-// entry, and the sole remaining B-WORKER I9 blocker: real callers across
-// admin roster/provisioning UI, genuine schema gaps —
-// department/site/my_kora_enabled/pib_private_enabled — not invented here.
-// See tests/unit/bworker-accountprovisioning-retirement.test.ts.
-export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
-  { file: 'services/worker-provisioning/WorkerProvisioningService.ts', reason: 'Demo worker roster seed for provisioning flows.', owner: 'B_WORKER' },
-];
+// WorkerProvisioningService.ts was the sole remaining B_WORKER-owned entry
+// at that point.
+//
+// B-WORKER WorkerProvisioning Canonicalization (2026-09-06, the final
+// B-WORKER implementation slice): fresh, exhaustive method-by-method audit
+// found only 2 of WorkerProvisioningService's 10 methods had real callers —
+// getWorkersForCompany() and getWorkerProvisioningSummary() (consumed by
+// WorkforceQuickAccessPanel.tsx, WorkerAdoptionPanel.tsx [currently
+// unmounted on any live route, per svc.worker-pillar-adoption's own
+// registry note — kept compiling and canonicalized anyway, matching that
+// note's own "ready for whenever the panel is re-integrated" expectation],
+// PilotLifecycleClient.tsx, and WorkerSpaceCapabilityService.ts's own 3
+// internal call sites) — and both reduce, across every real caller, to
+// exactly 3 numbers: total worker count, a non-disabled ("My KORA enabled")
+// count, and an active-account count. The other 8 methods
+// (getCompanyAggregateWorkerSummary, inviteWorker, disableWorker,
+// deleteDemoWorker, getWorkerPrivateProfile, createDemoWorker,
+// assertEmployerCannotViewIndividualPIB, importDemoRoster) had zero real
+// callers OR (importDemoRoster only) a real caller but zero synthetic
+// dependency of its own (it never read the seed array — pure function of
+// its own arguments) and was relocated, unchanged, to
+// lib/roster-import/roster-record-builder.ts, alongside its sibling pure
+// roster-import modules.
+//
+// department/site/my_kora_enabled/pib_private_enabled — the "genuine schema
+// gaps" this allowlist's own prior note (see PRIOR HISTORY on
+// svc.worker-provisioning in lib/architecture/registry.ts) worried about —
+// turned out not to block canonicalization once traced to their REAL
+// consumers: no real caller of getWorkersForCompany/getWorkerProvisioningSummary
+// ever read department or site (the real department/site concept already
+// exists, canonically, in the ingestion/scoring domain — an unrelated, already-
+// canonical, untouched data path); my_kora_enabled has no separate canonical
+// toggle because lib/auth/kora-session.ts's requireWorkerUser() — the real,
+// sole gate on My KORA access — only checks status !== 'disabled', so a
+// stored flag would be a redundant access truth (DERIVED instead, from
+// personal.worker_identity.status); pib_private_enabled was never a real
+// toggle at all — PIB privacy is an absolute, unconditional, RLS-enforced
+// guarantee (personal.worker_pib has no company-role policy of any kind)
+// and is retired, not replaced. No schema was modified. No email was sent.
+// No new synthetic import was introduced. See
+// tests/unit/bworker-workerprovisioning-canonicalization.test.ts.
+//
+// WorkerProvisioningService.ts and its sole seed, data/synthetic/worker-roster.json,
+// are both deleted. This allowlist is now empty — BWORKER_I9 = 0,
+// BTRUTH_I9 = 0, GLOBAL_I9_RUNTIME_IMPORTS = 0. The allowlist mechanism and
+// its guard test (tests/unit/cc002-i9-synthetic-import-guard.test.ts) are
+// NOT deleted here — they remain the live tripwire against any FUTURE
+// non-allowlisted synthetic import, which is exactly their job at zero,
+// not only above it. Retiring that governance infrastructure is a separate
+// decision this slice does not make.
+export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [];
 
 /** CC-022's own closure gate checks only this subset (CC-00 I9 Governance Ratification, 2026-09-05). */
 export const BTRUTH_OWNED_SYNTHETIC_IMPORTS = SYNTHETIC_IMPORT_ALLOWLIST.filter((e) => e.owner === 'B_TRUTH');

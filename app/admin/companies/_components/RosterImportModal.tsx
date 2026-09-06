@@ -16,7 +16,7 @@ import type { WorkerRosterRecord } from '@/lib/types';
 import type { RosterParseResult, RosterValidationReport } from '@/lib/roster-import/types';
 import { parseRosterFile } from '@/lib/roster-import/roster-parser';
 import { validateRoster } from '@/lib/roster-import/roster-validation';
-import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
+import { buildRosterRecordsFromValidatedRows } from '@/lib/roster-import/roster-record-builder';
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -613,7 +613,7 @@ export function RosterImportModal({ companyId, tenantId, existingWorkerIds, onIm
     if (!report || !privacyChecked) return;
 
     // Generate records from validated rows
-    const allRecords = workerProvisioningService.importDemoRoster(companyId, tenantId, report.validRows);
+    const allRecords = buildRosterRecordsFromValidatedRows(companyId, tenantId, report.validRows);
 
     // Dedup against existing session workers by worker_id
     const newRecords = allRecords.filter((r) => !existingWorkerIds.has(r.worker_id));

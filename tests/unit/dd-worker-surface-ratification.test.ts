@@ -172,21 +172,20 @@ describe('D-D — B-WORKER synthetic residual ownership unchanged', () => {
   // Product / No Demo Runtime" correction (2026-09-06) retired
   // WorkerAchievementService.ts entirely (zero real callers) — 2 remained.
   // B-WORKER AccountProvisioning dead-code retirement (2026-09-06, the next
-  // slice) retired AccountProvisioningService.ts too — 1 remains.
-  it('the 1 remaining I9-tracked residual remains owner: B_WORKER, unmodified', () => {
+  // slice) retired AccountProvisioningService.ts too — 1 remained. B-WORKER
+  // WorkerProvisioning Canonicalization (2026-09-06, the final B-WORKER
+  // implementation slice, a later PR than this ratification) retired the
+  // last one too — 0 I9-tracked residuals remain.
+  it('zero I9-tracked B_WORKER residuals remain — all 3 named residuals have since been retired by later, separately-authorized slices', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    for (const file of [
-      'services/worker-provisioning/WorkerProvisioningService.ts',
-    ]) {
-      expect(allowlist).toContain(`{ file: '${file}'`);
-    }
-    expect(allowlist).not.toContain(`{ file: 'services/worker-achievements/WorkerAchievementService.ts'`);
-    expect(allowlist).not.toContain(`{ file: 'services/account/AccountProvisioningService.ts'`);
     const arrayStart = allowlist.indexOf('export const SYNTHETIC_IMPORT_ALLOWLIST');
     const arrayEnd = allowlist.indexOf('];', arrayStart);
     const arrayBody = allowlist.slice(arrayStart, arrayEnd);
+    expect(arrayBody).not.toContain(`{ file: 'services/worker-provisioning/WorkerProvisioningService.ts'`);
+    expect(arrayBody).not.toContain(`{ file: 'services/worker-achievements/WorkerAchievementService.ts'`);
+    expect(arrayBody).not.toContain(`{ file: 'services/account/AccountProvisioningService.ts'`);
     const matches = arrayBody.match(/owner: 'B_WORKER'/g) ?? [];
-    expect(matches.length).toBe(1);
+    expect(matches.length).toBe(0);
   });
 
   it('MyKoraPreviewService (non-I9 B-WORKER debt) is named explicitly in the ratification', () => {
@@ -200,15 +199,15 @@ describe('D-D — B-WORKER synthetic residual ownership unchanged', () => {
   // verbatim): asserted all 3 residual service files, including
   // WorkerAchievementService.ts, were unmodified by this ratification (a
   // fact about THIS PR, at the time). B-WORKER "One Product / No Demo
-  // Runtime" correction (2026-09-06) is a later, separately-authorized PR
-  // that did modify (retire) WorkerAchievementService.ts — not a regression
-  // of this ratification's own scope boundary.
-  it('the 1 remaining residual service file was not modified by this ratification; WorkerAchievementService and AccountProvisioningService both retired since', () => {
-    for (const [file, marker] of [
-      ['services/worker-provisioning/WorkerProvisioningService.ts', 'WorkerProvisioningService'],
-    ] as const) {
-      expect(read(file)).toContain(marker);
-    }
+  // Runtime" correction (2026-09-06) and B-WORKER AccountProvisioning
+  // dead-code retirement (2026-09-06) are later, separately-authorized PRs
+  // that did modify (retire) WorkerAchievementService.ts and
+  // AccountProvisioningService.ts respectively — not a regression of this
+  // ratification's own scope boundary. B-WORKER WorkerProvisioning
+  // Canonicalization (2026-09-06, the final B-WORKER implementation slice,
+  // also a later PR than this ratification) retired the last one too.
+  it('all 3 residual service files, unmodified by this ratification itself, have since been retired by later, separately-authorized B-WORKER slices', () => {
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
     expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });

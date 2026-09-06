@@ -8,16 +8,20 @@
 // is now fetched canonically (analytics.tenant, all tenant_kind values, no
 // hidden test tenants) by the parent Server Component
 // (app/admin/companies/page.tsx) and passed in as a prop — this component no
-// longer reads the synthetic tenant fixture itself. worker-count/My-KORA/
-// Worker-Space sub-values below still come from
-// workerProvisioningService/workerSpaceCapabilityService, which remain
-// unmigrated (their own separate, later, B-WORKER-territory slice) — for a
-// canonical tenant not yet present in their still-synthetic roster, these
-// honestly read 0/not-enabled rather than fabricating a count.
+// longer reads the synthetic tenant fixture itself.
+//
+// B-WORKER WorkerProvisioning Canonicalization (2026-09-06): worker-count/
+// My-KORA sub-values are now read from a canonical workerProvisioningByTenant
+// prop (personal.worker_identity, fetched server-side by page.tsx) instead
+// of workerProvisioningService — retired entirely. For a tenant with no
+// worker_identity rows yet, the map has no entry and this component
+// honestly reads 0/not-enabled rather than fabricating a count — same
+// behavior as before, now from a real source instead of a synthetic one
+// that could never match a real tenant.id anyway.
 
 import Link from 'next/link';
-import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 import { workerSpaceCapabilityService } from '@/services/worker-space/WorkerSpaceCapabilityService';
+import { EMPTY_WORKER_PROVISIONING_STATUS, type CanonicalWorkerProvisioningStatus } from '@/lib/live/worker-provisioning-status-view';
 
 export interface WorkforcePanelTenant {
   id: string;
@@ -25,7 +29,13 @@ export interface WorkforcePanelTenant {
   company_name: string;
 }
 
-export function WorkforceQuickAccessPanel({ tenants }: { tenants: WorkforcePanelTenant[] }) {
+export function WorkforceQuickAccessPanel({
+  tenants,
+  workerProvisioningByTenant,
+}: {
+  tenants: WorkforcePanelTenant[];
+  workerProvisioningByTenant: Record<string, CanonicalWorkerProvisioningStatus>;
+}) {
   return (
     <div
       data-testid="workforce-quick-access-panel"
@@ -37,29 +47,26 @@ export function WorkforceQuickAccessPanel({ tenants }: { tenants: WorkforcePanel
         <div className="flex items-center gap-3 mb-4 flex-wrap">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-widest text-[rgba(6,3,43,0.38)] mb-0.5">
-              DEMO · Foundation Light
+              Foundation Light
             </p>
             <h2 className="text-[13px] font-bold text-[rgba(6,3,43,0.90)]">
               Workforce Management
             </h2>
             <p className="text-[10.5px] text-[rgba(6,3,43,0.52)] mt-0.5">
-              Gestisci il roster dei lavoratori per ogni azienda. Elenco aziende reale — conteggio lavoratori in fase di migrazione verso dati live.
+              Gestisci il roster dei lavoratori per ogni azienda. Elenco aziende e conteggio lavoratori reali.
             </p>
-          </div>
-          <div className="ml-auto shrink-0">
-            <span className="rounded border border-[rgba(199,111,61,0.30)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#C76F3D]">
-              Foundation Light · migrazione in corso
-            </span>
           </div>
         </div>
 
         {/* Company cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {tenants.map((tenant) => {
-            const summary = workerProvisioningService.getWorkerProvisioningSummary(tenant.tenant_code);
-            const capability = workerSpaceCapabilityService.getCapabilityByCompanyId(tenant.tenant_code);
-            const roster = workerProvisioningService.getWorkersForCompany(tenant.tenant_code);
-            const myKoraEnabled = roster.filter((w) => w.my_kora_enabled).length;
+            const summary = workerProvisioningByTenant[tenant.id] ?? EMPTY_WORKER_PROVISIONING_STATUS;
+            const capability = workerSpaceCapabilityService.getCapabilityFromCounts(
+              summary.my_kora_enabled_count,
+              summary.total_workers,
+            );
+            const myKoraEnabled = summary.my_kora_enabled_count;
 
             return (
               <div
@@ -120,7 +127,7 @@ export function WorkforceQuickAccessPanel({ tenants }: { tenants: WorkforcePanel
         </div>
 
         <p className="text-[9px] font-mono text-[rgba(6,3,43,0.25)] mt-4">
-          B95-C · Workforce Quick Access · synthetic_demo_data: true · no_individual_pib · no_employer_worker_data
+          B95-C · Workforce Quick Access · no_individual_pib · no_employer_worker_data
         </p>
       </div>
     </div>

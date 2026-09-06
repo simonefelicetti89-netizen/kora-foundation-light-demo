@@ -296,7 +296,12 @@ describe('B-TRUTH — this PR touches ONLY foundation, not the B95-B/B95-C clust
 
   it('B-WORKER members remain untouched — still exist; the final scoring group was later retired by CC-00 Final Scoring Canonicalization (2026-09-05), unrelated to this PR', () => {
     for (const file of [
-      'services/worker-provisioning/WorkerProvisioningService.ts',
+      // PRIOR HISTORY: 'services/worker-provisioning/WorkerProvisioningService.ts'
+      // was asserted to exist here (unmodified by this PR, at the time). B-WORKER
+      // WorkerProvisioning Canonicalization (2026-09-06) retired it entirely (its 2
+      // real callers migrated to canonical personal.worker_identity reads) —
+      // removed from this list; this is that later, separately-authorized
+      // retirement, not an unrelated-PR regression of this PR's own scope boundary.
       // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
       // was asserted to exist here (unmodified by this PR, at the time). B-WORKER
       // "One Product / No Demo Runtime" correction (2026-09-06) deleted it entirely

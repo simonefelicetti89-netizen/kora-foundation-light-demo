@@ -77,12 +77,14 @@ describe('I10 — Architecture Registry completeness (B-REG / CC-003)', () => {
       .map((e) => e.name);
 
     // PRIOR HISTORY (accurate as of its own time, preserved verbatim): bound
-    // was >= 37. B-WORKER "One Product / No Demo Runtime" correction
-    // (2026-09-06) deleted services/my-kora-preview/ and
-    // services/worker-achievements/ (zero real callers each, verified fresh
-    // before deletion) — lowered to >= 34.
+    // was >= 37, then >= 34 after B-WORKER "One Product / No Demo Runtime"
+    // correction (2026-09-06) deleted services/my-kora-preview/ and
+    // services/worker-achievements/. B-WORKER AccountProvisioning dead-code
+    // retirement (2026-09-06) deleted services/account/, and B-WORKER
+    // WorkerProvisioning Canonicalization (2026-09-06, this slice) deleted
+    // services/worker-provisioning/ — lowered to >= 32 (33 today).
     it('the live services/* directory listing has the expected count (sanity — catches silent additions/removals)', () => {
-      expect(serviceDirs.length).toBeGreaterThanOrEqual(34); // loose bound: catches drastic drift, not exact churn — lowered from 50 by ReportGeneratorService (2026-09-02), FinancialGovernanceService (2026-09-02), DynamicScoringPreviewService (2026-09-03, B-TRUTH Preview Scoring Retirement), UEFReviewService (2026-09-03, B-TRUTH UEFReview Retirement), IngestionPipelineService (2026-09-03, B-TRUTH Ingestion Pipeline Retirement), IngestionNormalizerService (2026-09-03, B-TRUTH Ingestion Normalizer Retirement), EligibilityGateService (2026-09-03, B-TRUTH Eligibility Gate Retirement), TenantService (2026-09-04, B-TRUTH TenantService Canonical Migration), CompanyDataIntakeService (2026-09-05, B-TRUTH CompanyDataIntakeService Canonical Migration), ReportFactoryService (2026-09-06, B-TRUTH ReportFactoryService Canonical Decision Pack Status Migration), services/advisor-evidence-review/ (2026-09-26, CC-00 Residual /demo/** controlled retirement — its sole caller, app/demo/advisor, was retired), services/scoring-simulator/ + services/demo-data/ (2026-09-05, CC-00 Final Scoring Canonicalization — the last B-TRUTH-owned synthetic scoring dependency), and services/my-kora-preview/ + services/worker-achievements/ (2026-09-06, B-WORKER "One Product / No Demo Runtime" correction) deliberate retirements
+      expect(serviceDirs.length).toBeGreaterThanOrEqual(32); // loose bound: catches drastic drift, not exact churn — lowered from 50 by ReportGeneratorService (2026-09-02), FinancialGovernanceService (2026-09-02), DynamicScoringPreviewService (2026-09-03, B-TRUTH Preview Scoring Retirement), UEFReviewService (2026-09-03, B-TRUTH UEFReview Retirement), IngestionPipelineService (2026-09-03, B-TRUTH Ingestion Pipeline Retirement), IngestionNormalizerService (2026-09-03, B-TRUTH Ingestion Normalizer Retirement), EligibilityGateService (2026-09-03, B-TRUTH Eligibility Gate Retirement), TenantService (2026-09-04, B-TRUTH TenantService Canonical Migration), CompanyDataIntakeService (2026-09-05, B-TRUTH CompanyDataIntakeService Canonical Migration), ReportFactoryService (2026-09-06, B-TRUTH ReportFactoryService Canonical Decision Pack Status Migration), services/advisor-evidence-review/ (2026-09-26, CC-00 Residual /demo/** controlled retirement — its sole caller, app/demo/advisor, was retired), services/scoring-simulator/ + services/demo-data/ (2026-09-05, CC-00 Final Scoring Canonicalization — the last B-TRUTH-owned synthetic scoring dependency), services/my-kora-preview/ + services/worker-achievements/ (2026-09-06, B-WORKER "One Product / No Demo Runtime" correction), services/account/ (2026-09-06, B-WORKER AccountProvisioning dead-code retirement), and services/worker-provisioning/ (2026-09-06, B-WORKER WorkerProvisioning Canonicalization) deliberate retirements
     });
 
     for (const dir of serviceDirs) {

@@ -36,10 +36,15 @@ function exists(rel: string): boolean {
 // than silently assumed.)
 
 describe('CC-00 Worker/Account audit — synthetic imports unchanged (nothing safely canonicalizable)', () => {
-  it('WorkerProvisioningService.ts still imports data/synthetic/worker-roster.json', () => {
-    expect(read('services/worker-provisioning/WorkerProvisioningService.ts')).toContain(
-      "from '@/data/synthetic/worker-roster.json'",
-    );
+  // PRIOR HISTORY (accurate as of this audit, preserved verbatim): asserted
+  // WorkerProvisioningService.ts still imported data/synthetic/worker-roster.json.
+  // B-WORKER WorkerProvisioning Canonicalization (2026-09-06) — a later,
+  // separately-authorized slice — proved its 2 real methods reducible to 3
+  // canonical counts (personal.worker_identity), deleted the service and its
+  // seed fixture entirely; no schema change was needed.
+  it('WorkerProvisioningService.ts no longer exists (retired since this audit)', () => {
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
+    expect(exists('data/synthetic/worker-roster.json')).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of this audit, preserved verbatim):
@@ -83,7 +88,7 @@ describe('CC-00 Worker/Account audit — synthetic imports unchanged (nothing sa
   // files this audit examined were touched by that slice.
   it('allowlist header reflects the current total, 1 files / 1 import statements (historical note: was 8/13 at the time this audit ran)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 1 files / 1 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 0 files / 0 import statements');
   });
 });
 
@@ -100,9 +105,11 @@ describe('CC-00 Worker/Account audit — no demo role reintroduced', () => {
     expect(koraRolesBlock).not.toContain('DEMO_VIEWER');
   });
 
-  it('none of the 2 remaining in-scope services define or reference a new demo/preview role string', () => {
+  it('the 1 remaining in-scope service defines or references no new demo/preview role string', () => {
     for (const file of [
-      'services/worker-provisioning/WorkerProvisioningService.ts',
+      // PRIOR HISTORY: 'services/worker-provisioning/WorkerProvisioningService.ts'
+      // was checked here. B-WORKER WorkerProvisioning Canonicalization
+      // (2026-09-06) deleted it entirely — removed from this list.
       // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
       // was checked here. B-WORKER "One Product / No Demo Runtime" correction
       // (2026-09-06) deleted it entirely — removed from this list.
@@ -120,9 +127,11 @@ describe('CC-00 Worker/Account audit — no demo role reintroduced', () => {
 // ── 3. No tenant_kind product branch ──────────────────────────────────────────
 
 describe('CC-00 Worker/Account audit — no tenant_kind branch introduced', () => {
-  it('none of the 2 remaining in-scope services reference tenant_kind, KoraTest, or Bosco Verde', () => {
+  it('the 1 remaining in-scope service references no tenant_kind, KoraTest, or Bosco Verde', () => {
     for (const file of [
-      'services/worker-provisioning/WorkerProvisioningService.ts',
+      // PRIOR HISTORY: 'services/worker-provisioning/WorkerProvisioningService.ts'
+      // was checked here. B-WORKER WorkerProvisioning Canonicalization
+      // (2026-09-06) deleted it entirely — removed from this list.
       // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
       // was checked here. B-WORKER "One Product / No Demo Runtime" correction
       // (2026-09-06) deleted it entirely — removed from this list.
@@ -193,7 +202,13 @@ describe('CC-00 Worker/Account audit — B-WORKER not started', () => {
     // The audit touched only lib/architecture/registry.ts, docs/ARCHITECTURE_REGISTRY.md,
     // and this test file — no app/worker/**, app/my-kora/**, or services/worker-*/** file exists
     // that did not already exist before this slice.
-    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(true);
+    //
+    // PRIOR HISTORY: asserted WorkerProvisioningService.ts still existed (true)
+    // at this audit's own time. B-WORKER WorkerProvisioning Canonicalization
+    // (2026-09-06, a later, separately-authorized retirement, not new scope)
+    // deleted it — its 2 real callers were migrated to a canonical view
+    // builder over personal.worker_identity.
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
     // PRIOR HISTORY: WorkerAchievementService.ts existed at this audit's own
     // time. B-WORKER "One Product / No Demo Runtime" correction (2026-09-06)
     // deleted it (a later, separately-authorized retirement, not new scope).
@@ -228,9 +243,11 @@ describe('CC-00 Worker/Account audit — worker achievement model not invented',
 // ── 8. No downstream-output seeding ───────────────────────────────────────────
 
 describe('CC-00 Worker/Account audit — no downstream output seeding introduced', () => {
-  it('none of the 2 remaining in-scope services import from analytics.* result tables or write scoring/decision-pack output', () => {
+  it('the 1 remaining in-scope service imports nothing from analytics.* result tables and writes no scoring/decision-pack output', () => {
     for (const file of [
-      'services/worker-provisioning/WorkerProvisioningService.ts',
+      // PRIOR HISTORY: 'services/worker-provisioning/WorkerProvisioningService.ts'
+      // was checked here. B-WORKER WorkerProvisioning Canonicalization
+      // (2026-09-06) deleted it entirely — removed from this list.
       // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
       // was checked here. B-WORKER "One Product / No Demo Runtime" correction
       // (2026-09-06) deleted it entirely — removed from this list.
@@ -330,21 +347,25 @@ describe('CC-00 Worker/Account audit — Deferred Worker Capability Register', (
     expect(exists('services/worker-achievement-v2')).toBe(false);
   });
 
-  it('Worker roster live-data migration (department/site/my_kora_enabled) — deferred to B-WORKER, requires new async data-fetching architecture', () => {
-    // Source concept: WorkerProvisioningService (data/synthetic/worker-roster.json).
-    // Why potentially valuable: real-time worker roster/adoption metrics for
-    //   admin (WorkforceQuickAccessPanel) and company (WorkerAdoptionPanel) surfaces.
-    // Why not canonical today: aggregate counts (total/invited/active/pending/
-    //   disabled) DO have a real source (personal.worker_identity,
-    //   analytics.fn_company_worker_status()), but per-worker fields (department,
-    //   site, my_kora_enabled, pib_private_enabled) have no canonical column, and
-    //   the consuming components are 'use client', requiring a new async/server
-    //   data-fetching path to wire in real data.
-    // Required evidence/model: a canonical my_kora_enabled-equivalent flag (or
-    //   product decision that it doesn't need one), plus a batched
-    //   server-side aggregate-fetch API for the admin/company panels.
-    // Track: B-WORKER / REVIEW_REQUIRED (architecture change needs explicit authorization).
-    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(true);
+  // PRIOR HISTORY (accurate as of this audit, preserved verbatim): recorded
+  // "Worker roster live-data migration (department/site/my_kora_enabled)" as
+  // DEFERRED to B-WORKER, requiring a new async/server data-fetching
+  // architecture and an unresolved my_kora_enabled-equivalent flag decision.
+  // B-WORKER WorkerProvisioning Canonicalization (2026-09-06) resolved this:
+  // aggregate counts (total_workers, my_kora_enabled_count,
+  // active_worker_accounts) are now read server-side from
+  // personal.worker_identity via lib/live/worker-provisioning-status-view.ts
+  // and passed as props into the (now Server Component-fed) admin/company
+  // panels — no new async client architecture was needed. department/site/
+  // pib_private_enabled were resolved WITHOUT a schema change: department/
+  // site belong to the unrelated, already-canonical roster-ingestion domain
+  // (never read by the 2 real WorkerProvisioningService callers);
+  // my_kora_enabled is derived from status !== 'disabled' (no separate access
+  // truth); pib_private_enabled was never a real toggle — PIB privacy is
+  // absolute via RLS (personal.worker_pib has no company policy).
+  it('Worker roster live-data migration — resolved by canonicalization, no schema change or new async architecture needed', () => {
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
+    expect(exists('lib/live/worker-provisioning-status-view.ts')).toBe(true);
   });
 
   // PRIOR HISTORY (accurate as of this audit, preserved verbatim): recorded

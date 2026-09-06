@@ -93,18 +93,18 @@ describe('CC-022 — B-WORKER residuals untouched by this closure', () => {
   // correction (2026-09-06) retired WorkerAchievementService.ts (zero real
   // callers) — 2 files remained. B-WORKER AccountProvisioning dead-code
   // retirement (2026-09-06, the next slice) retired AccountProvisioningService.ts
-  // too (zero real callers of any of its 18 methods) — 1 file remains,
-  // still owner: B_WORKER.
-  it('exactly the 1 known B-WORKER file remains, same owner (WorkerAchievementService and AccountProvisioningService both retired since)', () => {
+  // too (zero real callers of any of its 18 methods) — 1 file remained. This
+  // CC-022 closure itself did not touch WorkerProvisioningService — but
+  // B-WORKER WorkerProvisioning Canonicalization (2026-09-06, a later,
+  // separate, explicitly-authorized B-WORKER implementation slice) retired
+  // it too — 0 files remain.
+  it('the B-WORKER-owned residual set has since reached zero (a later, separately-authorized B-WORKER slice, not this CC-022 closure)', () => {
     const files = BWORKER_OWNED_SYNTHETIC_IMPORTS.map((e) => e.file).sort();
-    expect(files).toEqual([
-      'services/worker-provisioning/WorkerProvisioningService.ts',
-    ].sort());
+    expect(files).toEqual([]);
   });
 
-  it('WorkerProvisioningService.ts is byte-unchanged in its synthetic dependency; WorkerAchievementService.ts no longer exists', () => {
-    const roster = read('services/worker-provisioning/WorkerProvisioningService.ts');
-    expect(roster).toMatch(/from ['"][^'"]*\/data\/synthetic\/worker-roster\.json['"]/);
+  it('WorkerProvisioningService.ts no longer exists (retired by a later B-WORKER slice); WorkerAchievementService.ts no longer exists either', () => {
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 
@@ -272,12 +272,16 @@ describe('CC-022 — B-WORKER not started, CC-023 not started, CC-00 remains OPE
   // slice) retired AccountProvisioningService.ts too — both zero real
   // callers, no replacement domain invented — genuine, later,
   // separately-authorized closures, not undisclosed B-WORKER product work.
+  // PRIOR HISTORY (accurate as of CC-022, preserved verbatim): asserted
+  // WorkerProvisioningService.ts still existed, unchanged, still synthetic —
+  // not migrated by this closure. B-WORKER WorkerProvisioning
+  // Canonicalization (2026-09-06, a later, separate, explicitly-authorized
+  // B-WORKER implementation slice — not this CC-022 closure) retired it: its
+  // 2 real methods reduced to canonical counts over personal.worker_identity,
+  // no schema change needed. This closure's own scope remains untouched by
+  // that later slice's work.
   it('no runtime code implements B-WORKER product decisions or adversarial (CC-023) tooling', () => {
-    for (const file of [
-      'services/worker-provisioning/WorkerProvisioningService.ts',
-    ]) {
-      expect(exists(file)).toBe(true); // unchanged, still synthetic — not migrated
-    }
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
     expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });

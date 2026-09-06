@@ -104,7 +104,13 @@ describe('I9 — synthetic import allowlist, measurable and growth-blocked (B-IN
     // ("CC-002 deve poter dire: CURRENT_SYNTHETIC_RUNTIME_IMPORTS = N").
     // eslint-disable-next-line no-console
     console.log(`CURRENT_SYNTHETIC_RUNTIME_IMPORTS = ${fileCount} files / ${statementCount} import statements`);
-    expect(fileCount).toBeGreaterThan(0); // sanity: demo path still exists pre-B-TRUTH
+    // PRIOR HISTORY (accurate as of CC-002, preserved verbatim): "sanity:
+    // demo path still exists pre-B-TRUTH" — asserted fileCount > 0. B-WORKER
+    // WorkerProvisioning Canonicalization (2026-09-06) retired the final
+    // synthetic runtime import (WorkerProvisioningService.ts) — I9 = 0 is
+    // now the correct, achieved state, not a sanity-check failure. See
+    // tests/unit/bworker-workerprovisioning-canonicalization.test.ts.
+    expect(fileCount).toBe(0);
     expect(fileCount).toBe(SYNTHETIC_IMPORT_ALLOWLIST.length);
   });
 

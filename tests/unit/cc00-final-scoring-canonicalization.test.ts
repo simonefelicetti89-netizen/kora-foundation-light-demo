@@ -102,18 +102,14 @@ describe('CC-00 Final Scoring Canonicalization — B-TRUTH I9 is zero', () => {
 
   // PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,
   // preserved verbatim): "global allowlist is 3 files / 3 imports, all
-  // owner: B_WORKER." B-WORKER "One Product / No Demo Runtime" correction
-  // (2026-09-06) deleted WorkerAchievementService.ts (zero real callers) —
-  // 2 files remained. B-WORKER AccountProvisioning dead-code retirement
-  // (2026-09-06, the next slice) deleted AccountProvisioningService.ts too
-  // (zero real callers of any of its 18 methods) — 1 file remains, still
-  // owner: B_WORKER, a separately-authorized later retirement, not a
-  // regression of this PR's own B-TRUTH-scoped closure.
-  it('global allowlist is 1 file / 1 import, owner: B_WORKER (WorkerAchievementService and AccountProvisioningService both retired since)', () => {
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(1);
-    for (const entry of SYNTHETIC_IMPORT_ALLOWLIST) {
-      expect(entry.owner).toBe('B_WORKER');
-    }
+  // owner: B_WORKER." Three later, separate, bounded B-WORKER slices each
+  // retired one remaining B_WORKER-owned entry in turn (WorkerAchievementService,
+  // then AccountProvisioningService, then WorkerProvisioningService — the
+  // final one, via B-WORKER WorkerProvisioning Canonicalization, 2026-09-06)
+  // — the global allowlist is now empty. This is the achieved I9 = 0 state,
+  // not a regression of this PR's own B-TRUTH-scoped closure.
+  it('global allowlist is empty — I9 = 0 achieved (all 3 B_WORKER-owned entries retired since)', () => {
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(0);
   });
 
   it('the 7 retired synthetic fixtures no longer exist', () => {
@@ -308,21 +304,18 @@ describe('CC-00 Final Scoring Canonicalization — canonical test tenants unaffe
 describe('CC-00 Final Scoring Canonicalization — B-WORKER untouched, not started', () => {
   // PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,
   // preserved verbatim): "same 3 files, same owner" including
-  // WorkerAchievementService.ts. B-WORKER "One Product / No Demo Runtime"
-  // correction (2026-09-06) deleted it (zero real callers) — 2 files
-  // remained. B-WORKER AccountProvisioning dead-code retirement (2026-09-06,
-  // the next slice) deleted AccountProvisioningService.ts too — 1 file
-  // remains.
-  it('B-WORKER-owned synthetic residuals are 1 file, same owner (WorkerAchievementService and AccountProvisioningService both retired since)', () => {
+  // WorkerAchievementService.ts. Three later, separate, bounded B-WORKER
+  // slices each retired one remaining entry in turn — the last being
+  // WorkerProvisioningService.ts (B-WORKER WorkerProvisioning
+  // Canonicalization, 2026-09-06) — BWORKER_OWNED_SYNTHETIC_IMPORTS is now
+  // empty.
+  it('B-WORKER-owned synthetic residuals are now empty — all 3 retired since', () => {
     const files = BWORKER_OWNED_SYNTHETIC_IMPORTS.map((e) => e.file).sort();
-    expect(files).toEqual([
-      'services/worker-provisioning/WorkerProvisioningService.ts',
-    ].sort());
+    expect(files).toEqual([]);
   });
 
-  it('WorkerProvisioningService.ts source is byte-unchanged (still 100% synthetic); WorkerAchievementService.ts no longer exists', () => {
-    const roster = read('services/worker-provisioning/WorkerProvisioningService.ts');
-    expect(roster).toMatch(/from ['"][^'"]*\/data\/synthetic\/worker-roster\.json['"]/);
+  it('WorkerProvisioningService.ts and WorkerAchievementService.ts no longer exist', () => {
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 

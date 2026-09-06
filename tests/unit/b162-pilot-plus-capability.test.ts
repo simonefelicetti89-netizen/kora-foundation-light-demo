@@ -8,7 +8,7 @@
 //   4. Service Pilot+ — production_ready=true, roster vuoto e roster attivo
 //   5. Route promote-to-pilot — auth, idempotenza, audit, no service client
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
@@ -131,14 +131,23 @@ describe('B162 Tipo KoraTenant — production_ready è boolean, altre restano li
 
 // ── 3 & 4. Service — Foundation Light invariato + Pilot+ attivato ─────────────
 
-// Mock del WorkerProvisioningService per isolare il service dai dati sintetici.
-const mockGetWorkers = vi.fn();
-
-vi.mock('@/services/worker-provisioning/WorkerProvisioningService', () => ({
-  workerProvisioningService: {
-    getWorkersForCompany: (companyId: string) => mockGetWorkers(companyId),
-  },
-}));
+// PRIOR HISTORY (accurate as of B162, preserved as a record, not verbatim):
+// this section mocked services/worker-provisioning/WorkerProvisioningService.ts's
+// getWorkersForCompany() (via vi.mock) to isolate getCapability() from
+// synthetic data, feeding it worker fixtures as an array the service fetched
+// internally by companyId.
+//
+// B-WORKER WorkerProvisioning Canonicalization (2026-09-06):
+// WorkerProvisioningService.ts is deleted — getCapability() now takes
+// pre-computed myKoraEnabledCount/totalWorkers directly (the caller's
+// responsibility, per lib/live/worker-provisioning-status-view.ts), so
+// there is no service left to mock. The counts() helper below derives the
+// exact same two numbers from the same WORKER_ENABLED/WORKER_DISABLED
+// fixtures the old mock returned — same test semantics, no synthetic
+// dependency.
+function counts(workers: Array<{ my_kora_enabled: boolean }>): [number, number] {
+  return [workers.filter((w) => w.my_kora_enabled).length, workers.length];
+}
 
 import { workerSpaceCapabilityService } from '@/services/worker-space/WorkerSpaceCapabilityService';
 import type { KoraTenant } from '@/lib/types';
@@ -172,11 +181,8 @@ const WORKER_ENABLED  = { my_kora_enabled: true };
 const WORKER_DISABLED = { my_kora_enabled: false };
 
 describe('B162 Service Foundation Light — production_ready=false invariato', () => {
-  beforeEach(() => { mockGetWorkers.mockReset(); });
-
   it('production_ready=false, roster con worker abilitato → ENABLED, mode=preview, pibSupported=false', () => {
-    mockGetWorkers.mockReturnValue([WORKER_ENABLED, WORKER_ENABLED]);
-    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: false }));
+    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: false }), ...counts([WORKER_ENABLED, WORKER_ENABLED]));
 
     expect(cap.status).toBe('ENABLED');
     expect(cap.mode).toBe('preview');
@@ -185,8 +191,7 @@ describe('B162 Service Foundation Light — production_ready=false invariato', (
   });
 
   it('production_ready=false, roster vuoto → NOT_ENABLED, mode=preview, pibSupported=false', () => {
-    mockGetWorkers.mockReturnValue([]);
-    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: false }));
+    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: false }), ...counts([]));
 
     expect(cap.status).toBe('NOT_ENABLED');
     expect(cap.mode).toBe('preview');
@@ -195,25 +200,20 @@ describe('B162 Service Foundation Light — production_ready=false invariato', (
   });
 
   it('production_ready=false con roster → note contiene "PREVIEW mode"', () => {
-    mockGetWorkers.mockReturnValue([WORKER_ENABLED]);
-    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: false }));
+    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: false }), ...counts([WORKER_ENABLED]));
     expect(cap.note).toContain('PREVIEW');
   });
 
   it('collectiveSupported e dynamicCvSupported restano true in preview', () => {
-    mockGetWorkers.mockReturnValue([WORKER_ENABLED]);
-    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: false }));
+    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: false }), ...counts([WORKER_ENABLED]));
     expect(cap.collectiveSupported).toBe(true);
     expect(cap.dynamicCvSupported).toBe(true);
   });
 });
 
 describe('B162 Service Pilot+ — production_ready=true', () => {
-  beforeEach(() => { mockGetWorkers.mockReset(); });
-
   it('production_ready=true, roster vuoto → status=PILOT_READY, pibSupported=false', () => {
-    mockGetWorkers.mockReturnValue([]);
-    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }));
+    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }), ...counts([]));
 
     expect(cap.status).toBe('PILOT_READY');
     expect(cap.mode).toBe('pilot_ready');
@@ -222,46 +222,40 @@ describe('B162 Service Pilot+ — production_ready=true', () => {
   });
 
   it('production_ready=true, roster con worker abilitato → pibSupported=true', () => {
-    mockGetWorkers.mockReturnValue([WORKER_ENABLED, WORKER_DISABLED]);
-    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }));
+    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }), ...counts([WORKER_ENABLED, WORKER_DISABLED]));
 
     expect(cap.status).toBe('PILOT_READY');
     expect(cap.pibSupported).toBe(true);
   });
 
   it('production_ready=true, roster solo worker non abilitati → pibSupported=false', () => {
-    mockGetWorkers.mockReturnValue([WORKER_DISABLED, WORKER_DISABLED]);
-    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }));
+    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }), ...counts([WORKER_DISABLED, WORKER_DISABLED]));
 
     expect(cap.status).toBe('PILOT_READY');
     expect(cap.pibSupported).toBe(false);
   });
 
   it('production_ready=true → collectiveSupported e dynamicCvSupported true', () => {
-    mockGetWorkers.mockReturnValue([WORKER_ENABLED]);
-    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }));
+    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }), ...counts([WORKER_ENABLED]));
     expect(cap.collectiveSupported).toBe(true);
     expect(cap.dynamicCvSupported).toBe(true);
     expect(cap.workerCountSupported).toBe(true);
   });
 
   it('note Pilot+ contiene "Pilot+ attivo" e "PIB individuale disponibile" quando pibSupported=true', () => {
-    mockGetWorkers.mockReturnValue([WORKER_ENABLED]);
-    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }));
+    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }), ...counts([WORKER_ENABLED]));
     expect(cap.note).toContain('Pilot+ attivo');
     expect(cap.note).toContain('PIB individuale disponibile');
   });
 
   it('note Pilot+ contiene avviso "non disponibile" quando roster vuoto', () => {
-    mockGetWorkers.mockReturnValue([]);
-    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }));
+    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }), ...counts([]));
     expect(cap.note).toContain('non disponibile');
   });
 
   it('pibSupported conta myKoraEnabled, non il totale del roster', () => {
     // 3 worker in totale, 0 abilitati → pibSupported=false
-    mockGetWorkers.mockReturnValue([WORKER_DISABLED, WORKER_DISABLED, WORKER_DISABLED]);
-    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }));
+    const cap = workerSpaceCapabilityService.getCapability(makeTenant({ production_ready: true }), ...counts([WORKER_DISABLED, WORKER_DISABLED, WORKER_DISABLED]));
     expect(cap.pibSupported).toBe(false);
   });
 });
