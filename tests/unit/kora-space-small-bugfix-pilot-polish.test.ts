@@ -102,7 +102,7 @@ describe('P1 fix — worker can cancel pending/approved bookings', () => {
   let bookingsSrc: string;
 
   beforeAll(() => {
-    bookingsSrc = readFile('app/my-kora/bookings/page.tsx');
+    bookingsSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
   });
 
   test('11. My KORA bookings page renders "Annulla richiesta" for pending bookings', () => {
@@ -232,14 +232,20 @@ describe('Regression — prior sprint artifacts preserved', () => {
     expect(fileExists('tests/unit/kora-space-worker-trace.test.ts')).toBe(true);
   });
 
-  test('34. inline booking on /my-kora/kora-space still uses JSON fetch (not broken)', () => {
-    const spaceSrc = readFile('app/my-kora/kora-space/page.tsx');
-    expect(spaceSrc).toContain("'Content-Type': 'application/json'");
-    expect(spaceSrc).toContain('/api/worker/commons/bookings');
+  // PRIOR HISTORY (accurate as of the original sprint, preserved verbatim):
+  // checked kora-space's own removed inline booking fetch. B-WORKER-2/3
+  // moved this to the canonical WorkerBookingButton.tsx (the implementation
+  // /worker/commons actually uses; kora-space's copy was a separate,
+  // independent inline implementation, retired once /worker/commons reached
+  // full parity).
+  test('34. Canonical booking action (WorkerBookingButton) still uses JSON fetch (not broken)', () => {
+    const buttonSrc = readFile('components/commons/WorkerBookingButton.tsx');
+    expect(buttonSrc).toContain("'Content-Type': 'application/json'");
+    expect(buttonSrc).toContain('/api/worker/commons/bookings');
   });
 
   test('35. Canonical Italian status labels preserved in bookings page', () => {
-    const bookingsSrc = readFile('app/my-kora/bookings/page.tsx');
+    const bookingsSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
     expect(bookingsSrc).toContain('Richiesta inviata');
     expect(bookingsSrc).toContain('Partecipazione confermata');
     expect(bookingsSrc).toContain('Richiesta non approvata');
@@ -260,7 +266,7 @@ describe('Regression — prior sprint artifacts preserved', () => {
   });
 
   test('38. Attended trace notice in bookings page preserved', () => {
-    const bookingsSrc = readFile('app/my-kora/bookings/page.tsx');
+    const bookingsSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
     expect(bookingsSrc).toContain('booking-attended-trace-notice');
     expect(bookingsSrc).toContain('Questa partecipazione è una traccia privata del tuo percorso My KORA');
   });

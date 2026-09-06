@@ -63,11 +63,16 @@ describe('Worker KORA Space — mode detection and privacy', () => {
     bookingsSrc = readFile('app/my-kora/bookings/page.tsx');
   });
 
-  test('6. My KORA kora-space page does not blindly show synthetic data to authenticated workers', () => {
-    // must have four-state detection — checking state renders null
+  // PRIOR HISTORY (accurate as of the original four-state build, preserved
+  // verbatim): "must have four-state detection — checking state renders
+  // null" — asserted a setMode('empty') call existed. B-WORKER-3 (2026-09-06)
+  // proved /worker/commons full parity and replaced kora-space's live/empty
+  // distinction with a single redirect for any confirmed real session — an
+  // authenticated worker now never sees this page's own content at all
+  // (real or synthetic), regardless of whether they have data yet.
+  test('6. My KORA kora-space page does not show synthetic data to authenticated workers — it redirects instead', () => {
     expect(spaceSrc).toContain("'checking'");
-    expect(spaceSrc).toContain('checking') ;
-    expect(spaceSrc).toMatch(/setMode\(.*empty|setMode\(.*'empty'/);
+    expect(spaceSrc).toContain("router.replace('/worker/commons')");
   });
 
   test('7. Demo/preview content is clearly labelled', () => {
@@ -80,9 +85,15 @@ describe('Worker KORA Space — mode detection and privacy', () => {
     expect(spaceSrc).toContain('Il datore di lavoro non vede il tuo percorso individuale');
   });
 
+  // PRIOR HISTORY (accurate as of the original four-state build, preserved
+  // verbatim): asserted "appariranno qui" copy (the real-session, no-data-yet
+  // wording) appeared alongside the empty-state testid. B-WORKER-3 retired
+  // the real-session live/empty distinction here too (redirects to
+  // /worker/bookings instead) — this card now renders only for the demo
+  // path, with demo-appropriate copy.
   test('9. Bookings page has empty state (data-testid="bookings-empty-state")', () => {
     expect(bookingsSrc).toContain('bookings-empty-state');
-    expect(bookingsSrc).toContain('appariranno qui');
+    expect(bookingsSrc).toContain("router.replace('/worker/bookings')");
   });
 
   test('10. Bookings employer privacy notice exists', () => {

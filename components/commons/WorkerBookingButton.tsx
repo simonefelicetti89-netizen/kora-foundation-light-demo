@@ -16,14 +16,36 @@ import Link from 'next/link';
 
 interface Props {
   postId: string;
+  // B-WORKER-3: the worker's existing booking status for this initiative, if
+  // any (fetched server-side by /worker/commons via RLS-scoped read).
+  // Reuses the existing 'booked'/'duplicate' states — no new booking states.
+  initialStatus?: string;
 }
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
 type BookingState = 'idle' | 'loading' | 'booked' | 'duplicate' | 'error';
 
-export function WorkerBookingButton({ postId }: Props) {
-  const [state, setState]   = useState<BookingState>('idle');
+// Any existing row means a fresh POST would violate the UNIQUE(post_id,
+// worker_identity_id) constraint regardless of status — active statuses map
+// to 'booked' (accurate: a request is in flight or confirmed), everything
+// else (rejected/cancelled) maps to 'duplicate' (accurate: re-requesting the
+// same initiative isn't possible without admin intervention — same copy the
+// bookings list already uses for this case).
+function initialStateFor(status: string | undefined): BookingState {
+  if (!status) return 'idle';
+  if (status === 'pending' || status === 'approved' || status === 'attended') return 'booked';
+  return 'duplicate';
+}
+
+export function WorkerBookingButton({ postId, initialStatus }: Props) {
+  const [state, setState]   = useState<BookingState>(() => initialStateFor(initialStatus));
+  // Tracks the real status label only while it reflects persisted truth
+  // (initial load) — a fresh POST always becomes a new 'pending' request,
+  // never 'attended', so this is cleared once the worker books interactively.
+  const [bookedLabel, setBookedLabel] = useState<string>(
+    () => initialStatus === 'attended' ? 'Partecipazione completata' : 'Richiesta inviata',
+  );
   const [errorMsg, setErrorMsg] = useState('');
 
   async function handleBooking() {
@@ -37,6 +59,7 @@ export function WorkerBookingButton({ postId }: Props) {
       });
       const data = await res.json() as { ok: boolean; error?: string };
       if (data.ok) {
+        setBookedLabel('Richiesta inviata');
         setState('booked');
       } else if (res.status === 409) {
         setState('duplicate');
@@ -67,7 +90,7 @@ export function WorkerBookingButton({ postId }: Props) {
             fontFamily:   FONT,
           }}
         >
-          Richiesta inviata
+          {bookedLabel}
         </span>
         <p style={{ fontSize: 9, color: 'rgba(6,3,43,0.40)', margin: '4px 0 0', fontFamily: FONT, lineHeight: 1.4 }}>
           La tua richiesta è in attesa di conferma KORA.
@@ -75,7 +98,7 @@ export function WorkerBookingButton({ postId }: Props) {
           Solo segnali aggregati e privacy-safe possono informare gli output KORA — mai la tua attività individuale.
         </p>
         <Link
-          href="/my-kora/bookings"
+          href="/worker/bookings"
           style={{ fontSize: 9, color: '#2F7D55', fontWeight: 700, textDecoration: 'none', display: 'inline-block', marginTop: 4 }}
         >
           Vedi le tue prenotazioni →

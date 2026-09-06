@@ -85,27 +85,31 @@ describe('COMPONENT-TEST-FOUNDATION-01 — KORA Space naming guard', () => {
 });
 
 // ── 2. Sidebar bookings live guard ────────────────────────────────────────────
+// PRIOR HISTORY (accurate before B-WORKER-3, preserved verbatim): the
+// Sidebar's "Prenotazioni" entry targeted /my-kora/bookings. B-WORKER-3
+// (2026-09-06) built the canonical /worker/bookings page and repointed it —
+// same real live feature, canonical destination.
 
-describe('COMPONENT-TEST-FOUNDATION-01 — Sidebar /my-kora/bookings live guard', () => {
-  it('/my-kora/bookings is not marked comingSoon (it is a real live feature)', () => {
+describe('COMPONENT-TEST-FOUNDATION-01 — Sidebar /worker/bookings live guard', () => {
+  it('/worker/bookings is not marked comingSoon (it is a real live feature)', () => {
     const groups = buildNavGroups('WORKER');
     const allItems = groups.flatMap((g) => g.items);
-    const bookings = allItems.find((i) => i.href === '/my-kora/bookings');
+    const bookings = allItems.find((i) => i.href === '/worker/bookings');
     expect(bookings).toBeDefined();
     expect(bookings?.comingSoon).toBeUndefined();
   });
 
-  it('/my-kora/bookings label remains "Prenotazioni"', () => {
+  it('/worker/bookings label remains "Prenotazioni"', () => {
     const groups = buildNavGroups('WORKER');
     const allItems = groups.flatMap((g) => g.items);
-    const bookings = allItems.find((i) => i.href === '/my-kora/bookings');
+    const bookings = allItems.find((i) => i.href === '/worker/bookings');
     expect(bookings?.label).toBe('Prenotazioni');
   });
 
-  it('/my-kora/bookings description does not say "anteprima" or "Non ancora disponibile"', () => {
+  it('/worker/bookings description does not say "anteprima" or "Non ancora disponibile"', () => {
     const groups = buildNavGroups('WORKER');
     const allItems = groups.flatMap((g) => g.items);
-    const bookings = allItems.find((i) => i.href === '/my-kora/bookings');
+    const bookings = allItems.find((i) => i.href === '/worker/bookings');
     expect(bookings?.description ?? '').not.toMatch(/anteprima/i);
     expect(bookings?.description ?? '').not.toContain('Non ancora disponibile');
   });
@@ -122,11 +126,15 @@ describe('COMPONENT-TEST-FOUNDATION-01 — Sidebar /my-kora/bookings live guard'
 
 // ── 3. Worker booking success next-step guard ─────────────────────────────────
 
+// PRIOR HISTORY (accurate before B-WORKER-3, preserved verbatim): the
+// success state's next-step link targeted /my-kora/bookings. B-WORKER-3
+// (2026-09-06) repointed it to the canonical /worker/bookings page.
 describe('COMPONENT-TEST-FOUNDATION-01 — WorkerBookingButton success next-step guard', () => {
   const buttonSrc = readSrc('components/commons/WorkerBookingButton.tsx');
 
-  it('success state links to /my-kora/bookings', () => {
-    expect(buttonSrc).toContain('/my-kora/bookings');
+  it('success state links to canonical /worker/bookings', () => {
+    expect(buttonSrc).toContain('/worker/bookings');
+    expect(buttonSrc).not.toContain('/my-kora/bookings');
   });
 
   it('success state includes "Vedi le tue prenotazioni" next-step copy', () => {
@@ -136,7 +144,7 @@ describe('COMPONENT-TEST-FOUNDATION-01 — WorkerBookingButton success next-step
   it('the next-step link appears inside the booked (success) branch specifically', () => {
     const bookedBranchStart = buttonSrc.indexOf("if (state === 'booked')");
     const duplicateBranchStart = buttonSrc.indexOf("if (state === 'duplicate')");
-    const linkIndex = buttonSrc.indexOf('/my-kora/bookings');
+    const linkIndex = buttonSrc.indexOf('/worker/bookings');
     expect(bookedBranchStart).toBeGreaterThan(-1);
     expect(duplicateBranchStart).toBeGreaterThan(bookedBranchStart);
     expect(linkIndex).toBeGreaterThan(bookedBranchStart);
@@ -191,16 +199,23 @@ describe('COMPONENT-TEST-FOUNDATION-01 — BoundaryBadge LIVE state guard', () =
     expect(src).toContain('mode="LIVE"');
   });
 
-  it('app/my-kora/kora-space/page.tsx renders a LIVE boundary badge in its live branch', () => {
-    const src = readSrc('app/my-kora/kora-space/page.tsx');
+  // PRIOR HISTORY (accurate before B-WORKER-3, preserved verbatim): checked
+  // these two legacy pages' own removed live branches for a LIVE
+  // BoundaryBadge. Both retired their live rendering entirely (redirect to
+  // /worker/commons and /worker/bookings instead) — /worker/commons still
+  // renders one (checked above); /worker/bookings's canonical
+  // BookingsClient.tsx renders one too.
+  it('app/worker/bookings/_components/BookingsClient.tsx renders a LIVE boundary badge in its live branch', () => {
+    const src = readSrc('app/worker/bookings/_components/BookingsClient.tsx');
     expect(src).toContain('BoundaryBadge');
     expect(src).toContain('mode="LIVE"');
   });
 
-  it('app/my-kora/bookings/page.tsx renders a LIVE boundary badge in its live branch', () => {
-    const src = readSrc('app/my-kora/bookings/page.tsx');
-    expect(src).toContain('BoundaryBadge');
-    expect(src).toContain('mode="LIVE"');
+  it('legacy /my-kora/kora-space and /my-kora/bookings no longer have a live branch to badge (they redirect instead)', () => {
+    const spaceSrc    = readSrc('app/my-kora/kora-space/page.tsx');
+    const bookingsSrc = readSrc('app/my-kora/bookings/page.tsx');
+    expect(spaceSrc).toContain("router.replace('/worker/commons')");
+    expect(bookingsSrc).toContain("router.replace('/worker/bookings')");
   });
 });
 

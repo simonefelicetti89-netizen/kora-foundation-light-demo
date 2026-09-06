@@ -115,17 +115,25 @@ describe('B-WORKER-1 — scope discipline: /my-kora and its bridges are untouche
   // parity too and repointed both PIB and Dynamic CV; bookings has no
   // canonical /worker replacement yet and remains untouched, per this slice's
   // explicit scope ("Do NOT touch bookings yet").
-  it('/worker/workspace bridge links: bookings still legacy (no canonical replacement yet), PIB and Dynamic CV repointed to canonical /worker', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-1, preserved verbatim): asserted
+  // bookings still targeted /my-kora (no canonical replacement yet) and the
+  // admin pipeline "My KORA Preview" link was unchanged. B-WORKER-3
+  // (2026-09-06) built /worker/bookings and repointed the workspace bridge;
+  // it also built the /admin/preview/worker hub and repointed the pipeline
+  // console link away from /my-kora entirely.
+  it('/worker/workspace bridge links: all three (bookings, PIB, Dynamic CV) now repointed to canonical /worker', () => {
     const workspace = read('app/worker/workspace/page.tsx');
-    expect(workspace).toContain('/my-kora/bookings');
+    expect(workspace).toContain('/worker/bookings');
     expect(workspace).toContain('/worker/personal-impact-balance');
     expect(workspace).toContain('/worker/dynamic-cv');
+    expect(workspace).not.toContain('/my-kora/bookings');
     expect(workspace).not.toContain('/my-kora/personal-impact-balance');
     expect(workspace).not.toContain('/my-kora/dynamic-cv');
   });
 
-  it('the admin pipeline "My KORA Preview (Worker Space)" link is unchanged', () => {
+  it('the admin pipeline "My KORA Preview (Worker Space)" link now points at the canonical admin preview hub', () => {
     const pipeline = read('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
-    expect(pipeline).toContain("href: '/my-kora'");
+    expect(pipeline).toContain("href: '/admin/preview/worker'");
+    expect(pipeline).not.toContain("href: '/my-kora'");
   });
 });
