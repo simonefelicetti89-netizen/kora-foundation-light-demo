@@ -75,16 +75,29 @@ describe('MYKORA-01 — getSessionKoraRole exists and is a coarse, side-effect-f
 });
 
 describe('MYKORA-01 — non-WORKER/non-KORA_ADMIN real sessions are denied server-side (fail closed)', () => {
-  it('layout.tsx admits only WORKER and KORA_ADMIN as real sessions', () => {
-    expect(layoutSrc).toContain("realRole === 'WORKER' || realRole === 'KORA_ADMIN'");
+  // PRIOR HISTORY (accurate as of MYKORA-01, preserved verbatim): "layout.tsx
+  // admits only WORKER and KORA_ADMIN as real sessions" — asserted
+  // `realRole === 'WORKER' || realRole === 'KORA_ADMIN'` was the condition
+  // for an *admission* branch (realUserPermitted). B-WORKER final cleanup
+  // (2026-09-06) retired that admission branch entirely — real WORKER/
+  // KORA_ADMIN sessions are now redirected to their canonical destination
+  // instead of admitted into the demo-state preview.
+  it('layout.tsx redirects real WORKER and KORA_ADMIN sessions, does not admit them', () => {
+    expect(layoutSrc).toContain("realRole === 'WORKER'");
+    expect(layoutSrc).toContain("redirect('/worker/workspace')");
+    expect(layoutSrc).toContain("realRole === 'KORA_ADMIN'");
+    expect(layoutSrc).toContain("redirect('/admin')");
+    expect(layoutSrc).not.toContain('realUserPermitted');
+    expect(layoutSrc).not.toContain("from './_providers/WorkerSessionProvider'");
+    expect(layoutSrc).not.toContain('<WorkerSessionProvider>');
   });
 
   it('layout.tsx has an explicit hard-block branch for any other non-null real role', () => {
-    // realRole !== null (i.e. a real session exists) but not WORKER/KORA_ADMIN → block.
-    const permittedIdx = layoutSrc.indexOf('realUserPermitted');
+    // Both real-session redirects happen before this check (source order).
+    const workerRedirectIdx = layoutSrc.indexOf("redirect('/worker/workspace')");
     const blockIdx = layoutSrc.indexOf('realRole !== null');
-    expect(permittedIdx).toBeGreaterThan(-1);
-    expect(blockIdx).toBeGreaterThan(permittedIdx);
+    expect(workerRedirectIdx).toBeGreaterThan(-1);
+    expect(blockIdx).toBeGreaterThan(workerRedirectIdx);
   });
 
   it('layout.tsx never name-checks COMPANY_ADMIN/PARTNER/DEMO_VIEWER/ADVISOR as admitted', () => {

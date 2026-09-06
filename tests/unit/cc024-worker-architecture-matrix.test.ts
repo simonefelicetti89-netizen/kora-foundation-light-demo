@@ -104,12 +104,18 @@ describe('CC-024 — registry entries point to the matrix document', () => {
 // ── 3. No runtime code was changed by this slice ────────────────────────────
 
 describe('CC-024 — no runtime/auth/service code was touched', () => {
-  it('worker auth files are unchanged in their governing invariants', () => {
+  // PRIOR HISTORY (accurate as of CC-024, preserved verbatim): asserted
+  // app/my-kora/layout.tsx's combined admission condition
+  // `realRole === 'WORKER' || realRole === 'KORA_ADMIN'` was unchanged — true
+  // at analysis time (CC-024 was read-only). B-WORKER final cleanup
+  // (2026-09-06) later retired that admission branch entirely (redirects
+  // instead) — this test file's own scope was "no runtime code touched
+  // during CC-024 itself," not a permanent invariant.
+  it('worker auth files were unchanged during CC-024 itself (governing invariants); my-kora layout admission was retired in the later B-WORKER final cleanup', () => {
     const workerLayout = read('app/worker/layout.tsx');
     expect(workerLayout).toContain('getCurrentWorkerUser');
     const myKoraLayout = read('app/my-kora/layout.tsx');
     expect(myKoraLayout).toContain('getSessionKoraRole');
-    expect(myKoraLayout).toContain("realRole === 'WORKER' || realRole === 'KORA_ADMIN'");
   });
 
   it('the 3 B-WORKER-owned synthetic residuals are untouched', () => {

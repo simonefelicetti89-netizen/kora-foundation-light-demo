@@ -281,10 +281,14 @@ describe('CC-00 DEMO_VIEWER retirement — B-WORKER, My KORA, final scoring unto
   // CC-00 Final Scoring Canonicalization (2026-09-05) removed that call —
   // it only ever fed the now-retired scoringSimulatorService.getCompanyAggregate().
   // AccountProvisioningService.ts itself (this test's actual subject) is untouched.
-  it('AccountProvisioningService.getCurrentDemoUser() (a different, unrelated concept) is untouched', () => {
+  // PRIOR HISTORY (accurate as of CC-00 DEMO_VIEWER retirement, preserved
+  // verbatim): asserted this different, unrelated concept was untouched by
+  // that retirement. It was later found zero-caller and removed by
+  // B-WORKER final cleanup (2026-09-06) — an unrelated, separate cleanup.
+  it('AccountProvisioningService.ts (the file) still exists; getCurrentDemoUser() was removed separately once zero-caller', () => {
     expect(exists('services/account/AccountProvisioningService.ts')).toBe(true);
     const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
+    expect(src).not.toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
   });
 
   // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "final

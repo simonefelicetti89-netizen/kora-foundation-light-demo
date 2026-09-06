@@ -79,9 +79,14 @@ describe('B-TRUTH — all real callers of AccountProvisioningService, before and
     expect(src).not.toMatch(/^\s{2,4}getAccountsForCompany\(/m);
   });
 
-  it('getCurrentDemoUser (My KORA/session role) is untouched, still defined', () => {
+  // PRIOR HISTORY (accurate as of this migration, preserved verbatim):
+  // asserted getCurrentDemoUser() was untouched, still defined — its sole
+  // real caller (app/my-kora/page.tsx) was removed by this very migration,
+  // leaving it zero-caller. B-WORKER final cleanup (2026-09-06) verified
+  // that fresh and removed the now-dead method.
+  it('getCurrentDemoUser (My KORA/session role) was removed once proven zero-caller (B-WORKER final cleanup)', () => {
     const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
+    expect(src).not.toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
   });
 
   it('no runtime file (app/services/lib/components), excluding governance docs and tests, calls accountProvisioningService.getAccountsForCompany', () => {

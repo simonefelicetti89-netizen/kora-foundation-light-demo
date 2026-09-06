@@ -130,13 +130,22 @@ describe('my-kora/layout.tsx — source audit: gate reale è server-side, non di
     expect(myKoraSrc).toContain("realRole === 'KORA_ADMIN'");
   });
 
-  it('il gate reale (realUserPermitted) è valutato server-side, prima di delegare al demo gate', () => {
-    const realUserIdx = myKoraSrc.indexOf('realUserPermitted');
+  // PRIOR HISTORY (accurate as of MYKORA-01, preserved verbatim): "il gate
+  // reale (realUserPermitted) è valutato server-side, prima di delegare al
+  // demo gate" — asserted a realUserPermitted admission branch existed before
+  // <MyKoraDemoGate>. B-WORKER final cleanup (2026-09-06) replaced that
+  // admission with redirects for real WORKER/KORA_ADMIN sessions —
+  // realUserPermitted no longer exists. The ordering guarantee (real-session
+  // decisions resolved before the demo-visitor path) still holds, now via
+  // the redirect calls.
+  it('le redirect di sessione reale sono valutate server-side, prima di delegare al demo gate', () => {
+    const workerRedirectIdx = myKoraSrc.indexOf("redirect('/worker/workspace')");
     const demoGateUsageIdx = myKoraSrc.indexOf('<MyKoraDemoGate>');
-    expect(realUserIdx).toBeGreaterThan(-1);
+    expect(myKoraSrc).not.toContain('realUserPermitted');
+    expect(workerRedirectIdx).toBeGreaterThan(-1);
     expect(demoGateUsageIdx).toBeGreaterThan(-1);
-    expect(realUserIdx).toBeLessThan(demoGateUsageIdx);
-    // demoVisitorPermitted (the demo-only check) now lives in the delegate, not here.
+    expect(workerRedirectIdx).toBeLessThan(demoGateUsageIdx);
+    // demoVisitorPermitted (the demo-only check) still lives only in the delegate.
     expect(demoGateSrc).toContain('demoVisitorPermitted');
   });
 
@@ -150,9 +159,16 @@ describe('my-kora/layout.tsx — source audit: gate reale è server-side, non di
     expect(demoGateSrc).toContain('usa il Role Switcher per passare a WORKER');
   });
 
-  it('COMPANY_ADMIN reale non è ammesso — nessuna path ammette tutti i real roles', () => {
+  // PRIOR HISTORY (accurate as of MYKORA-01, preserved verbatim): asserted
+  // the combined admission condition `realRole === 'WORKER' || realRole ===
+  // 'KORA_ADMIN'` existed as a single admit gate. B-WORKER final cleanup
+  // split this into two independent redirects (WORKER → /worker/workspace,
+  // KORA_ADMIN → /admin) — the combined string no longer appears verbatim,
+  // but the same two role checks are still present, now as redirect triggers.
+  it('COMPANY_ADMIN reale non è ammesso — nessuna path ammette/redirige tutti i real roles', () => {
     expect(myKoraSrc).not.toContain("realRole === 'COMPANY_ADMIN'");
-    expect(myKoraSrc).toContain("realRole === 'WORKER' || realRole === 'KORA_ADMIN'");
+    expect(myKoraSrc).toContain("realRole === 'WORKER'");
+    expect(myKoraSrc).toContain("realRole === 'KORA_ADMIN'");
     // Any other real role (non-null, non-WORKER/KORA_ADMIN) falls into the
     // explicit hard-block branch — fail closed, no path bypasses it.
     expect(myKoraSrc).toContain('realRole !== null');

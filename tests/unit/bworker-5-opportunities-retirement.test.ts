@@ -173,11 +173,13 @@ describe('B-WORKER-5 — MyKoraPreviewService has zero real-session-reachable ca
 
 // ── 6. Boundary discipline: not the final cleanup slice ─────────────────
 
+// PRIOR HISTORY (accurate as of B-WORKER-5, preserved verbatim): asserted
+// the admission branch was intentionally intact — retirement was the next
+// slice's job. B-WORKER final cleanup (2026-09-06) is that slice.
 describe('B-WORKER-5 — explicit boundary: /my-kora runtime not globally retired this slice', () => {
-  it('app/my-kora/layout.tsx still exists with its real-session admission branch intact', () => {
+  it('app/my-kora/layout.tsx real-session admission branch has since been retired (B-WORKER final cleanup)', () => {
     const layout = read('app/my-kora/layout.tsx');
-    expect(layout).toContain('realUserPermitted');
-    expect(layout).toContain('WorkerSessionProvider');
+    expect(layout).not.toContain('realUserPermitted');
   });
 
   it('WorkerProvisioningService and WorkerAchievementService (B-WORKER I9 residuals) are untouched', () => {

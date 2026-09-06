@@ -141,7 +141,10 @@ export async function PATCH(
       .select('id, tenant_id, status, title, category, published_at, reviewed_at, opening_grade, location_address, location_lat, location_lng')
       .single();
 
-    if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    if (error) {
+      console.error('[commons/posts PATCH (admin) update error]:', error.message);
+      return NextResponse.json({ ok: false, error: 'Errore interno. Riprova più tardi.' }, { status: 500 });
+    }
     return NextResponse.json({ ok: true, post: data });
   }
 
@@ -222,7 +225,10 @@ export async function PATCH(
       .select('id, tenant_id, status, title, category, opening_grade, location_address')
       .single();
 
-    if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    if (error) {
+      console.error('[commons/posts PATCH (company) update error]:', error.message);
+      return NextResponse.json({ ok: false, error: 'Errore interno. Riprova più tardi.' }, { status: 500 });
+    }
     return NextResponse.json({ ok: true, post: data });
   }
 

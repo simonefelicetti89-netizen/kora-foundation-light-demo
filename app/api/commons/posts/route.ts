@@ -62,7 +62,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (category && VALID_CATEGORIES.includes(category)) query = query.eq('category', category);
 
     const { data, error } = await query;
-    if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    if (error) {
+      console.error('[commons/posts GET (admin) query error]:', error.message);
+      return NextResponse.json({ ok: false, error: 'Errore interno. Riprova più tardi.' }, { status: 500 });
+    }
     return NextResponse.json({ ok: true, posts: data ?? [] });
   }
 
@@ -79,7 +82,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       .order('created_at', { ascending: false })
       .limit(200);
 
-    if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    if (error) {
+      console.error('[commons/posts GET (company) query error]:', error.message);
+      return NextResponse.json({ ok: false, error: 'Errore interno. Riprova più tardi.' }, { status: 500 });
+    }
     return NextResponse.json({ ok: true, posts: data ?? [] });
   }
 
@@ -97,7 +103,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       .order('published_at', { ascending: false })
       .limit(200);
 
-    if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    if (error) {
+      console.error('[commons/posts GET (worker) query error]:', error.message);
+      return NextResponse.json({ ok: false, error: 'Errore interno. Riprova più tardi.' }, { status: 500 });
+    }
     return NextResponse.json({ ok: true, posts: data ?? [] });
   }
 
@@ -191,7 +200,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .select('id, tenant_id, status, title, category, created_at')
       .single();
 
-    if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    if (error) {
+      console.error('[commons/posts POST (company) insert error]:', error.message);
+      return NextResponse.json({ ok: false, error: 'Errore interno. Riprova più tardi.' }, { status: 500 });
+    }
     return NextResponse.json({ ok: true, post: data }, { status: 201 });
   }
 
@@ -233,7 +245,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .select('id, tenant_id, status, title, category, created_at')
       .single();
 
-    if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    if (error) {
+      console.error('[commons/posts POST (worker) insert error]:', error.message);
+      return NextResponse.json({ ok: false, error: 'Errore interno. Riprova più tardi.' }, { status: 500 });
+    }
     return NextResponse.json({ ok: true, post: data }, { status: 201 });
   }
 

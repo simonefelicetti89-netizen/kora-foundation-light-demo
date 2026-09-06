@@ -102,10 +102,15 @@ describe('B-WORKER-1 — WorkerPIBService.getPIBLive is untouched, still zero sy
 });
 
 describe('B-WORKER-1 — scope discipline: /my-kora and its bridges are untouched by this slice', () => {
-  it('/my-kora/layout.tsx is unchanged (still admits real WORKER/KORA_ADMIN into preview — retirement is a later slice)', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-1, preserved verbatim): asserted
+  // layout.tsx still admitted real WORKER/KORA_ADMIN into preview —
+  // retirement was explicitly deferred at the time. B-WORKER final cleanup
+  // (2026-09-06) retired that admission branch once every real-session
+  // dependency was closed (Slices 2-5).
+  it('/my-kora/layout.tsx no longer admits real WORKER/KORA_ADMIN into preview — retired in B-WORKER final cleanup', () => {
     const layout = read('app/my-kora/layout.tsx');
-    expect(layout).toContain('realUserPermitted');
-    expect(layout).toContain('WorkerSessionProvider');
+    expect(layout).not.toContain('realUserPermitted');
+    expect(layout).toContain("redirect('/worker/workspace')");
   });
 
   // PRIOR HISTORY (accurate as of B-WORKER-1, preserved verbatim): asserted

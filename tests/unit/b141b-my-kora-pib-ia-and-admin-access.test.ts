@@ -117,8 +117,15 @@ describe('B141-B / MYKORA-01 — My KORA layout real-session access', () => {
     expect(demoGateSrc).toContain('isAdminRole(activeRole');
   });
 
-  it('13. layout uses realUserPermitted; MyKoraDemoGate.tsx uses demoVisitorPermitted (separate gates)', () => {
-    expect(layoutSrc).toContain('realUserPermitted');
+  // PRIOR HISTORY (accurate as of B141-B/MYKORA-01, preserved verbatim): "13.
+  // layout uses realUserPermitted; MyKoraDemoGate.tsx uses demoVisitorPermitted
+  // (separate gates)" — realUserPermitted admitted real WORKER/KORA_ADMIN
+  // sessions into the demo-state preview. B-WORKER final cleanup (2026-09-06)
+  // retired that admission branch — real sessions are now redirected, never
+  // admitted, so realUserPermitted no longer exists. demoVisitorPermitted
+  // (pure demo visitors, no real session) is unaffected.
+  it('13. layout redirects real sessions instead of admitting them; MyKoraDemoGate.tsx still uses demoVisitorPermitted', () => {
+    expect(layoutSrc).not.toContain('realUserPermitted');
     expect(demoGateSrc).toContain('demoVisitorPermitted');
   });
 

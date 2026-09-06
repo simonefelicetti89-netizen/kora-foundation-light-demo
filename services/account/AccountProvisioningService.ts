@@ -6,13 +6,18 @@
 // lib/live/account-provisioning-status-view.ts); getAccountsForCompany(),
 // its sole pipeline-only method (was called by
 // app/admin/pipeline/_components/PilotLifecycleClient.tsx, real caller
-// count 1), has been removed accordingly. getCurrentDemoUser() — the sole
-// remaining real caller, app/my-kora/page.tsx's My KORA/session-identity
-// resolution — is UNTOUCHED, out of scope for this migration, and is why
-// this service remains alive (NARROWED, not retired). The synthetic seed
-// (data/synthetic/user-accounts.json) is still required by that surviving
-// method and every other method below (all zero-caller, pre-existing, and
-// out of this migration's narrow scope — no opportunistic cleanup).
+// count 1), has been removed accordingly.
+//
+// B-WORKER final cleanup (2026-09-06): getCurrentDemoUser() — the method
+// this comment used to describe as "the sole remaining real caller" via
+// app/my-kora/page.tsx's session-identity resolution — lost that caller
+// earlier in the B-WORKER workstream (CC-00 Final Scoring Canonicalization
+// removed the accountProvisioningService import from app/my-kora/page.tsx),
+// leaving it zero-caller. Verified fresh and removed below. The remaining
+// methods are unrelated, pre-existing, zero-caller responsibilities — out
+// of this cleanup's narrow scope, not proven dead individually, so left
+// untouched (no opportunistic cleanup). The synthetic seed
+// (data/synthetic/user-accounts.json) is still required by those methods.
 import type {
   KoraUserAccount,
   KoraUserRole,
@@ -42,11 +47,6 @@ class AccountProvisioningService {
 
   getKoraStaffAccounts(): KoraUserAccount[] {
     return records.filter((u) => (ADMIN_ROLES as KoraUserRole[]).includes(u.role));
-  }
-
-  getCurrentDemoUser(role?: string): KoraUserAccount {
-    if (!role) return records[0];
-    return records.find((u) => u.role === (role as KoraUserRole)) ?? records[0];
   }
 
   getWorkerAccountsForCompany(companyId: string): KoraUserAccount[] {

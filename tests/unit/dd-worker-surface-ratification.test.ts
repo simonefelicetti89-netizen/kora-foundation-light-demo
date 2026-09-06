@@ -106,12 +106,17 @@ describe('D-D — My KORA is the permanent product brand', () => {
 describe('D-D — /my-kora is transitional, salvage required before retirement', () => {
   const registry = read('lib/architecture/registry.ts');
 
-  it('app-surface.my-kora is CONSOLIDATE, no longer competing, decisionRef records the ratification', () => {
+  // PRIOR HISTORY (accurate as of the ratification itself, preserved
+  // verbatim): asserted the entry recorded "SALVAGE_BEFORE_RETIREMENT =
+  // REQUIRED" — true before migration started. B-WORKER final cleanup
+  // (2026-09-06) completed that salvage; the entry now records completion
+  // instead of a pending requirement.
+  it('app-surface.my-kora is CONSOLIDATE, no longer competing, decisionRef records the ratification and the completed salvage', () => {
     const entry = entryFor(registry, 'app-surface.my-kora');
     expect(entry).toContain("status: 'CONSOLIDATE'");
     expect(entry).toContain('D-D RATIFIED (2026-09-06)');
     expect(entry).toContain('competingWith: []');
-    expect(entry).toContain('SALVAGE_BEFORE_RETIREMENT = REQUIRED');
+    expect(entry).toContain('real_session_dependencies = []');
   });
 
   it('svc.my-kora-preview is CONSOLIDATE, recorded as B-WORKER convergence debt, not an undecided competitor', () => {

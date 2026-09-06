@@ -315,9 +315,14 @@ describe('CC-00 Final Scoring Canonicalization — B-WORKER untouched, not start
     expect(achievements).toMatch(/from ['"][^'"]*\/data\/synthetic\/worker-achievements\.json['"]/);
   });
 
-  it('AccountProvisioningService.ts itself is untouched (not modified, not deleted) — getCurrentDemoUser() still defined, unchanged', () => {
+  // PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,
+  // preserved verbatim): asserted the file was untouched, getCurrentDemoUser()
+  // still defined. B-WORKER final cleanup (2026-09-06) found it zero-caller
+  // and removed it — the file itself (and its other, unrelated methods) is
+  // still alive.
+  it('AccountProvisioningService.ts still exists (not deleted) — getCurrentDemoUser() was removed separately, unrelated methods unchanged', () => {
     const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
+    expect(src).not.toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
     expect(src).toMatch(/from ['"][^'"]*\/data\/synthetic\/user-accounts\.json['"]/);
   });
 

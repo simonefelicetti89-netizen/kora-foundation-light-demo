@@ -244,10 +244,13 @@ describe('B-WORKER-3 — remaining real-session dependency on /my-kora (honestly
     expect(workerSection).not.toContain("href:    isAdminPreview ? '/admin/preview/worker' : '/my-kora'");
   });
 
-  it('/my-kora/layout.tsx real-session admission branch is still present — not globally retired this slice', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-3, preserved verbatim): asserted
+  // the admission branch was still present, not globally retired at the
+  // time. B-WORKER final cleanup (2026-09-06) retired it once every
+  // real-session dependency was closed.
+  it('/my-kora/layout.tsx real-session admission branch is retired (B-WORKER final cleanup)', () => {
     const layout = read('app/my-kora/layout.tsx');
-    expect(layout).toContain('realUserPermitted');
-    expect(layout).toContain('WorkerSessionProvider');
+    expect(layout).not.toContain('realUserPermitted');
   });
 });
 
