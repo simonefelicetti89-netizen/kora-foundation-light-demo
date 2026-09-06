@@ -5,9 +5,18 @@
 // Nessun DB, nessun mock runtime: verifica solo che il codice sorgente
 // soddisfi i contratti di privacy, auth e atomicità approvati.
 //
+// PRIOR HISTORY (accurate as of B161, preserved verbatim): "/api/worker/pib
+// (GET — dual path WORKER / KORA_ADMIN)" and "/api/worker/impact-cv (GET —
+// dual path WORKER / KORA_ADMIN)". B-WORKER "One Product / No Demo Runtime"
+// correction (2026-09-06): the KORA_ADMIN preview path ("Path 2") on both
+// routes is removed — verified fresh to have zero frontend callers once
+// /my-kora's real-session probes (its sole caller) were retired
+// (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md). Both
+// routes are now WORKER-only, single-path.
+//
 // Route coperte:
-//   /api/worker/pib               (GET — dual path WORKER / KORA_ADMIN)
-//   /api/worker/impact-cv         (GET — dual path WORKER / KORA_ADMIN)
+//   /api/worker/pib               (GET — WORKER only)
+//   /api/worker/impact-cv         (GET — WORKER only)
 //   /api/worker/pib/redistribute  (POST — WORKER only, atomicità esplicita)
 
 import { describe, it, expect } from 'vitest';
@@ -33,16 +42,16 @@ const ROUTES = {
 // ── 1. Auth gating ────────────────────────────────────────────────────────────
 
 describe('B161 Route Auth — gating per percorso', () => {
-  it('pib: usa requireWorkerUser (path live) e requireKoraAdmin (path preview)', () => {
+  it('pib: usa requireWorkerUser e NON ha più un path requireKoraAdmin (Path 2 retired)', () => {
     const src = read(ROUTES.pib);
     expect(src).toContain('requireWorkerUser');
-    expect(src).toContain('requireKoraAdmin');
+    expect(src).not.toContain('requireKoraAdmin');
   });
 
-  it('impact-cv: usa requireWorkerUser (path live) e requireKoraAdmin (path preview)', () => {
+  it('impact-cv: usa requireWorkerUser e NON ha più un path requireKoraAdmin (Path 2 retired)', () => {
     const src = read(ROUTES.impactCv);
     expect(src).toContain('requireWorkerUser');
-    expect(src).toContain('requireKoraAdmin');
+    expect(src).not.toContain('requireKoraAdmin');
   });
 
   it('redistribute: usa requireWorkerUser e NON ha un path KORA_ADMIN', () => {
@@ -97,16 +106,16 @@ describe('B161 Route — wiring ai metodi service corretti', () => {
     expect(read(ROUTES.pib)).toContain('getPIBLive');
   });
 
-  it('pib preview path chiama getPIB (sincrono)', () => {
-    expect(read(ROUTES.pib)).toContain('getPIB(');
+  it('pib NON chiama più getPIB sincrono (Path 2 retired)', () => {
+    expect(read(ROUTES.pib)).not.toMatch(/\.getPIB\(persona/);
   });
 
   it('impact-cv live path chiama getCVDataLive', () => {
     expect(read(ROUTES.impactCv)).toContain('getCVDataLive');
   });
 
-  it('impact-cv preview path chiama getCVData (sincrono)', () => {
-    expect(read(ROUTES.impactCv)).toContain('getCVData(');
+  it('impact-cv NON chiama più getCVData sincrono (Path 2 retired)', () => {
+    expect(read(ROUTES.impactCv)).not.toMatch(/\.getCVData\(persona/);
   });
 });
 
@@ -271,9 +280,14 @@ describe('B161 WorkerPIBService — metodi live non espongono dati employer-visi
     expect(read(SERVICE_PATH)).toContain("eq('is_exportable', true)");
   });
 
-  it('metodi sincroni (getPIB, getCVData) restano isSynthetic: true', () => {
+  // PRIOR HISTORY (accurate as of B161, preserved verbatim): "metodi
+  // sincroni (getPIB, getCVData) restano isSynthetic: true." B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06): getPIB/getCVData are
+  // removed entirely (zero real callers once their sole callers, the
+  // route Path-2 branches above, were retired).
+  it('getPIB/getCVData no longer exist on WorkerPIBService', () => {
     const src = read(SERVICE_PATH);
-    expect(src).toContain("isSynthetic:                    true");
-    expect(src).toContain("pib_derivation_basis:           'synthetic_iu_pre_computed'");
+    expect(src).not.toContain('getPIB(personaId');
+    expect(src).not.toContain('getCVData(personaId');
   });
 });

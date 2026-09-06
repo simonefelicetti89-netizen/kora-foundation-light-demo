@@ -36,21 +36,19 @@ function exists(rel: string): boolean {
 describe('P1-1 — My KORA PIB coherence (Option A + B hybrid)', () => {
   const pibPage = read('app/my-kora/personal-impact-balance/page.tsx');
 
-  it('PIB page imports useState and useEffect for live detection', () => {
-    expect(pibPage).toContain('useState');
-    expect(pibPage).toContain('useEffect');
-  });
-
-  it('PIB page fetches /api/worker/pib in useEffect', () => {
-    expect(pibPage).toContain('/api/worker/pib');
-    expect(pibPage).toContain("fetch('/api/worker/pib')");
-  });
-
-  it('PIB page defines LivePIBState type with authenticated states', () => {
-    expect(pibPage).toContain('LivePIBState');
-    expect(pibPage).toContain("'live'");
-    expect(pibPage).toContain("'empty'");
-    expect(pibPage).toContain("'demo'");
+  // PRIOR HISTORY (accurate before the B-WORKER preview-runtime retirement,
+  // preserved verbatim): asserted this page had its own client-side
+  // useState/useEffect fetch of /api/worker/pib and a LivePIBState type with
+  // 'live'/'empty'/'demo' states. B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) retired this page to a pure, unconditional
+  // redirect() — no client-side state, no fetch, no LivePIBState of its own;
+  // the canonical /worker/personal-impact-balance page (a real Server
+  // Component) owns the live fetch now.
+  it('page is now a pure canonical redirect — no client-side mode/fetch logic of its own', () => {
+    expect(pibPage).toContain("redirect('/worker/personal-impact-balance')");
+    expect(pibPage).not.toContain('useState');
+    expect(pibPage).not.toContain('useEffect');
+    expect(pibPage).not.toContain('LivePIBState');
   });
 
   // PRIOR HISTORY (accurate before B-WORKER-4, preserved verbatim): checked
@@ -68,26 +66,19 @@ describe('P1-1 — My KORA PIB coherence (Option A + B hybrid)', () => {
     expect(canonical).toContain('Nessuna Impact Unit registrata ancora per questo periodo');
   });
 
-  it('PIB page preserves employer privacy notice with testid', () => {
-    expect(pibPage).toContain('pib-employer-privacy-notice');
-    expect(pibPage).toContain('datore di lavoro');
-  });
-
-  it('PIB page hides synthetic labels in real worker mode (isRealWorkerMode)', () => {
-    expect(pibPage).toContain('isRealWorkerMode');
-    expect(pibPage).toContain('!isRealWorkerMode');
-  });
-
-  it('PIB page does NOT hardcode synthetic label when in real worker mode', () => {
-    // The BoundaryBadge PREVIEW is conditional on !isRealWorkerMode
-    // so raw workers do not see "dati sintetici" badge
-    expect(pibPage).toContain('!isRealWorkerMode');
-    expect(pibPage).toContain('BoundaryBadge');
-  });
-
-  it('PIB page uses /api/worker/pib (not demo-state only) for live data', () => {
-    // The route is fetched in useEffect — worker PIB comes from API in authenticated mode
-    expect(pibPage).toContain('/api/worker/pib');
+  // PRIOR HISTORY (accurate before the B-WORKER preview-runtime retirement,
+  // preserved verbatim): checked this page's own "pib-employer-privacy-notice"
+  // testid and isRealWorkerMode-conditional synthetic-label hiding. B-WORKER
+  // "One Product / No Demo Runtime" correction (2026-09-06) retired that
+  // content — the canonical /worker/personal-impact-balance page carries the
+  // same privacy guarantee in its own copy, without a dedicated testid wrapper
+  // (a genuine minor content-shape gap, not fabricated here to paper over it);
+  // it is a real page with no PREVIEW/synthetic mode of any kind to hide.
+  it('canonical /worker/personal-impact-balance carries the employer privacy guarantee (no dedicated testid — gap flagged, not fabricated)', () => {
+    const canonical = read('app/worker/personal-impact-balance/page.tsx');
+    expect(canonical).toContain('Il tuo datore di lavoro non può vedere questo bilancio individuale');
+    expect(canonical).not.toContain('isRealWorkerMode');
+    expect(canonical).not.toContain('BoundaryBadge');
   });
 
   it('/api/worker/pib route exists and has live worker path', () => {
@@ -350,9 +341,15 @@ describe('P1-Regression — P0 and prior tests not broken', () => {
     expect(bookingService).toContain('NON è un componente del KORA Index');
   });
 
-  it('PIB page still has non-suppressible privacy notice testid', () => {
-    const pibPage = read('app/my-kora/personal-impact-balance/page.tsx');
-    expect(pibPage).toContain('pib-employer-privacy-notice');
+  // PRIOR HISTORY (accurate before the B-WORKER preview-runtime retirement,
+  // preserved verbatim): checked app/my-kora/personal-impact-balance/page.tsx
+  // for the "pib-employer-privacy-notice" testid. B-WORKER "One Product / No
+  // Demo Runtime" correction (2026-09-06) retired that page — the canonical
+  // /worker/personal-impact-balance page carries the same non-suppressible
+  // privacy guarantee (see the P1-1 gap note above).
+  it('canonical /worker/personal-impact-balance still has a non-suppressible privacy guarantee', () => {
+    const canonical = read('app/worker/personal-impact-balance/page.tsx');
+    expect(canonical).toContain('Il tuo datore di lavoro non può vedere questo bilancio individuale');
   });
 
   it('No SQL DDL created in this sprint', () => {

@@ -202,9 +202,21 @@ describe('CC-023 — no retired component is reachable', () => {
     // DEAD-but-still-present inert stubs (redirect-only page; service that
     // always returns []/null) — scheduled for physical deletion "dopo B-REG",
     // a gate unrelated to CC-00/B-TRUTH. Independently re-verified below.
+    //
+    // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) adds
+    // a third, analogous case: app-surface.my-kora (primaryPath 'app/my-kora/')
+    // is marked DEAD (no product runtime remains) but the directory is
+    // intentionally NOT deleted — every route under it is now a one-line,
+    // unconditional redirect() shell, kept only so an external bookmark to a
+    // legacy /my-kora/** URL still lands somewhere correct instead of
+    // 404ing. Inert, non-functional-as-a-product, same shape as the 2
+    // Master-Plan stubs above — see that registry entry's own
+    // `deletableWhen` for the (non-urgent) condition under which the shells
+    // themselves could be removed.
     const scheduledStubs = new Set([
       'app/company/reports/board-pack/page.tsx',
       'services/booking-request/BookingRequestService.ts',
+      'app/my-kora/',
     ]);
     for (const p of deadPrimaryPaths) {
       if (scheduledStubs.has(p)) continue;
@@ -248,19 +260,22 @@ describe('CC-023 — no persistent downstream output seeding', () => {
 // ── 10. Exactly tracked B-WORKER residuals ──────────────────────────────────
 
 describe('CC-023 — B-WORKER residuals are exactly the tracked 3, unchanged', () => {
-  it('BWORKER_OWNED_SYNTHETIC_IMPORTS is exactly the 3 known files', () => {
+  // PRIOR HISTORY (accurate as of CC-023, preserved verbatim): "exactly the
+  // 3 known files" including WorkerAchievementService.ts. B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06) deleted it (zero real
+  // callers) — 2 files remain.
+  it('BWORKER_OWNED_SYNTHETIC_IMPORTS is exactly the 2 known files (WorkerAchievementService retired since)', () => {
     const files = BWORKER_OWNED_SYNTHETIC_IMPORTS.map((e) => e.file).sort();
     expect(files).toEqual([
       'services/account/AccountProvisioningService.ts',
-      'services/worker-achievements/WorkerAchievementService.ts',
       'services/worker-provisioning/WorkerProvisioningService.ts',
     ].sort());
   });
 
   it('no new B_WORKER residual and no B_TRUTH residual relabeled to escape closure', () => {
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(3);
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(2);
     expect(BTRUTH_OWNED_SYNTHETIC_IMPORTS.length).toBe(0);
-    expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBe(3);
+    expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBe(2);
   });
 });
 

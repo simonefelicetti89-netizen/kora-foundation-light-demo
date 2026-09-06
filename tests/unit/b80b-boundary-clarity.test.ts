@@ -265,8 +265,16 @@ describe('B80-B Task 7 — All company intelligence pages are now live-only (no 
 });
 
 // ── Worker pages: PREVIEW boundary label ──────────────────────────────────────
+//
+// PRIOR HISTORY (accurate as of B80-B, preserved verbatim): these 5 pages
+// each imported BoundaryBadge and rendered mode="PREVIEW" to disclose their
+// synthetic content. B-WORKER "One Product / No Demo Runtime" correction
+// (2026-09-06) retired all 5 to pure, unconditional redirect()s — there is
+// no PREVIEW content left on any of them to badge; the canonical /worker/**
+// pages they redirect to are real, live pages with no PREVIEW boundary of
+// their own to disclose.
 
-describe('B80-B — Worker pages show PREVIEW boundary label', () => {
+describe('B-WORKER preview retirement — former PREVIEW-badged worker pages are now pure redirects', () => {
   const workerPaths = [
     'app/my-kora/page.tsx',
     'app/my-kora/dynamic-cv/page.tsx',
@@ -276,14 +284,10 @@ describe('B80-B — Worker pages show PREVIEW boundary label', () => {
   ];
 
   for (const filePath of workerPaths) {
-    it(`${filePath} imports BoundaryBadge`, () => {
+    it(`${filePath} no longer imports BoundaryBadge — no PREVIEW content of its own remains`, () => {
       const src = read(filePath);
-      expect(src).toContain('BoundaryBadge');
-    });
-
-    it(`${filePath} renders PREVIEW mode badge`, () => {
-      const src = read(filePath);
-      expect(src).toContain("mode=\"PREVIEW\"");
+      expect(src).not.toContain('BoundaryBadge');
+      expect(src).toContain('redirect(');
     });
   }
 });

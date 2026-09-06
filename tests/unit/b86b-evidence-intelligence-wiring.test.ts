@@ -29,31 +29,26 @@ describe('B86-B T1 — DynamicCVService attribution gate (source)', () => {
     expect(exists('services/dynamic-cv/DynamicCVService.ts')).toBe(true);
   });
 
-  it('calls workerAttributionService.classify', () => {
+  // PRIOR HISTORY (accurate as of B86-B, preserved as a record, not verbatim
+  // given the volume): asserted DynamicCVService.getProfile() called
+  // workerAttributionService.classify() per item, split items into
+  // cv_items/excluded_items by dynamicCvEligible, and returned
+  // synthetic_demo_data: true. B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) retired that synthetic data source
+  // (MyKoraPreviewService, zero real callers) — getProfile() now only
+  // role-guards and returns null; no fabricated data. The service file is
+  // preserved (Master Plan §33 DO-NOT-DELETE list) as future-core
+  // scaffolding for a real implementation, not built here.
+  it('no longer calls workerAttributionService.classify — synthetic data source retired, not fabricated', () => {
     const src = read('services/dynamic-cv/DynamicCVService.ts');
-    expect(src).toContain('workerAttributionService.classify');
+    expect(src).not.toContain('workerAttributionService');
+    expect(src).toContain('return null');
   });
 
-  it('splits items into cv_items and excluded_items', () => {
-    const src = read('services/dynamic-cv/DynamicCVService.ts');
-    expect(src).toContain('cv_items');
-    expect(src).toContain('excluded_items');
-  });
-
-  it('only class A items (dynamicCvEligible) go into cv_items', () => {
-    const src = read('services/dynamic-cv/DynamicCVService.ts');
-    expect(src).toContain('dynamicCvEligible');
-  });
-
-  it('throws for non-worker roles (source check)', () => {
+  it('throws for non-worker roles (source check) — role guard preserved', () => {
     const src = read('services/dynamic-cv/DynamicCVService.ts');
     expect(src).toContain('isWorkerRole');
     expect(src).toContain('throw new Error');
-  });
-
-  it('has synthetic_demo_data: true in profile output', () => {
-    const src = read('services/dynamic-cv/DynamicCVService.ts');
-    expect(src).toContain('synthetic_demo_data: true');
   });
 
   it('employer roles are never given access (COMPANY_ADMIN check)', () => {
@@ -71,21 +66,16 @@ describe('B86-B T1b — DynamicCVService runtime behavior', () => {
     expect(() => dynamicCVService.getProfile('w-001', 'COMPANY_ADMIN')).toThrow();
   });
 
-  it('returns a profile for WORKER role', () => {
+  // PRIOR HISTORY (accurate as of B86-B, preserved as a record, not
+  // verbatim given the volume): asserted getProfile('WORKER') returned a
+  // populated synthetic profile (cv_items with id/title/pillar/status,
+  // excluded_items with reasons, synthetic_demo_data: true). B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06) retired the
+  // synthetic data source — getProfile() now returns null for WORKER
+  // (no fabricated data), the role guard being the only live behavior.
+  it('returns null for WORKER role — no fabricated data, not wired to a live source', () => {
     const profile = dynamicCVService.getProfile('w-persona-a', 'WORKER');
-    expect(profile).not.toBeNull();
-    expect(typeof profile!.worker_id).toBe('string');
-    expect(Array.isArray(profile!.cv_items)).toBe(true);
-  });
-
-  it('profile cv_items have id, title, pillar, status', () => {
-    const profile = dynamicCVService.getProfile('w-persona-a', 'WORKER');
-    for (const item of profile!.cv_items) {
-      expect(typeof item.id).toBe('string');
-      expect(typeof item.title).toBe('string');
-      expect(typeof item.pillar).toBe('string');
-      expect(typeof item.status).toBe('string');
-    }
+    expect(profile).toBeNull();
   });
 
   it('excluded_items (if any) each have excluded_reason', () => {
@@ -96,11 +86,6 @@ describe('B86-B T1b — DynamicCVService runtime behavior', () => {
         expect(item.excluded_reason.length).toBeGreaterThan(0);
       }
     }
-  });
-
-  it('profile has synthetic_demo_data: true', () => {
-    const profile = dynamicCVService.getProfile('w-persona-a', 'WORKER');
-    expect(profile?.synthetic_demo_data).toBe(true);
   });
 });
 

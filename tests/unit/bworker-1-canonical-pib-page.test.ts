@@ -106,11 +106,18 @@ describe('B-WORKER-1 — scope discipline: /my-kora and its bridges are untouche
   // layout.tsx still admitted real WORKER/KORA_ADMIN into preview —
   // retirement was explicitly deferred at the time. B-WORKER final cleanup
   // (2026-09-06) retired that admission branch once every real-session
-  // dependency was closed (Slices 2-5).
-  it('/my-kora/layout.tsx no longer admits real WORKER/KORA_ADMIN into preview — retired in B-WORKER final cleanup', () => {
+  // dependency was closed (Slices 2-5), redirecting real sessions at the
+  // layout level. B-WORKER "One Product / No Demo Runtime" correction
+  // (2026-09-06, later the same day) went further: the layout no longer
+  // performs any admission decision at all — every child page (including
+  // /my-kora/page.tsx itself) redirects unconditionally to /worker/workspace,
+  // for every visitor, so the layout-level redirect check moved down a
+  // level and the layout itself is now a trivial pass-through.
+  it('/my-kora/layout.tsx performs no admission decision at all; /my-kora/page.tsx redirects unconditionally', () => {
     const layout = read('app/my-kora/layout.tsx');
     expect(layout).not.toContain('realUserPermitted');
-    expect(layout).toContain("redirect('/worker/workspace')");
+    expect(layout).not.toContain('realRole');
+    expect(read('app/my-kora/page.tsx')).toContain("redirect('/worker/workspace')");
   });
 
   // PRIOR HISTORY (accurate as of B-WORKER-1, preserved verbatim): asserted

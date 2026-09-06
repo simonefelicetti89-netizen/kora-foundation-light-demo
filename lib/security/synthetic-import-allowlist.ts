@@ -34,7 +34,10 @@
 // empty LEADS array — the tool itself, and every derived view, is
 // unchanged; no founder CRM schema was invented.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 2 files / 2 import statements
+// (B-WORKER "One Product / No Demo Runtime" correction, 2026-09-06:
+// WorkerAchievementService.ts removed from this allowlist — file deleted,
+// zero real callers. See lib/architecture/registry.ts svc.worker-achievements.)
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
@@ -651,9 +654,22 @@ export interface SyntheticImportAllowlistEntry {
   owner: 'B_TRUTH' | 'B_WORKER';
 }
 
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06):
+// WorkerAchievementService.ts is deleted (zero real callers once
+// app/my-kora/page.tsx and app/my-kora/dynamic-cv/page.tsx — its only two
+// callers — became pure canonical redirects; no achievement domain object
+// was created to replace it, per explicit founder instruction). Removed
+// from this allowlist entirely: 3 B_WORKER-owned entries -> 2.
+// AccountProvisioningService.ts stays: its data/synthetic/user-accounts.json
+// import is independent of the already-removed getCurrentDemoUser() (PR
+// #168) — getWorkerAccountsForCompany/getCompanyAdmins/etc. still read it
+// directly, confirmed by fresh inspection, out of this slice's scope.
+// WorkerProvisioningService.ts stays: fresh-verified as the final B-WORKER
+// I9 blocker (real callers across admin roster/provisioning UI, genuine
+// schema gaps — department/site/my_kora_enabled/pib_private_enabled — not
+// invented here; see tests/unit/bworker-preview-runtime-retirement.test.ts).
 export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/account/AccountProvisioningService.ts', reason: 'Demo account registry — reads synthetic user accounts.', owner: 'B_WORKER' },
-  { file: 'services/worker-achievements/WorkerAchievementService.ts', reason: 'Worker-private demo achievements seed.', owner: 'B_WORKER' },
   { file: 'services/worker-provisioning/WorkerProvisioningService.ts', reason: 'Demo worker roster seed for provisioning flows.', owner: 'B_WORKER' },
 ];
 

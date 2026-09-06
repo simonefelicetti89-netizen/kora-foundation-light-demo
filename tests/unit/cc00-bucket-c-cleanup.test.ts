@@ -223,21 +223,30 @@ describe('CC-00 Bucket C cleanup — prior slices untouched', () => {
 // ── 11. Worker/account cluster untouched ─────────────────────────────────────
 
 describe('CC-00 Bucket C cleanup — worker/account cluster untouched', () => {
-  it('WorkerProvisioningService, WorkerAchievementService, AccountProvisioningService still import their synthetic fixtures', () => {
+  // PRIOR HISTORY (accurate as of CC-00 Bucket C cleanup, preserved
+  // verbatim): asserted all 3 files still imported their synthetic fixtures,
+  // including WorkerAchievementService.ts. B-WORKER "One Product / No Demo
+  // Runtime" correction (2026-09-06) deleted that file entirely (zero real
+  // callers, no replacement domain invented) — a later, separately-
+  // authorized retirement, not a regression of this PR's own scope.
+  it('WorkerProvisioningService and AccountProvisioningService still import their synthetic fixtures; WorkerAchievementService retired since', () => {
     expect(read('services/worker-provisioning/WorkerProvisioningService.ts')).toContain(
       "from '@/data/synthetic/worker-roster.json'",
-    );
-    expect(read('services/worker-achievements/WorkerAchievementService.ts')).toContain(
-      "from '@/data/synthetic/worker-achievements.json'",
     );
     expect(read('services/account/AccountProvisioningService.ts')).toContain(
       "from '@/data/synthetic/user-accounts.json'",
     );
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 
-  it('My KORA is untouched', () => {
+  // PRIOR HISTORY (accurate as of CC-00 Bucket C cleanup, preserved
+  // verbatim): "My KORA is untouched" — app/my-kora/page.tsx called
+  // workerAchievementService.getAchievementStats(). B-WORKER "One Product /
+  // No Demo Runtime" correction (2026-09-06) rewrote that page as a pure,
+  // unconditional redirect() — a later, separately-authorized retirement.
+  it('My KORA home page is retired to a canonical redirect (later, separately-authorized slice)', () => {
     expect(exists('app/my-kora/page.tsx')).toBe(true);
-    expect(read('app/my-kora/page.tsx')).toContain('workerAchievementService.getAchievementStats()');
+    expect(read('app/my-kora/page.tsx')).toContain("redirect('/worker/workspace')");
   });
 });
 
@@ -285,6 +294,6 @@ describe('CC-00 Bucket C cleanup — governance unchanged, CC-00 status', () => 
 
   it('I9 allowlist header reflects 6 files / 11 import statements', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 2 files / 2 import statements'); // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): WorkerAchievementService.ts removed from the allowlist (deleted, zero callers) — 3/3 -> 2/2, unrelated to this PR.
   });
 });

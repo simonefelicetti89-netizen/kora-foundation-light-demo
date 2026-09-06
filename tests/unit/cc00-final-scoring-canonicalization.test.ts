@@ -100,13 +100,18 @@ describe('CC-00 Final Scoring Canonicalization — B-TRUTH I9 is zero', () => {
     expect(BTRUTH_OWNED_SYNTHETIC_IMPORTS).toEqual([]);
   });
 
-  it('global allowlist is 3 files / 3 imports, all owner: B_WORKER', () => {
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(3);
+  // PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,
+  // preserved verbatim): "global allowlist is 3 files / 3 imports, all
+  // owner: B_WORKER." B-WORKER "One Product / No Demo Runtime" correction
+  // (2026-09-06) deleted WorkerAchievementService.ts (zero real callers) and
+  // removed it from the allowlist — 2 files remain, both still owner:
+  // B_WORKER, a separately-authorized later retirement, not a regression of
+  // this PR's own B-TRUTH-scoped closure.
+  it('global allowlist is 2 files / 2 imports, all owner: B_WORKER (WorkerAchievementService retired since)', () => {
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(2);
     for (const entry of SYNTHETIC_IMPORT_ALLOWLIST) {
       expect(entry.owner).toBe('B_WORKER');
     }
-    const allowlistSrc = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlistSrc).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
   });
 
   it('the 7 retired synthetic fixtures no longer exist', () => {
@@ -299,20 +304,22 @@ describe('CC-00 Final Scoring Canonicalization — canonical test tenants unaffe
 // ── 14 & 15. B-WORKER residuals unchanged, B-WORKER not started ────────────
 
 describe('CC-00 Final Scoring Canonicalization — B-WORKER untouched, not started', () => {
-  it('B-WORKER-owned synthetic residuals are unchanged — same 3 files, same owner', () => {
+  // PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,
+  // preserved verbatim): "same 3 files, same owner" including
+  // WorkerAchievementService.ts. B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) deleted it (zero real callers) — 2 files remain.
+  it('B-WORKER-owned synthetic residuals are 2 files, same owner (WorkerAchievementService retired since)', () => {
     const files = BWORKER_OWNED_SYNTHETIC_IMPORTS.map((e) => e.file).sort();
     expect(files).toEqual([
       'services/account/AccountProvisioningService.ts',
-      'services/worker-achievements/WorkerAchievementService.ts',
       'services/worker-provisioning/WorkerProvisioningService.ts',
     ].sort());
   });
 
-  it('WorkerProvisioningService.ts and WorkerAchievementService.ts source is byte-unchanged (still 100% synthetic, still reading their original fixtures)', () => {
+  it('WorkerProvisioningService.ts source is byte-unchanged (still 100% synthetic); WorkerAchievementService.ts no longer exists', () => {
     const roster = read('services/worker-provisioning/WorkerProvisioningService.ts');
-    const achievements = read('services/worker-achievements/WorkerAchievementService.ts');
     expect(roster).toMatch(/from ['"][^'"]*\/data\/synthetic\/worker-roster\.json['"]/);
-    expect(achievements).toMatch(/from ['"][^'"]*\/data\/synthetic\/worker-achievements\.json['"]/);
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,
@@ -326,10 +333,17 @@ describe('CC-00 Final Scoring Canonicalization — B-WORKER untouched, not start
     expect(src).toMatch(/from ['"][^'"]*\/data\/synthetic\/user-accounts\.json['"]/);
   });
 
+  // PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,
+  // preserved verbatim): asserted app/my-kora/page.tsx still resolved
+  // session/persona via useRole/useScenario/usePersona. B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06): that page is now a
+  // pure, unconditional redirect() to /worker/workspace — it has no
+  // session/persona resolution of its own. Still true: no new worker
+  // feature or achievement methodology was introduced by that retirement.
   it('no My KORA live-session identity model, no new worker feature, no new achievement methodology was introduced', () => {
     const myKoraSrc = read('app/my-kora/page.tsx');
     expect(myKoraSrc).not.toContain('getCurrentDemoUser');
-    expect(myKoraSrc).toContain("useRole, useScenario, usePersona");
+    expect(myKoraSrc).toContain("redirect('/worker/workspace')");
   });
 });
 

@@ -95,24 +95,21 @@ describe('Worker PIB Privacy — workerId/tenantId isolation', () => {
 describe('Worker PIB Privacy — KORA_ADMIN preview isolation', () => {
   const route = src('app/api/worker/pib/route.ts');
 
-  it('requireKoraAdmin è chiamato DOPO requireWorkerUser (fallback, non primario)', () => {
-    const workerIdx = route.indexOf('requireWorkerUser');
-    const adminIdx  = route.indexOf('requireKoraAdmin');
-    expect(adminIdx).toBeGreaterThan(workerIdx);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // asserted requireKoraAdmin was called after requireWorkerUser as a
+  // fallback ("Path 2" KORA_ADMIN preview). B-WORKER "One Product / No Demo
+  // Runtime" correction (2026-09-06) removed that entire path — verified
+  // fresh to have zero frontend callers once /my-kora's real-session probes
+  // (its sole caller) were retired. The route is now WORKER-only, single
+  // path.
+  it('requireKoraAdmin no longer exists — Path 2 (KORA_ADMIN preview) is retired', () => {
+    expect(route).not.toContain('requireKoraAdmin');
   });
 
-  it('KORA_ADMIN path usa getPIB (sintetico), non getPIBLive', () => {
-    // Trova il blocco KORA_ADMIN (Path 2)
-    const adminBlock = route.match(/Path 2[\s\S]*?(?:\/\/ Both|return NextResponse\.json[\s\S]*?status:\s*401)/)?.[0] ?? '';
-    expect(adminBlock).toContain('getPIB(');
-    expect(adminBlock).not.toContain('getPIBLive');
-  });
-
-  it('KORA_ADMIN path NON chiama getSupabaseServerClient (usa solo dati sintetici)', () => {
-    // Path 2 non deve istanziare un Supabase client
-    const adminBlock = route.match(/Path 2[\s\S]*?(?:Both auth paths failed|status:\s*401)/)?.[0] ?? '';
-    expect(adminBlock).not.toContain('getSupabaseServerClient');
-    expect(adminBlock).not.toContain('getSupabaseServiceClient');
+  it('route has no KORA_ADMIN preview path — no synthetic getPIB(), only getPIBLive', () => {
+    expect(route).not.toMatch(/workerPIBService\.getPIB\(request/);
+    expect(route).not.toMatch(/\.getPIB\(persona/);
+    expect(route).toContain('getPIBLive');
   });
 });
 
@@ -190,11 +187,16 @@ describe('Worker PIB Privacy — contratto risposta live', () => {
     expect(service).toMatch(/isSynthetic:\s+false/);
   });
 
-  it('isSynthetic: true appare SOLO nei metodi sincroni (preview KORA_ADMIN)', () => {
-    // Il metodo sintetico (getPIB) ha isSynthetic: true
-    // I metodi live (_emptyLivePIB, getCVDataLive, _aggregatePIBRows) hanno isSynthetic: false
-    expect(service).toMatch(/isSynthetic:\s+true/);   // preview sync path
-    expect(service).toMatch(/isSynthetic:\s+false/);  // live async path
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
+  // both isSynthetic: true (synchronous preview getPIB/getCVData) and
+  // isSynthetic: false (async live path) appeared in the service. B-WORKER
+  // "One Product / No Demo Runtime" correction (2026-09-06) removed
+  // getPIB/getCVData entirely (zero real callers once their sole callers —
+  // the route Path-2 branches above — were retired) — only the live path
+  // (isSynthetic: false) remains.
+  it('isSynthetic: true no longer appears (synthetic preview methods retired); isSynthetic: false remains (live path)', () => {
+    expect(service).not.toMatch(/isSynthetic:\s+true/);
+    expect(service).toMatch(/isSynthetic:\s+false/);
   });
 });
 

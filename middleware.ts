@@ -67,11 +67,17 @@ const COMPANY_ALLOWED_PREFIXES = [
 //   (e.g., to preview their own shared link) without being redirected to /worker/workspace.
 //
 // NOTE: /my-kora/ is intentionally absent from this list.
-//   My KORA is PREVIEW-only in Foundation Light: its pages use demo-state role switching,
-//   not a live Supabase JWT. An authenticated WORKER user who navigates to /my-kora/ is
-//   correctly redirected to /worker/workspace by this middleware.
-//   Pilot+: when My KORA is promoted to live, add /my-kora/ here and update
-//   WorkerSessionProvider to detect the live Supabase WORKER session instead of demo-state.
+//   PRIOR HISTORY (preserved verbatim): "My KORA is PREVIEW-only in
+//   Foundation Light: its pages use demo-state role switching, not a live
+//   Supabase JWT. Pilot+: when My KORA is promoted to live, add /my-kora/
+//   here and update WorkerSessionProvider to detect the live Supabase
+//   WORKER session instead of demo-state." B-WORKER "One Product / No Demo
+//   Runtime" correction (2026-09-06): every /my-kora/** page now
+//   unconditionally redirects to its canonical /worker/** equivalent
+//   (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md) —
+//   WorkerSessionProvider is retired. /my-kora/ stays absent from this list
+//   because it needs no worker-session allowance of its own: every route
+//   under it redirects before any session check would matter.
 const WORKER_ALLOWED_PREFIXES = [
   '/worker/',                // worker private space (includes /worker/login)
   '/cv/share/',              // public CV share view — B126 (no auth required)

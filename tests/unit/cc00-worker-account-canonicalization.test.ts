@@ -42,10 +42,12 @@ describe('CC-00 Worker/Account audit — synthetic imports unchanged (nothing sa
     );
   });
 
-  it('WorkerAchievementService.ts still imports data/synthetic/worker-achievements.json', () => {
-    expect(read('services/worker-achievements/WorkerAchievementService.ts')).toContain(
-      "from '@/data/synthetic/worker-achievements.json'",
-    );
+  // PRIOR HISTORY (accurate as of this audit, preserved verbatim):
+  // "WorkerAchievementService.ts still imports data/synthetic/worker-achievements.json."
+  // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) deleted
+  // the file entirely (zero real callers, no replacement domain invented).
+  it('WorkerAchievementService.ts no longer exists (retired since this audit)', () => {
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 
   it('AccountProvisioningService.ts still imports data/synthetic/user-accounts.json', () => {
@@ -78,7 +80,7 @@ describe('CC-00 Worker/Account audit — synthetic imports unchanged (nothing sa
   // files this audit examined were touched by that slice.
   it('allowlist header now reflects 6 files / 11 import statements — unchanged for this cluster (historical note: was 8/13 at the time this audit ran)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 2 files / 2 import statements'); // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): WorkerAchievementService.ts removed from the allowlist (deleted, zero callers) — 3/3 -> 2/2, unrelated to this PR.
   });
 });
 
@@ -95,10 +97,12 @@ describe('CC-00 Worker/Account audit — no demo role reintroduced', () => {
     expect(koraRolesBlock).not.toContain('DEMO_VIEWER');
   });
 
-  it('none of the 4 in-scope services define or reference a new demo/preview role string', () => {
+  it('none of the 3 remaining in-scope services define or reference a new demo/preview role string', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
-      'services/worker-achievements/WorkerAchievementService.ts',
+      // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
+      // was checked here. B-WORKER "One Product / No Demo Runtime" correction
+      // (2026-09-06) deleted it entirely — removed from this list.
       'services/account/AccountProvisioningService.ts',
       'services/activation-safeguard/ActivationSafeguardService.ts',
     ]) {
@@ -111,10 +115,12 @@ describe('CC-00 Worker/Account audit — no demo role reintroduced', () => {
 // ── 3. No tenant_kind product branch ──────────────────────────────────────────
 
 describe('CC-00 Worker/Account audit — no tenant_kind branch introduced', () => {
-  it('none of the 4 in-scope services reference tenant_kind, KoraTest, or Bosco Verde', () => {
+  it('none of the 3 remaining in-scope services reference tenant_kind, KoraTest, or Bosco Verde', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
-      'services/worker-achievements/WorkerAchievementService.ts',
+      // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
+      // was checked here. B-WORKER "One Product / No Demo Runtime" correction
+      // (2026-09-06) deleted it entirely — removed from this list.
       'services/account/AccountProvisioningService.ts',
       'services/activation-safeguard/ActivationSafeguardService.ts',
     ]) {
@@ -147,15 +153,17 @@ describe('CC-00 Worker/Account audit — account role authority unchanged', () =
 // ── 5. My KORA long-term product decision not made ───────────────────────────
 
 describe('CC-00 Worker/Account audit — My KORA product decision not made', () => {
-  it('app/my-kora/page.tsx and app/my-kora/dynamic-cv/page.tsx are structurally unchanged — still call workerAchievementService directly', () => {
-    expect(read('app/my-kora/page.tsx')).toContain('workerAchievementService.getAchievementStats()');
-    expect(read('app/my-kora/dynamic-cv/page.tsx')).toContain('workerAchievementService.getAchievementStats()');
-  });
-
-  it('app/my-kora/page.tsx still carries its PREVIEW/synthetic-data disclosure badge — not silently hidden or removed', () => {
-    const src = read('app/my-kora/page.tsx');
-    expect(src).toContain('mode="PREVIEW"');
-    expect(src).toContain('dati sintetici');
+  // PRIOR HISTORY (accurate as of this audit, preserved verbatim): asserted
+  // both pages still called workerAchievementService.getAchievementStats()
+  // directly and app/my-kora/page.tsx still carried its PREVIEW/synthetic
+  // disclosure badge. B-WORKER "One Product / No Demo Runtime" correction
+  // (2026-09-06) rewrote both pages as pure, unconditional redirect()s — the
+  // "My KORA long-term product decision" this describe block's title refers
+  // to IS this later, separately-authorized correction.
+  it('app/my-kora/page.tsx and app/my-kora/dynamic-cv/page.tsx are now pure canonical redirects (the deferred product decision, made since)', () => {
+    expect(read('app/my-kora/page.tsx')).toContain("redirect('/worker/workspace')");
+    expect(read('app/my-kora/dynamic-cv/page.tsx')).toContain("redirect('/worker/dynamic-cv')");
+    expect(read('app/my-kora/page.tsx')).not.toContain('workerAchievementService');
   });
 
   // PRIOR HISTORY (accurate as of this audit, preserved verbatim): asserted
@@ -177,7 +185,10 @@ describe('CC-00 Worker/Account audit — B-WORKER not started', () => {
     // and this test file — no app/worker/**, app/my-kora/**, or services/worker-*/** file exists
     // that did not already exist before this slice.
     expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(true);
-    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(true);
+    // PRIOR HISTORY: WorkerAchievementService.ts existed at this audit's own
+    // time. B-WORKER "One Product / No Demo Runtime" correction (2026-09-06)
+    // deleted it (a later, separately-authorized retirement, not new scope).
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 });
 
@@ -193,21 +204,27 @@ describe('CC-00 Worker/Account audit — worker achievement model not invented',
     }
   });
 
-  it('WorkerAchievementService method signatures are unchanged (no new methodology fields)', () => {
-    const src = read('services/worker-achievements/WorkerAchievementService.ts');
-    for (const method of ['getAchievements', 'getRecentAchievements', 'getVerifiedAchievements', 'getCvEligibleAchievements', 'getAchievementStats']) {
-      expect(src).toContain(method);
-    }
+  // PRIOR HISTORY (accurate as of this audit, preserved verbatim): asserted
+  // all 5 WorkerAchievementService method signatures were unchanged. B-WORKER
+  // "One Product / No Demo Runtime" correction (2026-09-06) deleted the file
+  // entirely (zero real callers) — no replacement methodology was invented,
+  // per explicit founder instruction (no new achievement domain object).
+  it('WorkerAchievementService no longer exists; no new achievement methodology was invented to replace it', () => {
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
+    expect(exists('services/worker-achievement-v2')).toBe(false);
+    expect(exists('services/achievement')).toBe(false);
   });
 });
 
 // ── 8. No downstream-output seeding ───────────────────────────────────────────
 
 describe('CC-00 Worker/Account audit — no downstream output seeding introduced', () => {
-  it('none of the 4 in-scope services import from analytics.* result tables or write scoring/decision-pack output', () => {
+  it('none of the 3 remaining in-scope services import from analytics.* result tables or write scoring/decision-pack output', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
-      'services/worker-achievements/WorkerAchievementService.ts',
+      // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
+      // was checked here. B-WORKER "One Product / No Demo Runtime" correction
+      // (2026-09-06) deleted it entirely — removed from this list.
       'services/account/AccountProvisioningService.ts',
       'services/activation-safeguard/ActivationSafeguardService.ts',
     ]) {
@@ -288,16 +305,18 @@ describe('CC-00 Worker/Account audit — CC-00 status', () => {
 // product capability, deferred to B-WORKER — not implemented here.
 
 describe('CC-00 Worker/Account audit — Deferred Worker Capability Register', () => {
-  it('Worker achievements / portable development record — deferred to B-WORKER, requires a real evidence/recognition domain model', () => {
-    // Source concept: WorkerAchievementService (data/synthetic/worker-achievements.json).
-    // Why potentially valuable: a worker-facing recognition/portable-record layer
-    //   is a plausible real product capability (worker-private, employer-invisible).
-    // Why not canonical today: zero DB migrations reference "achievement" — no
-    //   persisted, tenant-scoped, evidence-backed domain object exists.
-    // Required evidence/model: a real achievement/recognition table tied to
-    //   verified UEF/contribution records, with a verification workflow.
-    // Track: B-WORKER.
-    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(true);
+  // PRIOR HISTORY (accurate as of this audit, preserved verbatim): recorded
+  // "worker achievements / portable development record" as a DEFERRED
+  // capability requiring a real evidence/recognition domain model, tracked
+  // to B-WORKER. B-WORKER "One Product / No Demo Runtime" correction
+  // (2026-09-06) resolved this deferral by RETIRING the synthetic concept
+  // outright — no real evidence/recognition domain model was invented (per
+  // explicit founder instruction not to fabricate one). If a genuine worker
+  // recognition capability is ever built, it starts fresh against a real,
+  // persisted, tenant-scoped domain object — not by reviving this file.
+  it('Worker achievements / portable development record — resolved by retirement, not by inventing a domain model', () => {
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
+    expect(exists('services/worker-achievement-v2')).toBe(false);
   });
 
   it('Worker roster live-data migration (department/site/my_kora_enabled) — deferred to B-WORKER, requires new async data-fetching architecture', () => {

@@ -63,9 +63,13 @@ const _HISTORICAL_EXPECTED_BTRUTH_FILES = [
 ].sort();
 void _HISTORICAL_EXPECTED_BTRUTH_FILES;
 
+// PRIOR HISTORY (accurate as of CC-00 I9 Governance Ratification, preserved
+// verbatim): included 'services/worker-achievements/WorkerAchievementService.ts'.
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) deleted
+// that file entirely (zero real callers once its 2 callers became pure
+// canonical redirects) and removed it from the allowlist — 2 files remain.
 const EXPECTED_BWORKER_FILES = [
   'services/account/AccountProvisioningService.ts',
-  'services/worker-achievements/WorkerAchievementService.ts',
   'services/worker-provisioning/WorkerProvisioningService.ts',
 ].sort();
 
@@ -118,7 +122,7 @@ describe('CC-00 I9 Governance Ratification — CC-022 gate is B-TRUTH-scoped', (
   // B-WORKER-owned subset, untouched).
   it('the B-TRUTH-scoped count (the CC-022 closure gate) is independent of the total allowlist count — B-TRUTH is now 0, total is 3', () => {
     expect(BTRUTH_OWNED_SYNTHETIC_IMPORTS.length).toBe(0);
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(3);
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(2);
     expect(BTRUTH_OWNED_SYNTHETIC_IMPORTS.length).toBeLessThan(SYNTHETIC_IMPORT_ALLOWLIST.length);
   });
 
@@ -146,19 +150,21 @@ describe('CC-00 I9 Governance Ratification — CC-022 gate is B-TRUTH-scoped', (
 // (2026-09-05) reduced this to 3 files / 3 imports by retiring the 3
 // B-TRUTH-owned entries. Total visibility itself is unaffected — updated
 // below to the new true count.
+// PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,
+// preserved verbatim): "3 files / 3 imports." B-WORKER "One Product / No
+// Demo Runtime" correction (2026-09-06) retired WorkerAchievementService.ts
+// (zero real callers) — 2 files remain.
 describe('CC-00 I9 Governance Ratification — visibility preserved', () => {
   it('the total allowlist count remains fully visible (not hidden behind the ownership split)', () => {
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(3);
-    const allowlistSrc = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlistSrc).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(2);
   });
 });
 
 // ── 6. No generic exemption or wildcard exists ──────────────────────────────
 
 describe('CC-00 I9 Governance Ratification — no generic exemption', () => {
-  it('exactly 3 named files carry owner B_WORKER — not a pattern, not a wildcard', () => {
-    expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBe(3);
+  it('exactly 2 named files carry owner B_WORKER — not a pattern, not a wildcard (WorkerAchievementService retired since)', () => {
+    expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBe(2);
     expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.map((e) => e.file).sort()).toEqual(EXPECTED_BWORKER_FILES);
   });
 
@@ -186,9 +192,17 @@ describe('CC-00 I9 Governance Ratification — B-WORKER residuals remain open, n
     expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBeGreaterThan(0);
   });
 
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // asserted svc.account, svc.worker-achievements, and svc.worker-provisioning
+  // were all CONSOLIDATE (not CANONICAL/FROZEN — i.e. not marked permanent).
+  // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06):
+  // svc.worker-achievements is retired (status DEAD, file deleted) — DEAD is
+  // not "permanent/canonical/exempt" either, it is the opposite (marked for
+  // removal, already actioned). The remaining 2 real I9 blockers stay
+  // CONSOLIDATE, not permanent.
   it('no B-WORKER-owned entry is marked permanent, canonical, or exempt in the registry', () => {
     const registry = read('lib/architecture/registry.ts');
-    for (const id of ["id: 'svc.account'", "id: 'svc.worker-achievements'", "id: 'svc.worker-provisioning'"]) {
+    for (const id of ["id: 'svc.account'", "id: 'svc.worker-provisioning'"]) {
       const idx = registry.indexOf(id);
       expect(idx).toBeGreaterThan(-1);
       const entry = registry.slice(idx, registry.indexOf('{ id:', idx + 10));
@@ -221,19 +235,24 @@ describe('CC-00 I9 Governance Ratification — runtime: B-TRUTH retired, B-WORKE
     expect(codeOnly).not.toContain('evaluateFromSeed');
   });
 
-  it('the B-WORKER worker/account cluster files still exist and still carry their original synthetic imports (no runtime change)', () => {
+  it('the B-WORKER worker/account cluster files still exist and still carry their original synthetic imports (no runtime change); WorkerAchievementService retired since', () => {
     for (const file of EXPECTED_BWORKER_FILES) {
       expect(exists(file)).toBe(true);
     }
     const liveFiles = new Set(SYNTHETIC_IMPORT_ALLOWLIST.map((e) => e.file));
     for (const file of EXPECTED_BWORKER_FILES) expect(liveFiles.has(file)).toBe(true);
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 
-  it('WorkerProvisioningService, WorkerAchievementService, and AccountProvisioningService source files are unmodified in behavior (reason text unchanged since this slice)', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
+  // all 3 reason strings, including WorkerAchievementService's, were present.
+  // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) removed
+  // that entry (and its reason string) entirely along with the file.
+  it('WorkerProvisioningService and AccountProvisioningService source files are unmodified in behavior (reason text unchanged since this slice)', () => {
     const allowlistSrc = read('lib/security/synthetic-import-allowlist.ts');
     expect(allowlistSrc).toContain("reason: 'Demo worker roster seed for provisioning flows.'");
-    expect(allowlistSrc).toContain("reason: 'Worker-private demo achievements seed.'");
     expect(allowlistSrc).toContain("reason: 'Demo account registry — reads synthetic user accounts.'");
+    expect(allowlistSrc).not.toContain("reason: 'Worker-private demo achievements seed.'");
   });
 });
 
@@ -247,11 +266,16 @@ describe('CC-00 I9 Governance Ratification — B-WORKER not started', () => {
     expect(accountSrc).toContain('getCurrentDemoUser');
   });
 
-  it('worker roster and worker achievements still read from data/synthetic/** (still 100% synthetic, not migrated)', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
+  // both worker roster and worker achievements still read from
+  // data/synthetic/**. B-WORKER "One Product / No Demo Runtime" correction
+  // (2026-09-06) retired WorkerAchievementService.ts entirely — only the
+  // worker roster (WorkerProvisioningService, the genuine remaining I9
+  // blocker) still reads synthetic data.
+  it('worker roster still reads from data/synthetic/** (still 100% synthetic, not migrated); worker achievements retired', () => {
     const rosterSrc = read('services/worker-provisioning/WorkerProvisioningService.ts');
-    const achievementsSrc = read('services/worker-achievements/WorkerAchievementService.ts');
     expect(rosterSrc).toMatch(/from ['"][^'"]*\/data\/synthetic\/worker-roster\.json['"]/);
-    expect(achievementsSrc).toMatch(/from ['"][^'"]*\/data\/synthetic\/worker-achievements\.json['"]/);
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 });
 

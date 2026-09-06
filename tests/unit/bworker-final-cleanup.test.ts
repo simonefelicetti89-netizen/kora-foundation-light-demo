@@ -36,6 +36,22 @@
 //     pib_private_enabled fields the admin UI currently displays (synthetic).
 //     Its own header comment already flagged this as a separate, later,
 //     B-WORKER-territory slice.
+//
+// CORRECTION — B-WORKER "One Product / No Demo Runtime" (2026-09-06): the
+// CLAUDE.md §10 reasoning above, used to justify NOT retiring
+// MyKoraPreviewService/WorkerAchievementService, was wrong — §10 lists
+// historically-allowed pre-Gate-2 build scope, not a permanent mandate for a
+// second interactive demo runtime. The authoritative, later, more specific
+// founder decision is docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md,
+// "ONE PRODUCT / NO DEMO RUNTIME". Both services, MyKoraDemoGate.tsx,
+// WorkerSessionProvider.tsx, and lib/worker-identity/worker-context.ts are
+// now deleted; every /my-kora/** page redirects unconditionally. The 5
+// SCOPE-ACHIEVED items above (real-session admission retirement,
+// getCurrentDemoUser removal, rate limiting, error-envelope closure, no
+// service-role regression) remain valid and are re-verified below.
+// WorkerProvisioningService remains the sole, genuinely unresolved I9
+// blocker. See tests/unit/bworker-preview-runtime-retirement.test.ts for the
+// full current-state regression guard.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
@@ -51,39 +67,35 @@ function exists(rel: string): boolean {
   return existsSync(resolve(root, rel));
 }
 
-// ── 1. Global real-session admission retired ────────────────────────────────
-
-describe('B-WORKER final cleanup — /my-kora/layout.tsx real-session admission retired', () => {
+// ── 1. Global real-session admission retired, then superseded entirely ─────
+//
+// PRIOR HISTORY (accurate as of B-WORKER final cleanup / PR #168, preserved
+// verbatim): this described layout.tsx redirecting real WORKER/KORA_ADMIN
+// sessions while still admitting anonymous/persona visitors through
+// MyKoraDemoGate, and other real roles staying hard-blocked with an
+// access-denied message. B-WORKER "One Product / No Demo Runtime"
+// correction (2026-09-06): layout.tsx no longer performs any session check,
+// role branching, or admission decision at all — every child page redirects
+// unconditionally, so the layout is reduced to a metadata-only pass-through.
+describe('B-WORKER final cleanup — /my-kora/layout.tsx is now a trivial pass-through (no role logic of any kind)', () => {
   const layout = read('app/my-kora/layout.tsx');
 
-  it('real WORKER session redirects to /worker/workspace, never admitted', () => {
-    expect(layout).toContain("realRole === 'WORKER'");
-    expect(layout).toContain("redirect('/worker/workspace')");
+  it('performs no role check, no session read, no admission decision', () => {
+    expect(layout).not.toContain('realRole');
     expect(layout).not.toContain('realUserPermitted');
+    expect(layout).not.toContain('getSessionKoraRole');
   });
 
-  it('real KORA_ADMIN session redirects to /admin, never admitted', () => {
-    expect(layout).toContain("realRole === 'KORA_ADMIN'");
-    expect(layout).toContain("redirect('/admin')");
+  it('no longer imports or renders WorkerSessionProvider or MyKoraDemoGate (both deleted)', () => {
+    expect(layout).not.toContain('WorkerSessionProvider');
+    expect(layout).not.toContain('MyKoraDemoGate');
+    expect(exists('app/my-kora/_providers/WorkerSessionProvider.tsx')).toBe(false);
+    expect(exists('app/my-kora/_providers/MyKoraDemoGate.tsx')).toBe(false);
   });
 
-  it('WorkerSessionProvider is no longer imported or rendered in the layout', () => {
-    expect(layout).not.toContain("from './_providers/WorkerSessionProvider'");
-    expect(layout).not.toContain('<WorkerSessionProvider>');
-  });
-
-  it('the anonymous/persona demo path (MyKoraDemoGate) is completely unchanged', () => {
-    expect(layout).toContain('MyKoraDemoGate');
-    const nullCheckIdx = layout.indexOf('realRole !== null');
-    const demoGateIdx = layout.indexOf('<MyKoraDemoGate>');
-    expect(demoGateIdx).toBeGreaterThan(nullCheckIdx);
-  });
-
-  it('other real roles (COMPANY_ADMIN, PARTNER, ...) remain hard-blocked, unchanged', () => {
-    expect(layout).toContain('Il tuo account non ha accesso a questa area');
-    for (const role of ['COMPANY_ADMIN', 'PARTNER', 'DEMO_VIEWER', 'ADVISOR']) {
-      expect(layout).not.toContain(`realRole === '${role}'`);
-    }
+  it('retains only the route-segment metadata export (noindex)', () => {
+    expect(layout).toContain('export const metadata');
+    expect(layout).toContain('index: false');
   });
 });
 
@@ -118,28 +130,30 @@ describe('B-WORKER final cleanup — AccountProvisioningService.getCurrentDemoUs
 
 // ── 3. I9 residuals — honestly unchanged, reason documented ─────────────────
 
-describe('B-WORKER final cleanup — I9 residuals (WorkerProvisioning/WorkerAchievement) honestly not closed', () => {
-  it('I9 allowlist still has exactly 3 B_WORKER-owned entries — not silently reduced', () => {
+// PRIOR HISTORY (accurate as of B-WORKER final cleanup / PR #168, preserved
+// verbatim): asserted the I9 allowlist still had exactly 3 B_WORKER-owned
+// entries (WorkerProvisioningService, WorkerAchievementService,
+// AccountProvisioningService) and that WorkerAchievementService's 2 callers
+// were confined to the demo-only /my-kora surface. B-WORKER "One Product /
+// No Demo Runtime" correction (2026-09-06): WorkerAchievementService.ts is
+// deleted (zero real callers once its 2 callers became pure redirects) and
+// removed from the allowlist entirely — 2 B_WORKER-owned entries remain.
+describe('B-WORKER final cleanup — I9 residuals (WorkerAchievementService retired, WorkerProvisioning honestly not closed)', () => {
+  it('I9 allowlist has exactly 2 B_WORKER-owned entries — WorkerAchievementService removed, not silently kept', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
     const arrayStart = allowlist.indexOf('export const SYNTHETIC_IMPORT_ALLOWLIST');
     const arrayEnd = allowlist.indexOf('];', arrayStart);
     const arrayBody = allowlist.slice(arrayStart, arrayEnd);
     const matches = arrayBody.match(/owner: 'B_WORKER'/g) ?? [];
-    expect(matches.length).toBe(3);
+    expect(matches.length).toBe(2);
     const files = [...arrayBody.matchAll(/file: '([^']+)'/g)].map(m => m[1]);
     expect(files).toContain('services/worker-provisioning/WorkerProvisioningService.ts');
-    expect(files).toContain('services/worker-achievements/WorkerAchievementService.ts');
     expect(files).toContain('services/account/AccountProvisioningService.ts');
+    expect(files).not.toContain('services/worker-achievements/WorkerAchievementService.ts');
   });
 
-  it('WorkerAchievementService callers are now confined to the demo-only /my-kora surface (not a live real-session risk)', () => {
-    for (const page of ['app/my-kora/page.tsx', 'app/my-kora/dynamic-cv/page.tsx']) {
-      const src = read(page);
-      const redirectIdx = src.indexOf('router.replace(');
-      const callIdx = src.indexOf('workerAchievementService.');
-      expect(redirectIdx).toBeGreaterThan(-1);
-      expect(callIdx).toBeGreaterThan(redirectIdx);
-    }
+  it('WorkerAchievementService.ts no longer exists', () => {
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 
   it('WorkerProvisioningService callers remain in the live admin console — genuinely unresolved, not demo-only', () => {
@@ -228,28 +242,35 @@ describe('B-WORKER final cleanup — registry records actual achieved state, not
     expect(entry).toContain('DEFER_FUTURE_CAPABILITY');
   });
 
-  it('app-surface.my-kora notes record real_session_dependencies = [] and the CLAUDE.md §10 boundary reason', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER final cleanup / PR #168,
+  // preserved verbatim): asserted app-surface.my-kora recorded
+  // real_session_dependencies = [] and status CONSOLIDATE, citing CLAUDE.md
+  // §10 as the reason it was not fully retired. B-WORKER "One Product / No
+  // Demo Runtime" correction (2026-09-06): that §10 reasoning is now
+  // recorded as a corrected-away past position, not the current rationale —
+  // status is DEAD (pure redirect shell, no product runtime).
+  it('app-surface.my-kora notes record the DEAD status and the CLAUDE.md §10 correction', () => {
     const registry = read('lib/architecture/registry.ts');
     const idx = registry.indexOf("id: 'app-surface.my-kora'");
     const entry = registry.slice(idx, registry.indexOf('{ id:', idx + 10));
-    expect(entry).toContain('real_session_dependencies = []');
     expect(entry).toContain('CLAUDE.md §10');
-    expect(entry).toContain("status: 'CONSOLIDATE'"); // not claimed DEAD/retired
+    expect(entry).toContain("status: 'DEAD'");
   });
 
-  it('svc.my-kora-preview notes record zero real-session-reachable callers and the same boundary reason', () => {
+  it('svc.my-kora-preview notes record deletion and the same §10 correction', () => {
     const registry = read('lib/architecture/registry.ts');
     const idx = registry.indexOf("id: 'svc.my-kora-preview'");
     const entry = registry.slice(idx, registry.indexOf('{ id:', idx + 10));
-    expect(entry).toContain('Real-session-reachable callers = 0');
-    expect(entry).toContain("status: 'CONSOLIDATE'"); // not claimed retired
+    expect(entry).toContain('DELETED');
+    expect(entry).toContain("status: 'DEAD'");
   });
 
   it('generated docs/ARCHITECTURE_REGISTRY.md is in sync with the registry (regenerated this slice)', () => {
     // Full byte-for-byte sync is asserted by tests/unit/cc003-i10-registry-completeness.test.ts;
     // this is a light spot-check that the regenerated doc reflects the new notes.
     const doc = read('docs/ARCHITECTURE_REGISTRY.md');
-    expect(doc).toContain('real_session_dependencies');
+    expect(doc).toContain('svc.my-kora-preview');
+    expect(doc).toContain('One Product / No Demo Runtime');
   });
 });
 

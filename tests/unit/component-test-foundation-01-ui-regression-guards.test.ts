@@ -211,11 +211,15 @@ describe('COMPONENT-TEST-FOUNDATION-01 — BoundaryBadge LIVE state guard', () =
     expect(src).toContain('mode="LIVE"');
   });
 
-  it('legacy /my-kora/kora-space and /my-kora/bookings no longer have a live branch to badge (they redirect instead)', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-3, preserved verbatim): asserted
+  // both legacy pages redirected a confirmed real session (router.replace)
+  // while still branching on a live/demo mode. B-WORKER "One Product / No
+  // Demo Runtime" correction (2026-09-06) made both redirects unconditional.
+  it('legacy /my-kora/kora-space and /my-kora/bookings redirect unconditionally (no branch, no badge needed)', () => {
     const spaceSrc    = readSrc('app/my-kora/kora-space/page.tsx');
     const bookingsSrc = readSrc('app/my-kora/bookings/page.tsx');
-    expect(spaceSrc).toContain("router.replace('/worker/commons')");
-    expect(bookingsSrc).toContain("router.replace('/worker/bookings')");
+    expect(spaceSrc).toContain("redirect('/worker/commons')");
+    expect(bookingsSrc).toContain("redirect('/worker/bookings')");
   });
 });
 
@@ -233,9 +237,9 @@ describe('COMPONENT-TEST-FOUNDATION-01 — BoundaryBadge LIVE state guard', () =
 // rendering a pointer to it.
 
 describe('WORKER-DYNAMIC-CV-UX-01 — Dynamic CV underclaiming/connection guard', () => {
-  it('app/my-kora/dynamic-cv/page.tsx redirects a confirmed real session to the canonical /worker/dynamic-cv page', () => {
+  it('app/my-kora/dynamic-cv/page.tsx redirects unconditionally to the canonical /worker/dynamic-cv page', () => {
     const src = readSrc('app/my-kora/dynamic-cv/page.tsx');
-    expect(src).toContain("router.replace('/worker/dynamic-cv')");
+    expect(src).toContain("redirect('/worker/dynamic-cv')");
   });
 
   it('app/worker/dynamic-cv/_components/DynamicCVClient.tsx explicitly connects CV experiences to KORA Space', () => {
@@ -269,8 +273,14 @@ describe('WORKER-DYNAMIC-CV-REGRESSION-GUARDS-01 — Dynamic CV employer visibil
     expect(realCvSrc).toContain('Non contiene ranking o confronto con colleghi');
   });
 
-  it('the preview Dynamic CV page denies employer visibility', () => {
-    expect(previewCvSrc).toMatch(/datore di lavoro non (può|possono|ha)/);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // the "preview" page (app/my-kora/dynamic-cv/page.tsx) for its own
+  // employer-visibility denial copy. B-WORKER "One Product / No Demo
+  // Runtime" correction (2026-09-06) retired that page to a pure redirect()
+  // — there is no longer a separate "preview" surface with its own copy;
+  // the single real page (realCvSrc, checked above) is the only surface now.
+  it('the retired legacy page has no employer-visibility copy of its own left (content removed, not contradicted)', () => {
+    expect(previewCvSrc).not.toMatch(/datore di lavoro/);
   });
 
   it('neither page introduces a positive claim that the employer can see/access the individual CV', () => {

@@ -244,9 +244,14 @@ describe('Regression — prior sprint artifacts preserved', () => {
     expect(fileExists('tests/unit/kora-space-contribution-worker-activation.test.ts')).toBe(true);
   });
 
-  test('23. Worker bookings page still has employer privacy notice', () => {
-    const bookingsSrc = readFile('app/my-kora/bookings/page.tsx');
-    expect(bookingsSrc).toContain('bookings-employer-privacy-notice');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/bookings/page.tsx for the employer privacy notice. B-WORKER
+  // "One Product / No Demo Runtime" correction (2026-09-06) retired that
+  // page to a pure redirect() — the canonical bookings surface,
+  // /worker/bookings (BookingsClient.tsx), carries the same notice.
+  test('23. Worker bookings page (canonical /worker/bookings) still has employer privacy notice', () => {
+    const bookingsSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(bookingsSrc).toContain('worker-bookings-employer-privacy-notice');
     expect(bookingsSrc).toContain('Il datore di lavoro non vede il tuo percorso individuale');
   });
 

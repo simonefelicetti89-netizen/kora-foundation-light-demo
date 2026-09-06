@@ -57,35 +57,30 @@ describe('B-WORKER-2 — Dynamic CV: canonical /worker/dynamic-cv is a proven su
 });
 
 // ── 2. Dynamic CV legacy retirement (zero business logic for real sessions) ─
+//
+// PRIOR HISTORY (accurate as of B-WORKER-2, preserved as a record, not
+// verbatim given the volume): asserted /my-kora/dynamic-cv redirected only a
+// confirmed real session (fetch probe) while preserving a full demo/persona
+// preview render (myKoraPreviewService, workerAchievementService,
+// canAccess-gated access-denied block) for anonymous/persona visitors.
+//
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): the
+// page is now a one-line, unconditional redirect() to /worker/dynamic-cv —
+// no fetch probe, no session check, no demo/persona render of any kind, for
+// any visitor (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md).
 
-describe('B-WORKER-2 — /my-kora/dynamic-cv: real sessions redirect, zero duplicated business logic', () => {
+describe('B-WORKER-2/B-WORKER preview retirement — /my-kora/dynamic-cv is a pure canonical redirect', () => {
   const page = read('app/my-kora/dynamic-cv/page.tsx');
 
-  it('a confirmed real session (fetch ok) redirects to canonical /worker/dynamic-cv', () => {
-    expect(page).toContain("router.replace('/worker/dynamic-cv')");
+  it('redirects unconditionally to canonical /worker/dynamic-cv, for every visitor', () => {
+    expect(page).toContain("redirect('/worker/dynamic-cv')");
   });
 
-  it('the removed live/empty states no longer exist as distinct render branches', () => {
-    expect(page).not.toContain("cvMode === 'live'");
-    expect(page).not.toContain("cvMode === 'empty'");
-    expect(page).not.toContain('data-testid="dynamic-cv-live"');
-    expect(page).not.toContain('data-testid="dynamic-cv-empty"');
-  });
-
-  it('no duplicated real-data fetch/render remains for a real session (LiveCVData/liveCV state removed)', () => {
-    expect(page).not.toContain('LiveCVData');
-    expect(page).not.toContain('liveCV');
-  });
-
-  it('the demo/persona preview path (no real session) is completely unchanged', () => {
-    expect(page).toContain('data-testid="dynamic-cv-demo"');
-    expect(page).toContain('myKoraPreviewService');
-    expect(page).toContain('workerAchievementService');
-  });
-
-  it('the access-denied block for employer demo-state roles is unchanged', () => {
-    expect(page).toContain('myKoraPreviewService.canAccess(activeRole)');
-    expect(page).toContain('Accesso Limitato');
+  it('no demo/persona preview content, fetch probe, or synthetic service call remains', () => {
+    expect(page).not.toContain('myKoraPreviewService');
+    expect(page).not.toContain('workerAchievementService');
+    expect(page).not.toContain('fetch(');
+    expect(page).not.toContain("'use client'");
   });
 });
 
@@ -99,9 +94,14 @@ describe('B-WORKER-2 — Privacy: canonical /worker/privacy is a proven superset
     expect(client).toContain("fetch('/api/worker/privacy-settings')");
   });
 
-  it('the legacy page always labelled its own toggles as non-interactive preview (self-admitted subset)', () => {
-    expect(legacy).toContain('Solo anteprima — Foundation Light');
-    expect(legacy).toContain('Queste impostazioni non modificano dati reali');
+  // PRIOR HISTORY (accurate as of B-WORKER-2, preserved verbatim): "the
+  // legacy page always labelled its own toggles as non-interactive preview
+  // (self-admitted subset)." B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) retired that content entirely — the page is now
+  // a pure redirect with no toggles, no labels, no content of its own.
+  it('the legacy page is now a pure canonical redirect — no toggles, no preview labels', () => {
+    expect(legacy).toContain("redirect('/worker/privacy')");
+    expect(legacy).not.toContain('Solo anteprima — Foundation Light');
   });
 
   it('/worker/privacy page is real, requireWorkerUser-gated (auth foundation preserved)', () => {
@@ -112,22 +112,29 @@ describe('B-WORKER-2 — Privacy: canonical /worker/privacy is a proven superset
 });
 
 // ── 4. Privacy legacy retirement (zero business logic for real sessions) ────
+//
+// PRIOR HISTORY (accurate as of B-WORKER-2, preserved as a record, not
+// verbatim given the volume): asserted /my-kora/privacy fetched
+// /api/worker/privacy-settings to detect a real session before redirecting,
+// held render (checking/redirecting states) to avoid a synthetic-content
+// flash, and preserved myKoraPreviewService.canAccess/getPrivacySummary for
+// non-real sessions.
+//
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): the
+// page is now a one-line, unconditional redirect() to /worker/privacy — no
+// fetch probe, no session check, no demo/persona render of any kind.
 
-describe('B-WORKER-2 — /my-kora/privacy: real sessions redirect, no unconditional synthetic rendering', () => {
+describe('B-WORKER-2/B-WORKER preview retirement — /my-kora/privacy is a pure canonical redirect', () => {
   const page = read('app/my-kora/privacy/page.tsx');
 
-  it('checks for a real session before rendering anything (new: previously always synthetic)', () => {
-    expect(page).toContain("fetch('/api/worker/privacy-settings')");
-    expect(page).toContain("router.replace('/worker/privacy')");
+  it('redirects unconditionally to canonical /worker/privacy, for every visitor', () => {
+    expect(page).toContain("redirect('/worker/privacy')");
   });
 
-  it('holds render (returns null) while checking or redirecting — no flash of synthetic content for real workers', () => {
-    expect(page).toMatch(/mode === ['"]checking['"] \|\| mode === ['"]redirecting['"]\) return null/);
-  });
-
-  it('the demo/persona preview content (canAccess gate + getPrivacySummary) is unchanged for non-real sessions', () => {
-    expect(page).toContain('myKoraPreviewService.canAccess(activeRole)');
-    expect(page).toContain('myKoraPreviewService.getPrivacySummary(');
+  it('no demo/persona preview content, fetch probe, or synthetic service call remains', () => {
+    expect(page).not.toContain('myKoraPreviewService');
+    expect(page).not.toContain('fetch(');
+    expect(page).not.toContain("'use client'");
   });
 });
 
@@ -148,7 +155,7 @@ describe('B-WORKER-2 — KORA Space: parity incomplete (booking-status gap), cor
   it('the booking-status-persistence gap identified here is now closed (B-WORKER-3)', () => {
     expect(button).toContain('initialStatus');
     expect(button).toContain('initialStateFor');
-    expect(legacy).toContain("router.replace('/worker/commons')");
+    expect(legacy).toContain("redirect('/worker/commons')");
   });
 
   it('the sidebar already honestly labels /my-kora/kora-space as synthetic preview, /worker/commons as real', () => {
@@ -204,22 +211,26 @@ describe('B-WORKER-2 — bridge links repointed for proven-parity capabilities o
 });
 
 // ── 7. No preview fallback remains for the two retired capabilities ────────
+//
+// PRIOR HISTORY (accurate as of B-WORKER-2, preserved verbatim): asserted a
+// real session's redirect happened before any demo/persona content in
+// source order (both paths coexisted in the same file). B-WORKER "One
+// Product / No Demo Runtime" correction (2026-09-06): there is no
+// demo/persona content left in either file to order against — both are
+// unconditional single-statement redirects.
 
-describe('B-WORKER-2 — no synthetic fallback reachable by a real session for Dynamic CV or Privacy', () => {
-  it('a real session on /my-kora/dynamic-cv never reaches myKoraPreviewService/workerAchievementService content', () => {
+describe('B-WORKER-2/B-WORKER preview retirement — no synthetic fallback reachable by anyone for Dynamic CV or Privacy', () => {
+  it('/my-kora/dynamic-cv never reaches myKoraPreviewService/workerAchievementService content — none exists', () => {
     const page = read('app/my-kora/dynamic-cv/page.tsx');
-    const redirectIdx = page.indexOf("router.replace('/worker/dynamic-cv')");
-    const demoCommentIdx = page.indexOf('Demo mode — unauthenticated or non-WORKER role');
-    expect(redirectIdx).toBeGreaterThan(-1);
-    expect(demoCommentIdx).toBeGreaterThan(redirectIdx);
+    expect(page).toContain("redirect('/worker/dynamic-cv')");
+    expect(page).not.toContain('myKoraPreviewService');
+    expect(page).not.toContain('workerAchievementService');
   });
 
-  it('a real session on /my-kora/privacy never reaches myKoraPreviewService.getPrivacySummary', () => {
+  it('/my-kora/privacy never reaches myKoraPreviewService.getPrivacySummary — none exists', () => {
     const page = read('app/my-kora/privacy/page.tsx');
-    const redirectIdx = page.indexOf("router.replace('/worker/privacy')");
-    const summaryIdx = page.indexOf('myKoraPreviewService.getPrivacySummary(');
-    expect(redirectIdx).toBeGreaterThan(-1);
-    expect(summaryIdx).toBeGreaterThan(redirectIdx);
+    expect(page).toContain("redirect('/worker/privacy')");
+    expect(page).not.toContain('myKoraPreviewService');
   });
 });
 
@@ -252,22 +263,29 @@ describe('B-WORKER-2 — no net-new product scope', () => {
     expect(exists('app/api/worker/privacy-live')).toBe(false);
   });
 
-  it('the "In arrivo" (future/disabled) badge/public-link/PDF/LinkedIn controls are untouched, still disabled', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-2, preserved verbatim): asserted
+  // /my-kora/dynamic-cv still rendered an "In arrivo"/LinkedIn-disabled
+  // badge (future/disabled controls untouched, not newly enabled). B-WORKER
+  // "One Product / No Demo Runtime" correction (2026-09-06) removed that
+  // content entirely along with the rest of the page's synthetic rendering
+  // — the canonical /worker/dynamic-cv surface (DynamicCVClient) is the
+  // real, current source of truth for any such controls, unaffected here.
+  it('the retired legacy page has no "In arrivo"/LinkedIn UI of its own left to check (content removed, not newly enabled)', () => {
     const legacy = read('app/my-kora/dynamic-cv/page.tsx');
-    expect(legacy).toContain('LinkedIn — Non attivo');
+    expect(legacy).toContain("redirect('/worker/dynamic-cv')");
+    expect(legacy).not.toContain('LinkedIn');
   });
 
   // PRIOR HISTORY (accurate as of B-WORKER-2, preserved verbatim): asserted
   // collective had no redirect logic (explicitly out of Slice 2's scope).
-  // B-WORKER-4 (2026-09-06) added a real-session redirect there — the
-  // 'empty' state was already honest (no synthetic data shown to real
-  // sessions), but still executed inside the transitional /my-kora runtime;
-  // no Collettivo functionality was implemented, only route convergence.
-  it('bookings list remains untouched by Slice 2 (migrated later, in Slice 3); collective redirect added in Slice 4, no new functionality', () => {
+  // B-WORKER-4 (2026-09-06) added a real-session redirect there. B-WORKER
+  // "One Product / No Demo Runtime" correction (2026-09-06) made that
+  // redirect unconditional — no 'empty' state or any other content remains.
+  it('bookings list remains untouched by Slice 2 (migrated later, in Slice 3); collective is now a pure unconditional redirect, no new functionality', () => {
     expect(exists('app/my-kora/collective/page.tsx')).toBe(true);
     expect(exists('app/my-kora/bookings/page.tsx')).toBe(true);
     const collective = read('app/my-kora/collective/page.tsx');
-    expect(collective).toContain("router.replace('/worker/workspace')");
+    expect(collective).toContain("redirect('/worker/workspace')");
     expect(collective).not.toContain('collective-empty-state');
   });
 });

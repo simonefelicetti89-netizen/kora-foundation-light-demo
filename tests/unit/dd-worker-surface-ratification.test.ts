@@ -109,25 +109,39 @@ describe('D-D — /my-kora is transitional, salvage required before retirement',
   // PRIOR HISTORY (accurate as of the ratification itself, preserved
   // verbatim): asserted the entry recorded "SALVAGE_BEFORE_RETIREMENT =
   // REQUIRED" — true before migration started. B-WORKER final cleanup
-  // (2026-09-06) completed that salvage; the entry now records completion
-  // instead of a pending requirement.
-  it('app-surface.my-kora is CONSOLIDATE, no longer competing, decisionRef records the ratification and the completed salvage', () => {
+  // (2026-09-06) completed that salvage; the entry recorded completion
+  // instead of a pending requirement. B-WORKER "One Product / No Demo
+  // Runtime" correction (2026-09-06, same day, later slice) went further:
+  // the surviving anonymous/persona runtime that final-cleanup preserved is
+  // itself retired — app-surface.my-kora is now DEAD (pure redirect shell,
+  // dependencies: []), not CONSOLIDATE.
+  it('app-surface.my-kora is DEAD, no longer competing, decisionRef records both the ratification and the full retirement', () => {
     const entry = entryFor(registry, 'app-surface.my-kora');
-    expect(entry).toContain("status: 'CONSOLIDATE'");
-    expect(entry).toContain('D-D RATIFIED (2026-09-06)');
+    expect(entry).toContain("status: 'DEAD'");
+    expect(entry).toContain('D-D RATIFIED');
     expect(entry).toContain('competingWith: []');
-    expect(entry).toContain('real_session_dependencies = []');
+    expect(entry).toContain('dependencies: []');
   });
 
-  it('svc.my-kora-preview is CONSOLIDATE, recorded as B-WORKER convergence debt, not an undecided competitor', () => {
+  // PRIOR HISTORY (accurate as of the ratification itself, preserved
+  // verbatim): "svc.my-kora-preview is CONSOLIDATE, recorded as B-WORKER
+  // convergence debt." B-WORKER "One Product / No Demo Runtime" correction
+  // (2026-09-06) deleted the file entirely (zero real callers) — status DEAD.
+  it('svc.my-kora-preview is DEAD (deleted), not an undecided competitor', () => {
     const entry = entryFor(registry, 'svc.my-kora-preview');
-    expect(entry).toContain("status: 'CONSOLIDATE'");
-    expect(entry).toContain('no longer an undecided competing architecture');
+    expect(entry).toContain("status: 'DEAD'");
+    expect(entry).toContain('DELETED');
   });
 
-  it('/my-kora route tree is unchanged — no migration has happened yet', () => {
+  // PRIOR HISTORY (accurate as of the ratification itself, preserved
+  // verbatim): "/my-kora route tree is unchanged — no migration has happened
+  // yet." B-WORKER slices 1-5, final cleanup, and this later correction
+  // migrated and then fully retired the route tree to pure redirects — the
+  // files still exist (kept as redirect shells), but their content changed.
+  it('/my-kora route tree still exists as files, now as pure canonical redirects (not "unchanged")', () => {
     for (const route of ['app/my-kora/page.tsx', 'app/my-kora/bookings/page.tsx', 'app/my-kora/opportunities/page.tsx']) {
       expect(exists(route)).toBe(true);
+      expect(read(route)).toContain('redirect(');
     }
   });
 });
@@ -152,23 +166,25 @@ describe('D-D — B-WORKER has not started', () => {
 // ── 7. Synthetic B-WORKER residual ownership is unchanged ──────────────────
 
 describe('D-D — B-WORKER synthetic residual ownership unchanged', () => {
-  it('the 3 I9-tracked residuals remain owner: B_WORKER, unmodified', () => {
+  // PRIOR HISTORY (accurate as of the ratification itself, preserved
+  // verbatim): "the 3 I9-tracked residuals remain owner: B_WORKER,
+  // unmodified" (including WorkerAchievementService.ts). B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06) retired
+  // WorkerAchievementService.ts entirely (zero real callers) — 2 remain.
+  it('the 2 remaining I9-tracked residuals remain owner: B_WORKER, unmodified', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
     for (const file of [
       'services/account/AccountProvisioningService.ts',
-      'services/worker-achievements/WorkerAchievementService.ts',
       'services/worker-provisioning/WorkerProvisioningService.ts',
     ]) {
       expect(allowlist).toContain(`{ file: '${file}'`);
     }
-    // Ownership pattern unchanged: all 3 array entries still owner: 'B_WORKER'.
-    // Scoped to the array literal only — the file's own header comments
-    // legitimately quote "owner: 'B_WORKER'" in prose too.
+    expect(allowlist).not.toContain(`{ file: 'services/worker-achievements/WorkerAchievementService.ts'`);
     const arrayStart = allowlist.indexOf('export const SYNTHETIC_IMPORT_ALLOWLIST');
     const arrayEnd = allowlist.indexOf('];', arrayStart);
     const arrayBody = allowlist.slice(arrayStart, arrayEnd);
     const matches = arrayBody.match(/owner: 'B_WORKER'/g) ?? [];
-    expect(matches.length).toBe(3);
+    expect(matches.length).toBe(2);
   });
 
   it('MyKoraPreviewService (non-I9 B-WORKER debt) is named explicitly in the ratification', () => {
@@ -178,27 +194,39 @@ describe('D-D — B-WORKER synthetic residual ownership unchanged', () => {
     expect(section).toContain('services/my-kora-preview/MyKoraPreviewService.ts');
   });
 
-  it('none of the 3 residual service files were modified by this ratification', () => {
+  // PRIOR HISTORY (accurate as of the ratification itself, preserved
+  // verbatim): asserted all 3 residual service files, including
+  // WorkerAchievementService.ts, were unmodified by this ratification (a
+  // fact about THIS PR, at the time). B-WORKER "One Product / No Demo
+  // Runtime" correction (2026-09-06) is a later, separately-authorized PR
+  // that did modify (retire) WorkerAchievementService.ts — not a regression
+  // of this ratification's own scope boundary.
+  it('none of the 2 remaining residual service files were modified by this ratification; WorkerAchievementService retired since', () => {
     for (const [file, marker] of [
       ['services/account/AccountProvisioningService.ts', 'getCurrentDemoUser'],
-      ['services/worker-achievements/WorkerAchievementService.ts', 'WorkerAchievementService'],
       ['services/worker-provisioning/WorkerProvisioningService.ts', 'WorkerProvisioningService'],
     ] as const) {
       expect(read(file)).toContain(marker);
     }
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 });
 
 // ── 8. No runtime implementation was changed by this ratification PR ───────
 
 describe('D-D — no runtime implementation changed', () => {
-  it('no app/worker or app/my-kora route file was modified (only docs/registry/tests)', () => {
-    // Sanity: the auth-guard files still contain their exact known invariants,
-    // proving they were not rewritten as part of this ratification.
+  // PRIOR HISTORY (accurate as of the ratification itself, preserved
+  // verbatim): asserted app/my-kora/layout.tsx still contained "Two-layer
+  // guard, same shape as app/admin/layout.tsx" — true at ratification time
+  // (a fact about THIS PR). B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) is a later, separately-authorized PR that did
+  // rewrite app/my-kora/layout.tsx to a trivial pass-through — not a
+  // regression of this ratification's own scope boundary.
+  it('no app/worker or app/my-kora route file was modified BY THIS RATIFICATION PR (later, separately-authorized PRs did retire /my-kora)', () => {
     const workerLayout = read('app/worker/layout.tsx');
     expect(workerLayout).toContain('B168-P3: KORA_ADMIN attempting /worker/* is hard-blocked');
     const myKoraLayout = read('app/my-kora/layout.tsx');
-    expect(myKoraLayout).toContain('Two-layer guard, same shape as app/admin/layout.tsx');
+    expect(myKoraLayout).not.toContain('getSessionKoraRole');
   });
 
   it('CC-00 remains fully closed, unaffected by this later, separate ratification', () => {

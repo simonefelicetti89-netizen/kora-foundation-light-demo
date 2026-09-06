@@ -88,20 +88,22 @@ describe('CC-022 — no UNKNOWN synthetic residuals', () => {
 // ── 3. B-WORKER residuals remain tracked, untouched ─────────────────────────
 
 describe('CC-022 — B-WORKER residuals untouched by this closure', () => {
-  it('exactly the 3 known B-WORKER files remain, same owner', () => {
+  // PRIOR HISTORY (accurate as of CC-022, preserved verbatim): "exactly the
+  // 3 known B-WORKER files remain." B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) retired WorkerAchievementService.ts (zero real
+  // callers) — 2 files remain, both still owner: B_WORKER.
+  it('exactly the 2 known B-WORKER files remain, same owner (WorkerAchievementService retired since)', () => {
     const files = BWORKER_OWNED_SYNTHETIC_IMPORTS.map((e) => e.file).sort();
     expect(files).toEqual([
       'services/account/AccountProvisioningService.ts',
-      'services/worker-achievements/WorkerAchievementService.ts',
       'services/worker-provisioning/WorkerProvisioningService.ts',
     ].sort());
   });
 
-  it('WorkerProvisioningService.ts and WorkerAchievementService.ts are byte-unchanged in their synthetic dependency', () => {
+  it('WorkerProvisioningService.ts is byte-unchanged in its synthetic dependency; WorkerAchievementService.ts no longer exists', () => {
     const roster = read('services/worker-provisioning/WorkerProvisioningService.ts');
-    const achievements = read('services/worker-achievements/WorkerAchievementService.ts');
     expect(roster).toMatch(/from ['"][^'"]*\/data\/synthetic\/worker-roster\.json['"]/);
-    expect(achievements).toMatch(/from ['"][^'"]*\/data\/synthetic\/worker-achievements\.json['"]/);
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of CC-022, preserved verbatim): asserted
@@ -259,14 +261,19 @@ describe('CC-022 — B-WORKER not started, CC-023 not started, CC-00 remains OPE
     expect(block).toContain('B-WORKER has NOT started');
   });
 
+  // PRIOR HISTORY (accurate as of CC-022, preserved verbatim): asserted all
+  // 3 files existed unchanged. B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) retired WorkerAchievementService.ts (zero real
+  // callers, no replacement domain invented) — this is a genuine, later,
+  // separately-authorized closure, not undisclosed B-WORKER product work.
   it('no runtime code implements B-WORKER product decisions or adversarial (CC-023) tooling', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
-      'services/worker-achievements/WorkerAchievementService.ts',
       'services/account/AccountProvisioningService.ts',
     ]) {
       expect(exists(file)).toBe(true); // unchanged, still synthetic — not migrated
     }
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 });
 

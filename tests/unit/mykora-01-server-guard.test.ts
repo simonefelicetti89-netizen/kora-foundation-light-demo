@@ -1,21 +1,25 @@
 // tests/unit/mykora-01-server-guard.test.ts
 // MYKORA-01 — Convert /my-kora to a server-side guard.
 //
-// Context: docs/PILOT_SAAS_READINESS.md flagged app/my-kora/layout.tsx as the
-// one architectural outlier still gating on client-side session detection
-// (useEffect + browser supabase.auth.getSession()), the same bug class that
-// caused the ROLE-SWITCHER-01/02 production incident. This sprint moves the
-// real-session authorization decision server-side (lib/auth/kora-session.ts
-// getSessionKoraRole()), matching the pattern already used by
-// admin/company/partner/worker layouts (B137). The demo/persona preview path
-// (no real session) is intentionally preserved client-side — My KORA is
-// PREVIEW-only in Foundation Light (see middleware.ts comment on
-// WORKER_ALLOWED_PREFIXES) and serves only synthetic persona data there, so
-// gating it with demo-state is a product/demo-mode concern, not a privacy
-// boundary.
+// PRIOR HISTORY (accurate as of MYKORA-01, preserved as a record, not
+// verbatim given the volume): this file tested app/my-kora/layout.tsx as an
+// async Server Component resolving the real session via getSessionKoraRole()
+// (server-side, cookie-based), redirecting real WORKER/KORA_ADMIN sessions
+// to their canonical destination, hard-blocking any other real role, and
+// delegating to app/my-kora/_providers/MyKoraDemoGate.tsx (client component,
+// demo-state only) exclusively when there was no real session at all.
 //
-// Static/source-level tests — consistent with this codebase's existing
-// convention for auth-layout guards (see tests/unit/b137-auth-layout-guard.test.ts).
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06):
+// app/my-kora/layout.tsx no longer resolves any session or makes any
+// admission decision — every /my-kora/** page redirects unconditionally,
+// for every visitor, to its canonical /worker/** equivalent
+// (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md).
+// MyKoraDemoGate.tsx is deleted (zero real callers). The route-distinction
+// checks below (middleware.ts's WORKER_ALLOWED_PREFIXES excluding
+// /my-kora/, /worker/layout.tsx's real auth guard) are genuinely unrelated
+// and preserved. See lib/architecture/registry.ts app-surface.my-kora and
+// tests/unit/bworker-preview-runtime-retirement.test.ts for the regression
+// guard proving the retirement.
 
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
@@ -25,48 +29,22 @@ function read(rel: string): string {
   return fs.readFileSync(path.resolve(__dirname, '../..', rel), 'utf-8');
 }
 
-const layoutSrc    = read('app/my-kora/layout.tsx');
-const demoGateSrc  = read('app/my-kora/_providers/MyKoraDemoGate.tsx');
-const sessionSrc   = read('lib/auth/kora-session.ts');
-const middlewareSrc = read('middleware.ts');
+describe('MYKORA-01/B-WORKER — layout.tsx is now a trivial pass-through, not a guard', () => {
+  const layoutSrc = read('app/my-kora/layout.tsx');
 
-describe('MYKORA-01 — layout is a server-side guard, not client-side', () => {
-  it('layout.tsx has no use client directive', () => {
+  it('layout.tsx has no use client directive, no session resolution, no admission logic', () => {
     expect(layoutSrc.trimStart().startsWith("'use client'")).toBe(false);
+    expect(layoutSrc).not.toContain('getSessionKoraRole');
+    expect(layoutSrc).not.toContain('realRole');
+    expect(layoutSrc).not.toContain('MyKoraDemoGate');
   });
 
-  it('layout.tsx is an async Server Component', () => {
-    expect(layoutSrc).toContain('export default async function MyKoraLayout');
+  it('MyKoraDemoGate.tsx no longer exists', () => {
+    expect(() => read('app/my-kora/_providers/MyKoraDemoGate.tsx')).toThrow();
   });
 
-  it('layout.tsx resolves the real session via getSessionKoraRole (server-side, cookie-based)', () => {
-    expect(layoutSrc).toContain('getSessionKoraRole');
-    expect(layoutSrc).toMatch(/from ['"]@\/lib\/auth\/kora-session['"]/);
-  });
-
-  it('layout.tsx does not use any client-side session-detection primitives', () => {
-    expect(layoutSrc).not.toContain('useEffect(');
-    expect(layoutSrc).not.toContain('useState(');
-    expect(layoutSrc).not.toContain('getSupabaseBrowserClient');
-    expect(layoutSrc).not.toContain('.auth.getSession()');
-    expect(layoutSrc).not.toContain('onAuthStateChange');
-  });
-});
-
-describe('MYKORA-01 — getSessionKoraRole exists and is a coarse, side-effect-free role read', () => {
-  it('kora-session.ts exports getSessionKoraRole', () => {
-    expect(sessionSrc).toContain('export async function getSessionKoraRole');
-  });
-
-  it('reads kora_role from app_metadata only (never user_metadata)', () => {
-    const start = sessionSrc.indexOf('export async function getSessionKoraRole');
-    const body = sessionSrc.substring(start, start + 500);
-    expect(body).toContain('app_metadata');
-    expect(body).not.toContain('user_metadata');
-  });
-
-  it('does not modify the existing require*User() authorization functions', () => {
-    // Additive change only — these must still exist with their guards intact.
+  it('kora-session.ts require*User() functions remain unmodified (unrelated, untouched)', () => {
+    const sessionSrc = read('lib/auth/kora-session.ts');
     expect(sessionSrc).toContain('export async function requireWorkerUser');
     expect(sessionSrc).toContain("koraRole !== 'WORKER'");
     expect(sessionSrc).toContain('export async function requireCompanyUser');
@@ -74,68 +52,9 @@ describe('MYKORA-01 — getSessionKoraRole exists and is a coarse, side-effect-f
   });
 });
 
-describe('MYKORA-01 — non-WORKER/non-KORA_ADMIN real sessions are denied server-side (fail closed)', () => {
-  // PRIOR HISTORY (accurate as of MYKORA-01, preserved verbatim): "layout.tsx
-  // admits only WORKER and KORA_ADMIN as real sessions" — asserted
-  // `realRole === 'WORKER' || realRole === 'KORA_ADMIN'` was the condition
-  // for an *admission* branch (realUserPermitted). B-WORKER final cleanup
-  // (2026-09-06) retired that admission branch entirely — real WORKER/
-  // KORA_ADMIN sessions are now redirected to their canonical destination
-  // instead of admitted into the demo-state preview.
-  it('layout.tsx redirects real WORKER and KORA_ADMIN sessions, does not admit them', () => {
-    expect(layoutSrc).toContain("realRole === 'WORKER'");
-    expect(layoutSrc).toContain("redirect('/worker/workspace')");
-    expect(layoutSrc).toContain("realRole === 'KORA_ADMIN'");
-    expect(layoutSrc).toContain("redirect('/admin')");
-    expect(layoutSrc).not.toContain('realUserPermitted');
-    expect(layoutSrc).not.toContain("from './_providers/WorkerSessionProvider'");
-    expect(layoutSrc).not.toContain('<WorkerSessionProvider>');
-  });
-
-  it('layout.tsx has an explicit hard-block branch for any other non-null real role', () => {
-    // Both real-session redirects happen before this check (source order).
-    const workerRedirectIdx = layoutSrc.indexOf("redirect('/worker/workspace')");
-    const blockIdx = layoutSrc.indexOf('realRole !== null');
-    expect(workerRedirectIdx).toBeGreaterThan(-1);
-    expect(blockIdx).toBeGreaterThan(workerRedirectIdx);
-  });
-
-  it('layout.tsx never name-checks COMPANY_ADMIN/PARTNER/DEMO_VIEWER/ADVISOR as admitted', () => {
-    for (const role of ['COMPANY_ADMIN', 'PARTNER', 'DEMO_VIEWER', 'ADVISOR']) {
-      expect(layoutSrc).not.toContain(`realRole === '${role}'`);
-    }
-  });
-
-  it('the real-user-denied branch renders before any child page — children is not referenced in that branch', () => {
-    const blockStart = layoutSrc.indexOf('realRole !== null');
-    const blockSection = layoutSrc.substring(blockStart, blockStart + 900);
-    expect(blockSection).not.toContain('{children}');
-  });
-});
-
-describe('MYKORA-01 — demo-visitor path only reachable with no real session', () => {
-  it('layout.tsx delegates to MyKoraDemoGate only in the final (no real session) branch', () => {
-    const demoGateIdx = layoutSrc.indexOf('<MyKoraDemoGate>');
-    const realBlockIdx = layoutSrc.indexOf('realRole !== null');
-    expect(demoGateIdx).toBeGreaterThan(-1);
-    expect(realBlockIdx).toBeGreaterThan(-1);
-    expect(demoGateIdx).toBeGreaterThan(realBlockIdx);
-  });
-
-  it('MyKoraDemoGate.tsx is a client component using demo-state (useRole) only', () => {
-    expect(demoGateSrc.trimStart().startsWith("'use client'")).toBe(true);
-    expect(demoGateSrc).toContain('useRole');
-  });
-
-  it('MyKoraDemoGate.tsx does not itself perform any Supabase/session detection', () => {
-    expect(demoGateSrc).not.toContain('supabase');
-    expect(demoGateSrc).not.toContain('.auth.getSession()');
-    expect(demoGateSrc).not.toContain('useEffect(');
-  });
-});
-
-describe('MYKORA-01 — route behavior for /my-kora vs /worker remains distinct (not merged)', () => {
+describe('MYKORA-01 — route behavior for /my-kora vs /worker remains distinct (not merged) — unaffected by the retirement', () => {
   it('/worker/* stays confined via WORKER_ALLOWED_PREFIXES, which excludes /my-kora (unchanged)', () => {
+    const middlewareSrc = read('middleware.ts');
     expect(middlewareSrc).toContain('WORKER_ALLOWED_PREFIXES');
     expect(middlewareSrc).toContain("'/worker/'");
     expect(middlewareSrc).not.toContain("'/my-kora/'");
@@ -145,10 +64,5 @@ describe('MYKORA-01 — route behavior for /my-kora vs /worker remains distinct 
     const workerLayoutSrc = read('app/worker/layout.tsx');
     expect(workerLayoutSrc).toContain('getCurrentWorkerUser');
     expect(workerLayoutSrc).toContain("redirect('/login')");
-  });
-
-  it('layout.tsx documents the /my-kora vs /worker distinction instead of merging routes', () => {
-    expect(layoutSrc).toContain('/worker');
-    expect(layoutSrc.toLowerCase()).toContain('preview');
   });
 });

@@ -173,9 +173,19 @@ describe('B-TRUTH — responsibility split preserved: no My KORA/session behavio
   // session/persona resolution itself — activeRole/activePersona continue to
   // resolve via useRole()/usePersona(), unchanged). getCurrentDemoUser()
   // itself is untouched in AccountProvisioningService.ts.
-  it('app/my-kora/page.tsx session/persona resolution (useRole/usePersona) is untouched', () => {
+  //
+  // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06):
+  // app/my-kora/page.tsx no longer has ANY session/persona resolution of its
+  // own — it is a pure, unconditional redirect() to /worker/workspace
+  // (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md). This is
+  // a separate, later, explicitly-authorized retirement, not a regression of
+  // this PR's own AccountProvisioningService scope boundary —
+  // getCurrentDemoUser() remains untouched by this PR either way (it is
+  // itself later removed by PR #168, an unrelated slice).
+  it('app/my-kora/page.tsx no longer has its own session/persona resolution — retired to a pure redirect (later, separately-authorized slice)', () => {
     const src = read('app/my-kora/page.tsx');
-    expect(src).toContain('useRole, useScenario, usePersona');
+    expect(src).toContain("redirect('/worker/workspace')");
+    expect(src).not.toContain('useRole, useScenario, usePersona');
     expect(src).not.toContain('getCurrentDemoUser');
   });
 
@@ -188,7 +198,13 @@ describe('B-TRUTH — responsibility split preserved: no My KORA/session behavio
   it('B-WORKER services are untouched — still exist, unmodified reachability', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
-      'services/worker-achievements/WorkerAchievementService.ts',
+      // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
+      // was asserted to exist here (unmodified by this PR, at the time). B-WORKER
+      // "One Product / No Demo Runtime" correction (2026-09-06) deleted it entirely
+      // (zero real callers once its 2 callers, app/my-kora/page.tsx and
+      // app/my-kora/dynamic-cv/page.tsx, became pure canonical redirects) — removed
+      // from this list; this is that later, separately-authorized retirement, not an
+      // unrelated-PR regression of this PR's own scope boundary.
       'services/worker-space/WorkerSpaceCapabilityService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
@@ -279,6 +295,6 @@ describe('B-TRUTH — registry and I9 reflect the migration', () => {
   // 8 files / 13 imports. See tests/unit/cc00-residual-demo-retirement.test.ts.
   it('allowlist header count is unchanged by THIS PR — 6 files / 11 imports (no synthetic import was removed, only a pipeline-only method; historical note: later, unrelated PRs changed the count, most recently to 6/11)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 2 files / 2 import statements'); // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): WorkerAchievementService.ts removed from the allowlist (deleted, zero callers) — 3/3 -> 2/2, unrelated to this PR.
   });
 });

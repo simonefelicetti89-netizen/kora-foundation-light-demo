@@ -1,15 +1,26 @@
 // Worker Opportunity Engine — deterministic, rule-based, no AI, no LLM.
 // Generates personalized opportunity suggestions for workers based on pillar activity.
 //
-// Architecture: additive layer on top of MyKoraPreviewService.
+// Master Plan §33 DO-NOT-DELETE / FUTURE CORE: "base tecnica di Exposure."
+//
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): the
+// former demo entry point compute(personaId, role, scenarioId) — which read
+// persona fixtures via MyKoraPreviewService.getMyKoraHomePreview() — was
+// retired along with that service (see
+// docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md). It was
+// verified fresh to have zero real callers (its sole caller was the
+// now-retired /my-kora/opportunities demo page). computeFromPillars() is the
+// preserved technical foundation — it takes real pillar data directly and
+// has no synthetic-service dependency; wiring it to a live pillar-breakdown
+// source is future work, not done here.
+//
 // Privacy: worker-self data only. Never accessible to employer roles.
 // Employer roles must NEVER call or receive output from this service.
 // methodologyStatus: pre_empirical_calibration
-// foundation_light_stub: true — preview only, no real matching, no booking engine.
 // not_employer_visible: true (mandatory — constitutional privacy boundary)
 
-import type { KoraRole, ScenarioId } from '@/lib/types';
-import { myKoraPreviewService, type PillarPreview } from '@/services/my-kora-preview/MyKoraPreviewService';
+import type { KoraRole } from '@/lib/types';
+import type { WorkerPillarData } from '@/lib/types/domains/worker-pib';
 
 // Worker roles that may access this service
 const WORKER_ROLES: ReadonlySet<KoraRole> = new Set<KoraRole>(['WORKER', 'KORA_ADMIN']);
@@ -189,22 +200,7 @@ export class WorkerOpportunityService {
     return WORKER_ROLES.has(role);
   }
 
-  compute(
-    personaId: string,
-    role: KoraRole,
-    scenarioId?: ScenarioId,
-  ): WorkerOpportunity[] {
-    if (!this.canAccess(role)) return [];
-
-    const preview = myKoraPreviewService.getMyKoraHomePreview(
-      personaId,
-      scenarioId ?? 'S1',
-    );
-    const pillarBreakdown = preview?.pib_light?.pillar_breakdown ?? [];
-    return this.computeFromPillars(pillarBreakdown);
-  }
-
-  computeFromPillars(pillarBreakdown: PillarPreview[]): WorkerOpportunity[] {
+  computeFromPillars(pillarBreakdown: WorkerPillarData[]): WorkerOpportunity[] {
     if (pillarBreakdown.length === 0) return [];
 
     // Sort pillars by score ascending (weakest first)

@@ -265,9 +265,15 @@ describe('Initiative Explainability UI — 10. Error state', () => {
 // ── 11. P1 product integrity regression ──────────────────────────────────────
 
 describe('Initiative Explainability UI — 11. P1 regression: PIB coherence', () => {
-  it('P1 PIB page still fetches /api/worker/pib', () => {
-    const src = read('app/my-kora/personal-impact-balance/page.tsx');
-    expect(src).toContain('/api/worker/pib');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/personal-impact-balance/page.tsx for a client-side
+  // /api/worker/pib fetch. B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) retired that page to a pure redirect() — the
+  // canonical /worker/personal-impact-balance page fetches live PIB data
+  // server-side via workerPIBService.getPIBLive, not a client fetch.
+  it('canonical /worker/personal-impact-balance still fetches live PIB data (server-side via getPIBLive)', () => {
+    const src = read('app/worker/personal-impact-balance/page.tsx');
+    expect(src).toContain('getPIBLive');
   });
 
   it('P1 upload dedup guard still present in accept route', () => {

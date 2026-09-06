@@ -90,10 +90,33 @@ jobs:
             exit 1
           fi
 
+      # PR #169 final correction (2026-09-06): this identical step, in the
+      # sibling e2e-golden-path-local job further below, is what actually
+      # failed CI on this PR's own first run — "Failed to resolve latest
+      # Supabase CLI release: rate limit exceeded". supabase/setup-cli@v1's
+      # action.yml resolves `version: latest` via the unauthenticated GitHub
+      # Releases API (60 req/hour, shared across the whole runner IP pool) —
+      # it separately documents a `github-token` input specifically "to
+      # resolve the latest Supabase CLI release without hitting
+      # unauthenticated API limits", which this workflow never set. This job
+      # ran the identical step in the same run and happened to win that
+      # race (succeeded) — proof this is flakiness affecting both jobs
+      # equally, not a one-off isolated to the other job, so it is fixed
+      # identically in both places. `secrets.GITHUB_TOKEN` (auto-issued to
+      # every workflow run, no new secret to create) raises the limit to
+      # 5000 req/hour scoped to this repo, which is what actually fixes it —
+      # pinning a specific CLI version was considered but rejected: it would
+      # silently freeze this gate against an aging CLI release instead of
+      # fixing the real cause.
       - name: Install Supabase CLI
+        id: install_supabase
         uses: supabase/setup-cli@v1
         with:
           version: latest
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify Supabase CLI is installed and on PATH
+        run: supabase --version
 
       # `supabase start` blocks until every service (including Postgres) has
       # passed its own health check before returning — this is the real
@@ -102,6 +125,7 @@ jobs:
       # supabase/migrations/ — this comment intentionally names no fixed
       # upper bound so it cannot go stale again as new migrations land).
       - name: Start local Supabase stack (applies every tracked migration fresh)
+        id: start_supabase
         run: supabase start
 
       # Explicit, additional readiness proof beyond `supabase start`
@@ -271,9 +295,19 @@ jobs:
           retention-days: 30
 
       # Cleanup runs even if a suite above failed, so no local Supabase
-      # container is ever left running on the runner.
+      # container is ever left running on the runner. PR #169 final
+      # correction (2026-09-06): gated on the install/start steps actually
+      # having run — previously `if: always()` alone meant that if
+      # "Install Supabase CLI" itself failed (e.g. the rate-limit failure
+      # this pass fixes), this step still tried to run `supabase stop` and
+      # died with a second, misleading "supabase: command not found" (exit
+      # 127) that obscured the real failure. `install_supabase.outcome`
+      # covers CLI availability; `start_supabase.outcome != 'skipped'`
+      # covers "the stack actually reached the start stage" — a start that
+      # itself failed (not skipped) still gets a stop attempt, since
+      # `supabase start` can leave partial containers behind.
       - name: Stop local Supabase stack
-        if: always()
+        if: always() && steps.install_supabase.outcome == 'success' && steps.start_supabase.outcome != 'skipped'
         run: supabase stop
 
   # B-CI (E2E truth) — first slice. Wires the ONE existing Playwright spec
@@ -400,12 +434,25 @@ jobs:
             exit 1
           fi
 
+      # PR #169 final correction (2026-09-06): this exact step is what
+      # actually failed CI on this PR's own first run —
+      # "Failed to resolve latest Supabase CLI release: rate limit exceeded".
+      # See the identical step's comment in the kora-link-local-integration
+      # job above for the full root-cause explanation (supabase/setup-cli@v1
+      # resolves `version: latest` via the unauthenticated GitHub Releases
+      # API unless given a github-token). Fixed identically here.
       - name: Install Supabase CLI
+        id: install_supabase
         uses: supabase/setup-cli@v1
         with:
           version: latest
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify Supabase CLI is installed and on PATH
+        run: supabase --version
 
       - name: Start local Supabase stack (applies every migration fresh)
+        id: start_supabase
         run: supabase start
 
       - name: Verify Postgres is actually reachable
@@ -499,6 +546,9 @@ jobs:
           path: test-results/
           retention-days: 14
 
+      # PR #169 final correction (2026-09-06): same conditional-cleanup fix
+      # as the kora-link-local-integration job above — see that step's
+      # comment for the full explanation.
       - name: Stop local Supabase stack
-        if: always()
+        if: always() && steps.install_supabase.outcome == 'success' && steps.start_supabase.outcome != 'skipped'
         run: supabase stop

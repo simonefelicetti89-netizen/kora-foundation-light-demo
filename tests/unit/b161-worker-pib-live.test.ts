@@ -212,14 +212,20 @@ describe('Invarianti privacy WorkerPIBService live', () => {
     expect(pib.not_performance_score).toBe(true);
   });
 
-  it('metodi sincroni (preview) restano isSynthetic=true e non vengono modificati', () => {
-    // Verifica che i nuovi metodi async non abbiano rotto i metodi sincroni B157
-    const pib = service.getPIB('A', 'S1');
-    expect(pib.isSynthetic).toBe(true);
-    expect(pib.pib_derivation_basis).toBe('synthetic_iu_pre_computed');
-
-    const cv = service.getCVData('A');
-    expect(cv.isSynthetic).toBe(true);
-    expect(cv.export_available).toBe(false);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "metodi
+  // sincroni (preview) restano isSynthetic=true e non vengono modificati" —
+  // verified getPIB('A','S1')/getCVData('A') (synthetic KORA_ADMIN preview
+  // methods) were unaffected by the new async *Live methods. B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06): getPIB/getCVData are
+  // removed entirely — their sole callers (/api/worker/pib and
+  // /api/worker/impact-cv "Path 2") were verified fresh to have zero
+  // frontend callers once /my-kora's real-session probes were retired
+  // (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md). The
+  // async *Live methods this describe block actually exercises are
+  // unaffected by that removal.
+  it('getPIB/getCVData synthetic preview methods no longer exist on WorkerPIBService', () => {
+    const svc = service as unknown as Record<string, unknown>;
+    expect(svc['getPIB']).toBeUndefined();
+    expect(svc['getCVData']).toBeUndefined();
   });
 });
