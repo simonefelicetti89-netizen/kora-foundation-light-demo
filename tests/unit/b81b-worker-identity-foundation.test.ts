@@ -385,20 +385,29 @@ describe('B81-B Task 5 — privacy-escalation-model.md', () => {
 
 // ── Task 6: app/my-kora/layout.tsx ───────────────────────────────────────────
 
-describe('B81-B Task 6 — My KORA layout uses WorkerSessionProvider', () => {
+// PRIOR HISTORY (accurate as of B81-B/MYKORA-01, preserved verbatim): this
+// describe block asserted app/my-kora/layout.tsx itself imported and rendered
+// <WorkerSessionProvider> for "permitted" (real WORKER/KORA_ADMIN) sessions.
+// B-WORKER final cleanup (2026-09-06) retired that admission branch — real
+// sessions are redirected out of /my-kora entirely, never wrapped in
+// WorkerSessionProvider. The provider still exists and is still used, one
+// level down, exclusively by the anonymous/persona demo-visitor path
+// (MyKoraDemoGate.tsx).
+describe('B81-B Task 6 — My KORA layout delegates WorkerSessionProvider to the demo-visitor path', () => {
   const src = read('app/my-kora/layout.tsx');
   // MYKORA-01: the pure demo-visitor role predicate (isWorkerRole/isAdminRole)
   // now lives in the client delegate, reached only when there is no real
   // session — see app/my-kora/_providers/MyKoraDemoGate.tsx.
   const demoGateSrc = read('app/my-kora/_providers/MyKoraDemoGate.tsx');
 
-  it('imports WorkerSessionProvider', () => {
-    expect(src).toContain("WorkerSessionProvider");
-    expect(src).toContain("_providers/WorkerSessionProvider");
+  it('layout.tsx no longer imports or renders WorkerSessionProvider directly (redirects real sessions instead)', () => {
+    expect(src).not.toContain("from './_providers/WorkerSessionProvider'");
+    expect(src).not.toContain("<WorkerSessionProvider>");
   });
 
-  it('wraps permitted sessions in WorkerSessionProvider', () => {
-    expect(src).toContain("<WorkerSessionProvider>");
+  it('MyKoraDemoGate.tsx still imports and renders WorkerSessionProvider for demo visitors', () => {
+    expect(demoGateSrc).toContain("from './WorkerSessionProvider'");
+    expect(demoGateSrc).toContain("<WorkerSessionProvider>");
   });
 
   it('gates demo visitors on isWorkerRole and isAdminRole (MyKoraDemoGate.tsx)', () => {

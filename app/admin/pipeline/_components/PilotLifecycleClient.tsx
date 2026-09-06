@@ -19,10 +19,13 @@
 // canonical accountProvisioning prop (fetched server-side by page.tsx via
 // Supabase Auth) instead of calling
 // accountProvisioningService.getAccountsForCompany() here.
-// AccountProvisioningService.getCurrentDemoUser() — a SEPARATE, My
-// KORA/session-identity responsibility, called only from
-// app/my-kora/page.tsx — is untouched; that is why
-// AccountProvisioningService.ts still exists (narrowed, not retired).
+//
+// PRIOR HISTORY (preserved verbatim): "AccountProvisioningService.getCurrentDemoUser()
+// — a SEPARATE, My KORA/session-identity responsibility, called only from
+// app/my-kora/page.tsx — is untouched; that is why AccountProvisioningService.ts
+// still exists (narrowed, not retired)." That caller was removed earlier in
+// the B-WORKER workstream; getCurrentDemoUser() itself was removed in
+// B-WORKER final cleanup (2026-09-06).
 //
 // CC-00 Final Scoring Canonicalization (2026-09-05): the "Scoring" step's
 // hasScoring flag no longer reads scoringSimulatorService (deleted — the

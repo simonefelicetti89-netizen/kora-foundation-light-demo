@@ -104,9 +104,12 @@ describe('CC-022 — B-WORKER residuals untouched by this closure', () => {
     expect(achievements).toMatch(/from ['"][^'"]*\/data\/synthetic\/worker-achievements\.json['"]/);
   });
 
-  it('AccountProvisioningService.ts is untouched — getCurrentDemoUser() still defined, still synthetic', () => {
+  // PRIOR HISTORY (accurate as of CC-022, preserved verbatim): asserted
+  // getCurrentDemoUser() was still defined, still synthetic. B-WORKER final
+  // cleanup (2026-09-06) found it zero-caller and removed it.
+  it('AccountProvisioningService.ts still exists — getCurrentDemoUser() was removed separately once proven zero-caller', () => {
     const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
+    expect(src).not.toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
     expect(src).toMatch(/from ['"][^'"]*\/data\/synthetic\/user-accounts\.json['"]/);
   });
 });

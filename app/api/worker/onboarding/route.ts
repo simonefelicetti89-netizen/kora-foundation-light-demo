@@ -16,6 +16,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 export const CURRENT_PRIVACY_CONSENT_VERSION = 'B113-v1.0';
 
@@ -69,6 +70,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // workerId from session only — never from body
   const { workerId, tenantId } = auth;
+
+  // SECURITY-RATE-LIMITING-04 (B-WORKER final cleanup, 2026-09-06): closes
+  // the "media priorità, non implementate" gap docs/SECURITY_RATE_LIMITING_04.md
+  // already identified for this route — self-service, worker-scoped, same
+  // risk shape as worker/dynamic-cv/share (token_creation).
+  const rateLimitGuard = await assertRateLimit('token_creation', workerId);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: unknown;
   try {

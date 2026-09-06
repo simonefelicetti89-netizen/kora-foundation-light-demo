@@ -241,11 +241,15 @@ describe('B-WORKER-4 — admin preview boundary preserved', () => {
 
 // ── 9. /my-kora/layout.tsx admission branch still present (not globally retired) ─
 
-describe('B-WORKER-4 — global /my-kora real-session admission not yet retired', () => {
-  it('layout.tsx still has its realUserPermitted admission branch — /my-kora/opportunities still needs it', () => {
+// PRIOR HISTORY (accurate as of B-WORKER-4, preserved verbatim): asserted
+// layout.tsx still had its realUserPermitted admission branch because
+// /my-kora/opportunities still needed it (no redirect yet). B-WORKER-5
+// closed that last dependency, and B-WORKER final cleanup (2026-09-06)
+// retired the admission branch entirely.
+describe('B-WORKER-4 — global /my-kora real-session admission (superseded — see bworker-final-cleanup)', () => {
+  it('layout.tsx no longer has a realUserPermitted admission branch', () => {
     const layout = read('app/my-kora/layout.tsx');
-    expect(layout).toContain('realUserPermitted');
-    expect(layout).toContain('WorkerSessionProvider');
+    expect(layout).not.toContain('realUserPermitted');
   });
 });
 

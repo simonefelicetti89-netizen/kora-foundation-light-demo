@@ -6,10 +6,14 @@
 // (app/admin/pipeline/_components/PilotLifecycleClient.tsx).
 //
 // PIPELINE ROLE ONLY. This file does not know about My KORA, worker
-// identity, or session resolution — those remain
+// identity, or session resolution.
+//
+// PRIOR HISTORY (preserved verbatim): "those remain
 // AccountProvisioningService.getCurrentDemoUser()'s own, untouched,
-// responsibility (app/my-kora/page.tsx). See that migration's own dedicated
-// regression test for the responsibility-split proof.
+// responsibility (app/my-kora/page.tsx)." That method's caller was removed
+// earlier in the B-WORKER workstream; getCurrentDemoUser() itself was
+// removed in B-WORKER final cleanup (2026-09-06). See that migration's own
+// dedicated regression test for the original responsibility-split proof.
 //
 // Field disposition (only the field actually consumed by the real caller,
 // traced by direct usage, not inferred from the legacy method's return

@@ -189,16 +189,25 @@ describe('WEC-3 — Navigation bridge between /worker/ and /my-kora/', () => {
     expect(workspace).toContain('spazio privato KORA');
   });
 
-  it('/my-kora/layout links back to /worker/workspace for real worker sessions', () => {
+  // PRIOR HISTORY (accurate as of WEC-3, preserved verbatim): "/my-kora/layout
+  // links back to /worker/workspace for real worker sessions" via a
+  // "← Spazio operativo" nav-bridge link rendered inside the admission
+  // branch. B-WORKER final cleanup (2026-09-06) retired that admission
+  // branch — a real WORKER session is now redirected to /worker/workspace
+  // directly (a stronger form of "linking back": no bridge link needed
+  // because the layout never renders /my-kora content for them at all).
+  it('/my-kora/layout redirects real worker sessions to /worker/workspace directly (no bridge link needed)', () => {
     const layout = read('app/my-kora/layout.tsx');
-    expect(layout).toContain('/worker/workspace');
-    expect(layout).toContain('my-kora-workspace-link');
+    expect(layout).toContain("redirect('/worker/workspace')");
+    expect(layout).not.toContain('my-kora-workspace-link');
+    expect(layout).not.toContain('Spazio operativo');
   });
 
-  it('/my-kora/layout workspace link is gated on realRole === WORKER (not shown to demo visitors)', () => {
+  it('/my-kora/layout redirect is gated on realRole === WORKER (not applied to demo visitors)', () => {
     const layout = read('app/my-kora/layout.tsx');
-    expect(layout).toContain("realRole === 'WORKER'");
-    expect(layout).toContain('Spazio operativo');
+    const idx = layout.indexOf("realRole === 'WORKER'");
+    expect(idx).toBeGreaterThan(-1);
+    expect(layout.slice(idx, idx + 100)).toContain("redirect('/worker/workspace')");
   });
 });
 

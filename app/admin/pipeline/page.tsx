@@ -25,10 +25,16 @@
 // from Supabase Auth (auth.users + app_metadata) instead of the synthetic
 // data/synthetic/user-accounts.json fixture, via the shared pure view
 // builder lib/live/account-provisioning-status-view.ts. This migrates ONLY
-// AccountProvisioningService's pipeline/admin role — its separate My
-// KORA/session role (getCurrentDemoUser(), used by app/my-kora/page.tsx) is
-// untouched, out of scope, and the service remains alive (NARROWED, not
-// retired) for that reason.
+// AccountProvisioningService's pipeline/admin role.
+//
+// PRIOR HISTORY (preserved verbatim): "its separate My KORA/session role
+// (getCurrentDemoUser(), used by app/my-kora/page.tsx) is untouched, out of
+// scope, and the service remains alive (NARROWED, not retired) for that
+// reason." That method's own caller (app/my-kora/page.tsx) was removed
+// earlier in the B-WORKER workstream, leaving it zero-caller —
+// getCurrentDemoUser() itself was removed in B-WORKER final cleanup
+// (2026-09-06). AccountProvisioningService.ts remains alive only for its
+// other, unrelated, individually-unproven-dead methods.
 //
 // Every OTHER step's data source (worker provisioning, scoring) is
 // UNCHANGED — those remain separate, later migration slices, still keyed by

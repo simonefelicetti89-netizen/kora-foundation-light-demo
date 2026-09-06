@@ -12,6 +12,7 @@ import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { createBooking, listMyBookings } from '@/services/commons/BookingService';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = await requireWorkerUser(request);
@@ -43,6 +44,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const auth = await requireWorkerUser(request);
   if (isKoraAuthError(auth)) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+
+  // SECURITY-RATE-LIMITING-04 (B-WORKER final cleanup, 2026-09-06): closes
+  // the "media priorità, non implementate" gap docs/SECURITY_RATE_LIMITING_04.md
+  // already identified for this route — self-service, worker-scoped, same
+  // risk shape as worker/dynamic-cv/share (token_creation). Note: the
+  // sibling DELETE (cancel) on /[id] remains deliberately excluded per that
+  // doc's own written rationale (self-service cancellation, low abuse value)
+  // — not touched here.
+  const rateLimitGuard = await assertRateLimit('token_creation', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: Record<string, unknown>;
   try {

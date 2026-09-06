@@ -20,6 +20,7 @@ import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import type { WorkerParticipationRow } from '@/lib/supabase/types';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 // attended is intentionally excluded — workers cannot self-declare attendance.
 // Attendance is set only by admin/system flows to prevent gaming.
@@ -49,6 +50,13 @@ export async function POST(
 
   const { tenantId, workerId } = auth;
   const { id: initiativeId } = await params;
+
+  // SECURITY-RATE-LIMITING-04 (B-WORKER final cleanup, 2026-09-06): closes
+  // the "media priorità, non implementate" gap docs/SECURITY_RATE_LIMITING_04.md
+  // already identified for this route — self-service, worker-scoped, same
+  // risk shape as worker/dynamic-cv/share (token_creation).
+  const rateLimitGuard = await assertRateLimit('token_creation', workerId);
+  if (rateLimitGuard) return rateLimitGuard;
 
   if (!initiativeId) {
     return NextResponse.json({ error: 'Initiative ID obbligatorio.' }, { status: 400 });

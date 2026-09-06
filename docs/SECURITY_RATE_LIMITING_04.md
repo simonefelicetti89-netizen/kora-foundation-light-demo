@@ -70,10 +70,15 @@ regressione di sicurezza rispetto a oggi, solo non ancora rate-limited):**
 `admin/uef/enrich`, `admin/uef/review`, `admin/worker-initiatives` (POST/PATCH),
 `admin/workforce-baseline`, `commons/posts` (POST/PATCH — generic UGC spam
 potential, not one of the brief's named categories),
-`company/data-submissions/*` (POST variants), `worker/commons/bookings`
-(POST/DELETE), `worker/dynamic-cv/shares/[id]/revoke`,
-`worker/initiatives/[id]/interest`, `worker/onboarding`, `worker/profile`
-(PATCH).
+`company/data-submissions/*` (POST variants), `worker/dynamic-cv/shares/[id]/revoke`,
+`worker/profile` (PATCH).
+
+**Implementate in B-WORKER final cleanup (2026-09-06)** — moved out of the
+"media priorità" bucket above, closing the pre-B-WORKER audit's P2 finding
+for these three: `worker/commons/bookings` (POST — create), `worker/onboarding`
+(POST), `worker/initiatives/[id]/interest` (POST). All three use the existing
+`token_creation` category (self-service, worker-scoped, same risk shape as
+`worker/dynamic-cv/share`) — see the policy table below.
 
 **Escluse (motivazione esplicita):**
 - `app/link/[token]/activate` — già protetta da `lib/kora-link/rate-limit.ts`
@@ -185,7 +190,7 @@ soggetti al limite sotto quella nuova identità).
 | `heavy_provisioning` | `admin/companies/provision`, `admin/live-company` | 5 | 10 min | **closed** | Creazione tenant/company con effetti collaterali multipli (utente admin, invito email); rara per natura. | Come sopra — priorità al contenimento su un'operazione con effetti collaterali multipli, non alla disponibilità. |
 | `costly_admin_operation` | `admin/operator-flow`, `admin/scoring/run-approved-batch`, `admin/uef/generate-candidates`, `admin/data-intake/accept` | 5 | 5 min | **open** | Compute/pipeline costosi, nessuna ragione legittima per eseguirli decine di volte al minuto; ma pool di attori ristretto (solo KORA_ADMIN) e nessun costo esterno irreversibile — bloccare l'intera console admin per un'interruzione Redis sarebbe sproporzionato. | Fail-open: durante un'interruzione Redis un admin potrebbe rilanciare la pipeline più volte del previsto — costoso in compute, non distruttivo, non irreversibile. |
 | `destructive_admin_operation` | `admin/data-lifecycle/delete` | 5 | 10 min | **closed** | Azione distruttiva (cancellazione dati); il costo di bloccare temporaneamente un'eliminazione legittima durante un'interruzione è nettamente inferiore al rischio di cancellazioni ripetute incontrollate. | Fail-closed intenzionale — nessun rischio residuo accettato qui. |
-| `token_creation` | `worker/dynamic-cv/share` | 10 | 60 min | **open** | Azione self-service, worker-scoped, basso rischio (condividere il proprio CV qualche volta in più non è una violazione di sicurezza). | Fail-open: priorità a non rompere un flusso UX worker-facing a basso rischio durante un'interruzione infrastrutturale. |
+| `token_creation` | `worker/dynamic-cv/share`, `worker/commons/bookings` (POST, aggiunta B-WORKER final cleanup 2026-09-06), `worker/onboarding` (POST, idem), `worker/initiatives/[id]/interest` (POST, idem) | 10 | 60 min | **open** | Azione self-service, worker-scoped, basso rischio (condividere il proprio CV, prenotare un'iniziativa, completare l'onboarding, o esprimere interesse qualche volta in più non è una violazione di sicurezza). | Fail-open: priorità a non rompere un flusso UX worker-facing a basso rischio durante un'interruzione infrastrutturale. |
 
 ## Fail-open / fail-closed — riassunto della decisione
 

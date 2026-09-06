@@ -27,7 +27,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     .eq('id', auth.workerId)
     .maybeSingle();
 
-  if (wiErr) return NextResponse.json({ error: wiErr.message }, { status: 500 });
+  if (wiErr) {
+    console.error('[worker/profile GET] worker_identity query error:', wiErr.message);
+    return NextResponse.json({ error: 'Errore nel recupero del profilo.' }, { status: 500 });
+  }
   if (!wiRow) return NextResponse.json({ error: 'Worker identity non trovata.' }, { status: 404 });
 
   // RLS worker_profile_worker_own_all (mig 007) isola via auth.uid() subquery.
@@ -89,7 +92,10 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
   const { error } = await db.schema('personal').from('worker_profile_private')
     .upsert(updates, { onConflict: 'worker_id' });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[worker/profile PATCH] worker_profile_private upsert error:', error.message);
+    return NextResponse.json({ error: 'Errore nel salvataggio del profilo.' }, { status: 500 });
+  }
 
   // If onboarding completed: update worker_identity + sync auth.admin metadata
   if (body.onboardingDone === true) {

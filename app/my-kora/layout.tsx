@@ -18,54 +18,42 @@
 //
 // Distinction from /worker: /worker/layout.tsx is the LIVE, authenticated
 // worker space (server-guarded, requires a real WORKER session, hard-blocks
-// KORA_ADMIN). /my-kora is the PREVIEW/demo counterpart — reachable without
-// login for demo/persona exploration, and also reachable by a real WORKER or
-// KORA_ADMIN session for founder/self preview. Middleware additionally keeps
+// KORA_ADMIN). /my-kora is the PREVIEW/demo-only counterpart — reachable
+// without login for demo/persona exploration. Middleware additionally keeps
 // real WORKER sessions on /worker/* by default (WORKER_ALLOWED_PREFIXES in
-// middleware.ts does not include /my-kora); the WORKER admission path below
-// is defense in depth for direct navigation / middleware failure, not the
-// primary route for authenticated workers. The two route trees are not
-// merged in this sprint — see docs/PILOT_SAAS_READINESS.md item 5.
+// middleware.ts does not include /my-kora); this layout is the layer-2
+// backstop for direct navigation / middleware failure / old bookmarks.
+//
+// B-WORKER final cleanup (2026-09-06): real WORKER/KORA_ADMIN sessions used
+// to be admitted here into the demo-state-driven preview ("own/founder
+// preview") — but every capability that preview once uniquely offered now
+// has a canonical /worker replacement (Slices 1–5: PIB, Dynamic CV, Privacy,
+// Bookings, KORA Space, KORA Link, Collettivo, Home, Opportunities all
+// redirect a confirmed real session to their canonical page). With
+// REAL_SESSION_MY_KORA_DEPENDENCIES = [] repository-wide, this layout can
+// now redirect real sessions immediately, server-side, instead of admitting
+// them — closing /my-kora as an authenticated runtime entirely. The
+// anonymous/persona demo path below (MyKoraDemoGate) is UNCHANGED: it never
+// carries a real session and remains Foundation Light's legitimate
+// pre-login product preview.
 
+import { redirect } from 'next/navigation';
 import { getSessionKoraRole } from '@/lib/auth/kora-session';
 import { PrivacyBoundaryNotice } from '@/components/privacy/PrivacyBoundaryNotice';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
-import { WorkerSessionProvider } from './_providers/WorkerSessionProvider';
 import { MyKoraDemoGate } from './_providers/MyKoraDemoGate';
 
 export default async function MyKoraLayout({ children }: { children: React.ReactNode }) {
   const realRole = await getSessionKoraRole();
 
-  // Real authenticated users: WORKER (own preview) and KORA_ADMIN (founder/
-  // admin preview) are admitted. Decided server-side — cannot be spoofed by
-  // client state.
-  const realUserPermitted = realRole === 'WORKER' || realRole === 'KORA_ADMIN';
-
-  if (realUserPermitted) {
-    return (
-      <WorkerSessionProvider>
-        {/* Navigation bridge: real workers can return to authenticated workspace */}
-        {realRole === 'WORKER' && (
-          <div style={{ marginBottom: 12 }}>
-            <a
-              href="/worker/workspace"
-              data-testid="my-kora-workspace-link"
-              style={{
-                fontSize:       11,
-                fontWeight:     600,
-                color:          'rgba(6,3,43,0.45)',
-                textDecoration: 'none',
-                display:        'inline-block',
-                padding:        '4px 0',
-              }}
-            >
-              ← Spazio operativo
-            </a>
-          </div>
-        )}
-        {children}
-      </WorkerSessionProvider>
-    );
+  // Real WORKER/KORA_ADMIN sessions: redirected to their canonical
+  // destination, never admitted into the demo-state-driven preview.
+  // Decided server-side — cannot be spoofed by client state.
+  if (realRole === 'WORKER') {
+    redirect('/worker/workspace');
+  }
+  if (realRole === 'KORA_ADMIN') {
+    redirect('/admin');
   }
 
   // Any other real session (COMPANY_ADMIN, PARTNER, ...) is hard-blocked

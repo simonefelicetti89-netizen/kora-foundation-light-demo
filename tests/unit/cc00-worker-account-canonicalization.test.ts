@@ -158,9 +158,14 @@ describe('CC-00 Worker/Account audit — My KORA product decision not made', () 
     expect(src).toContain('dati sintetici');
   });
 
-  it('AccountProvisioningService.getCurrentDemoUser() (My KORA persona resolution) is untouched', () => {
+  // PRIOR HISTORY (accurate as of this audit, preserved verbatim): asserted
+  // getCurrentDemoUser() (My KORA persona resolution) was untouched. Its
+  // sole real caller (app/my-kora/page.tsx) had already been removed by an
+  // unrelated migration; B-WORKER final cleanup (2026-09-06) verified that
+  // fresh and removed the now-dead method.
+  it('AccountProvisioningService.getCurrentDemoUser() was removed once proven zero-caller (B-WORKER final cleanup)', () => {
     const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
+    expect(src).not.toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
   });
 });
 
