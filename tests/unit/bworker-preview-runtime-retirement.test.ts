@@ -15,12 +15,14 @@
 // anyone, (2) MyKoraPreviewService has zero callers and is deleted, (3)
 // WorkerAchievementService is retired with no replacement domain invented,
 // (4) canonical /worker/** routes still work, (5) PR #168's security
-// hardening remains intact, (6) WorkerProvisioningService is the sole
-// remaining I9 blocker, (7) the registry reflects actual, not aspirational,
-// state.
+// hardening remains intact, (6) the I9 allowlist still has 2 B_WORKER
+// entries but only WorkerProvisioningService is a genuine product-decision
+// blocker — AccountProvisioningService is zero-caller dead code, corrected
+// in this file's PR #169 final-correction pass (see section 6 below), (7)
+// the registry reflects actual, not aspirational, state.
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 
 const root = resolve(process.cwd());
@@ -238,9 +240,35 @@ describe('B-WORKER preview retirement — PR #168 hardening intact (regression)'
   });
 });
 
-// ── 6. WorkerProvisioningService is the sole remaining I9 blocker (unless proven otherwise) ──
-
-describe('B-WORKER preview retirement — I9 allowlist reflects verified reality', () => {
+// ── 6. Two B_WORKER I9 entries remain, but they are NOT equivalent blockers ──
+//
+// PRIOR HISTORY (accurate as of this file's first version, preserved as a
+// record): this section's own header and one of its tests claimed
+// AccountProvisioningService "still genuinely imports synthetic data via
+// unrelated, untouched methods" — proven only by checking that
+// getWorkerAccountsForCompany's source TEXT exists, never by checking
+// whether anything actually CALLS it. That was an accounting error.
+//
+// CORRECTION (PR #169 final correction pass): an exhaustive repo-wide,
+// comment-stripped scan (matching the rigor of the pre-existing
+// tests/unit/b-truth-accountprovisioning-pipeline-role-migration.test.ts,
+// which already proved this independently on 2026-09-06, before B-WORKER
+// even started) finds ZERO real callers of accountProvisioningService — of
+// ANY of its 18 methods, not just the already-removed getCurrentDemoUser().
+// Its own registry entry (svc.account) already documented, at the time of
+// that migration, that getCurrentDemoUser() was the ONLY surviving real
+// caller and every other method was "zero-caller... not removed... out of
+// scope" — that surviving caller is now gone (removed in PR #168), so the
+// registry's own stated justification for keeping this file in I9 no
+// longer holds. AccountProvisioningService.ts is NOT a genuine
+// product-decision blocker like WorkerProvisioningService — it is
+// zero-caller dead code that could be deleted in a trivial follow-up PR
+// (same "confirmed zero callers, then delete" pattern already used
+// throughout this session for MyKoraPreviewService, WorkerAchievementService,
+// etc.), not requiring any schema/product decision. It is NOT deleted here
+// per this pass's explicit instruction not to canonicalize or delete either
+// residual in this PR — this is a corrected-accounting record, not an action.
+describe('B-WORKER preview retirement — I9 allowlist reflects verified reality (corrected accounting)', () => {
   it('exactly 2 B_WORKER-owned entries remain: AccountProvisioningService, WorkerProvisioningService', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
     const arrayStart = allowlist.indexOf('export const SYNTHETIC_IMPORT_ALLOWLIST');
@@ -255,10 +283,26 @@ describe('B-WORKER preview retirement — I9 allowlist reflects verified reality
     ]);
   });
 
-  it('AccountProvisioningService still genuinely imports synthetic data via unrelated, untouched methods', () => {
-    const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).toContain("import accountsData from '@/data/synthetic/user-accounts.json'");
-    expect(src).toContain('getWorkerAccountsForCompany');
+  it('AccountProvisioningService has ZERO real callers of any method — trivially retirable, not a genuine blocker', () => {
+    const RUNTIME_DIRS = ['app', 'components', 'services', 'lib'];
+    const offenders: string[] = [];
+    function walk(dir: string): string[] {
+      const out: string[] = [];
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = resolve(dir, entry.name);
+        if (entry.isDirectory()) out.push(...walk(full));
+        else if (/\.(ts|tsx)$/.test(entry.name) && !full.includes('/services/account/AccountProvisioningService.ts')) out.push(full);
+      }
+      return out;
+    }
+    for (const dir of RUNTIME_DIRS) {
+      for (const file of walk(resolve(root, dir))) {
+        const relative = file.replace(root + '/', '');
+        const codeOnly = read(relative).replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+        if (/accountProvisioningService\s*\./.test(codeOnly)) offenders.push(relative);
+      }
+    }
+    expect(offenders).toEqual([]);
   });
 
   it('WorkerProvisioningService still has real callers across the admin roster/provisioning UI', () => {
