@@ -163,10 +163,16 @@ describe('WEC-2c — /my-kora/kora-space page (clearly labeled preview)', () => 
 
 // ── WEC-3: Navigation bridge ──────────────────────────────────────────────────
 
+// PRIOR HISTORY (accurate as of WEC-3, preserved verbatim): "/worker/workspace
+// links to /my-kora/personal-impact-balance" — asserted the bridge card's href.
+// B-WORKER-2 (2026-09-06) repointed it to the canonical /worker/personal-impact-balance
+// page (built in B-WORKER-1) once it existed — the testids/labels are unchanged,
+// only the destination moved off /my-kora.
 describe('WEC-3 — Navigation bridge between /worker/ and /my-kora/', () => {
-  it('/worker/workspace links to /my-kora/personal-impact-balance', () => {
+  it('/worker/workspace links to canonical /worker/personal-impact-balance', () => {
     const workspace = read('app/worker/workspace/page.tsx');
-    expect(workspace).toContain('/my-kora/personal-impact-balance');
+    expect(workspace).toContain('/worker/personal-impact-balance');
+    expect(workspace).not.toContain('/my-kora/personal-impact-balance');
     expect(workspace).toContain('workspace-my-kora-link');
     expect(workspace).toContain('workspace-my-kora-pib-link');
     // Link is to My KORA personal area — label avoids "personal impact balance" phrase

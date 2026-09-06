@@ -141,7 +141,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         heading: isAdminPreview ? 'Worker Preview (Admin)' : 'Il tuo spazio',
         items: [
           { href: '/my-kora', label: 'My KORA Home' },
-          { href: '/my-kora/personal-impact-balance', label: 'Personal Impact Balance' },
+          { href: '/worker/personal-impact-balance', label: 'Personal Impact Balance' },
         ],
       },
       {

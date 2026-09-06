@@ -1,7 +1,22 @@
 /**
  * My KORA Dynamic CV Live Alignment Tests
- * Verifies /my-kora/dynamic-cv/page.tsx applies four-state auth detection
- * (checking / live / empty / demo) instead of blindly serving synthetic content.
+ *
+ * PRIOR HISTORY (accurate as of the original four-state build, preserved as
+ * the file's original framing): "Verifies /my-kora/dynamic-cv/page.tsx
+ * applies four-state auth detection (checking / live / empty / demo) instead
+ * of blindly serving synthetic content."
+ *
+ * B-WORKER-2 (2026-09-06): the 'live'/'empty' states rendered a lighter
+ * subset of the same real data /worker/dynamic-cv (DynamicCVClient) already
+ * showed, plus real sharing/print that only DynamicCVClient implemented —
+ * a proven CANONICAL_SUPERSET. Those two states and their rendering were
+ * removed; a confirmed real session (the same /api/worker/dynamic-cv
+ * response the four states used to branch on) now redirects straight to
+ * /worker/dynamic-cv via router.replace(). The remaining two states are
+ * 'checking' (resolving) and 'demo' (401/unauthenticated — unchanged,
+ * Foundation Light's legitimate pre-login preview). Several describe blocks
+ * below are updated to test this narrower, redirect-based contract; blocks
+ * about the unchanged demo content are untouched.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -22,20 +37,17 @@ const ROUTE_PRIVACY_CANDIDATES = [
 
 // ── 1. No blind demo-only getCVData for authenticated workers ─────────────────
 describe('1. Page does not blindly use demo-only getCVData for authenticated workers', () => {
-  it('page has four-state mode detection logic', () => {
+  it('page has mode detection logic', () => {
     expect(PAGE_SRC).toMatch(/setCVMode/);
     expect(PAGE_SRC).toMatch(/DynamicCVMode/);
   });
 
-  it('empty and live early returns precede getCVData call in source', () => {
-    const emptyReturnIdx = PAGE_SRC.indexOf('dynamic-cv-empty');
-    const liveReturnIdx  = PAGE_SRC.indexOf('dynamic-cv-live');
-    const getCVDataIdx   = PAGE_SRC.indexOf("getCVData(personaId)");
-    expect(emptyReturnIdx).toBeGreaterThan(-1);
-    expect(liveReturnIdx).toBeGreaterThan(-1);
+  it('the real-session redirect precedes getCVData call in source (a real session never reaches it)', () => {
+    const redirectIdx  = PAGE_SRC.indexOf("router.replace('/worker/dynamic-cv')");
+    const getCVDataIdx = PAGE_SRC.indexOf("getCVData(personaId)");
+    expect(redirectIdx).toBeGreaterThan(-1);
     expect(getCVDataIdx).toBeGreaterThan(-1);
-    expect(emptyReturnIdx).toBeLessThan(getCVDataIdx);
-    expect(liveReturnIdx).toBeLessThan(getCVDataIdx);
+    expect(redirectIdx).toBeLessThan(getCVDataIdx);
   });
 });
 
@@ -50,26 +62,27 @@ describe('2. Page fetches or references /api/worker/dynamic-cv', () => {
   });
 });
 
-// ── 3. All four states present in source ─────────────────────────────────────
-describe('3. Page supports checking / live / empty / demo states', () => {
+// PRIOR HISTORY (accurate as of the original four-state build, preserved
+// verbatim): "3. Page supports checking / live / empty / demo states" —
+// asserted all four state literals existed. B-WORKER-2 (2026-09-06) narrowed
+// the page to 'checking' | 'redirecting' | 'demo' — 'live'/'empty' no longer
+// exist as distinct render states, a confirmed real session redirects
+// instead of choosing between them.
+describe('3. Page supports checking / redirecting / demo states', () => {
   it("has 'checking' state value", () => { expect(PAGE_SRC).toContain("'checking'"); });
-  it("has 'live' state value",     () => { expect(PAGE_SRC).toContain("'live'"); });
-  it("has 'empty' state value",    () => { expect(PAGE_SRC).toContain("'empty'"); });
+  it("has 'redirecting' state value", () => { expect(PAGE_SRC).toContain("'redirecting'"); });
   it("has 'demo' state value",     () => { expect(PAGE_SRC).toContain("'demo'"); });
 });
 
 // ── 4. Checking state prevents flash of demo content ─────────────────────────
 describe('4. Checking state prevents flash of demo content', () => {
-  it('returns null when cvMode is checking', () => {
-    expect(PAGE_SRC).toMatch(/cvMode === ['"]checking['"]\) return null/);
+  it('returns null when cvMode is checking or redirecting', () => {
+    expect(PAGE_SRC).toMatch(/cvMode === ['"]checking['"] \|\| cvMode === ['"]redirecting['"]\) return null/);
   });
 
-  it('checking guard appears before the main access-denied and content returns', () => {
-    // The checking guard must precede the canAccess block and content renders.
-    // We look at positions relative to the export default function declaration.
+  it('checking/redirecting guard appears before the main access-denied and content returns', () => {
     const funcStart        = PAGE_SRC.indexOf('export default function DynamicCV');
-    const checkingGuardIdx = PAGE_SRC.indexOf("cvMode === 'checking') return null", funcStart);
-    // The access-denied block is the first full return ( after the function opens
+    const checkingGuardIdx = PAGE_SRC.indexOf("cvMode === 'checking'", funcStart);
     const accessDeniedIdx  = PAGE_SRC.indexOf('Accesso Limitato');
     expect(checkingGuardIdx).toBeGreaterThan(-1);
     expect(accessDeniedIdx).toBeGreaterThan(-1);
@@ -77,21 +90,21 @@ describe('4. Checking state prevents flash of demo content', () => {
   });
 });
 
-// ── 5. Authenticated no-data mode shows Italian empty state ──────────────────
-describe('5. Authenticated no-data mode shows honest Italian empty state', () => {
-  it('has data-testid="dynamic-cv-empty"', () => {
-    expect(PAGE_SRC).toContain('data-testid="dynamic-cv-empty"');
+// PRIOR HISTORY (accurate as of the original four-state build, preserved
+// verbatim): "5. Authenticated no-data mode shows honest Italian empty
+// state" — the 'empty' render block (testid dynamic-cv-empty, "ciclo di
+// scoring" copy) no longer exists on this page; a confirmed real session
+// (empty or not) redirects to /worker/dynamic-cv, which owns that empty-state
+// UX now. See tests/unit/bworker-1-canonical-pib-page.test.ts and the
+// DynamicCVClient's own tests for the canonical real-session UX.
+describe('5. Authenticated sessions (empty or not) are redirected, not shown a local empty state', () => {
+  it('this page no longer renders its own dynamic-cv-empty block', () => {
+    expect(PAGE_SRC).not.toContain('data-testid="dynamic-cv-empty"');
   });
 
-  it('empty state copy mentions ciclo di scoring', () => {
-    expect(PAGE_SRC).toContain('ciclo di scoring');
-  });
-
-  it('empty branch does not call getCVData(personaId)', () => {
-    const emptyStart   = PAGE_SRC.indexOf("cvMode === 'empty'");
-    const liveStart    = PAGE_SRC.indexOf("cvMode === 'live'");
-    const emptySection = PAGE_SRC.slice(emptyStart, liveStart);
-    expect(emptySection).not.toContain('getCVData(personaId)');
+  it('every real session redirects, regardless of whether the worker has data yet', () => {
+    expect(PAGE_SRC).toContain("if (res.ok) {");
+    expect(PAGE_SRC).toContain("router.replace('/worker/dynamic-cv')");
   });
 });
 
@@ -101,9 +114,13 @@ describe('6. Demo mode available for unauthenticated/demo users', () => {
     expect(PAGE_SRC).toContain('data-testid="dynamic-cv-demo"');
   });
 
-  it('401 response routes to demo mode', () => {
-    // Both !res.ok check and setCVMode('demo') must appear in the same fetch handler
-    expect(PAGE_SRC).toContain("!res.ok");
+  // PRIOR HISTORY (accurate as of the original four-state build, preserved
+  // verbatim): "401 response routes to demo mode" — asserted `!res.ok` was
+  // the literal guard. B-WORKER-2 inverted the branch to `if (res.ok) {
+  // redirect } else { demo }` — same behavior (non-ok → demo), different
+  // literal form.
+  it('a non-ok response (401/unauthenticated) routes to demo mode', () => {
+    expect(PAGE_SRC).toContain("if (res.ok) {");
     expect(PAGE_SRC).toContain("setCVMode('demo')");
   });
 });
@@ -123,17 +140,15 @@ describe('7. Demo content is clearly labelled synthetic/demo', () => {
   });
 });
 
-// ── 8. Live mode uses data filtered by Dynamic Impact CV policy ───────────────
-describe('8. Live mode uses data filtered by Dynamic Impact CV policy', () => {
-  it('live render block references liveCV.experiences', () => {
-    expect(PAGE_SRC).toContain('liveCV.experiences');
-  });
-
-  it('live render references cvEligibleCount from policy filter', () => {
-    expect(PAGE_SRC).toContain('cvEligibleCount');
-  });
-
-  it('page imports classifyForDynamicCV policy', () => {
+// PRIOR HISTORY (accurate as of the original four-state build, preserved
+// verbatim): "8. Live mode uses data filtered by Dynamic Impact CV policy" —
+// asserted this page's own removed live-render block referenced
+// liveCV.experiences/cvEligibleCount. B-WORKER-2 removed that render block —
+// classifyForDynamicCV() is still imported and used for the (unchanged) demo
+// content below; live-session filtering now happens exclusively on
+// /worker/dynamic-cv, out of this file's scope.
+describe('8. Demo content still uses the Dynamic Impact CV policy filter (unchanged)', () => {
+  it('page imports and calls classifyForDynamicCV for demo items', () => {
     expect(PAGE_SRC).toContain('classifyForDynamicCV');
     expect(PAGE_SRC).toContain('dynamic-impact-cv-policy');
   });
@@ -182,12 +197,12 @@ describe('11. Page does not claim public badge pages are active', () => {
   });
 });
 
-// ── 12. Privacy reassurance ───────────────────────────────────────────────────
+// PRIOR HISTORY (accurate as of the original four-state build, preserved
+// verbatim): "has data-testid=\"dynamic-cv-privacy-notice\"" — that testid
+// lived in the removed empty/live blocks. The remaining (demo + access-denied)
+// content still carries privacy reassurance copy, just without that specific
+// testid — /worker/dynamic-cv's own privacy copy is covered by its own tests.
 describe('12. Page includes privacy reassurance', () => {
-  it('has data-testid="dynamic-cv-privacy-notice"', () => {
-    expect(PAGE_SRC).toContain('data-testid="dynamic-cv-privacy-notice"');
-  });
-
   it('privacy copy mentions employer cannot see individual data', () => {
     expect(PAGE_SRC).toContain('datore di lavoro');
   });
@@ -221,10 +236,11 @@ describe('15. No worker-level sensitive/internal fields exposed', () => {
     expect(PAGE_SRC).not.toContain('worker_pseudonym_map');
   });
 
-  it('live render uses safe display fields only (title, pillar, date)', () => {
-    expect(PAGE_SRC).toContain('exp.title');
-    expect(PAGE_SRC).toContain('exp.pillar');
-  });
+  // PRIOR HISTORY (accurate as of the original four-state build, preserved
+  // verbatim): "live render uses safe display fields only (title, pillar,
+  // date)" — checked exp.title/exp.pillar in this page's own removed live
+  // block. That safety property is now DynamicCVClient's responsibility on
+  // /worker/dynamic-cv (a real session never renders this page's content).
 });
 
 // ── 16. Regression: dynamic-impact-cv-policy test exists ─────────────────────

@@ -199,8 +199,14 @@ describe('B141-B2 — Sidebar KORA_ADMIN has Worker Preview links', () => {
     expect(adminNavSection).toContain("'/my-kora'");
   });
 
-  it('20. KORA_ADMIN sidebar contains link to /my-kora/personal-impact-balance', () => {
-    expect(adminNavSection).toContain('/my-kora/personal-impact-balance');
+  // PRIOR HISTORY (accurate as of B141-B2, preserved verbatim): asserted the
+  // sidebar's "Personal Impact Balance" link targeted /my-kora/personal-impact-balance.
+  // B-WORKER-2 (2026-09-06) repointed it to the canonical /worker/personal-impact-balance
+  // page built in B-WORKER-1, once that page existed — /my-kora/personal-impact-balance
+  // is no longer the sidebar's PIB destination for any role.
+  it('20. KORA_ADMIN sidebar contains link to canonical /worker/personal-impact-balance', () => {
+    expect(adminNavSection).toContain('/worker/personal-impact-balance');
+    expect(adminNavSection).not.toContain('/my-kora/personal-impact-balance');
   });
 
   it('21. COMPANY_ADMIN sidebar nav does not contain Personal Impact Balance link', () => {

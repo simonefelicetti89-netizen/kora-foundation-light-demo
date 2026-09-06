@@ -108,11 +108,20 @@ describe('B-WORKER-1 — scope discipline: /my-kora and its bridges are untouche
     expect(layout).toContain('WorkerSessionProvider');
   });
 
-  it('/worker/workspace bridge links to /my-kora (bookings, PIB, dynamic-cv) still exist — not yet repointed', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-1, preserved verbatim): asserted
+  // ALL THREE bridge links (bookings, PIB, dynamic-cv) still pointed at
+  // /my-kora — true at slice 1 time, when PIB was the only capability with a
+  // canonical /worker replacement. B-WORKER-2 (2026-09-06) proved Dynamic CV
+  // parity too and repointed both PIB and Dynamic CV; bookings has no
+  // canonical /worker replacement yet and remains untouched, per this slice's
+  // explicit scope ("Do NOT touch bookings yet").
+  it('/worker/workspace bridge links: bookings still legacy (no canonical replacement yet), PIB and Dynamic CV repointed to canonical /worker', () => {
     const workspace = read('app/worker/workspace/page.tsx');
     expect(workspace).toContain('/my-kora/bookings');
-    expect(workspace).toContain('/my-kora/personal-impact-balance');
-    expect(workspace).toContain('/my-kora/dynamic-cv');
+    expect(workspace).toContain('/worker/personal-impact-balance');
+    expect(workspace).toContain('/worker/dynamic-cv');
+    expect(workspace).not.toContain('/my-kora/personal-impact-balance');
+    expect(workspace).not.toContain('/my-kora/dynamic-cv');
   });
 
   it('the admin pipeline "My KORA Preview (Worker Space)" link is unchanged', () => {
