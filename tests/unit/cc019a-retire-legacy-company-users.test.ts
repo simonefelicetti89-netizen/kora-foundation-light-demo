@@ -133,10 +133,15 @@ describe('CC-019A — TenantService and AccountProvisioningService implementatio
   // CC-00 Final Scoring Canonicalization (2026-09-05) removed that page's
   // getCurrentDemoUser() call — it only ever fed the now-retired
   // scoringSimulatorService.getCompanyAggregate(). The service file itself
-  // is untouched (not modified, not deleted); it now simply has zero real
-  // callers. See tests/unit/cc00-final-scoring-canonicalization.test.ts.
-  it('AccountProvisioningService.ts still exists, unmodified (historical note: pipeline was also a real caller when this test was written; My KORA no longer calls it either, as of a later, unrelated slice)', () => {
-    expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(true);
+  // was untouched at that time (not modified, not deleted); it then simply
+  // had zero real callers. See
+  // tests/unit/cc00-final-scoring-canonicalization.test.ts. B-WORKER
+  // AccountProvisioning dead-code retirement (2026-09-06, a later, separate
+  // slice) exhaustively re-verified zero real callers across all 18
+  // remaining methods and deleted the file entirely. See
+  // tests/unit/bworker-accountprovisioning-retirement.test.ts.
+  it('AccountProvisioningService.ts no longer exists, and PilotLifecycleClient.tsx does not reference it', () => {
+    expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(false);
     const pipelineSrc = read('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
     const pipelineCodeOnly = pipelineSrc.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
     expect(pipelineCodeOnly).not.toMatch(/accountProvisioningService\s*\./);

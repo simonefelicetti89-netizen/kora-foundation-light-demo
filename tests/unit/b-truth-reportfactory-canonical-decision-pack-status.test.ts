@@ -199,13 +199,16 @@ describe('B-TRUTH — no KoraTest special runtime branch, no tenant_kind product
 });
 
 describe('B-TRUTH — this PR touched ONLY the ReportFactoryService migration (one PR = one bounded step)', () => {
-  it('AccountProvisioningService and AdminPreviewService still exist, untouched', () => {
-    for (const file of [
-      'services/account/AccountProvisioningService.ts',
-      'services/admin-preview/AdminPreviewService.ts',
-    ]) {
-      expect(existsSync(resolve(root, file))).toBe(true);
-    }
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "AccountProvisioningService and AdminPreviewService still exist,
+  // untouched." B-WORKER AccountProvisioning dead-code retirement
+  // (2026-09-06, a later, separate, bounded slice) deleted
+  // AccountProvisioningService.ts entirely — zero real callers of any of
+  // its 18 methods, confirmed exhaustively. AdminPreviewService.ts remains
+  // untouched.
+  it('AdminPreviewService still exists, untouched; AccountProvisioningService has since been separately retired', () => {
+    expect(existsSync(resolve(root, 'services/admin-preview/AdminPreviewService.ts'))).toBe(true);
+    expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(false);
   });
 
   it('B-WORKER members remain untouched — still exist; the final scoring group was later retired by CC-00 Final Scoring Canonicalization (2026-09-05), unrelated to this PR', () => {
@@ -268,6 +271,6 @@ describe('B-TRUTH — registry and I9 reflect the migration', () => {
   // tests/unit/cc00-residual-demo-retirement.test.ts.
   it('allowlist header reflects the current count, 6 files / 11 imports (historical note: this PR itself produced 12/20)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 2 files / 2 import statements'); // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): WorkerAchievementService.ts removed from the allowlist (deleted, zero callers) — 3/3 -> 2/2, unrelated to this PR.
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 1 files / 1 import statements'); // B-WORKER AccountProvisioning dead-code retirement (2026-09-06): AccountProvisioningService.ts removed from the allowlist (deleted, zero callers) — 2/2 -> 1/1, unrelated to this PR.
   });
 });

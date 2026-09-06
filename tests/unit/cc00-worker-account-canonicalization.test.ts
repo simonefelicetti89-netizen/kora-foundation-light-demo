@@ -50,10 +50,13 @@ describe('CC-00 Worker/Account audit — synthetic imports unchanged (nothing sa
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 
-  it('AccountProvisioningService.ts still imports data/synthetic/user-accounts.json', () => {
-    expect(read('services/account/AccountProvisioningService.ts')).toContain(
-      "from '@/data/synthetic/user-accounts.json'",
-    );
+  // PRIOR HISTORY (accurate as of this audit, preserved verbatim):
+  // "AccountProvisioningService.ts still imports data/synthetic/user-accounts.json."
+  // B-WORKER AccountProvisioning dead-code retirement (2026-09-06) deleted
+  // the file and its seed entirely (zero real callers of any of its 18
+  // methods, no replacement domain invented).
+  it('AccountProvisioningService.ts no longer exists (retired since this audit)', () => {
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
@@ -78,9 +81,9 @@ describe('CC-00 Worker/Account audit — synthetic imports unchanged (nothing sa
   // I9 residuals independent of this cluster (app/demo/page.tsx,
   // FounderValidationService.ts) — none of the 4 worker/account-cluster
   // files this audit examined were touched by that slice.
-  it('allowlist header now reflects 6 files / 11 import statements — unchanged for this cluster (historical note: was 8/13 at the time this audit ran)', () => {
+  it('allowlist header reflects the current total, 1 files / 1 import statements (historical note: was 8/13 at the time this audit ran)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 2 files / 2 import statements'); // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): WorkerAchievementService.ts removed from the allowlist (deleted, zero callers) — 3/3 -> 2/2, unrelated to this PR.
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 1 files / 1 import statements');
   });
 });
 
@@ -97,13 +100,15 @@ describe('CC-00 Worker/Account audit — no demo role reintroduced', () => {
     expect(koraRolesBlock).not.toContain('DEMO_VIEWER');
   });
 
-  it('none of the 3 remaining in-scope services define or reference a new demo/preview role string', () => {
+  it('none of the 2 remaining in-scope services define or reference a new demo/preview role string', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
       // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
       // was checked here. B-WORKER "One Product / No Demo Runtime" correction
       // (2026-09-06) deleted it entirely — removed from this list.
-      'services/account/AccountProvisioningService.ts',
+      // PRIOR HISTORY: 'services/account/AccountProvisioningService.ts' was
+      // checked here. B-WORKER AccountProvisioning dead-code retirement
+      // (2026-09-06) deleted it entirely — removed from this list.
       'services/activation-safeguard/ActivationSafeguardService.ts',
     ]) {
       const src = read(file);
@@ -115,13 +120,15 @@ describe('CC-00 Worker/Account audit — no demo role reintroduced', () => {
 // ── 3. No tenant_kind product branch ──────────────────────────────────────────
 
 describe('CC-00 Worker/Account audit — no tenant_kind branch introduced', () => {
-  it('none of the 3 remaining in-scope services reference tenant_kind, KoraTest, or Bosco Verde', () => {
+  it('none of the 2 remaining in-scope services reference tenant_kind, KoraTest, or Bosco Verde', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
       // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
       // was checked here. B-WORKER "One Product / No Demo Runtime" correction
       // (2026-09-06) deleted it entirely — removed from this list.
-      'services/account/AccountProvisioningService.ts',
+      // PRIOR HISTORY: 'services/account/AccountProvisioningService.ts' was
+      // checked here. B-WORKER AccountProvisioning dead-code retirement
+      // (2026-09-06) deleted it entirely — removed from this list.
       'services/activation-safeguard/ActivationSafeguardService.ts',
     ]) {
       const src = read(file).toLowerCase();
@@ -136,10 +143,13 @@ describe('CC-00 Worker/Account audit — no tenant_kind branch introduced', () =
 // ── 4. Real account-role authority unchanged ─────────────────────────────────
 
 describe('CC-00 Worker/Account audit — account role authority unchanged', () => {
-  it('AccountProvisioningService does not assign or resolve session roles (no koraRole/app_metadata write)', () => {
-    const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).not.toContain('app_metadata');
-    expect(src).not.toContain('updateUserById');
+  // PRIOR HISTORY (accurate as of this audit, preserved verbatim): asserted
+  // AccountProvisioningService did not assign or resolve session roles. The
+  // file is now deleted entirely (B-WORKER AccountProvisioning dead-code
+  // retirement, 2026-09-06) — there is no session-role authority left to
+  // audit in it.
+  it('AccountProvisioningService.ts no longer exists — no session-role authority to audit', () => {
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 
   it('every real require*User() session guard in kora-session.ts is untouched (strict equality intact)', () => {
@@ -171,9 +181,8 @@ describe('CC-00 Worker/Account audit — My KORA product decision not made', () 
   // sole real caller (app/my-kora/page.tsx) had already been removed by an
   // unrelated migration; B-WORKER final cleanup (2026-09-06) verified that
   // fresh and removed the now-dead method.
-  it('AccountProvisioningService.getCurrentDemoUser() was removed once proven zero-caller (B-WORKER final cleanup)', () => {
-    const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).not.toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
+  it('AccountProvisioningService.ts no longer exists — getCurrentDemoUser() and every other method were both eventually proven zero-caller', () => {
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 });
 
@@ -219,13 +228,15 @@ describe('CC-00 Worker/Account audit — worker achievement model not invented',
 // ── 8. No downstream-output seeding ───────────────────────────────────────────
 
 describe('CC-00 Worker/Account audit — no downstream output seeding introduced', () => {
-  it('none of the 3 remaining in-scope services import from analytics.* result tables or write scoring/decision-pack output', () => {
+  it('none of the 2 remaining in-scope services import from analytics.* result tables or write scoring/decision-pack output', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
       // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
       // was checked here. B-WORKER "One Product / No Demo Runtime" correction
       // (2026-09-06) deleted it entirely — removed from this list.
-      'services/account/AccountProvisioningService.ts',
+      // PRIOR HISTORY: 'services/account/AccountProvisioningService.ts' was
+      // checked here. B-WORKER AccountProvisioning dead-code retirement
+      // (2026-09-06) deleted it entirely — removed from this list.
       'services/activation-safeguard/ActivationSafeguardService.ts',
     ]) {
       const src = read(file);
@@ -336,17 +347,17 @@ describe('CC-00 Worker/Account audit — Deferred Worker Capability Register', (
     expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(true);
   });
 
-  it('My KORA live session identity — deferred to B-WORKER, requires deciding My KORA live-session model', () => {
-    // Source concept: AccountProvisioningService.getCurrentDemoUser().
-    // Why potentially valuable: a real WORKER session driving My KORA content
-    //   instead of demo-state persona switching.
-    // Why not canonical today: My KORA has no live session mode at all today
-    //   (middleware.ts's own comment confirms demo-state role switching, not a
-    //   live Supabase JWT) — this is a My KORA product-shape decision, not a
-    //   data-truth substitution.
-    // Required evidence/model: B-WORKER's decision on whether/when My KORA
-    //   gains a live session mode, and what identity data it reads.
-    // Track: B-WORKER.
-    expect(exists('services/account/AccountProvisioningService.ts')).toBe(true);
+  // PRIOR HISTORY (accurate as of this audit, preserved verbatim): recorded
+  // "My KORA live session identity" (AccountProvisioningService.getCurrentDemoUser())
+  // as a DEFERRED capability requiring a My KORA product-shape decision,
+  // tracked to B-WORKER. B-WORKER "One Product / No Demo Runtime" correction
+  // (2026-09-06) resolved that deferral: My KORA's anonymous/persona runtime
+  // is retired entirely (redirect-only), so there is no "live session
+  // identity" concept left to build — /worker/** already has real Supabase
+  // JWT session identity. B-WORKER AccountProvisioning dead-code retirement
+  // (2026-09-06, the next slice) then found AccountProvisioningService.ts
+  // itself fully zero-caller and deleted it.
+  it('My KORA live session identity — resolved by retiring the demo runtime, not by inventing one', () => {
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 });

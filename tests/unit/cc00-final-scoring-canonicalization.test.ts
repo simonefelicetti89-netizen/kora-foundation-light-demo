@@ -103,12 +103,14 @@ describe('CC-00 Final Scoring Canonicalization — B-TRUTH I9 is zero', () => {
   // PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,
   // preserved verbatim): "global allowlist is 3 files / 3 imports, all
   // owner: B_WORKER." B-WORKER "One Product / No Demo Runtime" correction
-  // (2026-09-06) deleted WorkerAchievementService.ts (zero real callers) and
-  // removed it from the allowlist — 2 files remain, both still owner:
-  // B_WORKER, a separately-authorized later retirement, not a regression of
-  // this PR's own B-TRUTH-scoped closure.
-  it('global allowlist is 2 files / 2 imports, all owner: B_WORKER (WorkerAchievementService retired since)', () => {
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(2);
+  // (2026-09-06) deleted WorkerAchievementService.ts (zero real callers) —
+  // 2 files remained. B-WORKER AccountProvisioning dead-code retirement
+  // (2026-09-06, the next slice) deleted AccountProvisioningService.ts too
+  // (zero real callers of any of its 18 methods) — 1 file remains, still
+  // owner: B_WORKER, a separately-authorized later retirement, not a
+  // regression of this PR's own B-TRUTH-scoped closure.
+  it('global allowlist is 1 file / 1 import, owner: B_WORKER (WorkerAchievementService and AccountProvisioningService both retired since)', () => {
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(1);
     for (const entry of SYNTHETIC_IMPORT_ALLOWLIST) {
       expect(entry.owner).toBe('B_WORKER');
     }
@@ -307,11 +309,13 @@ describe('CC-00 Final Scoring Canonicalization — B-WORKER untouched, not start
   // PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,
   // preserved verbatim): "same 3 files, same owner" including
   // WorkerAchievementService.ts. B-WORKER "One Product / No Demo Runtime"
-  // correction (2026-09-06) deleted it (zero real callers) — 2 files remain.
-  it('B-WORKER-owned synthetic residuals are 2 files, same owner (WorkerAchievementService retired since)', () => {
+  // correction (2026-09-06) deleted it (zero real callers) — 2 files
+  // remained. B-WORKER AccountProvisioning dead-code retirement (2026-09-06,
+  // the next slice) deleted AccountProvisioningService.ts too — 1 file
+  // remains.
+  it('B-WORKER-owned synthetic residuals are 1 file, same owner (WorkerAchievementService and AccountProvisioningService both retired since)', () => {
     const files = BWORKER_OWNED_SYNTHETIC_IMPORTS.map((e) => e.file).sort();
     expect(files).toEqual([
-      'services/account/AccountProvisioningService.ts',
       'services/worker-provisioning/WorkerProvisioningService.ts',
     ].sort());
   });
@@ -325,12 +329,13 @@ describe('CC-00 Final Scoring Canonicalization — B-WORKER untouched, not start
   // PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,
   // preserved verbatim): asserted the file was untouched, getCurrentDemoUser()
   // still defined. B-WORKER final cleanup (2026-09-06) found it zero-caller
-  // and removed it — the file itself (and its other, unrelated methods) is
-  // still alive.
-  it('AccountProvisioningService.ts still exists (not deleted) — getCurrentDemoUser() was removed separately, unrelated methods unchanged', () => {
-    const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).not.toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
-    expect(src).toMatch(/from ['"][^'"]*\/data\/synthetic\/user-accounts\.json['"]/);
+  // and removed it — the file itself (and its other, unrelated methods) was
+  // still alive at that time. B-WORKER AccountProvisioning dead-code
+  // retirement (2026-09-06, the next slice) exhaustively re-verified all 18
+  // remaining methods and found them zero-caller too — the file itself, and
+  // its sole seed data/synthetic/user-accounts.json, are now deleted.
+  it('AccountProvisioningService.ts no longer exists — getCurrentDemoUser() and every other method were both eventually proven zero-caller', () => {
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of CC-00 Final Scoring Canonicalization,

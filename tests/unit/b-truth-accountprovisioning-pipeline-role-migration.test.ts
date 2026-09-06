@@ -70,23 +70,26 @@ function stripComments(src: string): string {
 }
 
 describe('B-TRUTH — all real callers of AccountProvisioningService, before and after', () => {
-  it('AccountProvisioningService.ts still exists — this is a NARROWING, not a retirement', () => {
-    expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(true);
-  });
-
-  it('getAccountsForCompany (pipeline-only) has been removed', () => {
-    const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).not.toMatch(/^\s{2,4}getAccountsForCompany\(/m);
+  // PRIOR HISTORY (accurate as of this migration, preserved verbatim):
+  // "AccountProvisioningService.ts still exists — this is a NARROWING, not
+  // a retirement" and "getAccountsForCompany (pipeline-only) has been
+  // removed." B-WORKER AccountProvisioning dead-code retirement
+  // (2026-09-06, a later, separate slice): once getCurrentDemoUser() was
+  // also removed (B-WORKER final cleanup, see below), exhaustive re-audit
+  // found ALL 18 remaining methods zero-caller — the "NARROWING" became a
+  // full retirement. See tests/unit/bworker-accountprovisioning-retirement.test.ts.
+  it('AccountProvisioningService.ts no longer exists — narrowing became full retirement once proven zero-caller', () => {
+    expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of this migration, preserved verbatim):
   // asserted getCurrentDemoUser() was untouched, still defined — its sole
   // real caller (app/my-kora/page.tsx) was removed by this very migration,
   // leaving it zero-caller. B-WORKER final cleanup (2026-09-06) verified
-  // that fresh and removed the now-dead method.
-  it('getCurrentDemoUser (My KORA/session role) was removed once proven zero-caller (B-WORKER final cleanup)', () => {
-    const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).not.toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
+  // that fresh and removed the now-dead method. The file itself, and all
+  // its other methods, were later deleted entirely (see above).
+  it('the file that once held getCurrentDemoUser no longer exists at all', () => {
+    expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(false);
   });
 
   it('no runtime file (app/services/lib/components), excluding governance docs and tests, calls accountProvisioningService.getAccountsForCompany', () => {
@@ -247,43 +250,65 @@ describe('B-TRUTH — this PR touched ONLY the AccountProvisioningService pipeli
     expect(existsSync(resolve(root, 'lib/live/decision-pack-status-view.ts'))).toBe(true);
   });
 
-  it('data/synthetic/user-accounts.json still exists — still required by the surviving My KORA/session role, not opportunistically deleted', () => {
-    expect(existsSync(resolve(root, 'data/synthetic/user-accounts.json'))).toBe(true);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "data/synthetic/user-accounts.json still exists — still required by the
+  // surviving My KORA/session role, not opportunistically deleted."
+  // B-WORKER AccountProvisioning dead-code retirement (2026-09-06): once
+  // AccountProvisioningService.ts (its sole runtime consumer) was deleted,
+  // this fixture became zero-consumer and was deleted alongside it.
+  it('data/synthetic/user-accounts.json no longer exists — its sole runtime consumer is deleted', () => {
+    expect(existsSync(resolve(root, 'data/synthetic/user-accounts.json'))).toBe(false);
   });
 });
 
-describe('B-TRUTH — 19 other pre-existing zero-caller methods were left untouched (no opportunistic cleanup)', () => {
-  it('AccountProvisioningService.ts still defines its other, unrelated methods', () => {
-    const src = read('services/account/AccountProvisioningService.ts');
-    for (const method of [
-      'getAccountsForTenant', 'getKoraStaffAccounts', 'getWorkerAccountsForCompany',
-      'getCompanyAdmins', 'getPrimaryCompanyAdmin', 'createCompanyUserDraft',
-      'createCompanyAdminDraft', 'inviteCompanyUser', 'revokeInvite', 'resetInvite',
-      'disableUser', 'suspendUser', 'deleteDemoUser', 'getUserAccessProfile',
-      'canAccessCompany', 'canAccessAdmin', 'getVisibleSections',
-      'getAccountStatusBadge', 'getInvitationStatusBadge',
-    ]) {
-      expect(src).toContain(`${method}(`);
-    }
+// PRIOR HISTORY (accurate as of this migration, preserved as a record, not
+// verbatim): asserted the 19 other zero-caller methods
+// (getAccountsForTenant, getKoraStaffAccounts, getWorkerAccountsForCompany,
+// getCompanyAdmins, getPrimaryCompanyAdmin, createCompanyUserDraft,
+// createCompanyAdminDraft, inviteCompanyUser, revokeInvite, resetInvite,
+// disableUser, suspendUser, deleteDemoUser, getUserAccessProfile,
+// canAccessCompany, canAccessAdmin, getVisibleSections,
+// getAccountStatusBadge, getInvitationStatusBadge) were deliberately left
+// untouched, no opportunistic cleanup, out of this migration's narrow
+// scope. B-WORKER AccountProvisioning dead-code retirement (2026-09-06):
+// that "no opportunistic cleanup" boundary no longer applies — a dedicated,
+// separately-authorized slice exhaustively re-verified all 18 remaining
+// methods (getWorkerAccountsForCompany's caller went from 1 to 0 for the
+// same reason as getAccountsForCompany, well before this test's original
+// "19 other" count) had zero real callers, and retired the file entirely.
+describe('B-TRUTH — the 19 other pre-existing zero-caller methods were later retired, not left as permanent debt', () => {
+  it('AccountProvisioningService.ts no longer exists — no method was migrated one-by-one, none had a real caller to migrate', () => {
+    expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(false);
   });
 });
 
 describe('B-TRUTH — registry and I9 reflect the migration', () => {
-  it('registry svc.account entry reflects CONSOLIDATE (narrowed), not blindly re-labeled DEAD or left CANONICAL', () => {
+  // PRIOR HISTORY (accurate as of this migration, preserved verbatim):
+  // "registry svc.account entry reflects CONSOLIDATE (narrowed), not
+  // blindly re-labeled DEAD or left CANONICAL." B-WORKER AccountProvisioning
+  // dead-code retirement (2026-09-06): the file is now actually deleted —
+  // DEAD is the correct, non-blind label this time, matching every other
+  // deleted service in this registry's own convention.
+  it('registry svc.account entry reflects DEAD — the file is genuinely deleted, not narrowed', () => {
     const registry = read('lib/architecture/registry.ts');
     const idx = registry.indexOf("id: 'svc.account'");
     expect(idx).toBeGreaterThan(-1);
     const nextIdx = registry.indexOf('{ id:', idx + 10);
     const entry = registry.slice(idx, nextIdx);
-    expect(entry).toContain("status: 'CONSOLIDATE'");
-    expect(entry).not.toContain("status: 'DEAD'");
+    expect(entry).toContain("status: 'DEAD'");
     expect(entry).toContain('decisionRef:');
     expect(entry).not.toContain('decisionRef: null');
   });
 
-  it('allowlist still lists AccountProvisioningService (its synthetic import is still required by the surviving role)', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "allowlist still lists AccountProvisioningService (its synthetic import
+  // is still required by the surviving role)." B-WORKER AccountProvisioning
+  // dead-code retirement (2026-09-06): the surviving role (getCurrentDemoUser)
+  // was itself retired first (PR #168), leaving no role to survive on —
+  // removed from the allowlist entirely.
+  it('allowlist no longer lists AccountProvisioningService', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toMatch(/\{\s*file:\s*'services\/account\/AccountProvisioningService\.ts'/);
+    expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/account\/AccountProvisioningService\.ts'/);
   });
 
   // CC-00 Company Portfolio capability salvage + canonicalization
@@ -293,8 +318,11 @@ describe('B-TRUTH — registry and I9 reflect the migration', () => {
   // 11 files / 16 imports, and CC-00 Residual /demo/** controlled
   // retirement (2026-09-26, same day, later slice) reduced it further to
   // 8 files / 13 imports. See tests/unit/cc00-residual-demo-retirement.test.ts.
-  it('allowlist header count is unchanged by THIS PR — 6 files / 11 imports (no synthetic import was removed, only a pipeline-only method; historical note: later, unrelated PRs changed the count, most recently to 6/11)', () => {
+  // B-WORKER AccountProvisioning dead-code retirement (2026-09-06) reduced
+  // it to 1 file / 1 import statement — the count is no longer "unchanged
+  // by THIS PR" (this migration), it changed by a much later one.
+  it('allowlist header count reflects the current total, 1 files / 1 import statements (this PR itself made no synthetic-import change; the count changed later, via B-WORKER AccountProvisioning dead-code retirement)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 2 files / 2 import statements'); // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): WorkerAchievementService.ts removed from the allowlist (deleted, zero callers) — 3/3 -> 2/2, unrelated to this PR.
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 1 files / 1 import statements');
   });
 });

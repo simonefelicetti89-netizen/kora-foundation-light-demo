@@ -126,15 +126,17 @@ describe('CC-024 — no runtime/auth/service code was touched', () => {
   // PRIOR HISTORY (accurate as of CC-024, preserved verbatim): asserted all
   // 3 B-WORKER-owned residuals were untouched. B-WORKER "One Product / No
   // Demo Runtime" correction (2026-09-06) retired WorkerAchievementService.ts
-  // (zero real callers) — 2 remain.
-  it('the 2 remaining B-WORKER-owned synthetic residuals are untouched; WorkerAchievementService retired since', () => {
+  // (zero real callers) — 2 remained. B-WORKER AccountProvisioning dead-code
+  // retirement (2026-09-06, the next slice) retired AccountProvisioningService.ts
+  // too — 1 remains.
+  it('the 1 remaining B-WORKER-owned synthetic residual is untouched; WorkerAchievementService and AccountProvisioningService both retired since', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
-      'services/account/AccountProvisioningService.ts',
     ]) {
       expect(exists(file)).toBe(true);
     }
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of CC-024, preserved verbatim): "MyKoraPreviewService

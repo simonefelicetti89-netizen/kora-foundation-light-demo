@@ -22,7 +22,7 @@
 // the registry reflects actual, not aspirational, state.
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync, readdirSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 
 const root = resolve(process.cwd());
@@ -201,9 +201,13 @@ describe('B-WORKER preview retirement — canonical /worker/** routes are untouc
 // ── 5. PR #168 security hardening remains intact ────────────────────────────
 
 describe('B-WORKER preview retirement — PR #168 hardening intact (regression)', () => {
-  it('AccountProvisioningService.getCurrentDemoUser() remains removed', () => {
-    const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).not.toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
+  // PRIOR HISTORY (accurate as of this file's first version, preserved
+  // verbatim): "AccountProvisioningService.getCurrentDemoUser() remains
+  // removed" — checked the method was gone from the still-existing file.
+  // B-WORKER AccountProvisioning dead-code retirement (2026-09-06, the next
+  // slice) deleted the file itself entirely.
+  it('AccountProvisioningService.ts no longer exists — getCurrentDemoUser() removal became a full retirement', () => {
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 
   it('rate limiting on the 3 previously-closed worker mutation routes remains in place', () => {
@@ -269,40 +273,30 @@ describe('B-WORKER preview retirement — PR #168 hardening intact (regression)'
 // per this pass's explicit instruction not to canonicalize or delete either
 // residual in this PR — this is a corrected-accounting record, not an action.
 describe('B-WORKER preview retirement — I9 allowlist reflects verified reality (corrected accounting)', () => {
-  it('exactly 2 B_WORKER-owned entries remain: AccountProvisioningService, WorkerProvisioningService', () => {
+  // PRIOR HISTORY (accurate as of this file's first version, preserved as a
+  // record): recorded 2 B_WORKER-owned entries (AccountProvisioningService,
+  // WorkerProvisioningService), with AccountProvisioningService proven
+  // zero-caller but deliberately NOT deleted, per that pass's explicit
+  // instruction not to act on the finding. B-WORKER AccountProvisioning
+  // dead-code retirement (2026-09-06, the very next slice) acted on it:
+  // AccountProvisioningService.ts and its seed are deleted, removed from
+  // the allowlist entirely. 1 B_WORKER-owned entry remains.
+  it('exactly 1 B_WORKER-owned entry remains: WorkerProvisioningService', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
     const arrayStart = allowlist.indexOf('export const SYNTHETIC_IMPORT_ALLOWLIST');
     const arrayEnd = allowlist.indexOf('];', arrayStart);
     const arrayBody = allowlist.slice(arrayStart, arrayEnd);
     const matches = arrayBody.match(/owner: 'B_WORKER'/g) ?? [];
-    expect(matches.length).toBe(2);
+    expect(matches.length).toBe(1);
     const files = [...arrayBody.matchAll(/file: '([^']+)'/g)].map((m) => m[1]);
     expect(files.sort()).toEqual([
-      'services/account/AccountProvisioningService.ts',
       'services/worker-provisioning/WorkerProvisioningService.ts',
     ]);
   });
 
-  it('AccountProvisioningService has ZERO real callers of any method — trivially retirable, not a genuine blocker', () => {
-    const RUNTIME_DIRS = ['app', 'components', 'services', 'lib'];
-    const offenders: string[] = [];
-    function walk(dir: string): string[] {
-      const out: string[] = [];
-      for (const entry of readdirSync(dir, { withFileTypes: true })) {
-        const full = resolve(dir, entry.name);
-        if (entry.isDirectory()) out.push(...walk(full));
-        else if (/\.(ts|tsx)$/.test(entry.name) && !full.includes('/services/account/AccountProvisioningService.ts')) out.push(full);
-      }
-      return out;
-    }
-    for (const dir of RUNTIME_DIRS) {
-      for (const file of walk(resolve(root, dir))) {
-        const relative = file.replace(root + '/', '');
-        const codeOnly = read(relative).replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
-        if (/accountProvisioningService\s*\./.test(codeOnly)) offenders.push(relative);
-      }
-    }
-    expect(offenders).toEqual([]);
+  it('AccountProvisioningService.ts and its seed fixture no longer exist', () => {
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
+    expect(exists('data/synthetic/user-accounts.json')).toBe(false);
   });
 
   it('WorkerProvisioningService still has real callers across the admin roster/provisioning UI', () => {

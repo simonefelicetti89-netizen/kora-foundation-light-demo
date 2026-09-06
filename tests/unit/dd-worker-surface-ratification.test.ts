@@ -170,21 +170,23 @@ describe('D-D — B-WORKER synthetic residual ownership unchanged', () => {
   // verbatim): "the 3 I9-tracked residuals remain owner: B_WORKER,
   // unmodified" (including WorkerAchievementService.ts). B-WORKER "One
   // Product / No Demo Runtime" correction (2026-09-06) retired
-  // WorkerAchievementService.ts entirely (zero real callers) — 2 remain.
-  it('the 2 remaining I9-tracked residuals remain owner: B_WORKER, unmodified', () => {
+  // WorkerAchievementService.ts entirely (zero real callers) — 2 remained.
+  // B-WORKER AccountProvisioning dead-code retirement (2026-09-06, the next
+  // slice) retired AccountProvisioningService.ts too — 1 remains.
+  it('the 1 remaining I9-tracked residual remains owner: B_WORKER, unmodified', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
     for (const file of [
-      'services/account/AccountProvisioningService.ts',
       'services/worker-provisioning/WorkerProvisioningService.ts',
     ]) {
       expect(allowlist).toContain(`{ file: '${file}'`);
     }
     expect(allowlist).not.toContain(`{ file: 'services/worker-achievements/WorkerAchievementService.ts'`);
+    expect(allowlist).not.toContain(`{ file: 'services/account/AccountProvisioningService.ts'`);
     const arrayStart = allowlist.indexOf('export const SYNTHETIC_IMPORT_ALLOWLIST');
     const arrayEnd = allowlist.indexOf('];', arrayStart);
     const arrayBody = allowlist.slice(arrayStart, arrayEnd);
     const matches = arrayBody.match(/owner: 'B_WORKER'/g) ?? [];
-    expect(matches.length).toBe(2);
+    expect(matches.length).toBe(1);
   });
 
   it('MyKoraPreviewService (non-I9 B-WORKER debt) is named explicitly in the ratification', () => {
@@ -201,14 +203,14 @@ describe('D-D — B-WORKER synthetic residual ownership unchanged', () => {
   // Runtime" correction (2026-09-06) is a later, separately-authorized PR
   // that did modify (retire) WorkerAchievementService.ts — not a regression
   // of this ratification's own scope boundary.
-  it('none of the 2 remaining residual service files were modified by this ratification; WorkerAchievementService retired since', () => {
+  it('the 1 remaining residual service file was not modified by this ratification; WorkerAchievementService and AccountProvisioningService both retired since', () => {
     for (const [file, marker] of [
-      ['services/account/AccountProvisioningService.ts', 'getCurrentDemoUser'],
       ['services/worker-provisioning/WorkerProvisioningService.ts', 'WorkerProvisioningService'],
     ] as const) {
       expect(read(file)).toContain(marker);
     }
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 });
 

@@ -217,10 +217,15 @@ describe('B-TRUTH — this PR touched ONLY the TenantService migration (one PR =
     expect(existsSync(resolve(root, 'services/company-data-intake/CompanyDataIntakeService.ts'))).toBe(false);
   });
 
-  it('AccountProvisioningService still exists — its own migration is a separate, later slice', () => {
-    expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(true);
-    const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).toMatch(/from\s+['"][^'"]*data\/synthetic\//);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "AccountProvisioningService still exists — its own migration is a
+  // separate, later slice." That later slice (B-TRUTH AccountProvisioningService
+  // Pipeline Role Migration) happened, then B-WORKER AccountProvisioning
+  // dead-code retirement (2026-09-06, a further, later, separate, bounded
+  // slice) deleted the file entirely — zero real callers of any of its 18
+  // methods, confirmed exhaustively.
+  it('AccountProvisioningService no longer exists — its later migration and eventual retirement are both separate, later slices from this one', () => {
+    expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(false);
   });
 
   it('B-WORKER members remain untouched — still exist; the final scoring group was later retired by CC-00 Final Scoring Canonicalization (2026-09-05), unrelated to this PR', () => {

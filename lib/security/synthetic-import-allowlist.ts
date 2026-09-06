@@ -34,10 +34,13 @@
 // empty LEADS array — the tool itself, and every derived view, is
 // unchanged; no founder CRM schema was invented.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 2 files / 2 import statements
-// (B-WORKER "One Product / No Demo Runtime" correction, 2026-09-06:
-// WorkerAchievementService.ts removed from this allowlist — file deleted,
-// zero real callers. See lib/architecture/registry.ts svc.worker-achievements.)
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 1 files / 1 import statements
+// (B-WORKER AccountProvisioning dead-code retirement, 2026-09-06:
+// AccountProvisioningService.ts removed from this allowlist — file
+// deleted, zero real callers of any of its 18 methods. Prior to that,
+// WorkerAchievementService.ts was removed the same day — file deleted,
+// zero real callers. See lib/architecture/registry.ts svc.account and
+// svc.worker-achievements.)
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
@@ -660,16 +663,41 @@ export interface SyntheticImportAllowlistEntry {
 // callers — became pure canonical redirects; no achievement domain object
 // was created to replace it, per explicit founder instruction). Removed
 // from this allowlist entirely: 3 B_WORKER-owned entries -> 2.
-// AccountProvisioningService.ts stays: its data/synthetic/user-accounts.json
-// import is independent of the already-removed getCurrentDemoUser() (PR
-// #168) — getWorkerAccountsForCompany/getCompanyAdmins/etc. still read it
-// directly, confirmed by fresh inspection, out of this slice's scope.
-// WorkerProvisioningService.ts stays: fresh-verified as the final B-WORKER
-// I9 blocker (real callers across admin roster/provisioning UI, genuine
-// schema gaps — department/site/my_kora_enabled/pib_private_enabled — not
-// invented here; see tests/unit/bworker-preview-runtime-retirement.test.ts).
+//
+// CORRECTION (PR #169 final-correction pass, 2026-09-06): the note that
+// used to stand here — "AccountProvisioningService.ts stays: its
+// data/synthetic/user-accounts.json import is independent of the
+// already-removed getCurrentDemoUser()... getWorkerAccountsForCompany/
+// getCompanyAdmins/etc. still read it directly" — was never actually
+// verified against real callers, only against the source TEXT of one
+// method name. It was wrong.
+//
+// B-WORKER AccountProvisioning dead-code retirement (2026-09-06, the very
+// next slice): exhaustive, comment-stripped, repo-wide re-verification of
+// ALL 18 remaining methods (getAccountsForTenant, getKoraStaffAccounts,
+// getWorkerAccountsForCompany, getCompanyAdmins, getPrimaryCompanyAdmin,
+// createCompanyUserDraft, createCompanyAdminDraft, inviteCompanyUser,
+// revokeInvite, resetInvite, disableUser, deleteDemoUser,
+// getUserAccessProfile, canAccessCompany, canAccessAdmin,
+// getVisibleSections, getAccountStatusBadge, getInvitationStatusBadge)
+// found ZERO real callers of any of them anywhere in app/services/lib/
+// components — corroborating a pre-existing, already-passing test
+// (tests/unit/b-truth-accountprovisioning-pipeline-role-migration.test.ts)
+// that had independently proven the same fact on 2026-09-05, before
+// B-WORKER started. Real account/user functionality already comes from
+// Supabase Auth (auth.users + app_metadata) via
+// lib/live/account-provisioning-status-view.ts (pipeline role) and
+// app/admin/company-users-live + /api/admin/company-users (company-user
+// CRUD) — no canonical replacement was built here, because none was
+// needed. services/account/AccountProvisioningService.ts and its sole
+// seed file, data/synthetic/user-accounts.json, are both deleted. Removed
+// from this allowlist entirely: 2 B_WORKER-owned entries -> 1.
+// WorkerProvisioningService.ts is now the sole remaining B_WORKER-owned
+// entry, and the sole remaining B-WORKER I9 blocker: real callers across
+// admin roster/provisioning UI, genuine schema gaps —
+// department/site/my_kora_enabled/pib_private_enabled — not invented here.
+// See tests/unit/bworker-accountprovisioning-retirement.test.ts.
 export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
-  { file: 'services/account/AccountProvisioningService.ts', reason: 'Demo account registry — reads synthetic user accounts.', owner: 'B_WORKER' },
   { file: 'services/worker-provisioning/WorkerProvisioningService.ts', reason: 'Demo worker roster seed for provisioning flows.', owner: 'B_WORKER' },
 ];
 

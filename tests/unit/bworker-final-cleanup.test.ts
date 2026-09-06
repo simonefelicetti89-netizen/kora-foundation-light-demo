@@ -101,11 +101,18 @@ describe('B-WORKER final cleanup — /my-kora/layout.tsx is now a trivial pass-t
 
 // ── 2. AccountProvisioningService dead code removed ─────────────────────────
 
-describe('B-WORKER final cleanup — AccountProvisioningService.getCurrentDemoUser() retired', () => {
-  const service = read('services/account/AccountProvisioningService.ts');
-
-  it('getCurrentDemoUser() no longer exists', () => {
-    expect(service).not.toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
+// PRIOR HISTORY (accurate as of B-WORKER final cleanup / PR #168, preserved
+// as a record, not verbatim): asserted getCurrentDemoUser() was removed
+// from the still-existing service file, no remaining runtime file called
+// it, and the file's other, unrelated, "unproven-dead" methods
+// (getWorkerAccountsForCompany, getCompanyAdmins, etc.) were left
+// untouched. B-WORKER AccountProvisioning dead-code retirement (2026-09-06,
+// the slice immediately following PR #169) exhaustively re-verified all 18
+// remaining methods and found them zero-caller too — the file itself is
+// now deleted entirely.
+describe('B-WORKER final cleanup — AccountProvisioningService.getCurrentDemoUser() retired, then the whole file', () => {
+  it('AccountProvisioningService.ts no longer exists — getCurrentDemoUser() removal became a full retirement', () => {
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 
   it('no remaining runtime file calls accountProvisioningService.getCurrentDemoUser', () => {
@@ -120,12 +127,6 @@ describe('B-WORKER final cleanup — AccountProvisioningService.getCurrentDemoUs
       expect(src).not.toMatch(/accountProvisioningService\.getCurrentDemoUser\(/);
     }
   });
-
-  it('the service file still exists — other, unrelated, unproven-dead methods are untouched', () => {
-    expect(exists('services/account/AccountProvisioningService.ts')).toBe(true);
-    expect(service).toContain('getWorkerAccountsForCompany');
-    expect(service).toContain('getCompanyAdmins');
-  });
 });
 
 // ── 3. I9 residuals — honestly unchanged, reason documented ─────────────────
@@ -138,22 +139,23 @@ describe('B-WORKER final cleanup — AccountProvisioningService.getCurrentDemoUs
 // No Demo Runtime" correction (2026-09-06): WorkerAchievementService.ts is
 // deleted (zero real callers once its 2 callers became pure redirects) and
 // removed from the allowlist entirely — 2 B_WORKER-owned entries remain.
-describe('B-WORKER final cleanup — I9 residuals (WorkerAchievementService retired, WorkerProvisioning honestly not closed)', () => {
-  it('I9 allowlist has exactly 2 B_WORKER-owned entries — WorkerAchievementService removed, not silently kept', () => {
+describe('B-WORKER final cleanup — I9 residuals (WorkerAchievementService and AccountProvisioningService retired, WorkerProvisioning honestly not closed)', () => {
+  it('I9 allowlist has exactly 1 B_WORKER-owned entry — WorkerAchievementService and AccountProvisioningService both removed, not silently kept', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
     const arrayStart = allowlist.indexOf('export const SYNTHETIC_IMPORT_ALLOWLIST');
     const arrayEnd = allowlist.indexOf('];', arrayStart);
     const arrayBody = allowlist.slice(arrayStart, arrayEnd);
     const matches = arrayBody.match(/owner: 'B_WORKER'/g) ?? [];
-    expect(matches.length).toBe(2);
+    expect(matches.length).toBe(1);
     const files = [...arrayBody.matchAll(/file: '([^']+)'/g)].map(m => m[1]);
     expect(files).toContain('services/worker-provisioning/WorkerProvisioningService.ts');
-    expect(files).toContain('services/account/AccountProvisioningService.ts');
+    expect(files).not.toContain('services/account/AccountProvisioningService.ts');
     expect(files).not.toContain('services/worker-achievements/WorkerAchievementService.ts');
   });
 
-  it('WorkerAchievementService.ts no longer exists', () => {
+  it('WorkerAchievementService.ts and AccountProvisioningService.ts no longer exist', () => {
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 
   it('WorkerProvisioningService callers remain in the live admin console — genuinely unresolved, not demo-only', () => {

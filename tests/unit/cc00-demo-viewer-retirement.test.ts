@@ -289,12 +289,14 @@ describe('CC-00 DEMO_VIEWER retirement — B-WORKER, My KORA, final scoring unto
   // AccountProvisioningService.ts itself (this test's actual subject) is untouched.
   // PRIOR HISTORY (accurate as of CC-00 DEMO_VIEWER retirement, preserved
   // verbatim): asserted this different, unrelated concept was untouched by
-  // that retirement. It was later found zero-caller and removed by
-  // B-WORKER final cleanup (2026-09-06) — an unrelated, separate cleanup.
-  it('AccountProvisioningService.ts (the file) still exists; getCurrentDemoUser() was removed separately once zero-caller', () => {
-    expect(exists('services/account/AccountProvisioningService.ts')).toBe(true);
-    const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).not.toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
+  // that retirement. getCurrentDemoUser() was later found zero-caller and
+  // removed by B-WORKER final cleanup (2026-09-06) — an unrelated, separate
+  // cleanup. The file itself was later found to have zero real callers of
+  // ANY of its remaining 18 methods and was deleted entirely by the
+  // B-WORKER AccountProvisioning dead-code retirement (2026-09-06, the very
+  // next slice) — see tests/unit/bworker-accountprovisioning-retirement.test.ts.
+  it('AccountProvisioningService.ts no longer exists — retired once proven fully zero-caller', () => {
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "final
