@@ -192,7 +192,7 @@ function RoleContextLinks() {
   const links = [
     { label: 'KORA Admin — Company Console',   href: '/admin/companies',   badge: 'LIVE · KORA Admin',   badgeColor: 'rgba(6,3,43,0.65)',  badgeBg: 'rgba(6,3,43,0.07)',  badgeBdr: 'rgba(6,3,43,0.14)' },
     { label: 'Company Workspace',              href: '/company',            badge: 'PREVIEW · Company',   badgeColor: '#7A4019',            badgeBg: 'rgba(199,111,61,0.09)', badgeBdr: 'rgba(199,111,61,0.25)' },
-    { label: 'My KORA Preview (Worker Space)', href: '/my-kora',            badge: 'PREVIEW · Lavoratore', badgeColor: '#2F7D55',           badgeBg: 'rgba(47,125,85,0.09)', badgeBdr: 'rgba(47,125,85,0.28)' },
+    { label: 'My KORA Preview (Worker Space)', href: '/admin/preview/worker', badge: 'PREVIEW · Lavoratore', badgeColor: '#2F7D55',           badgeBg: 'rgba(47,125,85,0.09)', badgeBdr: 'rgba(47,125,85,0.28)' },
   ];
 
   return (

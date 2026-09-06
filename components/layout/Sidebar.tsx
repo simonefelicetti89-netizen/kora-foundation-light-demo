@@ -140,8 +140,16 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: isAdminPreview ? 'Worker Preview (Admin)' : 'Il tuo spazio',
         items: [
-          { href: '/my-kora', label: 'My KORA Home' },
-          { href: '/worker/personal-impact-balance', label: 'Personal Impact Balance' },
+          {
+            href:    isAdminPreview ? '/admin/preview/worker' : '/my-kora',
+            label:   'My KORA Home',
+            preview: isAdminPreview ? true : undefined,
+          },
+          {
+            href:    isAdminPreview ? '/admin/preview/worker' : '/worker/personal-impact-balance',
+            label:   'Personal Impact Balance',
+            preview: isAdminPreview ? true : undefined,
+          },
         ],
       },
       {
@@ -163,7 +171,12 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           { href: '/worker/activity-discovery', label: 'Attività disponibili', description: 'Anteprima design — attività partner standard, Fase 2', preview: true },
           { href: '/my-kora/kora-link', label: 'My KORA Link' },
           { href: '/worker/kora-link/activate', label: 'Attiva KORA Link', description: 'Anteprima design — nessuna attivazione reale', preview: true },
-          { href: '/my-kora/bookings', label: 'Prenotazioni', description: 'Le tue richieste di partecipazione — private' },
+          {
+            href:    isAdminPreview ? '/my-kora/bookings' : '/worker/bookings',
+            label:   'Prenotazioni',
+            description: 'Le tue richieste di partecipazione — private',
+            preview: isAdminPreview ? true : undefined,
+          },
           { href: '/my-kora/collective', label: 'Collettivo', description: 'Non ancora disponibile in Foundation Light', comingSoon: true },
         ],
       },

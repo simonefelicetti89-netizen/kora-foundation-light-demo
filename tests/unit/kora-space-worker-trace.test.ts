@@ -29,7 +29,7 @@ describe('Attendance trace — My KORA bookings private trace surface', () => {
   let bookingsSrc: string;
 
   beforeAll(() => {
-    bookingsSrc = readFile('app/my-kora/bookings/page.tsx');
+    bookingsSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
   });
 
   test('1. attended_at field is rendered in booking card for attended bookings', () => {
@@ -74,7 +74,7 @@ describe('PIB timeline gap — honest documentation', () => {
   beforeAll(() => {
     pibSrc      = readFile('services/worker-pib/WorkerPIBService.ts');
     attrSrc     = readFile('lib/commons/cross-company-attribution.ts');
-    bookingsSrc = readFile('app/my-kora/bookings/page.tsx');
+    bookingsSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
   });
 
   test('8. WorkerPIBService documents that booking-sourced rows use source_booking_id', () => {
@@ -106,7 +106,7 @@ describe('Dynamic Impact CV — policy respected, no auto-inclusion', () => {
     policyExists = fileExists('lib/dynamic-cv/dynamic-impact-cv-policy.ts');
     policySrc    = policyExists ? readFile('lib/dynamic-cv/dynamic-impact-cv-policy.ts') : '';
     typesSrc     = readFile('lib/dynamic-cv/dynamic-cv-types.ts');
-    bookingsSrc  = readFile('app/my-kora/bookings/page.tsx');
+    bookingsSrc  = readFile('app/worker/bookings/_components/BookingsClient.tsx');
   });
 
   test('11. dynamic-impact-cv-policy.ts file exists', () => {
@@ -168,8 +168,13 @@ describe('Worker workspace — trace summary card', () => {
     expect(workspaceSrc).toContain('workspace-trace-summary');
   });
 
-  test('19. Workspace links to /my-kora/bookings and states private trace copy', () => {
-    expect(workspaceSrc).toContain('/my-kora/bookings');
+  // PRIOR HISTORY (accurate before B-WORKER-3, preserved verbatim): asserted
+  // the workspace bridge targeted /my-kora/bookings. B-WORKER-3 (2026-09-06)
+  // built the canonical /worker/bookings page and repointed this bridge to
+  // it — the private-trace copy is unchanged.
+  test('19. Workspace links to canonical /worker/bookings and states private trace copy', () => {
+    expect(workspaceSrc).toContain('/worker/bookings');
+    expect(workspaceSrc).not.toContain('/my-kora/bookings');
     expect(workspaceSrc).toContain('Le partecipazioni confermate restano nel tuo percorso privato');
   });
 });
@@ -180,7 +185,7 @@ describe('Privacy — attended booking card safety', () => {
   let bookingsSrc: string;
 
   beforeAll(() => {
-    bookingsSrc = readFile('app/my-kora/bookings/page.tsx');
+    bookingsSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
   });
 
   test('20. No worker_identity_id field access rendered in bookings page', () => {
@@ -195,13 +200,13 @@ describe('Privacy — attended booking card safety', () => {
 
 describe('Regression — prior sprint artifacts preserved', () => {
   test('21. bookings-employer-privacy-notice testid preserved', () => {
-    const src = readFile('app/my-kora/bookings/page.tsx');
+    const src = readFile('app/worker/bookings/_components/BookingsClient.tsx');
     expect(src).toContain('bookings-employer-privacy-notice');
     expect(src).toContain('Il datore di lavoro non vede il tuo percorso individuale');
   });
 
   test('22. booking-record testid pattern preserved in bookings page', () => {
-    const src = readFile('app/my-kora/bookings/page.tsx');
+    const src = readFile('app/worker/bookings/_components/BookingsClient.tsx');
     expect(src).toContain('booking-record-');
   });
 
@@ -210,9 +215,19 @@ describe('Regression — prior sprint artifacts preserved', () => {
     expect(src).toContain('admin-booking-attendance-notice');
   });
 
-  test('24. space-booking-request-notice testid preserved in kora-space page', () => {
-    const src = readFile('app/my-kora/kora-space/page.tsx');
-    expect(src).toContain('space-booking-request-notice');
+  // PRIOR HISTORY (accurate before B-WORKER-3, preserved verbatim): checked
+  // kora-space's own BookingRequestNotice component (testid
+  // space-booking-request-notice), used only in the live branch removed once
+  // /worker/commons reached full parity — the component (dead code after
+  // that removal) was deleted along with it. The same substance (the
+  // request is private; KORA/Admin manages status; a private trace results)
+  // is preserved on the canonical path: WorkerBookingButton's 'booked' state
+  // copy and the salvaged booking-lifecycle explainer on /worker/commons.
+  test('24. Booking-privacy substance (private request, KORA/Admin manages status) preserved on canonical /worker/commons', () => {
+    const buttonSrc  = readFile('components/commons/WorkerBookingButton.tsx');
+    const commonsSrc = readFile('app/worker/commons/page.tsx');
+    expect(buttonSrc).toContain('in attesa di conferma KORA');
+    expect(commonsSrc).toContain('KORA esamina la richiesta');
   });
 
   test('25. attributePIBForBooking is called in BookingService.markAttended', () => {
@@ -227,7 +242,7 @@ describe('Regression — prior sprint artifacts preserved', () => {
   });
 
   test('27. contribution_event is not referenced in worker-facing bookings page (company-only table)', () => {
-    const src = readFile('app/my-kora/bookings/page.tsx');
+    const src = readFile('app/worker/bookings/_components/BookingsClient.tsx');
     expect(src).not.toContain('contribution_event');
     expect(src).not.toContain('personal.worker_pib');
   });

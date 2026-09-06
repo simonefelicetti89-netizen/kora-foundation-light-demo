@@ -137,18 +137,18 @@ describe('B-WORKER-2 — KORA Space: parity incomplete (booking-status gap), cor
   const button = read('components/commons/WorkerBookingButton.tsx');
   const legacy = read('app/my-kora/kora-space/page.tsx');
 
-  it('WorkerBookingButton starts idle on every render — no pre-fetched booking status (the actual gap)', () => {
-    expect(button).toContain("useState<BookingState>('idle')");
-    expect(button).not.toContain('useEffect');
-  });
-
-  it('/my-kora/kora-space still pre-fetches booking status the canonical page cannot show yet', () => {
-    expect(legacy).toContain('bookingsByPostId');
-    expect(legacy).toContain("fetch('/api/worker/commons/bookings')");
-  });
-
-  it('/my-kora/kora-space is NOT modified this slice (no redirect added — parity not yet proven)', () => {
-    expect(legacy).not.toContain('router.replace');
+  // PRIOR HISTORY (accurate as of B-WORKER-2, preserved verbatim): this
+  // whole describe block documented the booking-status-persistence gap as
+  // still open, deferred to a later slice. B-WORKER-3 (2026-09-06) closed
+  // it — see tests/unit/kora-space-inline-booking-ux.test.ts and
+  // kora-space-pilot-usability.test.ts for the current assertions
+  // (initialStatus/initialStateFor on WorkerBookingButton, server-side
+  // pre-fetch on /worker/commons, kora-space redirect once parity was
+  // proven with the gap closed).
+  it('the booking-status-persistence gap identified here is now closed (B-WORKER-3)', () => {
+    expect(button).toContain('initialStatus');
+    expect(button).toContain('initialStateFor');
+    expect(legacy).toContain("router.replace('/worker/commons')");
   });
 
   it('the sidebar already honestly labels /my-kora/kora-space as synthetic preview, /worker/commons as real', () => {
@@ -171,13 +171,23 @@ describe('B-WORKER-2 — bridge links repointed for proven-parity capabilities o
     expect(workspace).not.toContain('/my-kora/dynamic-cv');
   });
 
-  it('/worker/workspace: bookings bridge link is untouched (no canonical replacement yet)', () => {
-    expect(workspace).toContain('/my-kora/bookings');
+  // PRIOR HISTORY (accurate as of B-WORKER-2, preserved verbatim): bookings
+  // bridge was untouched, PIB's Sidebar entry was a plain (non-ternary)
+  // /worker/... string, and the admin pipeline link was unchanged. B-WORKER-3
+  // (2026-09-06) built /worker/bookings and the /admin/preview/worker hub,
+  // repointed the workspace bookings bridge, made the Sidebar's PIB entry
+  // isAdminPreview-aware (matching the existing Dynamic CV/Privacy pattern —
+  // it had been incorrectly left unconditional in Slice 2, which would have
+  // sent an admin-preview KORA_ADMIN into a 401), and repointed the pipeline
+  // console link off /my-kora entirely.
+  it('/worker/workspace: bookings bridge link now repointed to canonical /worker/bookings', () => {
+    expect(workspace).toContain('/worker/bookings');
+    expect(workspace).not.toContain('/my-kora/bookings');
   });
 
-  it('Sidebar: Personal Impact Balance entry points to canonical /worker route', () => {
+  it('Sidebar: Personal Impact Balance entry is isAdminPreview-aware, pointing real workers to canonical /worker route', () => {
     const workerSection = sidebar.slice(sidebar.indexOf("heading: isAdminPreview ? 'Worker Preview (Admin)'"));
-    expect(workerSection).toContain("href: '/worker/personal-impact-balance'");
+    expect(workerSection).toContain("isAdminPreview ? '/admin/preview/worker' : '/worker/personal-impact-balance'");
     expect(workerSection).not.toContain("href: '/my-kora/personal-impact-balance'");
   });
 
@@ -186,9 +196,10 @@ describe('B-WORKER-2 — bridge links repointed for proven-parity capabilities o
     expect(sidebar).toContain("isAdminPreview ? '/admin/preview/worker/privacy' : '/worker/privacy'");
   });
 
-  it('admin pipeline "My KORA Preview (Worker Space)" link is unchanged (bookings/KORA_ADMIN-preview bridge, deferred)', () => {
+  it('admin pipeline "My KORA Preview (Worker Space)" link now points at the canonical admin preview hub', () => {
     const pipeline = read('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
-    expect(pipeline).toContain("href: '/my-kora'");
+    expect(pipeline).toContain("href: '/admin/preview/worker'");
+    expect(pipeline).not.toContain("href: '/my-kora'");
   });
 });
 

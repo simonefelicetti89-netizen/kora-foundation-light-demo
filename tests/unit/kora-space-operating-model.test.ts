@@ -78,10 +78,14 @@ describe('Worker KORA Space — mode detection and live feed', () => {
     spaceSrc = readFile('app/my-kora/kora-space/page.tsx');
   });
 
-  test('7. Worker feed has four-state detection — does not show synthetic data to real workers', () => {
+  // PRIOR HISTORY (accurate as of the original sprint, preserved verbatim):
+  // "Worker feed has four-state detection" — asserted setMode('live')/'empty'
+  // existed. B-WORKER-3 (2026-09-06) proved /worker/commons full parity and
+  // replaced the live/empty distinction with a redirect — a real worker
+  // never sees this page's own synthetic content either way.
+  test('7. Worker feed redirects real sessions instead of showing synthetic data', () => {
     expect(spaceSrc).toContain("'checking'");
-    expect(spaceSrc).toMatch(/setMode\(.*'live'|setMode\(.*'empty'/);
-    expect(spaceSrc).not.toMatch(/isSynthetic.*demo.*setMode\('live'\)/);
+    expect(spaceSrc).toContain("router.replace('/worker/commons')");
   });
 
   test('8. Demo visitor sees clearly labelled demo content', () => {
@@ -100,9 +104,18 @@ describe('Worker KORA Space — mode detection and live feed', () => {
     expect(spaceSrc).not.toContain('worker_pib');
   });
 
-  test('11. Worker sees clear empty state when no initiatives are available', () => {
-    expect(spaceSrc).toContain('kora-space-empty');
-    expect(spaceSrc).toMatch(/Nessuna iniziativa|no_data/i);
+  // PRIOR HISTORY (accurate as of the original sprint, preserved verbatim):
+  // "Worker sees clear empty state when no initiatives are available" —
+  // checked this page's own removed 'kora-space-empty' block. The canonical
+  // /worker/commons handles the no-initiatives case by simply omitting the
+  // "Iniziative partecipabili" section (hasInitiatives gate) rather than
+  // rendering an explicit empty-state message for that section — an honest,
+  // if less explicit, empty state (the page's generic-posts section still has
+  // its own explicit worker-commons-empty message when there are no posts).
+  test('11. Canonical /worker/commons honestly omits the initiatives section when there are none', () => {
+    const commonsSrc = readFile('app/worker/commons/page.tsx');
+    expect(commonsSrc).toContain('hasInitiatives &&');
+    expect(commonsSrc).toContain('data-testid="worker-commons-empty"');
   });
 });
 

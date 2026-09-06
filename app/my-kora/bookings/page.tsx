@@ -1,36 +1,21 @@
 'use client';
 // W-05: Prenotazioni — stato delle richieste di partecipazione alle iniziative.
-// Four-state detection: checking / live / empty / demo.
-// B166 added a real live path: /api/worker/commons/bookings (BookingService.listMyBookings)
-// returns the worker's own bookings; 'live' mode renders them. 'demo' is shown only
-// when the worker session cannot be confirmed as non-synthetic.
+//
+// B-WORKER-3 (2026-09-06): /worker/bookings migrated this page's EXISTING
+// real 'live' capability (real /api/worker/commons/bookings data, real
+// cancel action, real status/date rendering) verbatim onto the canonical
+// /worker surface with a real requireWorkerUser()-gated server wrapper. A
+// confirmed real WORKER session here now redirects there instead of
+// duplicating that rendering. 'demo' (session not confirmed as non-synthetic)
+// is unchanged — Foundation Light's legitimate pre-login preview.
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
-import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
-type BookingsMode = 'checking' | 'live' | 'empty' | 'demo';
-
-interface BookingRecord {
-  id:           string;
-  post_id:      string;
-  status:       string;
-  created_at:   string;
-  moderated_at?: string | null;
-  attended_at?:  string | null;
-}
-
-// Statuses where the worker may cancel their booking.
-const CANCELLABLE_STATUSES = new Set(['pending', 'requested', 'approved', 'confirmed']);
-
-interface InitiativeSummary {
-  id:              string;
-  title:           string;
-  pillar?:         string;
-  event_start_at?: string | null;
-}
+type BookingsMode = 'checking' | 'redirecting' | 'demo';
 
 const BOOKING_STATUS_COPY: Record<string, { label: string; color: string }> = {
   pending:   { label: 'Richiesta inviata',          color: '#8A5A00'           },
@@ -66,11 +51,8 @@ function PrivacyNotice() {
 }
 
 export default function Bookings() {
+  const router = useRouter();
   const [mode, setMode] = useState<BookingsMode>('checking');
-  const [liveBookings, setLiveBookings] = useState<BookingRecord[]>([]);
-  const [initiativesMap, setInitiativesMap] = useState<Record<string, InitiativeSummary>>({});
-  const [cancellingId, setCancellingId] = useState<string | null>(null);
-  const [cancelErrors, setCancelErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetch('/api/worker/pib')
@@ -79,53 +61,14 @@ export default function Bookings() {
         if (data?.isSynthetic !== false) {
           setMode('demo');
         } else {
-          // Fetch bookings and initiative enrichment in parallel
-          Promise.all([
-            fetch('/api/worker/commons/bookings').then((r) => r.ok ? r.json() : null),
-            fetch('/api/commons/initiatives').then((r) => r.ok ? r.json() : null).catch(() => null),
-          ]).then(([bdata, idata]) => {
-            const bookings: BookingRecord[] = bdata?.bookings ?? [];
-            // Build a post_id → initiative lookup map for enriching booking cards
-            const iMap: Record<string, InitiativeSummary> = {};
-            const initiatives: InitiativeSummary[] = idata?.initiatives ?? [];
-            for (const i of initiatives) iMap[i.id] = i;
-            setInitiativesMap(iMap);
-            setLiveBookings(bookings);
-            setMode(bookings.length > 0 ? 'live' : 'empty');
-          }).catch(() => setMode('empty'));
+          setMode('redirecting');
+          router.replace('/worker/bookings');
         }
       })
       .catch(() => setMode('demo'));
-  }, []);
+  }, [router]);
 
-  async function handleCancel(bookingId: string) {
-    setCancellingId(bookingId);
-    setCancelErrors((prev) => { const { [bookingId]: _, ...rest } = prev; return rest; });
-    try {
-      const res  = await fetch(`/api/worker/commons/bookings/${bookingId}`, { method: 'DELETE' });
-      const data = await res.json() as { ok: boolean; error?: string };
-      if (data.ok) {
-        // Update local state — mark as cancelled so the cancel button disappears.
-        setLiveBookings((prev) =>
-          prev.map((b) => b.id === bookingId ? { ...b, status: 'cancelled' } : b),
-        );
-      } else {
-        setCancelErrors((prev) => ({
-          ...prev,
-          [bookingId]: 'Impossibile annullare la richiesta. Riprova più tardi.',
-        }));
-      }
-    } catch {
-      setCancelErrors((prev) => ({
-        ...prev,
-        [bookingId]: 'Errore di rete. Riprova più tardi.',
-      }));
-    } finally {
-      setCancellingId(null);
-    }
-  }
-
-  if (mode === 'checking') return null;
+  if (mode === 'checking' || mode === 'redirecting') return null;
 
   return (
     <div style={{ maxWidth: 560, fontFamily: FONT }}>
@@ -152,161 +95,6 @@ export default function Bookings() {
           }}
         >
           Demo preview · Dati dimostrativi · Non rappresenta prenotazioni reali del lavoratore
-        </div>
-      )}
-
-      {/* Live bookings list */}
-      {mode === 'live' && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ marginBottom: 10 }}>
-            <BoundaryBadge mode="LIVE" variant="light" />
-          </div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Le tue prenotazioni ({liveBookings.length})
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {liveBookings.map((booking) => {
-              const sm        = statusMeta(booking.status);
-              const initiative = initiativesMap[booking.post_id];
-              const title     = initiative?.title ?? `Iniziativa #${booking.post_id.slice(0, 8)}`;
-              const pillar    = initiative?.pillar;
-              const eventDate = initiative?.event_start_at
-                ? new Date(initiative.event_start_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })
-                : null;
-              return (
-                <div
-                  key={booking.id}
-                  data-testid={`booking-record-${booking.id}`}
-                  style={{
-                    background: '#FFFFFF', border: '1px solid rgba(6,3,43,0.09)',
-                    borderRadius: 12, padding: '14px 16px',
-                  }}
-                >
-                  {/* Status badge + request date */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
-                      background: `${sm.color}14`, color: sm.color, border: `1px solid ${sm.color}33`,
-                    }}>
-                      {sm.label}
-                    </span>
-                    {pillar && (
-                      <span style={{ fontSize: 9, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: 'rgba(6,3,43,0.05)', color: 'rgba(6,3,43,0.55)' }}>
-                        {pillar}
-                      </span>
-                    )}
-                    <span style={{ fontSize: 10, color: TOKENS.inkHint, marginLeft: 'auto' }}>
-                      {new Date(booking.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </span>
-                  </div>
-
-                  {/* Initiative title */}
-                  <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px', lineHeight: 1.3 }}>
-                    {title}
-                  </p>
-
-                  {/* Event date if available */}
-                  {eventDate && (
-                    <p style={{ fontSize: 10, color: TOKENS.inkSecondary, margin: '0 0 4px' }}>
-                      Data evento: {eventDate}
-                    </p>
-                  )}
-
-                  {/* Attendance confirmation */}
-                  {booking.attended_at && (
-                    <p style={{ fontSize: 10, color: '#2F7D55', margin: '4px 0 0' }}>
-                      Partecipazione confermata il {new Date(booking.attended_at).toLocaleDateString('it-IT')}
-                    </p>
-                  )}
-
-                  {/* Cancel action — only for pending/approved statuses */}
-                  {CANCELLABLE_STATUSES.has(booking.status) && (
-                    <div
-                      data-testid={`booking-cancel-section-${booking.id}`}
-                      style={{ marginTop: 8 }}
-                    >
-                      <p style={{ fontSize: 10, color: TOKENS.inkSecondary, margin: '0 0 6px', fontFamily: FONT }}>
-                        Puoi annullare una richiesta finché non è stata completata.
-                      </p>
-                      <button
-                        data-testid={`booking-cancel-btn-${booking.id}`}
-                        disabled={cancellingId === booking.id}
-                        onClick={() => void handleCancel(booking.id)}
-                        style={{
-                          fontSize:     11,
-                          fontWeight:   600,
-                          padding:      '5px 12px',
-                          borderRadius: 7,
-                          border:       '1px solid rgba(158,59,47,0.25)',
-                          background:   'rgba(158,59,47,0.06)',
-                          color:        '#9E3B2F',
-                          cursor:       cancellingId === booking.id ? 'not-allowed' : 'pointer',
-                          fontFamily:   FONT,
-                        }}
-                      >
-                        {cancellingId === booking.id ? 'Annullamento…' : 'Annulla richiesta'}
-                      </button>
-                      {cancelErrors[booking.id] && (
-                        <p style={{ fontSize: 10, color: '#9E3B2F', margin: '4px 0 0', fontFamily: FONT }}>
-                          {cancelErrors[booking.id]}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Cancelled re-request notice — no automatic re-registration (DB UNIQUE constraint) */}
-                  {booking.status === 'cancelled' && (
-                    <p
-                      data-testid={`booking-cancelled-reopen-notice-${booking.id}`}
-                      style={{ fontSize: 10, color: TOKENS.inkSecondary, margin: '8px 0 0', lineHeight: 1.5, fontFamily: FONT }}
-                    >
-                      Per una nuova richiesta sulla stessa iniziativa, contatta KORA/Admin.
-                    </p>
-                  )}
-
-                  {/* Private trace section — attended bookings only */}
-                  {booking.status === 'attended' && (
-                    <div
-                      data-testid="booking-attended-trace-notice"
-                      style={{
-                        marginTop: 10,
-                        background: 'rgba(59,110,186,0.05)',
-                        border: '1px solid rgba(59,110,186,0.16)',
-                        borderRadius: 8,
-                        padding: '10px 14px',
-                      }}
-                    >
-                      <p style={{ fontSize: 11, fontWeight: 700, color: '#3B5A8A', margin: '0 0 6px', fontFamily: FONT }}>
-                        Traccia privata My KORA
-                      </p>
-                      <p style={{ fontSize: 11, color: '#3B5A8A', margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
-                        Questa partecipazione è una traccia privata del tuo percorso My KORA.
-                      </p>
-                      <p style={{ fontSize: 11, color: '#3B5A8A', margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
-                        Il datore di lavoro non vede il tuo percorso individuale.
-                        Eventuali segnali verso l&apos;organizzazione sono aggregati.
-                      </p>
-                      <p style={{ fontSize: 11, color: '#3B5A8A', margin: '0 0 6px', lineHeight: 1.6, fontFamily: FONT }}>
-                        La partecipazione completata può contribuire al tuo Personal Impact Balance quando disponibile.
-                      </p>
-                      <p style={{ fontSize: 10, color: 'rgba(59,110,186,0.65)', margin: 0, lineHeight: 1.55, fontFamily: FONT }}>
-                        Non tutta la partecipazione in KORA Space entra nel Dynamic Impact CV.
-                        Solo le esperienze idonee secondo la Dynamic Impact CV policy possono diventare esperienze CV.
-                        Il lavoratore controlla cosa rendere condivisibile.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Fallback note when enrichment not available */}
-                  {!initiative && (
-                    <p style={{ fontSize: 9, fontFamily: 'monospace', color: TOKENS.inkMeta, margin: '4px 0 0' }}>
-                      ref: {booking.post_id.slice(0, 16)}…
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
         </div>
       )}
 
@@ -344,14 +132,10 @@ export default function Bookings() {
         style={{ borderRadius: TOKENS.cardRadius, border: TOKENS.cardBorder, background: TOKENS.taupe, padding: '28px 24px', textAlign: 'center', marginBottom: 16 }}
       >
         <p style={{ fontSize: '13px', color: TOKENS.inkHint, lineHeight: 1.6, margin: 0 }}>
-          {mode === 'live'
-            ? 'Vai a KORA Space per scoprire nuove iniziative e prenotare la partecipazione.'
-            : mode === 'empty'
-            ? 'Le tue prenotazioni KORA Space appariranno qui dopo la conferma da parte dell\'admin.'
-            : 'Il flusso prenotazioni non è attivo in Foundation Light. Richiesta e conferma partecipazione si abilitano nelle fasi successive del pilot.'}
+          Il flusso prenotazioni non è attivo in Foundation Light. Richiesta e conferma partecipazione si abilitano nelle fasi successive del pilot.
         </p>
         <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '10px', color: TOKENS.inkMeta, marginTop: 12 }}>
-          booking_requests: {mode === 'live' ? 'live · authenticated · no_pricing' : mode === 'empty' ? 'live_path_pending · no_data_yet' : 'preview_only · no pricing · no availability_engine'}
+          booking_requests: preview_only · no pricing · no availability_engine
         </p>
       </div>
 

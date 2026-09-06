@@ -85,6 +85,29 @@ export default async function WorkerCommonsPage() {
   const initiatives    = (initiativesRaw ?? []) as unknown as CommonsPostWorkerView[];
   const hasInitiatives = initiatives.length > 0;
 
+  // B-WORKER-3: pre-fetch the worker's own existing booking status for the
+  // cross_company initiatives shown below, so WorkerBookingButton reflects
+  // persisted truth on load instead of always starting at 'idle' (the
+  // parity gap identified in Slice 2's KORA Space comparison). RLS
+  // (commons.booking, mig 025) scopes this to the caller's own rows —
+  // no worker_identity_id resolution needed, same trust boundary this page
+  // already uses for personal.worker_participation reads.
+  const crossCompanyIds = initiatives
+    .filter((i) => i.opening_grade === 'cross_company')
+    .map((i) => i.id);
+
+  const bookingStatusByPostId: Record<string, string> = {};
+  if (crossCompanyIds.length > 0) {
+    const { data: ownBookings } = await db
+      .schema('commons')
+      .from('booking')
+      .select('post_id, status')
+      .in('post_id', crossCompanyIds);
+    for (const b of (ownBookings ?? []) as Array<{ post_id: string; status: string }>) {
+      bookingStatusByPostId[b.post_id] = b.status;
+    }
+  }
+
   return (
     <div
       data-testid="worker-commons"
@@ -129,6 +152,31 @@ export default async function WorkerCommonsPage() {
           La tua visualizzazione non viene mostrata al datore di lavoro come dato individuale — l&apos;azienda vede solo segnali aggregati.
         </p>
       </div>
+
+      {/* Booking lifecycle — non-suppressible. Salvaged verbatim (B-WORKER-3)
+          from /my-kora/kora-space's removed live branch — same explainer
+          copy, now shown once here instead of duplicated on both surfaces. */}
+      {hasInitiatives && (
+        <div
+          data-testid="space-booking-lifecycle"
+          style={{
+            background: 'rgba(47,125,85,0.04)', border: '1px solid rgba(47,125,85,0.14)',
+            borderRadius: 10, padding: '12px 16px', marginBottom: 20,
+          }}
+        >
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#2F5A42', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Come funziona la partecipazione
+          </p>
+          <ol style={{ fontSize: 11, color: '#2F5A42', margin: 0, paddingLeft: 16, lineHeight: 1.9 }}>
+            <li>Richiedi partecipazione su KORA Space</li>
+            <li>KORA esamina la richiesta</li>
+            <li>Ricevi conferma (partecipazione confermata)</li>
+            <li>Partecipazione registrata dopo l&apos;evento</li>
+            <li>Traccia privata nel tuo percorso personale (solo tua)</li>
+            <li>Segnale aggregato per l&apos;ecosistema — il datore di lavoro non vede il tuo percorso individuale</li>
+          </ol>
+        </div>
+      )}
 
       {/* ── Sezione Iniziative ────────────────────────────────────────────── */}
       {hasInitiatives && (
@@ -230,7 +278,7 @@ export default async function WorkerCommonsPage() {
                   {/* B185: WorkerBookingButton (client) POSTs JSON — sostituisce la form HTML
                       che inviava application/x-www-form-urlencoded mentre l'API richiede JSON. */}
                   {grade === 'cross_company' && (
-                    <WorkerBookingButton postId={initiative.id} />
+                    <WorkerBookingButton postId={initiative.id} initialStatus={bookingStatusByPostId[initiative.id]} />
                   )}
                   {grade !== 'cross_company' && (
                     <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', margin: '4px 0 0', lineHeight: 1.4 }}>

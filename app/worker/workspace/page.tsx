@@ -401,7 +401,7 @@ export default async function WorkerWorkspacePage() {
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <a
-              href="/my-kora/bookings"
+              href="/worker/bookings"
               data-testid="workspace-trace-bookings-link"
               style={{ fontSize: 12, fontWeight: 600, color: '#3B6EBA', textDecoration: 'none' }}
             >

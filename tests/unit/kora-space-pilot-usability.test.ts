@@ -20,21 +20,26 @@ function fileExists(rel: string): boolean {
 
 // ── WORKER BOOKINGS (1–6) ────────────────────────────────────────────────────
 
-describe('Worker bookings — enriched list', () => {
+// PRIOR HISTORY (accurate as of the original sprint, preserved verbatim):
+// every assertion below read app/my-kora/bookings/page.tsx, which had its own
+// real 'live' rendering of the worker's bookings. B-WORKER-3 (2026-09-06)
+// migrated that EXISTING capability verbatim onto the canonical
+// app/worker/bookings/_components/BookingsClient.tsx (a real,
+// requireWorkerUser-gated page) — the legacy page now redirects a confirmed
+// real session there instead of rendering its own copy of this content.
+describe('Worker bookings — enriched list (canonical, /worker/bookings)', () => {
   let bookingsSrc: string;
 
   beforeAll(() => {
-    bookingsSrc = readFile('app/my-kora/bookings/page.tsx');
+    bookingsSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
   });
 
-  test('1. Bookings page fetches real worker bookings from /api/worker/commons/bookings', () => {
+  test('1. BookingsClient fetches real worker bookings from /api/worker/commons/bookings', () => {
     expect(bookingsSrc).toContain('/api/worker/commons/bookings');
     expect(bookingsSrc).toMatch(/setMode\(.*'live'|setMode\(.*'empty'/);
   });
 
   test('2. Booking list shows a human-readable initiative title, not only raw post_id', () => {
-    // Title from enrichment: initiative?.title
-    // Fallback: "Iniziativa #<shortId>" (not raw UUID)
     expect(bookingsSrc).toContain('initiative?.title');
     expect(bookingsSrc).toContain('Iniziativa #');
   });
@@ -45,12 +50,12 @@ describe('Worker bookings — enriched list', () => {
   });
 
   test('4. Empty state is honest when no bookings exist', () => {
-    expect(bookingsSrc).toContain("bookings-empty-state");
-    expect(bookingsSrc).toMatch(/Nessuna prenotazione|Vai a KORA Commons|Le tue prenotazioni.*appariranno/i);
+    expect(bookingsSrc).toContain("worker-bookings-empty-state");
+    expect(bookingsSrc).toMatch(/Vai a KORA Space|Le tue prenotazioni.*appariranno/i);
   });
 
   test('5. Employer privacy copy remains visible', () => {
-    expect(bookingsSrc).toContain('bookings-employer-privacy-notice');
+    expect(bookingsSrc).toContain('worker-bookings-employer-privacy-notice');
     expect(bookingsSrc).toContain('Il datore di lavoro non vede il tuo percorso individuale');
   });
 
@@ -68,7 +73,7 @@ describe('Booking status copy — canonical Italian labels', () => {
   let bookingsSrc: string;
 
   beforeAll(() => {
-    bookingsSrc = readFile('app/my-kora/bookings/page.tsx');
+    bookingsSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
   });
 
   test('7. Status pending/requested maps to "Richiesta inviata"', () => {
@@ -91,27 +96,37 @@ describe('Booking status copy — canonical Italian labels', () => {
 
 // ── WORKER BOOKING JOURNEY (10–15) ──────────────────────────────────────────
 
-describe('Worker KORA Space — booking journey', () => {
-  let spaceSrc: string;
+// PRIOR HISTORY (accurate as of the original sprint, preserved verbatim):
+// tests 10–12 read app/my-kora/kora-space/page.tsx's own removed live
+// branch. B-WORKER-3 (2026-09-06) salvaged the booking-lifecycle explainer
+// verbatim onto /worker/commons (the proven canonical superset) instead of
+// leaving it duplicated/stranded — see app/worker/commons/page.tsx's
+// space-booking-lifecycle block. WorkerBookingButton is the canonical CTA.
+describe('Worker KORA Space — booking journey (canonical, /worker/commons)', () => {
+  let commonsSrc: string;
+  let buttonSrc:  string;
+  let spaceSrc:   string; // still used by tests 13–15 below (unchanged demo-mode copy)
 
   beforeAll(() => {
-    spaceSrc = readFile('app/my-kora/kora-space/page.tsx');
+    commonsSrc = readFile('app/worker/commons/page.tsx');
+    buttonSrc  = readFile('components/commons/WorkerBookingButton.tsx');
+    spaceSrc   = readFile('app/my-kora/kora-space/page.tsx');
   });
 
   test('10. Live initiative cards link to booking flow intentionally', () => {
-    expect(spaceSrc).toContain('Richiedi partecipazione');
-    expect(spaceSrc).toContain('/worker/commons');
+    expect(buttonSrc).toContain('Prenota partecipazione');
+    expect(commonsSrc).toContain('WorkerBookingButton');
   });
 
   test('11. UI explains the booking lifecycle steps', () => {
-    expect(spaceSrc).toContain('space-booking-lifecycle');
-    expect(spaceSrc).toContain('Come funziona la partecipazione');
-    expect(spaceSrc).toContain('Richiedi partecipazione su KORA Space');
-    expect(spaceSrc).toContain('Traccia privata nel tuo percorso personale');
+    expect(commonsSrc).toContain('space-booking-lifecycle');
+    expect(commonsSrc).toContain('Come funziona la partecipazione');
+    expect(commonsSrc).toContain('Richiedi partecipazione su KORA Space');
+    expect(commonsSrc).toContain('Traccia privata nel tuo percorso personale');
   });
 
   test('12. UI states employer sees only aggregate signals', () => {
-    expect(spaceSrc).toContain('il datore di lavoro non vede il tuo percorso individuale');
+    expect(commonsSrc).toContain('il datore di lavoro non vede il tuo percorso individuale');
   });
 
   test('13. UI does not claim automatic badge for all participation', () => {
