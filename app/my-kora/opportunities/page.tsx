@@ -5,7 +5,19 @@
 // Le opportunità sono suggerimenti, non obblighi. Il lavoratore decide.
 // Dati erogati da WorkerOpportunityService — nessun dato hardcoded nel componente.
 // not_employer_visible: true — questa pagina non è mai visibile ai ruoli aziendali.
+//
+// B-WORKER-5 (2026-09-06): this personalized-recommendation concept (synthetic
+// IU estimates, match_reason, source_signal — all persona-fixture-driven, see
+// WorkerOpportunityService) has no canonical implementation and none is built
+// here — "do not build a recommendation engine" is explicit scope for this
+// slice. /worker/opportunities is a different, real product concept (an
+// informational partner catalog, no personalization, no IU estimates) — but
+// it is the truthful current opportunities capability, so a confirmed real
+// session now redirects there instead of seeing synthetic personalization
+// presented as if it were real. The demo/persona preview path is unchanged.
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useRole, usePersona, useScenario } from '@/lib/demo-state';
 import { workerOpportunityService, type WorkerOpportunity } from '@/services/worker-opportunity/WorkerOpportunityService';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
@@ -53,6 +65,27 @@ export default function Opportunities() {
   const { activeRole }     = useRole();
   const { activePersona }  = usePersona();
   const { activeScenario } = useScenario();
+  const router = useRouter();
+
+  const [mode, setMode] = useState<'checking' | 'redirecting' | 'demo'>('checking');
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/worker/partner-catalog')
+      .then((res) => {
+        if (cancelled) return;
+        if (res.ok) {
+          setMode('redirecting');
+          router.replace('/worker/opportunities');
+        } else {
+          setMode('demo');
+        }
+      })
+      .catch(() => { if (!cancelled) setMode('demo'); });
+    return () => { cancelled = true; };
+  }, [router]);
+
+  if (mode === 'checking' || mode === 'redirecting') return null;
 
   if (!workerOpportunityService.canAccess(activeRole)) {
     return (
