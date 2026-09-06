@@ -257,10 +257,17 @@ describe('B-WORKER-2 — no net-new product scope', () => {
     expect(legacy).toContain('LinkedIn — Non attivo');
   });
 
-  it('KORA Contribution / collective and bookings list remain untouched (explicitly out of this slice)', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-2, preserved verbatim): asserted
+  // collective had no redirect logic (explicitly out of Slice 2's scope).
+  // B-WORKER-4 (2026-09-06) added a real-session redirect there — the
+  // 'empty' state was already honest (no synthetic data shown to real
+  // sessions), but still executed inside the transitional /my-kora runtime;
+  // no Collettivo functionality was implemented, only route convergence.
+  it('bookings list remains untouched by Slice 2 (migrated later, in Slice 3); collective redirect added in Slice 4, no new functionality', () => {
     expect(exists('app/my-kora/collective/page.tsx')).toBe(true);
     expect(exists('app/my-kora/bookings/page.tsx')).toBe(true);
     const collective = read('app/my-kora/collective/page.tsx');
-    expect(collective).not.toContain('router.replace');
+    expect(collective).toContain("router.replace('/worker/workspace')");
+    expect(collective).not.toContain('collective-empty-state');
   });
 });

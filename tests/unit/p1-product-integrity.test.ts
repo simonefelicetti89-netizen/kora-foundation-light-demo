@@ -53,11 +53,19 @@ describe('P1-1 — My KORA PIB coherence (Option A + B hybrid)', () => {
     expect(pibPage).toContain("'demo'");
   });
 
-  it('PIB page has honest empty state for worker with no scoring data', () => {
-    expect(pibPage).toContain('pib-empty-state');
-    expect(pibPage).toContain('pib-no-data');
-    expect(pibPage).toContain('Nessun Personal Impact Balance disponibile');
-    expect(pibPage).toContain('dopo che la tua azienda avrà completato un ciclo di scoring');
+  // PRIOR HISTORY (accurate before B-WORKER-4, preserved verbatim): checked
+  // this page's own removed 'live'/'empty' real-session branches, including
+  // an honest empty state for a real worker with no scoring data yet.
+  // B-WORKER-4 (2026-09-06) found this page had a genuine duplicate
+  // real-session runtime (a 'live' branch rendering real PIB data,
+  // duplicating /worker/personal-impact-balance built in Slice 1) — a
+  // confirmed real session now redirects there instead. That canonical page
+  // has its own honest empty state (data-testid="pib-summary-card",
+  // "Nessuna Impact Unit registrata ancora per questo periodo").
+  it('canonical /worker/personal-impact-balance has an honest empty state for a worker with no IU yet', () => {
+    const canonical = read('app/worker/personal-impact-balance/page.tsx');
+    expect(canonical).toContain('pib-summary-card');
+    expect(canonical).toContain('Nessuna Impact Unit registrata ancora per questo periodo');
   });
 
   it('PIB page preserves employer privacy notice with testid', () => {

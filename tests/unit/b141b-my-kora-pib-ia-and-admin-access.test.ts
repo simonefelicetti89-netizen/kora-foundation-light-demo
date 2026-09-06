@@ -195,8 +195,13 @@ describe('B141-B2 — Sidebar KORA_ADMIN has Worker Preview links', () => {
     ? sidebarSrc.substring(adminNavStart, adminNavStart + 3500)
     : sidebarSrc;
 
-  it('19. KORA_ADMIN sidebar contains link to /my-kora (Worker Preview)', () => {
-    expect(adminNavSection).toContain("'/my-kora'");
+  // PRIOR HISTORY (accurate as of B141-B2, preserved verbatim): "KORA_ADMIN
+  // sidebar contains link to /my-kora (Worker Preview)" — the "My KORA Home"
+  // entry's admin-preview branch pointed at /my-kora. B-WORKER-4 (2026-09-06)
+  // repointed it to the canonical /admin/preview/worker hub — the last
+  // KORA_ADMIN Sidebar dependency on /my-kora.
+  it('19. KORA_ADMIN sidebar Worker Preview no longer links to /my-kora — repointed to the admin preview hub', () => {
+    expect(adminNavSection).toContain("isAdminPreview ? '/admin/preview/worker' : '/worker/workspace'");
   });
 
   // PRIOR HISTORY (accurate as of B141-B2, preserved verbatim): asserted the

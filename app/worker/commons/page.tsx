@@ -114,8 +114,8 @@ export default async function WorkerCommonsPage() {
       style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px 80px', fontFamily: FONT }}
     >
       {/* Back nav */}
-      <Link href="/my-kora" style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', textDecoration: 'none', display: 'inline-block', marginBottom: 24 }}>
-        ← My KORA
+      <Link href="/worker/workspace" style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', textDecoration: 'none', display: 'inline-block', marginBottom: 24 }}>
+        ← Spazio operativo
       </Link>
 
       {/* Header */}

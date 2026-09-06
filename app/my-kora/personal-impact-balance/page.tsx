@@ -18,6 +18,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useRole, useScenario, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
@@ -51,22 +52,23 @@ const VERIF_COLOR: Record<string, string> = {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-// Live PIB detection states for authenticated worker mode.
-// 'checking' → fetch in progress; 'live' → real worker JWT found, data returned;
-// 'empty' → real worker JWT but no scoring data yet; 'demo' → 401/unauthenticated, show synthetic preview.
-type LivePIBState = 'checking' | 'live' | 'empty' | 'demo';
+// B-WORKER-4 (2026-09-06): 'live'/'empty' (real WORKER JWT, detected the
+// same way as before) are no longer rendered here — /worker/personal-impact-balance
+// (built in Slice 1) is the proven canonical real PIB page. This page's own
+// 'live' branch was a genuine, previously-undiscovered duplicate real-session
+// runtime (interwoven into the render via isRealWorkerMode, not a clean
+// early-return like the other retired pages) — a confirmed real session now
+// redirects there instead. 'demo' (401/unauthenticated) is unchanged.
+type LivePIBState = 'checking' | 'redirecting' | 'demo';
 
 export default function PersonalImpactBalancePage() {
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
   const { activePersona } = usePersona();
+  const router = useRouter();
 
   const [livePIBState, setLivePIBState] = useState<LivePIBState>('checking');
-  const [livePIB, setLivePIB] = useState<WorkerPIB | null>(null);
 
-  // Attempt to detect a real worker JWT. If /api/worker/pib responds with
-  // isSynthetic: false, the authenticated worker must see their real PIB,
-  // not the synthetic demo persona. On 401 → stay in demo mode.
   useEffect(() => {
     let cancelled = false;
     fetch('/api/worker/pib')
@@ -75,12 +77,14 @@ export default function PersonalImpactBalancePage() {
         if (!res.ok) { setLivePIBState('demo'); return; }
         const data = (await res.json()) as WorkerPIB;
         if (data.isSynthetic !== false) { setLivePIBState('demo'); return; }
-        setLivePIB(data);
-        setLivePIBState(data.period_iu_total === 0 && data.active_pillars === 0 ? 'empty' : 'live');
+        setLivePIBState('redirecting');
+        router.replace('/worker/personal-impact-balance');
       })
       .catch(() => { if (!cancelled) setLivePIBState('demo'); });
     return () => { cancelled = true; };
-  }, []);
+  }, [router]);
+
+  if (livePIBState === 'checking' || livePIBState === 'redirecting') return null;
 
   if (!myKoraPreviewService.canAccess(activeRole)) {
     return (
@@ -93,43 +97,10 @@ export default function PersonalImpactBalancePage() {
     );
   }
 
-  // Authenticated worker with no scoring data yet — show honest empty state.
-  // Do NOT show synthetic persona data.
-  if (livePIBState === 'empty') {
-    return (
-      <div className="space-y-6" data-testid="pib-empty-state">
-        <div>
-          <Link href="/my-kora" className="text-xs text-[rgba(6,3,43,0.45)] hover:text-[rgba(6,3,43,0.70)] transition-colors" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', textDecoration: 'none' }}>
-            ← My KORA
-          </Link>
-        </div>
-        <h1 style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: '#06032B' }}>
-          Personal Impact Balance
-        </h1>
-        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-3" data-testid="pib-no-data">
-          <p className="text-sm font-semibold text-[rgba(6,3,43,0.78)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            Nessun Personal Impact Balance disponibile.
-          </p>
-          <p className="text-xs text-[rgba(6,3,43,0.55)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            Il tuo PIB sarà disponibile dopo che la tua azienda avrà completato un ciclo di scoring.
-          </p>
-          <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2">
-            <p className="text-[11px] text-[rgba(6,3,43,0.55)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }} data-testid="pib-employer-privacy-notice">
-              Il tuo datore di lavoro non può vedere il tuo PIB individuale. Questo spazio è privato.
-            </p>
-          </div>
-        </div>
-        <p className="text-[11px] text-[rgba(6,3,43,0.38)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-          L&apos;employer non può vedere il PIB individuale.
-        </p>
-      </div>
-    );
-  }
-
   const personaId = activePersona?.id ?? 'persona-elena-m';
-  // In 'live' mode, use real PIB from API. In 'demo' or 'checking', use synthetic persona.
-  const pib = (livePIBState === 'live' && livePIB) ? livePIB : workerPIBService.getPIB(personaId, activeScenario);
-  const isRealWorkerMode = livePIBState === 'live' && livePIB !== null && livePIB.isSynthetic === false;
+  // livePIBState is always 'demo' below this point — always synthetic.
+  const pib = workerPIBService.getPIB(personaId, activeScenario);
+  const isRealWorkerMode = false;
 
   return (
     <div className="space-y-6" data-testid="pib-dedicated-page">
