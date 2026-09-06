@@ -52,63 +52,52 @@ describe('CC-024 — matrix artifact exists with required sections', () => {
     expect(doc).toContain('## 13. Proposed D-D founder decision text');
   });
 
-  it('states a recommendation without claiming it is ratified', () => {
+  // PRIOR HISTORY (accurate as of the analysis phase, preserved verbatim):
+  // "states a recommendation without claiming it is ratified" — the document
+  // asserted `not.toMatch(/D-D\s+(is\s+)?ratified/i)`. D-D was RATIFIED the
+  // same day (§0, added after the analysis phase) — the document now
+  // legitimately contains "RATIFIED" language, in a clearly separated
+  // section that says so explicitly. See tests/unit/dd-worker-surface-ratification.test.ts.
+  it('records the Option C recommendation and its ratification in a clearly separated §0', () => {
     expect(doc).toContain('`RECOMMENDED_DD_OPTION = C`');
-    expect(doc).toContain('`FOUNDER_RATIFICATION_REQUIRED = YES`');
-    expect(doc).not.toMatch(/D-D\s+(is\s+)?ratified/i);
-    expect(doc).toContain('This document does not decide D-D.');
+    expect(doc).toContain('## 0. FOUNDER RATIFICATION (2026-09-06)');
+    expect(doc).toContain('`DD_STATUS = RATIFIED`');
+    expect(doc).toContain('§§1–14 below are preserved verbatim');
   });
 
-  it('explicitly disclaims implementation', () => {
+  it('explicitly disclaims implementation while recording ratification is done', () => {
     const section = doc.slice(doc.indexOf('## 14. Explicitly not done'));
     expect(section).toContain('No code, auth, or synthetic service was modified.');
-    expect(section).toContain('D-D remains OPEN.');
+    expect(section).toContain('This is no longer current — see §0 above');
     expect(section).toContain('B-WORKER has not started.');
     expect(section).toContain('Commercial review has not started.');
   });
 });
 
-// ── 2. Registry: neither surface becomes canonical, D-D stays open ─────────
+// ── 2. Registry: both entries point to the matrix document ─────────────────
+//
+// PRIOR HISTORY (accurate as of the analysis phase, preserved verbatim): this
+// describe block asserted "registry status unchanged, D-D remains open" —
+// both surfaces shared decisionRef 'CC-024 / D-D', both competed with each
+// other, neither was CANONICAL/DEAD/FROZEN. D-D was RATIFIED the same day
+// (docs/CC024_WORKER_ARCHITECTURE_MATRIX.md §0) — see
+// tests/unit/dd-worker-surface-ratification.test.ts for the current,
+// post-ratification registry assertions (CANONICAL/CONSOLIDATE status,
+// cleared competingWith, updated decisionRef). This block now only checks
+// that both entries still point to the matrix document.
 
-describe('CC-024 — registry status unchanged, D-D remains open', () => {
+describe('CC-024 — registry entries point to the matrix document', () => {
   const registry = read('lib/architecture/registry.ts');
 
-  it('/worker and /my-kora both still carry decisionRef CC-024 / D-D and compete with each other', () => {
+  it('both entries point to the new matrix document', () => {
     const workerIdx = registry.indexOf("id: 'app-surface.worker'");
     const myKoraIdx = registry.indexOf("id: 'app-surface.my-kora'");
     expect(workerIdx).toBeGreaterThan(-1);
     expect(myKoraIdx).toBeGreaterThan(-1);
     const workerEntry = registry.slice(workerIdx, registry.indexOf('{ id:', workerIdx + 10));
     const myKoraEntry = registry.slice(myKoraIdx, registry.indexOf('{ id:', myKoraIdx + 10));
-    expect(workerEntry).toContain("decisionRef: 'CC-024 / D-D'");
-    expect(myKoraEntry).toContain("decisionRef: 'CC-024 / D-D'");
-    expect(workerEntry).toContain("competingWith: ['app-surface.my-kora']");
-    expect(myKoraEntry).toContain("competingWith: ['app-surface.worker']");
-  });
-
-  it('neither surface status was changed to CANONICAL, DEAD, or FROZEN', () => {
-    const workerIdx = registry.indexOf("id: 'app-surface.worker'");
-    const myKoraIdx = registry.indexOf("id: 'app-surface.my-kora'");
-    const workerEntry = registry.slice(workerIdx, registry.indexOf('{ id:', workerIdx + 10));
-    const myKoraEntry = registry.slice(myKoraIdx, registry.indexOf('{ id:', myKoraIdx + 10));
-    expect(workerEntry).toContain("status: 'COMPLETE'");
-    expect(myKoraEntry).toContain("status: 'COMPLETE'");
-    for (const entry of [workerEntry, myKoraEntry]) {
-      expect(entry).not.toMatch(/status:\s*'CANONICAL'/);
-      expect(entry).not.toMatch(/status:\s*'DEAD'/);
-      expect(entry).not.toMatch(/status:\s*'FROZEN'/);
-    }
-  });
-
-  it('both entries point to the new matrix document', () => {
-    const workerIdx = registry.indexOf("id: 'app-surface.worker'");
-    const myKoraIdx = registry.indexOf("id: 'app-surface.my-kora'");
-    const workerEntry = registry.slice(workerIdx, registry.indexOf('{ id:', workerIdx + 10));
-    const myKoraEntry = registry.slice(myKoraIdx, registry.indexOf('{ id:', myKoraIdx + 10));
     expect(workerEntry).toContain('docs/CC024_WORKER_ARCHITECTURE_MATRIX.md');
     expect(myKoraEntry).toContain('docs/CC024_WORKER_ARCHITECTURE_MATRIX.md');
-    expect(workerEntry).not.toMatch(/D-D (is )?ratified/i);
-    expect(myKoraEntry).not.toMatch(/D-D (is )?ratified/i);
   });
 });
 
@@ -140,10 +129,10 @@ describe('CC-024 — no runtime/auth/service code was touched', () => {
 
 // ── 4. Worker governance tests still pass (sanity — run separately too) ────
 
-describe('CC-024 — pre-existing worker-surface governance guard still intact', () => {
-  it('cc003 registry completeness still asserts the shared decisionRef and neutral status', () => {
+describe('CC-024 — pre-existing worker-surface governance guard still intact and updated', () => {
+  it('cc003 registry completeness now asserts the ratified CANONICAL/CONSOLIDATE split', () => {
     const guard = read('tests/unit/cc003-i10-registry-completeness.test.ts');
-    expect(guard).toContain('/worker and /my-kora surfaces carry the same CC-024 / D-D decisionRef');
+    expect(guard).toContain('/worker is CANONICAL and /my-kora is CONSOLIDATE — D-D ratified');
   });
 });
 

@@ -194,12 +194,21 @@ describe('I10 — Architecture Registry completeness (B-REG / CC-003)', () => {
       expect(generator?.decisionRef).toBe('B-TRUTH ReportGenerator Retirement (2026-09-02)');
     });
 
-    it('/worker and /my-kora surfaces carry the same CC-024 / D-D decisionRef, neither is CANONICAL over the other', () => {
+    // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "/worker
+    // and /my-kora surfaces carry the same CC-024 / D-D decisionRef, neither
+    // is CANONICAL over the other" — both carried decisionRef 'CC-024 / D-D'
+    // and identical status, pending the founder decision. D-D was RATIFIED
+    // (2026-09-06, docs/CC024_WORKER_ARCHITECTURE_MATRIX.md §0, Option C):
+    // /worker is now the canonical technical foundation, /my-kora is now
+    // explicitly transitional. See tests/unit/dd-worker-surface-ratification.test.ts
+    // for the current, correct state.
+    it('/worker is CANONICAL and /my-kora is CONSOLIDATE — D-D ratified, no longer neutral/undecided', () => {
       const worker = ARCHITECTURE_REGISTRY.find((c) => c.id === 'app-surface.worker');
       const myKora = ARCHITECTURE_REGISTRY.find((c) => c.id === 'app-surface.my-kora');
-      expect(worker?.decisionRef).toBe('CC-024 / D-D');
-      expect(myKora?.decisionRef).toBe('CC-024 / D-D');
-      expect(worker?.status).toBe(myKora?.status);
+      expect(worker?.decisionRef).toContain('D-D RATIFIED');
+      expect(myKora?.decisionRef).toContain('D-D RATIFIED');
+      expect(worker?.status).toBe('CANONICAL');
+      expect(myKora?.status).toBe('CONSOLIDATE');
     });
   });
 

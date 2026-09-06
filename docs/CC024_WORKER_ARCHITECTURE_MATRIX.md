@@ -1,10 +1,90 @@
 # CC-024 — Worker Architecture Matrix
 
-**Status:** Analysis + governance artifact. Produces the evidence D-D requires. **Does not ratify D-D.**
-**Date:** 2026-09-06
+**Status:** CC-024 matrix complete. **D-D is FOUNDER RATIFIED — see §0 below.**
+**Date:** 2026-09-06 (matrix); ratification recorded same day, immediately following.
 **Workstream:** Worker Surface Architecture (post-CC-00)
-**Decision this feeds:** D-D — Canonical Worker Surface
-**Authority:** `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1.md` line 480/482/808/869 (CC-024 requirement); `lib/architecture/registry.ts` `app-surface.worker` / `app-surface.my-kora` / `svc.my-kora-preview` (current neutral status, `decisionRef: 'CC-024 / D-D'`)
+**Decision this feeds:** D-D — Canonical Worker Surface — **RATIFIED**
+**Authority:** `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1.md` line 480/482/808/869 (CC-024 requirement); `lib/architecture/registry.ts` `app-surface.worker` / `app-surface.my-kora` / `svc.my-kora-preview` (target-architecture status recorded post-ratification, `decisionRef` updated to record the ratified chain — see §5 of the ratification below)
+
+---
+
+## 0. FOUNDER RATIFICATION (2026-09-06)
+
+> **This section records an already-made founder decision. §§1–14 below are preserved verbatim as the evidence and recommendation that preceded it — not rewritten, not reinterpreted.**
+
+**D-D — Worker Surface Decision**
+
+KORA will have one authenticated worker surface.
+
+The canonical technical foundation is the current `/worker` architecture: real authentication, canonical worker identity, canonical APIs/data path, privacy-safe technical foundation.
+
+The canonical product experience and permanent worker-facing brand is **My KORA**.
+
+Valuable capabilities currently present in `/my-kora` must not be discarded merely because the current implementation originated as a demo/preview surface. Useful capabilities — including richer discovery, booking/activation, and worker-facing continuity features — must be migrated or rebuilt on the canonical worker foundation where compatible with KORA's canonical data model, privacy rules, and architecture.
+
+`/my-kora` must not remain a second product runtime. Its preview/demo implementation and remaining synthetic dependencies must be retired during B-WORKER only after useful capabilities have been migrated or canonically rebuilt.
+
+**Migration principle: Preserve product value. Eliminate technical double truth.**
+
+B-WORKER's mandate is therefore to create **one canonical My KORA** with: real authentication; canonical worker identity; canonical data; no synthetic runtime; correct privacy boundaries; readiness for Worker Listening; readiness for Needs Map; KORA Space integration; KORA Link compatibility.
+
+This is explicitly a **convergence decision** — not "keep `/worker`," not "keep `/my-kora`."
+
+### Ratification facts
+
+`DD_STATUS = RATIFIED`
+`DD_OPTION = C`
+`CANONICAL_TECHNICAL_FOUNDATION = /worker`
+`CANONICAL_PRODUCT_BRAND = My KORA`
+`MIGRATION_MODEL = CONVERGED_CANONICAL_SURFACE`
+`SECOND_WORKER_RUNTIME_ALLOWED = NO`
+`SALVAGE_BEFORE_RETIREMENT = REQUIRED`
+
+This ratification adopts, verbatim, §12–13's recommendation and draft decision text below (Option C, the exact same technical-foundation/brand/migration-principle structure) — the founder ratified the recommendation this document itself produced, not a different option.
+
+### What this ratification does NOT do
+
+- Does not start B-WORKER. B-WORKER remains not-started; this decision is its entry contract (see `docs/CC024_WORKER_ARCHITECTURE_MATRIX.md` §0 B-WORKER Entry Contract, added below and in `lib/architecture/registry.ts`).
+- Does not migrate any `/my-kora` capability yet.
+- Does not retire `/my-kora`, `MyKoraPreviewService`, or any B-WORKER-owned synthetic residual yet — salvage must happen first, per the migration principle above.
+- Does not modify authentication, runtime code, or any service.
+- Does not start Worker Listening or commercial review.
+
+### B-WORKER Entry Contract (frozen by this ratification)
+
+B-WORKER must:
+
+1. Preserve `/worker`'s real-auth foundation.
+2. Preserve canonical worker identity (`personal.worker_identity`-rooted).
+3. Preserve canonical worker APIs/data path (`/api/worker/**`).
+4. Adopt **My KORA** as the final worker-facing product identity.
+5. Migrate useful `/my-kora` capabilities (per this document's own salvage map, §8 below — notably booking, which `/worker` currently lacks entirely, and the opportunity-recommendation UX).
+6. Retire synthetic dependencies.
+7. Retire the duplicate preview runtime only after migration proof.
+8. Preserve KORA Space discovery/activation capability.
+9. Preserve or rebuild booking canonically.
+10. Prepare correct architecture for Worker Listening.
+11. Preserve privacy boundaries.
+12. Maintain KORA Link compatibility.
+13. End with **one** authenticated worker surface.
+
+Explicitly prohibited: two final worker runtimes; demo fallback; synthetic worker product state; deleting valuable `/my-kora` capability without salvage analysis; replacing real auth with preview session logic.
+
+### B-WORKER residual/debt inventory (unchanged by this ratification)
+
+`BWORKER_SYNTHETIC_RESIDUALS` (tracked in `lib/security/synthetic-import-allowlist.ts`, `owner: 'B_WORKER'`, unmodified):
+- `services/account/AccountProvisioningService.ts` (`getCurrentDemoUser()`)
+- `services/worker-achievements/WorkerAchievementService.ts`
+- `services/worker-provisioning/WorkerProvisioningService.ts`
+
+`BWORKER_NON_I9_PREVIEW_DEBT` (not a `data/synthetic/**` import, so not I9-tracked, but the same category of B-WORKER convergence debt this ratification names explicitly):
+- `services/my-kora-preview/MyKoraPreviewService.ts` — the demo-persona data service backing most of `/my-kora`'s still-synthetic routes (`opportunities`, `privacy`, `collective`, and the synthetic-fallback branch of the 6 four-state routes). Scheduled for retirement/replacement within B-WORKER, per §0 above and `svc.my-kora-preview`'s own updated registry entry.
+
+None of these five items is modified by this ratification. This is an inventory, not an implementation.
+
+### Decision chain
+
+> CC-024 matrix (2026-09-06) → **D-D RATIFIED (2026-09-06, this section)** → B-WORKER implementation (not started)
 
 ---
 
@@ -247,9 +327,10 @@ Scale: 0 = absent/incompatible · 1 = prototype/demo-only · 2 = partial/mixed �
 
 ## 14. Explicitly not done by this document
 
+**PRIOR HISTORY (accurate as of the analysis phase, 2026-09-06, preserved verbatim):** at the time §§1–13 were written, D-D had not yet been ratified. **This is no longer current — see §0 above, added the same day.** §0 records the ratification; the list below still accurately describes what neither the analysis phase nor the ratification implemented:
+
 - No code, auth, or synthetic service was modified.
-- Neither `/worker` nor `/my-kora` was marked canonical or retired in the architecture registry.
-- D-D remains OPEN.
+- Neither `/worker` nor `/my-kora` is marked canonical/retired in a way that changes runtime behavior — ratification records the *target*, it does not implement it.
 - B-WORKER has not started.
 - Worker Listening has not started.
 - Commercial review has not started.
