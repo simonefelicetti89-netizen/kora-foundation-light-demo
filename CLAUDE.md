@@ -175,7 +175,7 @@ All canonical documents are in `/docs`. Read the relevant document before workin
 | Historical | `docs/appendices/B-whitepaper-v3-conceptual-extracts.md` | Historical only — do NOT use for implementation |
 
 **`docs/22-foundation-light-sql-schema-specification.md` does not yet exist.**
-Production SQL generation remains blocked until Gate 2 (CTO review) is passed.
+**Corrected 2026-09-06:** Gate 2 (CTO review) closed with conditions on 2026-06-22 (see `docs/GATE2_STATUS.md`) — staging SQL/migrations are authorized under those conditions and have been in active use since. Production SQL generation remains blocked, now by Gate 3 (Legal/DPO) and Gate 5 (Tax/Fiscal), both still OPEN, and by doc 22's continued absence.
 
 ---
 
@@ -202,9 +202,11 @@ Use canonical names: EV, NM, AGF, NI, AR, MAR, EQ, VR, CO, CS, Activation Safegu
 
 ## 9. Build Gates
 
-### Gate 2 — CTO Review (OPEN — blocks all production artifacts)
+### Gate 2 — CTO Review (CLOSED WITH CONDITIONS, 2026-06-22 — staging only; still blocks all production artifacts)
 
-Blocked until Gate 2 closes:
+**Corrected 2026-09-06** (this line previously read "OPEN," stale since 2026-06-22 — see `docs/GATE2_STATUS.md`, the canonical Gate 2 status reference). Gate 2 closed with conditions: it authorizes continued product/architecture work on the **staging** Supabase project only (`haqflkurpmeaxpikozjl`) and does **not** authorize production provisioning, production data, or real worker data. The conditions concern migration 027 (suspended pending Gate 3) — not migration 024, which was applied to staging on 2026-06-21 (before Gate 2's own close review) and remains unrelated to Gate 2's open conditions. The list below remains accurate for **production**: these remain blocked there until Gate 3 (Legal/DPO, still OPEN) and, where applicable, Gate 5 (Tax/Fiscal, still OPEN) also close.
+
+Blocked in production until Gate 3/5 close (staging work is authorized under Gate 2's conditions above):
 - SQL DDL and production schema
 - Prisma models and ORM configuration
 - Supabase production project provisioning
@@ -473,7 +475,7 @@ Absolute. No exception, no workaround, no "just for demo" bypass.
 
 1. **Never surface individual worker data to an employer role.** This is the central privacy guarantee.
 2. **Never hardcode methodology weights.** Read from `lib/methodology-config/v0.1.ts`.
-3. **Never generate SQL, Prisma models, or Supabase schema before Gate 2 closes.** doc 22 does not yet exist.
+3. **Never generate or apply production SQL, Prisma models, or Supabase schema before Gate 3 and Gate 5 close.** (Corrected 2026-09-06: Gate 2 itself closed with conditions on 2026-06-22 — staging SQL/migrations are authorized under those conditions; production remains blocked by Gate 3/5, both still OPEN.) doc 22 does not yet exist.
 4. **Never call an external LLM API on company HR data or worker data.** BCM taxonomy classifier only (doc 19 §9.2).
 5. **Never create `gov.kip_records`.** KIP is explicitly excluded from Foundation Light.
 6. **Never add a new KORA Index component.** The 10-component structure is fixed. Any addition requires a formal methodology decision.
@@ -507,6 +509,6 @@ For work not touched by the Master Plan (product positioning, pillars, language 
 
 **Document version:** v2.3 — Master Plan v2.1 governance alignment
 **Date:** 2026-08-30
-**Gate status:** Gate 1 CLOSED · Gate 2 OPEN (blocks SQL) · Gate 3 OPEN · Gate 5 OPEN
+**Gate status:** Gate 1 CLOSED · Gate 2 CLOSED WITH CONDITIONS (2026-06-22, staging only — see `docs/GATE2_STATUS.md`; still blocks production SQL/migrations) · Gate 3 OPEN · Gate 5 OPEN
 **Master Plan:** `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1.md` — architectural truth for target architecture, effective 2026-08-30 (supersedes v2.0, preserved at `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.0.md` as historical baseline); read before any architecturally significant session
 **Canonical reference:** `docs/kora-canonical-product-architecture-v1.md` (v1.1) — product positioning/methodology/privacy truth; read before every session
