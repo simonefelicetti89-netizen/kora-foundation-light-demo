@@ -141,7 +141,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         heading: isAdminPreview ? 'Worker Preview (Admin)' : 'Il tuo spazio',
         items: [
           {
-            href:    isAdminPreview ? '/admin/preview/worker' : '/my-kora',
+            href:    isAdminPreview ? '/admin/preview/worker' : '/worker/workspace',
             label:   'My KORA Home',
             preview: isAdminPreview ? true : undefined,
           },
@@ -169,10 +169,14 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           { href: '/my-kora/kora-space', label: 'KORA Space (Anteprima)', description: 'Dati sintetici — non il tuo spazio reale', preview: true },
           { href: '/worker/commons',   label: 'KORA Space', description: 'Iniziative e contenuti reali della tua azienda' },
           { href: '/worker/activity-discovery', label: 'Attività disponibili', description: 'Anteprima design — attività partner standard, Fase 2', preview: true },
-          { href: '/my-kora/kora-link', label: 'My KORA Link' },
-          { href: '/worker/kora-link/activate', label: 'Attiva KORA Link', description: 'Anteprima design — nessuna attivazione reale', preview: true },
           {
-            href:    isAdminPreview ? '/my-kora/bookings' : '/worker/bookings',
+            href:    isAdminPreview ? '/admin/preview/worker' : '/worker/kora-link/activate',
+            label:   'My KORA Link',
+            description: 'Anteprima design — nessuna attivazione reale',
+            preview: true,
+          },
+          {
+            href:    isAdminPreview ? '/admin/preview/worker' : '/worker/bookings',
             label:   'Prenotazioni',
             description: 'Le tue richieste di partecipazione — private',
             preview: isAdminPreview ? true : undefined,

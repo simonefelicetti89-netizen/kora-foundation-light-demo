@@ -80,6 +80,15 @@ describe('WEC-1 — Worker PIB timeline fix', () => {
 
 // ── WEC-2: /my-kora/ sub-pages mode detection ────────────────────────────────
 
+// PRIOR HISTORY (accurate as of WEC-2a, preserved verbatim): this whole
+// describe block asserted collective had a 'checking' | 'empty' | 'demo'
+// mode set, where 'empty' rendered an honest (non-synthetic) empty state for
+// a confirmed real WORKER session. B-WORKER-4 (2026-09-06) found that
+// 'empty' state was already honest but still executed inside the
+// transitional /my-kora runtime, with no canonical /worker destination for
+// Collettivo (building one would be inventing Collettivo functionality,
+// out of scope) — replaced it with a redirect to /worker/workspace. The
+// demo path (persona/anonymous, no real session) is fully unchanged.
 describe('WEC-2a — /my-kora/collective mode detection', () => {
   const collective = read('app/my-kora/collective/page.tsx');
 
@@ -88,10 +97,10 @@ describe('WEC-2a — /my-kora/collective mode detection', () => {
     expect(collective).toContain('useEffect');
   });
 
-  it('collective page defines CollectiveMode type with checking/empty/demo states', () => {
+  it('collective page defines CollectiveMode type with checking/redirecting/demo states', () => {
     expect(collective).toContain('CollectiveMode');
     expect(collective).toContain("'checking'");
-    expect(collective).toContain("'empty'");
+    expect(collective).toContain("'redirecting'");
     expect(collective).toContain("'demo'");
   });
 
@@ -99,14 +108,9 @@ describe('WEC-2a — /my-kora/collective mode detection', () => {
     expect(collective).toContain('/api/worker/pib');
   });
 
-  it('collective page does not show demo-state to authenticated workers (empty path exists)', () => {
-    expect(collective).toContain("collectiveMode === 'empty'");
-    expect(collective).toContain('collective-empty-state');
-  });
-
-  it('collective empty state has Italian no-data message', () => {
-    expect(collective).toContain('Nessuna attività collettiva disponibile');
-    expect(collective).toContain('ciclo di scoring');
+  it('collective page redirects a confirmed real session instead of showing its own content', () => {
+    expect(collective).toContain("router.replace('/worker/workspace')");
+    expect(collective).not.toContain('data-testid="collective-empty-state"');
   });
 
   it('demo mode still shows synthetic content with labels (not removed)', () => {
@@ -115,8 +119,7 @@ describe('WEC-2a — /my-kora/collective mode detection', () => {
     expect(collective).toContain('synthetic_demo_data');
   });
 
-  it('collective page has privacy notice for authenticated empty state', () => {
-    expect(collective).toContain('collective-privacy-notice');
+  it('demo-mode privacy/non-employer-visible copy is preserved', () => {
     expect(collective).toContain('not_employer_visible: true');
   });
 });

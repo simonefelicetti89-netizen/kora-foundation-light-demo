@@ -29,6 +29,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useRole, useScenario, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
@@ -89,6 +90,38 @@ export default function MyKoraHome() {
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
   const { activePersona } = usePersona();
+  const router = useRouter();
+
+  // B-WORKER-4 (2026-09-06): this page had no real-session detection at
+  // all — a real WORKER/KORA_ADMIN session (admitted by
+  // app/my-kora/layout.tsx's realUserPermitted branch) saw 100% synthetic
+  // persona content below (fake next-action, fake achievements, fake
+  // opportunities), with no indication it wasn't their own. /worker/workspace
+  // is the canonical real worker landing page (identity, initiatives,
+  // participation, activation profile, plus bridge cards to PIB/CV/bookings
+  // built in Slices 1–3) — the meaningful real landing experience already
+  // exists there. The synthetic-only pieces here (next-best-action,
+  // achievements, personalized opportunities) have no canonical replacement
+  // yet and are explicitly not built in this slice (DEFER_FUTURE_CAPABILITY,
+  // tracked separately) — not invented here just to preserve this page.
+  const [homeMode, setHomeMode] = useState<'checking' | 'redirecting' | 'demo'>('checking');
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/worker/pib')
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (data?.isSynthetic === false) {
+          setHomeMode('redirecting');
+          router.replace('/worker/workspace');
+        } else {
+          setHomeMode('demo');
+        }
+      })
+      .catch(() => { if (!cancelled) setHomeMode('demo'); });
+    return () => { cancelled = true; };
+  }, [router]);
 
   // CC-052 (2026-08-31): Commons widget reads canonical live discovery
   // (same /api/commons/initiatives a real session uses) instead of the
@@ -113,6 +146,8 @@ export default function MyKoraHome() {
       });
     return () => { cancelled = true; };
   }, []);
+
+  if (homeMode === 'checking' || homeMode === 'redirecting') return null;
 
   if (!myKoraPreviewService.canAccess(activeRole)) {
     return <AccessDenied role={activeRole} />;

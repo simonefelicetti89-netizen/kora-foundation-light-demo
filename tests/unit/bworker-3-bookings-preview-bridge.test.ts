@@ -188,9 +188,14 @@ describe('B-WORKER-3 — every real-session bridge repointed to canonical /worke
     expect(button).not.toContain('/my-kora/bookings');
   });
 
-  it('Sidebar: Prenotazioni entry is isAdminPreview-aware (real worker → canonical, admin preview → legacy until it has its own preview page)', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-3, preserved verbatim): the
+  // Prenotazioni entry's admin-preview branch fell back to /my-kora/bookings
+  // (no dedicated admin-preview page existed for it yet). B-WORKER-4
+  // (2026-09-06) repointed it to the existing /admin/preview/worker hub
+  // instead — closing this residual too.
+  it('Sidebar: Prenotazioni entry is isAdminPreview-aware (real worker → canonical /worker/bookings, admin preview → hub, no /my-kora fallback)', () => {
     const sidebar = read('components/layout/Sidebar.tsx');
-    expect(sidebar).toContain("isAdminPreview ? '/my-kora/bookings' : '/worker/bookings'");
+    expect(sidebar).toContain("isAdminPreview ? '/admin/preview/worker' : '/worker/bookings'");
   });
 });
 
@@ -227,10 +232,16 @@ describe('B-WORKER-3 — KORA_ADMIN founder preview migrated to /admin/preview/w
 // ── 8. Remaining real-session dependency on /my-kora ────────────────────────
 
 describe('B-WORKER-3 — remaining real-session dependency on /my-kora (honestly reported, not hidden)', () => {
-  it('the Sidebar admin-preview PIB/home entries still fall back to /my-kora (no dedicated admin-preview page for them yet)', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-3, preserved verbatim): the
+  // Sidebar's admin-preview "My KORA Home" entry still fell back to
+  // /my-kora — no dedicated admin-preview page existed for it yet.
+  // B-WORKER-4 (2026-09-06) repointed it to the existing /admin/preview/worker
+  // hub (no new preview page built) — this residual is now resolved.
+  it('the Sidebar admin-preview Home entry no longer falls back to /my-kora — repointed to the existing hub', () => {
     const sidebar = read('components/layout/Sidebar.tsx');
     const workerSection = sidebar.slice(sidebar.indexOf("heading: isAdminPreview ? 'Worker Preview (Admin)'"));
-    expect(workerSection).toContain("isAdminPreview ? '/admin/preview/worker' : '/my-kora'");
+    expect(workerSection).toContain("isAdminPreview ? '/admin/preview/worker' : '/worker/workspace'");
+    expect(workerSection).not.toContain("href:    isAdminPreview ? '/admin/preview/worker' : '/my-kora'");
   });
 
   it('/my-kora/layout.tsx real-session admission branch is still present — not globally retired this slice', () => {

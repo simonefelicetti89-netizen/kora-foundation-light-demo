@@ -2,10 +2,20 @@
 // My KORA Link (KL-23) — worker-facing wallet/identity view of KORA Link.
 // Protected by app/my-kora/layout.tsx (WORKER / KORA_ADMIN preview / demo visitor gate).
 // No DB. No Supabase writes. No automatic activation. No Impact Units.
+//
+// B-WORKER-4 (2026-09-06): this page had no unique value over
+// /worker/kora-link/activate — both are non-functional preview shells built
+// from the same lib/kora-link/ecosystem.ts config, but the /worker version
+// is real-auth-gated (requireWorkerUser) and already has richer content
+// (pilot-status cards, full privacy-boundary list). A confirmed real session
+// now redirects there instead of duplicating a lighter subset of the same
+// shell. The demo/persona preview path (no real session) is unchanged.
 
 export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { getSessionKoraRole } from '@/lib/auth/kora-session';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import {
   getKoraLinkEcosystemContext,
@@ -32,7 +42,12 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function MyKoraLinkPage() {
+export default async function MyKoraLinkPage() {
+  const realRole = await getSessionKoraRole();
+  if (realRole === 'WORKER' || realRole === 'KORA_ADMIN') {
+    redirect('/worker/kora-link/activate');
+  }
+
   const context = getKoraLinkEcosystemContext();
   const summary = getKoraLinkRoleSummary('worker', context);
   const activationCapability = summary.capabilities.find((c) => c.id === 'worker_activation');
