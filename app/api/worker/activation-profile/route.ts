@@ -51,42 +51,17 @@ export type WorkerActivationProfile = {
   interpretationNote: string;
 };
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
-  const auth = await requireWorkerUser(request);
-  if (isKoraAuthError(auth)) return auth;
-
-  // workerId and tenantId from session only — never from query params or body
-  const { workerId } = auth;
-
-  const db = await getSupabaseServerClient();
-
-  // Fetch all participation rows for this worker, joined with initiative pillar.
-  // RLS worker_participation_worker_own_all (mig 008) isola via auth.uid() — nessun filtro worker_id esplicito necessario.
-  const { data: rows, error } = await db
-    .schema('personal')
-    .from('worker_participation')
-    .select(`
-      status,
-      updated_at,
-      worker_initiative:initiative_id (
-        pillar
-      )
-    `);
-
-  if (error) {
-    return NextResponse.json(
-      { error: 'Errore nel recupero del profilo di attivazione.' },
-      { status: 500 },
-    );
-  }
-
-  const participationRows = (rows ?? []) as Array<{
+// B-WORKER-1: extracted so app/worker/personal-impact-balance/page.tsx can
+// reuse the exact same computation (pure function, no fetch/auth inside) —
+// pulled out unchanged from GET below, no behavior change.
+export function computeActivationProfile(
+  participationRows: Array<{
     status: string;
     updated_at: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     worker_initiative: any;
-  }>;
-
+  }>,
+): WorkerActivationProfile {
   // Build pillar counters for all 5 pillars (initialise to zero)
   const pillarCounters: Record<PillarCode, {
     interested: number; registered: number; attended: number; cancelled: number;
@@ -181,6 +156,52 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     privacyNotice:       'Il tuo datore di lavoro non può vedere questo profilo individuale. Solo tu puoi accedere a questi dati.',
     interpretationNote:  'Questo profilo è basato sulle attività registrate in KORA. Non è una valutazione individuale, non genera ranking e non viene condiviso con la tua azienda.',
   };
+
+  return profile;
+}
+
+// Same participation query every caller of computeActivationProfile() needs —
+// exported so app/worker/personal-impact-balance/page.tsx fetches identically.
+export async function fetchWorkerParticipationRows(
+  db: Awaited<ReturnType<typeof getSupabaseServerClient>>,
+) {
+  return db
+    .schema('personal')
+    .from('worker_participation')
+    .select(`
+      status,
+      updated_at,
+      worker_initiative:initiative_id (
+        pillar
+      )
+    `);
+}
+
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  const auth = await requireWorkerUser(request);
+  if (isKoraAuthError(auth)) return auth;
+
+  const db = await getSupabaseServerClient();
+
+  // Fetch all participation rows for this worker, joined with initiative pillar.
+  // RLS worker_participation_worker_own_all (mig 008) isola via auth.uid() — nessun filtro worker_id esplicito necessario.
+  const { data: rows, error } = await fetchWorkerParticipationRows(db);
+
+  if (error) {
+    return NextResponse.json(
+      { error: 'Errore nel recupero del profilo di attivazione.' },
+      { status: 500 },
+    );
+  }
+
+  const participationRows = (rows ?? []) as Array<{
+    status: string;
+    updated_at: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    worker_initiative: any;
+  }>;
+
+  const profile = computeActivationProfile(participationRows);
 
   return NextResponse.json({ ok: true, profile });
 }

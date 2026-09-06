@@ -49,9 +49,19 @@ describe('activation-profile API — auth', () => {
 
 // ─── 2. API uses workerId from session ────────────────────────────────────────
 
+// PRIOR HISTORY (accurate as of B111, preserved verbatim): "workerId is
+// destructured from requireWorkerUser result" — asserted `const { workerId }
+// = auth`. That destructure was always unused beyond documentation (RLS,
+// not an explicit workerId filter, does the isolation — see the file's own
+// "nessun filtro worker_id esplicito necessario" comment). B-WORKER-1
+// (2026-09-06) extracted the pure computation into computeActivationProfile()
+// (reused by app/worker/personal-impact-balance/page.tsx) and removed the
+// dead destructure as part of that refactor — GET() still requires a WORKER
+// session via requireWorkerUser(), unchanged.
 describe('activation-profile API — workerId from session', () => {
-  it('workerId is destructured from requireWorkerUser result', () => {
-    expect(apiRoute).toContain('const { workerId } = auth');
+  it('GET still requires a WORKER session via requireWorkerUser — session-based isolation unchanged', () => {
+    expect(apiRoute).toContain('requireWorkerUser(request)');
+    expect(apiRoute).toContain('isKoraAuthError(auth)');
   });
 
   it('usa getSupabaseServerClient (RLS-respecting) per isolamento — non service client', () => {
