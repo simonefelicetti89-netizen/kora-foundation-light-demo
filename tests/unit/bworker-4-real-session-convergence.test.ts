@@ -171,15 +171,20 @@ describe('B-WORKER-4 — authenticated navigation converges on /worker, with one
     expect(legacy).toContain("router.replace('/worker/commons')");
   });
 
-  it('/my-kora/opportunities is the one remaining real-session-reachable path — no nav entry points to it, no canonical recommendation engine exists to redirect to (explicitly deferred, not built here)', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-4, preserved verbatim): asserted
+  // /my-kora/opportunities had no redirect (explicitly deferred at the time
+  // — no canonical recommendation engine existed to redirect to). B-WORKER-5
+  // (2026-09-06) closed it anyway: no recommendation engine was built, but a
+  // confirmed real session now redirects to /worker/opportunities (a
+  // different, real, non-personalized product concept — the truthful
+  // current opportunities capability) instead of executing the synthetic
+  // personalization runtime. See tests/unit/bworker-5-opportunities-retirement.test.ts.
+  it('/my-kora/opportunities no longer executes for a real session — redirects to /worker/opportunities, no recommendation engine was built', () => {
+    const opportunities = read('app/my-kora/opportunities/page.tsx');
+    expect(opportunities).toContain("router.replace('/worker/opportunities')");
+    expect(opportunities).toContain('workerOpportunityService'); // demo path unchanged
     const sidebarStr = read('components/layout/Sidebar.tsx');
     expect(sidebarStr).not.toContain("'/my-kora/opportunities'");
-    const home = read('app/my-kora/page.tsx');
-    // Home links to it only in its own now-unreachable-by-real-sessions demo render
-    const redirectIdx = home.indexOf("router.replace('/worker/workspace')");
-    const oppLinkIdx = home.indexOf('/my-kora/opportunities');
-    expect(redirectIdx).toBeGreaterThan(-1);
-    expect(oppLinkIdx).toBeGreaterThan(redirectIdx);
   });
 });
 
@@ -202,10 +207,13 @@ describe('B-WORKER-4 — MyKoraPreviewService real-session reachability reduced 
     }
   });
 
-  it('/my-kora/opportunities is the sole remaining caller with no redirect (deferred, no canonical recommendation engine)', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-4, preserved verbatim): asserted
+  // opportunities had no redirect. B-WORKER-5 (2026-09-06) added one — see
+  // tests/unit/bworker-5-opportunities-retirement.test.ts for the current
+  // assertions. Zero MyKoraPreviewService callers remain real-session-reachable.
+  it('/my-kora/opportunities now also redirects — no MyKoraPreviewService caller remains real-session-reachable', () => {
     const opportunities = read('app/my-kora/opportunities/page.tsx');
-    expect(opportunities).not.toMatch(/router\.replace\(|redirect\(/);
-    expect(opportunities).toContain('workerOpportunityService');
+    expect(opportunities).toMatch(/router\.replace\(/);
   });
 });
 
