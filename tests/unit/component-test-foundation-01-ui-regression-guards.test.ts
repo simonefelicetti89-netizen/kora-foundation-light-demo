@@ -205,17 +205,22 @@ describe('COMPONENT-TEST-FOUNDATION-01 — BoundaryBadge LIVE state guard', () =
 });
 
 // ── 6. Dynamic CV underclaiming/connection guard ──────────────────────────────
-// WORKER-DYNAMIC-CV-UX-01: app/my-kora/dynamic-cv/page.tsx's live branch listed
-// "Link di verifica pubblica" and "Esporta PDF" as "In arrivo" (not yet available),
-// even though the real /worker/dynamic-cv page already has a working share-link
-// (public verification link) and print/PDF-export feature today. This guard locks
-// in the pointer added from the preview page to the real one.
+// PRIOR HISTORY (accurate as of WORKER-DYNAMIC-CV-UX-01, preserved verbatim):
+// app/my-kora/dynamic-cv/page.tsx's live branch listed "Link di verifica
+// pubblica" and "Esporta PDF" as "In arrivo" (not yet available), even though
+// the real /worker/dynamic-cv page already had a working share-link and
+// print/PDF-export feature — this guard locked in a pointer from the preview
+// page's live branch to the real one ("già disponibili oggi... apri il CV
+// completo"). B-WORKER-2 (2026-09-06) proved /worker/dynamic-cv is a full
+// CANONICAL_SUPERSET and removed the preview page's own live branch entirely
+// (it was always a lighter subset of the same real data) — a confirmed real
+// WORKER session now redirects straight to /worker/dynamic-cv instead of
+// rendering a pointer to it.
 
 describe('WORKER-DYNAMIC-CV-UX-01 — Dynamic CV underclaiming/connection guard', () => {
-  it('app/my-kora/dynamic-cv/page.tsx live branch points to the real /worker/dynamic-cv page for sharing/export that already works there', () => {
+  it('app/my-kora/dynamic-cv/page.tsx redirects a confirmed real session to the canonical /worker/dynamic-cv page', () => {
     const src = readSrc('app/my-kora/dynamic-cv/page.tsx');
-    expect(src).toContain('/worker/dynamic-cv');
-    expect(src).toMatch(/già disponibili oggi/);
+    expect(src).toContain("router.replace('/worker/dynamic-cv')");
   });
 
   it('app/worker/dynamic-cv/_components/DynamicCVClient.tsx explicitly connects CV experiences to KORA Space', () => {

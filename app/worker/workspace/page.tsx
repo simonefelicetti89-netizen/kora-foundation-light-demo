@@ -408,13 +408,13 @@ export default async function WorkerWorkspacePage() {
               Prenotazioni &amp; partecipazioni →
             </a>
             <a
-              href="/my-kora/personal-impact-balance"
+              href="/worker/personal-impact-balance"
               style={{ fontSize: 12, fontWeight: 600, color: '#C76F3D', textDecoration: 'none' }}
             >
               Il tuo bilancio →
             </a>
             <a
-              href="/my-kora/dynamic-cv"
+              href="/worker/dynamic-cv"
               style={{ fontSize: 12, fontWeight: 600, color: '#2F7D55', textDecoration: 'none' }}
             >
               Dynamic Impact CV →
@@ -463,7 +463,7 @@ export default async function WorkerWorkspacePage() {
             Il tuo bilancio privato e le tue esperienze di attivazione. Solo tu puoi vederlo.
           </p>
           <a
-            href="/my-kora/personal-impact-balance"
+            href="/worker/personal-impact-balance"
             data-testid="workspace-my-kora-pib-link"
             style={{
               display:        'inline-block',

@@ -12,6 +12,7 @@
 //          export_readiness becomes true when worker confirms export intent.
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
@@ -177,60 +178,45 @@ function CVItemCard({ item, contribution }: { item: WorkerCVItem; contribution: 
 // ── Auth detection mode ────────────────────────────────────────────────────────
 // Same four-state pattern as /my-kora/personal-impact-balance and /my-kora/collective.
 // 'checking' → fetch in progress; 'live' → real WORKER JWT, data available;
-// 'empty' → real WORKER JWT, no cv_eligible items yet; 'demo' → 401/unauthenticated.
-type DynamicCVMode = 'checking' | 'live' | 'empty' | 'demo';
-
-interface LiveCVExperience {
-  initiative_id: string;
-  title: string;
-  pillar: string;
-  status: string;
-  statusLabel: string;
-  date: string;
-  cvEligible: boolean;
-  badgeEligible: boolean;
-  shareableByWorker: boolean;
-  privateOnly: boolean;
-}
-
-interface LiveCVData {
-  ok: boolean;
-  summary: { cvEligibleCount: number; badgeEligibleCount: number; privateOnlyCount: number };
-  experiences: LiveCVExperience[];
-  badgeItems: LiveCVExperience[];
-  privateItems: LiveCVExperience[];
-  excludedCount: number;
-  selectivityNote: string;
-  privacyNotice: string;
-}
+// B-WORKER-2 (2026-09-06): 'live'/'empty' (real WORKER JWT) are no longer
+// rendered here — /worker/dynamic-cv (DynamicCVClient) is a proven
+// CANONICAL_SUPERSET (same /api/worker/dynamic-cv data, plus real sharing/
+// print this page never implemented — its own former live-mode copy told
+// the worker to go there for exactly that). A confirmed real session now
+// redirects there instead of duplicating a lighter subset of its own view.
+// 'demo' (401/unauthenticated) is UNCHANGED — Foundation Light's legitimate
+// pre-login preview, still fully synthetic and labelled as such below.
+type DynamicCVMode = 'checking' | 'redirecting' | 'demo';
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DynamicCV() {
   const { activeRole } = useRole();
   const { activePersona } = usePersona();
+  const router = useRouter();
 
   const [cvMode, setCVMode] = useState<DynamicCVMode>('checking');
-  const [liveCV, setLiveCV] = useState<LiveCVData | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     fetch('/api/worker/dynamic-cv')
-      .then(async (res) => {
+      .then((res) => {
         if (cancelled) return;
-        if (!res.ok) { setCVMode('demo'); return; }
-        const data = await res.json() as LiveCVData;
-        if (!data.ok) { setCVMode('demo'); return; }
-        setLiveCV(data);
-        const hasData = data.summary.cvEligibleCount > 0 || data.summary.privateOnlyCount > 0;
-        setCVMode(hasData ? 'live' : 'empty');
+        if (res.ok) {
+          setCVMode('redirecting');
+          router.replace('/worker/dynamic-cv');
+        } else {
+          setCVMode('demo');
+        }
       })
       .catch(() => { if (!cancelled) setCVMode('demo'); });
     return () => { cancelled = true; };
-  }, []);
+  }, [router]);
 
-  // Hold render until session resolves — avoids flash of demo content for real workers.
-  if (cvMode === 'checking') return null;
+  // Hold render until session resolves / redirect fires — avoids flashing
+  // demo content for real workers, and avoids flashing this page's own UI
+  // for the split-second before the router.replace() above lands.
+  if (cvMode === 'checking' || cvMode === 'redirecting') return null;
 
   if (!myKoraPreviewService.canAccess(activeRole)) {
     return (
@@ -251,185 +237,6 @@ export default function DynamicCV() {
     );
   }
 
-  // ── Empty state — authenticated real worker, no scoring cycle yet ───────────
-  if (cvMode === 'empty') {
-    return (
-      <div className="space-y-6" data-testid="dynamic-cv-empty">
-        <div>
-          <Link href="/my-kora/personal-impact-balance" className="text-xs text-[rgba(6,3,43,0.45)] hover:text-[rgba(6,3,43,0.70)] transition-colors" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', textDecoration: 'none' }}>
-            ← Personal Impact Balance
-          </Link>
-        </div>
-        <h1 style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 800, fontSize: '1.875rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: '#06032B' }}>
-          Dynamic Impact CV
-        </h1>
-        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-3">
-          <p className="text-sm font-semibold text-[rgba(6,3,43,0.78)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            Nessuna esperienza disponibile nel Dynamic Impact CV.
-          </p>
-          <p className="text-xs text-[rgba(6,3,43,0.55)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            Il tuo Dynamic Impact CV sarà disponibile dopo che la tua azienda avrà completato un ciclo di scoring
-            e saranno presenti esperienze idonee collegate al tuo profilo.
-          </p>
-          <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2" data-testid="dynamic-cv-privacy-notice">
-            <p className="text-[11px] text-[rgba(6,3,43,0.55)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-              Nessun dato individuale del tuo Dynamic Impact CV è visibile al datore di lavoro.
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-3 text-xs">
-          <Link href="/worker/workspace" className="text-[rgba(6,3,43,0.55)] hover:text-[rgba(6,3,43,0.80)] underline underline-offset-2" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            → Spazio operativo
-          </Link>
-          <Link href="/my-kora/personal-impact-balance" className="text-[rgba(6,3,43,0.55)] hover:text-[rgba(6,3,43,0.80)] underline underline-offset-2" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            → Personal Impact Balance
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Live state — authenticated real worker with live CV data ─────────────────
-  if (cvMode === 'live' && liveCV) {
-    return (
-      <div className="space-y-6" data-testid="dynamic-cv-live">
-        <div>
-          <Link href="/my-kora/personal-impact-balance" className="text-xs text-[rgba(6,3,43,0.45)] hover:text-[rgba(6,3,43,0.70)] transition-colors" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', textDecoration: 'none' }}>
-            ← Personal Impact Balance
-          </Link>
-        </div>
-        <h1 style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 800, fontSize: '1.875rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: '#06032B' }}>
-          Dynamic Impact CV
-        </h1>
-
-        {/* Selectivity notice */}
-        <div data-testid="dynamic-cv-selectivity-notice" className="rounded-lg border border-[rgba(59,110,186,0.18)] bg-[rgba(59,110,186,0.05)] p-4 space-y-1">
-          <p className="text-sm font-bold text-[#3B6EBA]">Il Dynamic Impact CV non contiene tutte le Impact Units.</p>
-          <p className="text-xs text-[rgba(59,110,186,0.75)] leading-relaxed">
-            {liveCV.selectivityNote}
-          </p>
-          {liveCV.excludedCount > 0 && (
-            <p className="text-[10px] text-[rgba(59,110,186,0.55)] italic">
-              {liveCV.excludedCount} {liveCV.excludedCount === 1 ? 'esperienza non inclusa' : 'esperienze non incluse'}: compliance, sollievo economico, o categoria sensibile.
-            </p>
-          )}
-          <p className="text-[10px] text-[rgba(59,110,186,0.50)] italic" data-testid="dynamic-cv-privacy-notice">
-            Nessun dato individuale è visibile al datore di lavoro.
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
-            <p className="text-xs text-[rgba(6,3,43,0.40)]">Esperienze CV</p>
-            <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">{liveCV.summary.cvEligibleCount}</p>
-          </div>
-          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
-            <p className="text-xs text-[rgba(6,3,43,0.40)]">Badge-ready</p>
-            <p className="text-2xl font-bold text-[#2F7D55] mt-1">{liveCV.summary.badgeEligibleCount}</p>
-          </div>
-          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
-            <p className="text-xs text-[rgba(6,3,43,0.40)]">Private</p>
-            <p className="text-2xl font-bold text-[#C76F3D] mt-1">{liveCV.summary.privateOnlyCount}</p>
-          </div>
-        </div>
-
-        {/* Main experiences */}
-        {liveCV.experiences.length > 0 && (
-          <div className="space-y-2" data-testid="cv-sections">
-            {liveCV.experiences.map((exp) => (
-              <div key={exp.initiative_id} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{exp.title}</p>
-                  <span className={cn('rounded border px-1.5 py-0.5 text-xs shrink-0',
-                    PILLAR_LIGHT[exp.pillar] ?? 'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
-                  )}>{exp.pillar}</span>
-                </div>
-                <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5 font-mono">{exp.date} · {exp.statusLabel}</p>
-                {exp.shareableByWorker && (
-                  <span className="mt-1.5 inline-block rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] px-1.5 py-0.5 text-[10px] text-[#2F7D55]">Condivisibile</span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Badge-ready */}
-        {liveCV.badgeItems.length > 0 && (
-          <div data-testid="dynamic-cv-badge-section" className="rounded-lg border border-[rgba(192,125,42,0.25)] bg-[rgba(192,125,42,0.04)] p-4 space-y-3">
-            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Esperienze badge-ready</h2>
-            <div className="space-y-2">
-              {liveCV.badgeItems.map((exp) => (
-                <div key={exp.initiative_id} className="rounded-lg border border-[rgba(192,125,42,0.18)] bg-white p-3">
-                  <p className="text-xs font-semibold text-[rgba(6,3,43,0.85)]">{exp.title}</p>
-                  <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">{exp.pillar} · {exp.date}</p>
-                </div>
-              ))}
-            </div>
-            <p className="text-[10px] text-[rgba(6,3,43,0.38)] italic">Badge KORA e credenziali verificabili: In arrivo · Pianificato — non attivo in Foundation Light.</p>
-            <button disabled data-testid="dynamic-cv-request-badge-btn" className="rounded-md border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-2 text-xs font-medium text-[rgba(6,3,43,0.35)] cursor-not-allowed">
-              Richiedi badge — In arrivo
-            </button>
-          </div>
-        )}
-
-        {/* Private-only */}
-        {liveCV.privateItems.length > 0 && (
-          <div data-testid="dynamic-cv-private-section" className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.02)] p-4 space-y-2">
-            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.55)]">Esperienze private</h2>
-            <p className="text-xs text-[rgba(6,3,43,0.45)] leading-relaxed">Queste esperienze restano visibili solo a te.</p>
-            <div className="space-y-2">
-              {liveCV.privateItems.map((exp) => (
-                <div key={exp.initiative_id} className="rounded-lg border border-[rgba(6,3,43,0.06)] p-3 opacity-70">
-                  <p className="text-xs font-semibold text-[rgba(6,3,43,0.70)]">{exp.title}</p>
-                  <p className="text-[10px] text-[rgba(6,3,43,0.35)] mt-0.5">{exp.pillar} · Privata</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Future controls */}
-        <div data-testid="dynamic-cv-worker-controls" className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.02)] p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.55)]">Controllo condivisione</h2>
-            <span className="rounded border border-[rgba(6,3,43,0.10)] bg-[rgba(6,3,43,0.05)] px-2 py-0.5 text-[10px] font-semibold text-[rgba(6,3,43,0.42)]">In arrivo · Pianificato</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: 'Richiedi badge', testId: 'dynamic-cv-request-badge-planned' },
-              { label: 'Link di verifica pubblica', testId: 'dynamic-cv-public-link-planned' },
-              { label: 'Esporta PDF', testId: 'dynamic-cv-export-pdf-planned' },
-              { label: 'Condividi su LinkedIn', testId: 'dynamic-cv-linkedin-planned' },
-            ].map(({ label, testId }) => (
-              <button key={label} disabled data-testid={testId} className="rounded-md border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-xs font-medium text-[rgba(6,3,43,0.35)] cursor-not-allowed text-left">
-                {label} — In arrivo
-              </button>
-            ))}
-          </div>
-          <p className="text-[10px] text-[rgba(6,3,43,0.42)] leading-relaxed" data-testid="dynamic-cv-real-share-pointer">
-            Link di condivisione e stampa/PDF sono già disponibili oggi nel tuo Dynamic Impact CV completo →{' '}
-            <Link href="/worker/dynamic-cv" className="underline underline-offset-2 text-[#3B6EBA]">
-              apri il CV completo
-            </Link>
-          </p>
-        </div>
-
-        {/* Navigation */}
-        <div className="flex gap-3 text-xs pt-2 border-t border-[rgba(6,3,43,0.06)]">
-          <Link href="/worker/dynamic-cv" className="text-[rgba(6,3,43,0.55)] hover:text-[rgba(6,3,43,0.80)] underline underline-offset-2" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            → Dynamic Impact CV completo
-          </Link>
-          <Link href="/worker/workspace" className="text-[rgba(6,3,43,0.55)] hover:text-[rgba(6,3,43,0.80)] underline underline-offset-2" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            → Spazio operativo
-          </Link>
-          <Link href="/my-kora/personal-impact-balance" className="text-[rgba(6,3,43,0.55)] hover:text-[rgba(6,3,43,0.80)] underline underline-offset-2" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            → Personal Impact Balance
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   // ── Demo mode — unauthenticated or non-WORKER role (synthetic content, clearly labelled) ─
   const personaId = activePersona?.id ?? 'persona-elena-m';

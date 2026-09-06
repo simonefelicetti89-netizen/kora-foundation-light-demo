@@ -3,17 +3,55 @@
 // Scopo: rispondere a 'chi vede cosa dei miei dati KORA?' con chiarezza cristallina.
 // Il PIB™ è del lavoratore, mai esposto al datore di lavoro.
 // Soglia privacy N≥10 per ogni aggregato aziendale.
+//
+// B-WORKER-2 (2026-09-06): this page previously showed synthetic persona
+// content unconditionally, with no real-session detection at all — a real
+// authenticated WORKER visiting it (e.g. an old bookmark; the sidebar no
+// longer links here, it points to /worker/privacy) saw fake settings, never
+// their own. /worker/privacy (PrivacySettingsClient) is a proven
+// CANONICAL_SUPERSET — real requireWorkerUser() auth, real
+// /api/worker/privacy-settings data, real interactive rows (this page's own
+// toggles were always explicitly non-interactive "solo anteprima"). A
+// confirmed real WORKER session now redirects there; the demo/persona
+// preview below (no real session) is otherwise unchanged.
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
 
+type PrivacyMode = 'checking' | 'redirecting' | 'demo';
+
 // W-02: Privacy & Sharing
 export default function PrivacySharing() {
   const { activeRole } = useRole();
   const { activePersona } = usePersona();
+  const router = useRouter();
+
+  const [mode, setMode] = useState<PrivacyMode>('checking');
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/worker/privacy-settings')
+      .then((res) => {
+        if (cancelled) return;
+        if (res.ok) {
+          setMode('redirecting');
+          router.replace('/worker/privacy');
+        } else {
+          setMode('demo');
+        }
+      })
+      .catch(() => { if (!cancelled) setMode('demo'); });
+    return () => { cancelled = true; };
+  }, [router]);
+
+  // Hold render until session resolves / redirect fires — avoids flashing
+  // synthetic content for real workers.
+  if (mode === 'checking' || mode === 'redirecting') return null;
 
   if (!myKoraPreviewService.canAccess(activeRole)) {
     return (
