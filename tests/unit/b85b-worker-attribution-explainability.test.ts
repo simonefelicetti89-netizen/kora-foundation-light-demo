@@ -411,159 +411,48 @@ describe('B85-B T9 — AttributionMatrix component', () => {
   });
 });
 
-// ── T4: Educational panel ─────────────────────────────────────────────────────
-// B141-B: educational panel moved from /my-kora home to /my-kora/personal-impact-balance.
+// ── T2/T3/T4/T5/T6: worker-facing attribution-explainability UI ─────────────
+//
+// PRIOR HISTORY (accurate as of B85-B/B141-B, preserved as a record, not
+// verbatim given the volume): T4's educational panel ("Quando un Impact
+// Unit diventa tuo?"), T2's per-timeline-item attribution badges ("Classe
+// {code}"), T5's PIB-eligible/not-eligible badges, T6's Dynamic-CV-eligible/
+// not-eligible badges, and T3's per-CV-item attribution reason text all
+// lived on app/my-kora/personal-impact-balance/page.tsx and
+// app/my-kora/dynamic-cv/page.tsx, each calling workerAttributionService.classify()
+// per item to explain why an activity did or didn't count.
+//
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): both
+// pages are now pure, unconditional redirect()s — none of this
+// explainability UI exists on them anymore. CONTENT GAP, flagged not
+// papered over: the canonical /worker/personal-impact-balance and
+// /worker/dynamic-cv pages do NOT currently render an equivalent
+// per-item attribution-explainability UI (no educational panel, no
+// per-item classify() call, no attribution/PIB-eligible/CV-eligible
+// badges) — verified fresh, zero matches for workerAttributionService or
+// any of these testids on either canonical page. workerAttributionService.classify()
+// itself (the real, canonical classification engine — T1, T7-T10 below) is
+// unaffected and still fully tested; only its worker-facing UI consumers
+// were retired without a replacement being built, which this fork does not
+// invent (out of scope — no new worker-facing feature).
 
-describe('B85-B T4 — Educational panel on /my-kora/personal-impact-balance', () => {
-  const src = read('app/my-kora/personal-impact-balance/page.tsx');
-
-  it('panel exists with data-testid', () => {
-    expect(src).toContain('data-testid="iu-educational-panel"');
+describe('B-WORKER preview retirement — attribution-explainability UI retired, canonical replacement gap flagged', () => {
+  it('/my-kora/personal-impact-balance and /my-kora/dynamic-cv are pure redirects with none of the former explainability UI', () => {
+    const pib = read('app/my-kora/personal-impact-balance/page.tsx');
+    const cv  = read('app/my-kora/dynamic-cv/page.tsx');
+    expect(pib).toContain("redirect('/worker/personal-impact-balance')");
+    expect(cv).toContain("redirect('/worker/dynamic-cv')");
+    for (const src of [pib, cv]) {
+      expect(src).not.toContain('workerAttributionService');
+      expect(src).not.toContain('iu-educational-panel');
+    }
   });
 
-  it('shows title "Quando un Impact Unit diventa tuo?"', () => {
-    expect(src).toContain('Quando un Impact Unit diventa tuo?');
-  });
-
-  it('step 1 — activity must be eligible', () => {
-    expect(src).toContain("L'attività deve essere idonea.");
-  });
-
-  it('step 2 — must be verified', () => {
-    expect(src).toContain('Deve essere verificata.');
-  });
-
-  it('step 3 — not compliance or economic', () => {
-    expect(src).toContain('Non può essere solo conformità o sostegno economico.');
-  });
-
-  it('step 4 — Pilot+ association', () => {
-    expect(src).toContain('Nel programma Pilot+ verrà associata al tuo profilo.');
-  });
-});
-
-// ── T2: Timeline attribution badges ──────────────────────────────────────────
-// B141-B: timeline moved from /my-kora home to /my-kora/personal-impact-balance.
-
-describe('B85-B T2 — Timeline attribution badges on /my-kora/personal-impact-balance', () => {
-  const src = read('app/my-kora/personal-impact-balance/page.tsx');
-
-  it('imports WorkerAttributionService', () => {
-    expect(src).toContain('workerAttributionService');
-  });
-
-  it('imports AttributionMatrix', () => {
-    expect(src).toContain('AttributionMatrix');
-  });
-
-  it('calls classify per timeline item', () => {
-    expect(src).toContain('workerAttributionService.classify(');
-  });
-
-  it('renders attribution badge with data-testid', () => {
-    expect(src).toContain('data-testid={`attribution-badge-${item.id}`}');
-  });
-
-  it('shows "Classe" label', () => {
-    expect(src).toContain('Classe {attribution.code}');
-  });
-
-  it('shows attribution label', () => {
-    expect(src).toContain('{attribution.label}');
-  });
-});
-
-// ── T5: PIB eligibility on /my-kora/personal-impact-balance timeline ─────────
-// B141-B: timeline moved from /my-kora home to /my-kora/personal-impact-balance.
-
-describe('B85-B T5 — PIB eligibility on /my-kora/personal-impact-balance timeline', () => {
-  const src = read('app/my-kora/personal-impact-balance/page.tsx');
-
-  it('renders PIB eligible badge with data-testid', () => {
-    expect(src).toContain('data-testid={`pib-eligible-${item.id}`}');
-  });
-
-  it('renders PIB not eligible badge with data-testid', () => {
-    expect(src).toContain('data-testid={`pib-not-eligible-${item.id}`}');
-  });
-
-  it('shows positive PIB label', () => {
-    expect(src).toContain('Può contribuire al tuo PIB');
-  });
-
-  it('shows negative PIB label', () => {
-    expect(src).toContain('Non contribuisce al tuo PIB');
-  });
-
-  it('derives from workerPibEligible', () => {
-    expect(src).toContain('attribution.workerPibEligible');
-  });
-
-  it('does not compute PIB — display only', () => {
-    expect(src).not.toContain('computePIB(');
-    expect(src).not.toContain('calculatePIB(');
-  });
-});
-
-// ── T6: Dynamic CV eligibility on /my-kora/personal-impact-balance timeline ──
-// B141-B: timeline moved from /my-kora home to /my-kora/personal-impact-balance.
-
-describe('B85-B T6 — Dynamic CV eligibility on /my-kora/personal-impact-balance timeline', () => {
-  const src = read('app/my-kora/personal-impact-balance/page.tsx');
-
-  it('renders Dynamic CV eligible badge with data-testid', () => {
-    expect(src).toContain('data-testid={`cv-eligible-attr-${item.id}`}');
-  });
-
-  it('renders Dynamic CV not eligible badge with data-testid', () => {
-    expect(src).toContain('data-testid={`cv-not-eligible-attr-${item.id}`}');
-  });
-
-  it('shows "Può comparire nel Dynamic CV" label', () => {
-    expect(src).toContain('Può comparire nel Dynamic CV');
-  });
-
-  it('shows "Non idoneo al Dynamic CV" label', () => {
-    expect(src).toContain('Non idoneo al Dynamic CV');
-  });
-
-  it('derives from dynamicCvEligible', () => {
-    expect(src).toContain('attribution.dynamicCvEligible');
-  });
-});
-
-// ── T3: Dynamic CV attribution on /my-kora/dynamic-cv ───────────────────────
-
-describe('B85-B T3 — Dynamic CV attribution explainability', () => {
-  const src = read('app/my-kora/dynamic-cv/page.tsx');
-
-  it('imports workerAttributionService', () => {
-    expect(src).toContain('workerAttributionService');
-  });
-
-  it('calls classify per CV item', () => {
-    expect(src).toContain('workerAttributionService.classify(');
-  });
-
-  it('renders cv-item-attribution-reason data-testid', () => {
-    expect(src).toContain('data-testid={`cv-item-attribution-reason-${item.id}`}');
-  });
-
-  it('shows "Attività verificata" for verified items', () => {
-    expect(src).toContain('Attività verificata');
-  });
-
-  it('shows "Contributo validato" for contribution items', () => {
-    expect(src).toContain('Contributo validato');
-  });
-
-  it('shows "Verifica in corso" for partial items', () => {
-    expect(src).toContain('Verifica in corso');
-  });
-
-  it('does not expose technical taxonomy codes', () => {
-    expect(src).not.toContain('action_id');
-    expect(src).not.toContain('matched_taxonomy_id');
+  it('the canonical /worker pages do not (yet) render an equivalent attribution-explainability UI — genuine gap, not fabricated here', () => {
+    const canonicalPib = read('app/worker/personal-impact-balance/page.tsx');
+    const canonicalCv  = read('app/worker/dynamic-cv/_components/DynamicCVClient.tsx');
+    expect(canonicalPib).not.toContain('workerAttributionService');
+    expect(canonicalCv).not.toContain('workerAttributionService');
   });
 });
 
@@ -600,15 +489,16 @@ describe('B85-B T7+T8 — ingestion is a live-only boundary shell (B147 P2)', ()
 // ── T10: Trust copy ───────────────────────────────────────────────────────────
 // B141-B: trust copy moved with IU educational panel to /my-kora/personal-impact-balance.
 
-describe('B85-B T10 — Trust copy in attribution area', () => {
-  const src = read('app/my-kora/personal-impact-balance/page.tsx');
-
-  it('shows trust copy statement', () => {
-    expect(src).toContain('Non tutte le attività diventano parte del tuo percorso personale.');
-  });
-
-  it('mentions "attività idonee e verificabili"', () => {
-    expect(src).toContain('KORA considera solo attività idonee e verificabili.');
+// PRIOR HISTORY (accurate as of B85-B, preserved verbatim): checked
+// app/my-kora/personal-impact-balance/page.tsx for this trust copy.
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) retired
+// that page — see the attribution-explainability UI retirement/content-gap
+// note above; this trust copy is part of the same retired content and has
+// no canonical replacement built here.
+describe('B85-B T10 — Trust copy in attribution area (retired with the explainability UI, gap flagged above)', () => {
+  it('the retired page no longer carries this trust copy', () => {
+    const src = read('app/my-kora/personal-impact-balance/page.tsx');
+    expect(src).not.toContain('Non tutte le attività diventano parte del tuo percorso personale.');
   });
 });
 

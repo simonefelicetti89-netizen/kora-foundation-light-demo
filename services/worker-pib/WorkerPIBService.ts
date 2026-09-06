@@ -3,9 +3,11 @@
 // B157 — Worker PIB/CV: binario di consumo.
 // B161 — aggiunta metodi *Live async per il path WORKER JWT reale.
 //
-// Metodi SINCRONI (preview KORA_ADMIN — invariati):
-//   getPIB(personaId, scenarioId): WorkerPIB    — dati sintetici
-//   getCVData(personaId): WorkerCVData           — dati sintetici
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): the
+// former synchronous KORA_ADMIN preview methods (getPIB, getCVData — synthetic
+// data sourced from MyKoraPreviewService) were retired once their sole
+// callers (/api/worker/pib and /api/worker/impact-cv "Path 2") were removed.
+// See docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md.
 //
 // Metodi ASYNC (WORKER JWT reale — B161):
 //   getPIBLive(supabase, period?): Promise<WorkerPIB>    — da personal.worker_pib
@@ -14,10 +16,8 @@
 // Privacy invariants (non-negotiable):
 //   - not_employer_visible: true — never called from employer-facing code paths.
 //   - not_performance_score: true — PIB is activation measurement, not evaluation.
-//   - export_available: false while isSynthetic (sincroni); true nei live (verified only).
+//   - export_available: false while isSynthetic; true nei live (verified only).
 
-import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
-import type { ScenarioId } from '@/lib/types';
 import type {
   WorkerPIB,
   WorkerCVData,
@@ -56,99 +56,7 @@ type AnySupabaseClient = any;
 //   - L'overall_index è uno strumento informativo per il lavoratore, non una valutazione.
 const PIB_OVERALL_INDEX_SCALE_FACTOR = 10;
 
-const VALID_SCENARIOS: ScenarioId[] = ['S1', 'S2', 'S3', 'S4'];
-
-function toScenarioId(s: string): ScenarioId {
-  return (VALID_SCENARIOS.includes(s as ScenarioId) ? s : 'S1') as ScenarioId;
-}
-
 export class WorkerPIBService {
-
-  // ── Metodi SINCRONI — preview KORA_ADMIN (non toccare) ───────────────────
-
-  // LIVE SOURCE HOOK (post-Gate-2): sostituire la sorgente sintetica con
-  // l'aggregazione IU per pseudonym_id dalla pipeline reale.
-  // Vedi docs/worker-pib-activation-guide.md — sezione "Attivazione sorgente reale".
-  getPIB(personaId: string, scenarioId: string): WorkerPIB {
-    const preview = myKoraPreviewService.getMyKoraHomePreview(personaId, toScenarioId(scenarioId));
-    if (!preview) {
-      return this.getPIB('A', 'S1');
-    }
-    const pib = preview.pib_light;
-
-    const pillarBreakdown: WorkerPillarData[] = pib.pillar_breakdown.map((p) => ({
-      pillar:      p.pillar,
-      label:       p.label,
-      score:       p.score,
-      iu_total:    p.iu_total,
-      trend:       p.trend,
-      event_count: p.event_count,
-    }));
-
-    const timeline: WorkerTimelineEvent[] = (preview.timeline ?? []).map((t) => ({
-      id:                  t.id,
-      date:                t.date,
-      category:            t.category,
-      pillar:              t.pillar,
-      source_type:         t.source_type,
-      verification_status: t.verification_status,
-      iu_contribution:     t.iu_contribution,
-      iu_value:            t.iu_value,
-      cv_eligible:         t.cv_eligible,
-      cv_eligible_reason:  t.cv_eligible_reason,
-    }));
-
-    return {
-      period:                         pib.period,
-      period_iu_total:                pib.period_iu_total,
-      overall_index:                  pib.overall_index,
-      active_pillars:                 pib.active_pillars,
-      total_events:                   pib.total_events,
-      pillar_breakdown:               pillarBreakdown,
-      timeline,
-      activation_level:               pib.activation_level,
-      activation_level_label:         pib.activation_level_label,
-      activation_level_description:   pib.activation_level_description,
-      activation_profile:             pib.activation_profile,
-      activation_profile_description: pib.activation_profile_description,
-      pib_derivation_note:            pib.pib_derivation_note,
-      pib_derivation_basis:           'synthetic_iu_pre_computed',
-      disclaimer:                     pib.disclaimer,
-      not_employer_visible:           true,
-      not_performance_score:          true,
-      isSynthetic:                    true,
-    };
-  }
-
-  // LIVE SOURCE HOOK (post-Gate-2): sostituire la sorgente sintetica con
-  // record UEF individuali verificati (analytics.uef_record filtrati per pseudonym_id).
-  // Vedi docs/worker-pib-activation-guide.md — sezione "Attivazione Dynamic CV reale".
-  getCVData(personaId: string): WorkerCVData {
-    const cvPreview = myKoraPreviewService.getDynamicCvPreview(personaId);
-
-    const items: WorkerCVItem[] = cvPreview.items.map((item) => ({
-      id:                  item.id,
-      title:               item.title,
-      pillar:              item.pillar,
-      pillar_label:        item.pillar_label,
-      date:                item.date,
-      source_category:     item.source_category,
-      verification_status: item.verification_status,
-      shareable:           item.shareable,
-      export_label:        item.export_label,
-    }));
-
-    const verifiedCount = items.filter((i) => i.verification_status === 'verified').length;
-
-    return {
-      items,
-      total_items:      items.length,
-      verified_count:   verifiedCount,
-      disclaimer:       cvPreview.disclaimer,
-      export_available: false,
-      isSynthetic:      true,
-    };
-  }
 
   // ── Metodi ASYNC — WORKER JWT reale (B161) ────────────────────────────────
   //

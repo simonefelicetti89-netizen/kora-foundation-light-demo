@@ -111,34 +111,51 @@ describe('CC-024 — no runtime/auth/service code was touched', () => {
   // (2026-09-06) later retired that admission branch entirely (redirects
   // instead) — this test file's own scope was "no runtime code touched
   // during CC-024 itself," not a permanent invariant.
-  it('worker auth files were unchanged during CC-024 itself (governing invariants); my-kora layout admission was retired in the later B-WORKER final cleanup', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
+  // app/my-kora/layout.tsx still contained getSessionKoraRole (server-side
+  // admission check), unchanged at CC-024 analysis time. B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06) removed that
+  // admission logic entirely — layout.tsx is now a trivial pass-through.
+  it('worker auth files were unchanged during CC-024 itself (governing invariants); my-kora layout admission was later fully retired (superseding the B-WORKER final cleanup PRIOR HISTORY note above)', () => {
     const workerLayout = read('app/worker/layout.tsx');
     expect(workerLayout).toContain('getCurrentWorkerUser');
     const myKoraLayout = read('app/my-kora/layout.tsx');
-    expect(myKoraLayout).toContain('getSessionKoraRole');
+    expect(myKoraLayout).not.toContain('getSessionKoraRole');
   });
 
-  it('the 3 B-WORKER-owned synthetic residuals are untouched', () => {
+  // PRIOR HISTORY (accurate as of CC-024, preserved verbatim): asserted all
+  // 3 B-WORKER-owned residuals were untouched. B-WORKER "One Product / No
+  // Demo Runtime" correction (2026-09-06) retired WorkerAchievementService.ts
+  // (zero real callers) — 2 remain.
+  it('the 2 remaining B-WORKER-owned synthetic residuals are untouched; WorkerAchievementService retired since', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
-      'services/worker-achievements/WorkerAchievementService.ts',
       'services/account/AccountProvisioningService.ts',
     ]) {
       expect(exists(file)).toBe(true);
     }
+    expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
   });
 
-  it('MyKoraPreviewService is untouched, still exists', () => {
-    expect(exists('services/my-kora-preview/MyKoraPreviewService.ts')).toBe(true);
+  // PRIOR HISTORY (accurate as of CC-024, preserved verbatim): "MyKoraPreviewService
+  // is untouched, still exists." B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) deleted it entirely — zero real callers once
+  // every /my-kora/** page became a pure canonical redirect.
+  it('MyKoraPreviewService is retired, no longer exists', () => {
+    expect(exists('services/my-kora-preview/MyKoraPreviewService.ts')).toBe(false);
   });
 });
 
 // ── 4. Worker governance tests still pass (sanity — run separately too) ────
 
 describe('CC-024 — pre-existing worker-surface governance guard still intact and updated', () => {
-  it('cc003 registry completeness now asserts the ratified CANONICAL/CONSOLIDATE split', () => {
+  // PRIOR HISTORY (accurate as of D-D ratification, preserved verbatim):
+  // "cc003 registry completeness now asserts the ratified CANONICAL/CONSOLIDATE
+  // split." B-WORKER "One Product / No Demo Runtime" correction (2026-09-06)
+  // moved app-surface.my-kora from CONSOLIDATE to DEAD.
+  it('cc003 registry completeness now asserts /worker CANONICAL and /my-kora DEAD', () => {
     const guard = read('tests/unit/cc003-i10-registry-completeness.test.ts');
-    expect(guard).toContain('/worker is CANONICAL and /my-kora is CONSOLIDATE — D-D ratified');
+    expect(guard).toContain('/worker is CANONICAL and /my-kora is DEAD');
   });
 });
 

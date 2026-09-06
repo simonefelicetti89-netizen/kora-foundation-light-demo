@@ -269,7 +269,13 @@ describe('CC-00 DEMO_VIEWER retirement — B-WORKER, My KORA, final scoring unto
   it('B-WORKER services are untouched — still exist', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
-      'services/worker-achievements/WorkerAchievementService.ts',
+      // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
+      // was asserted to exist here (unmodified by this PR, at the time). B-WORKER
+      // "One Product / No Demo Runtime" correction (2026-09-06) deleted it entirely
+      // (zero real callers once its 2 callers, app/my-kora/page.tsx and
+      // app/my-kora/dynamic-cv/page.tsx, became pure canonical redirects) — removed
+      // from this list; this is that later, separately-authorized retirement, not an
+      // unrelated-PR regression of this PR's own scope boundary.
       'services/worker-space/WorkerSpaceCapabilityService.ts',
     ]) {
       expect(exists(file)).toBe(true);

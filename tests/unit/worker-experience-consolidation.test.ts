@@ -70,11 +70,14 @@ describe('WEC-1 — Worker PIB timeline fix', () => {
     expect(service).toContain('Nessun dato di attivazione disponibile');
   });
 
-  it('PIB page shows live empty timeline message for real worker with no events', () => {
-    const pibPage = read('app/my-kora/personal-impact-balance/page.tsx');
-    expect(pibPage).toContain('timeline-live-empty');
-    expect(pibPage).toContain('isRealWorkerMode && pib.timeline.length === 0');
-    expect(pibPage).toContain('primo ciclo di scoring');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/personal-impact-balance/page.tsx's isRealWorkerMode-gated
+  // live empty state. B-WORKER "One Product / No Demo Runtime" correction
+  // (2026-09-06) retired that page — the canonical /worker/personal-impact-balance
+  // page (built in B-WORKER-1) has its own honest empty-state message.
+  it('canonical /worker/personal-impact-balance shows an honest empty state for a real worker with no events', () => {
+    const pibPage = read('app/worker/personal-impact-balance/page.tsx');
+    expect(pibPage).toContain('Nessuna Impact Unit registrata ancora per questo periodo.');
   });
 });
 
@@ -89,38 +92,31 @@ describe('WEC-1 — Worker PIB timeline fix', () => {
 // Collettivo (building one would be inventing Collettivo functionality,
 // out of scope) — replaced it with a redirect to /worker/workspace. The
 // demo path (persona/anonymous, no real session) is fully unchanged.
-describe('WEC-2a — /my-kora/collective mode detection', () => {
+// PRIOR HISTORY (accurate as of WEC-2a, preserved as a record, not verbatim
+// given the volume): asserted /my-kora/collective used client-side mode
+// detection (useState/useEffect, CollectiveMode 'checking'/'redirecting'/
+// 'demo', a /api/worker/pib fetch probe) to redirect only confirmed real
+// sessions while preserving full synthetic content (with privacy/
+// not_employer_visible disclaimers) for the demo path.
+//
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): the
+// page is now a one-line, unconditional redirect() to /worker/workspace —
+// no mode detection, no fetch probe, no demo content of any kind, for any
+// visitor.
+describe('B-WORKER preview retirement — /my-kora/collective is a pure canonical redirect', () => {
   const collective = read('app/my-kora/collective/page.tsx');
 
-  it('collective page imports useState and useEffect', () => {
-    expect(collective).toContain('useState');
-    expect(collective).toContain('useEffect');
-  });
-
-  it('collective page defines CollectiveMode type with checking/redirecting/demo states', () => {
-    expect(collective).toContain('CollectiveMode');
-    expect(collective).toContain("'checking'");
-    expect(collective).toContain("'redirecting'");
-    expect(collective).toContain("'demo'");
-  });
-
-  it('collective page fetches /api/worker/pib for auth detection', () => {
-    expect(collective).toContain('/api/worker/pib');
-  });
-
-  it('collective page redirects a confirmed real session instead of showing its own content', () => {
-    expect(collective).toContain("router.replace('/worker/workspace')");
+  it('redirects unconditionally to /worker/workspace, for every visitor', () => {
+    expect(collective).toContain("redirect('/worker/workspace')");
     expect(collective).not.toContain('data-testid="collective-empty-state"');
   });
 
-  it('demo mode still shows synthetic content with labels (not removed)', () => {
-    // Synthetic disclaimer still present for demo path
-    expect(collective).toContain('Dati sintetici illustrativi');
-    expect(collective).toContain('synthetic_demo_data');
-  });
-
-  it('demo-mode privacy/non-employer-visible copy is preserved', () => {
-    expect(collective).toContain('not_employer_visible: true');
+  it('no client-side mode detection, fetch probe, or demo content remains', () => {
+    expect(collective).not.toContain('useState');
+    expect(collective).not.toContain('useEffect');
+    expect(collective).not.toContain('/api/worker/pib');
+    expect(collective).not.toContain('Dati sintetici illustrativi');
+    expect(collective).not.toContain("'use client'");
   });
 });
 
@@ -134,27 +130,32 @@ describe('WEC-2b — /my-kora/bookings page (already acceptable)', () => {
     expect(bookings).not.toContain('myKoraPreviewService');
   });
 
-  it('bookings page shows honest "not active in Foundation Light" state', () => {
-    expect(bookings).toContain('Foundation Light');
-    // Metadata footer confirms preview-only state
-    expect(bookings).toContain('preview_only');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/bookings/page.tsx for a "not active in Foundation Light"
+  // preview-only disclaimer. B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) retired that page — the canonical
+  // /worker/bookings surface is a real, live page (not a preview), so no
+  // equivalent "preview_only" disclaimer is expected there.
+  it('the retired page no longer carries a preview-only disclaimer; canonical /worker/bookings is a real, live page', () => {
+    expect(bookings).not.toContain('preview_only');
+    expect(exists('app/worker/bookings/page.tsx')).toBe(true);
+    expect(read('app/worker/bookings/page.tsx')).toContain('requireWorkerUser');
   });
 });
 
 describe('WEC-2c — /my-kora/kora-space page (clearly labeled preview)', () => {
   const koraSpace = read('app/my-kora/kora-space/page.tsx');
 
-  it('kora-space page labels content as Foundation Light preview', () => {
-    expect(koraSpace).toContain('Foundation Light preview');
-  });
-
-  it('kora-space page buttons are disabled (not live interactions)', () => {
-    expect(koraSpace).toContain('disabled');
-    expect(koraSpace).toContain('· preview');
-  });
-
-  it('kora-space page has synthetic_demo_data footer', () => {
-    expect(koraSpace).toContain('synthetic_demo_data: true');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/kora-space/page.tsx for "Foundation Light preview" labeling,
+  // disabled preview buttons, and a synthetic_demo_data footer. B-WORKER
+  // "One Product / No Demo Runtime" correction (2026-09-06) retired that
+  // page — the canonical /worker/commons surface is a real, live page (not
+  // a preview), so no equivalent preview labeling/disabled-button/synthetic
+  // footer is expected there.
+  it('the retired page no longer carries preview/synthetic labeling; canonical /worker/commons is a real, live page', () => {
+    expect(koraSpace).not.toContain('synthetic_demo_data: true');
+    expect(exists('app/worker/commons/page.tsx')).toBe(true);
   });
 
   it('kora-space page does not expose worker identity fields', () => {
@@ -196,18 +197,19 @@ describe('WEC-3 — Navigation bridge between /worker/ and /my-kora/', () => {
   // branch — a real WORKER session is now redirected to /worker/workspace
   // directly (a stronger form of "linking back": no bridge link needed
   // because the layout never renders /my-kora content for them at all).
-  it('/my-kora/layout redirects real worker sessions to /worker/workspace directly (no bridge link needed)', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER final cleanup, preserved
+  // verbatim): asserted layout.tsx redirected real WORKER sessions to
+  // /worker/workspace directly, gated on realRole === 'WORKER'. B-WORKER
+  // "One Product / No Demo Runtime" correction (2026-09-06) went further —
+  // layout.tsx performs no session check or role gating at all anymore;
+  // the redirect to /worker/workspace now lives, unconditionally, on
+  // app/my-kora/page.tsx itself.
+  it('/my-kora/layout performs no session/role logic; app/my-kora/page.tsx redirects unconditionally to /worker/workspace', () => {
     const layout = read('app/my-kora/layout.tsx');
-    expect(layout).toContain("redirect('/worker/workspace')");
+    expect(layout).not.toContain('realRole');
     expect(layout).not.toContain('my-kora-workspace-link');
     expect(layout).not.toContain('Spazio operativo');
-  });
-
-  it('/my-kora/layout redirect is gated on realRole === WORKER (not applied to demo visitors)', () => {
-    const layout = read('app/my-kora/layout.tsx');
-    const idx = layout.indexOf("realRole === 'WORKER'");
-    expect(idx).toBeGreaterThan(-1);
-    expect(layout.slice(idx, idx + 100)).toContain("redirect('/worker/workspace')");
+    expect(read('app/my-kora/page.tsx')).toContain("redirect('/worker/workspace')");
   });
 });
 

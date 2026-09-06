@@ -1,15 +1,29 @@
 // tests/unit/b141b-my-kora-pib-ia-and-admin-access.test.ts
 // B141-B — My KORA PIB IA correction + KORA_ADMIN access fix.
 // B141-B2 — Founder-safe worker preview navigation polish.
+// B141-C/D/F — PIB visual layout correction, WorkerActivationSignatureCard.
 //
-// Pure structural/static tests — no DB, no Supabase, no runtime rendering.
-// Verifies:
-//   1–6:  /my-kora/personal-impact-balance/page.tsx exists and has correct content
-//   7–9:  /my-kora/page.tsx (home) is lightened — no full pib-section, has PIB card
-//   10–13: layout.tsx admits KORA_ADMIN real session, blocks employer roles
-//   14–16: KORA Link card uses only canonical KoraStratoMark, no worker data
-//   17–18: middleware.ts and kora-session.ts not modified
-//   19–26: B141-B2 — sidebar nav polish + /worker/* safe redirect
+// PRIOR HISTORY (accurate as of B141-B/C/D/F, preserved as a record, not
+// verbatim given the volume): sections 1–16 and 27–49 of this file tested
+// app/my-kora/personal-impact-balance/page.tsx's content (PIB heading,
+// KoraActivationSignature, KORA Link card, WorkerActivationSignatureCard
+// premium card, unified signature object), app/my-kora/page.tsx's lightened
+// home content, and app/my-kora/layout.tsx's real-session admission table
+// (via app/my-kora/_providers/MyKoraDemoGate.tsx for the demo-visitor path).
+//
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06):
+// app/my-kora/personal-impact-balance/page.tsx and app/my-kora/page.tsx are
+// now pure, unconditional redirect()s to their canonical /worker/**
+// equivalents. app/my-kora/layout.tsx performs no admission decision at
+// all. MyKoraDemoGate.tsx, KoraActivationSignature.tsx, and
+// WorkerActivationSignatureCard.tsx are all deleted (zero real callers,
+// verified fresh before deletion). Sections 17–18, 19–22, and 23–26 below
+// test genuinely unrelated surfaces (middleware.ts, kora-session.ts,
+// Sidebar.tsx nav links to canonical /worker routes, /worker/layout.tsx's
+// KORA_ADMIN hard block) and are preserved unchanged. See
+// lib/architecture/registry.ts svc.my-kora-preview and
+// tests/unit/bworker-preview-runtime-retirement.test.ts for the regression
+// guard proving the retirement.
 
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
@@ -19,203 +33,57 @@ function read(rel: string): string {
   return fs.readFileSync(path.resolve(__dirname, '../..', rel), 'utf-8');
 }
 
-function fileExists(rel: string): boolean {
-  try {
-    fs.accessSync(path.resolve(__dirname, '../..', rel));
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-const pibPageSrc    = read('app/my-kora/personal-impact-balance/page.tsx');
-const homeSrc       = read('app/my-kora/page.tsx');
 const layoutSrc     = read('app/my-kora/layout.tsx');
-const demoGateSrc   = read('app/my-kora/_providers/MyKoraDemoGate.tsx');
 const middlewareSrc = read('middleware.ts');
 const sessionSrc    = read('lib/auth/kora-session.ts');
 const sidebarSrc    = read('components/layout/Sidebar.tsx');
 const workerLayout  = read('app/worker/layout.tsx');
-const cardSrc       = read('components/my-kora/WorkerActivationSignatureCard.tsx');
 
-// ── 1–6: PIB dedicated page ───────────────────────────────────────────────────
-
-describe('B141-B — Personal Impact Balance dedicated page', () => {
-  it('1. file exists at app/my-kora/personal-impact-balance/page.tsx', () => {
-    expect(fileExists('app/my-kora/personal-impact-balance/page.tsx')).toBe(true);
+describe('B141-B/B-WORKER — retired PIB/home/layout admission content', () => {
+  it('my-kora personal-impact-balance and home pages are now pure canonical redirects', () => {
+    expect(read('app/my-kora/personal-impact-balance/page.tsx')).toContain("redirect('/worker/personal-impact-balance')");
+    expect(read('app/my-kora/page.tsx')).toContain("redirect('/worker/workspace')");
   });
 
-  it('2. page contains "Personal Impact Balance" heading', () => {
-    expect(pibPageSrc).toContain('Personal Impact Balance');
-  });
-
-  it('3. page contains subtitle "Il bilancio privato delle tue esperienze di attivazione."', () => {
-    expect(pibPageSrc).toContain('Il bilancio privato delle tue esperienze di attivazione.');
-  });
-
-  it('4. page contains KoraActivationSignature (STRATO worker)', () => {
-    expect(pibPageSrc).toContain('KoraActivationSignature');
-  });
-
-  it('5. page contains "Impact Units attivate" copy', () => {
-    expect(pibPageSrc).toContain('Impact Units attivate');
-  });
-
-  it('6. page contains link to Dynamic Impact CV', () => {
-    expect(pibPageSrc).toContain('Dynamic Impact CV');
+  it('layout.tsx performs no admission decision; MyKoraDemoGate and WorkerActivationSignatureCard no longer exist', () => {
+    expect(layoutSrc).not.toContain('getSessionKoraRole');
+    expect(layoutSrc).not.toContain('realRole');
+    expect(layoutSrc).not.toContain('MyKoraDemoGate');
+    expect(() => read('app/my-kora/_providers/MyKoraDemoGate.tsx')).toThrow();
+    expect(() => read('components/my-kora/WorkerActivationSignatureCard.tsx')).toThrow();
+    expect(() => read('components/my-kora/KoraActivationSignature.tsx')).toThrow();
   });
 });
 
-// ── 7–9: Home page lightened ──────────────────────────────────────────────────
-
-describe('B141-B — My KORA home lightened', () => {
-  it('7. home contains link to /my-kora/personal-impact-balance', () => {
-    expect(homeSrc).toContain('/my-kora/personal-impact-balance');
-  });
-
-  it('8. home does not contain full pib-section (data-testid="pib-section" removed)', () => {
-    expect(homeSrc).not.toContain('data-testid="pib-section"');
-  });
-
-  it('9. home contains "Apri il Personal Impact Balance" CTA', () => {
-    expect(homeSrc).toContain('Apri il Personal Impact Balance');
-  });
-});
-
-// ── 10–13: Layout access control (MYKORA-01: server-side guard) ─────────────
-//
-// MYKORA-01 converted app/my-kora/layout.tsx from a client-side
-// (useEffect + browser getSession()) guard to a server-side guard, matching
-// the pattern in app/admin/layout.tsx / app/company/layout.tsx / app/partner
-// /layout.tsx (B137). The real-session admission decision now lives in the
-// server layout; the pure demo-visitor path moved to MyKoraDemoGate.tsx
-// (client component, only reached when there is no real session at all).
-
-describe('B141-B / MYKORA-01 — My KORA layout real-session access', () => {
-  it('10. layout is a Server Component — no use client directive', () => {
-    expect(layoutSrc.trimStart().startsWith("'use client'")).toBe(false);
-  });
-
-  it('10b. layout resolves the real session server-side via getSessionKoraRole (kora-session.ts)', () => {
-    expect(layoutSrc).toContain('getSessionKoraRole');
-    expect(layoutSrc).toContain('kora-session');
-    expect(layoutSrc).not.toContain('getSupabaseBrowserClient');
-    expect(layoutSrc).not.toContain('useEffect(');
-    expect(layoutSrc).not.toContain('.auth.getSession()');
-  });
-
-  it('11. layout checks realRole === KORA_ADMIN for real admin session', () => {
-    expect(layoutSrc).toContain("realRole === 'KORA_ADMIN'");
-  });
-
-  it('12. layout does not admit COMPANY_ADMIN — isAdminRole gates the demo visitor path only (in MyKoraDemoGate.tsx)', () => {
-    // The server layout blocks any real session that is not WORKER/KORA_ADMIN
-    // (including COMPANY_ADMIN) before rendering children — no isAdminRole
-    // check needed there. isAdminRole is only used in MyKoraDemoGate.tsx,
-    // scoped to the pure-demo-visitor (no real session) path.
-    expect(layoutSrc).not.toContain("'COMPANY_ADMIN'");
-    expect(demoGateSrc).toContain('isAdminRole(activeRole');
-  });
-
-  // PRIOR HISTORY (accurate as of B141-B/MYKORA-01, preserved verbatim): "13.
-  // layout uses realUserPermitted; MyKoraDemoGate.tsx uses demoVisitorPermitted
-  // (separate gates)" — realUserPermitted admitted real WORKER/KORA_ADMIN
-  // sessions into the demo-state preview. B-WORKER final cleanup (2026-09-06)
-  // retired that admission branch — real sessions are now redirected, never
-  // admitted, so realUserPermitted no longer exists. demoVisitorPermitted
-  // (pure demo visitors, no real session) is unaffected.
-  it('13. layout redirects real sessions instead of admitting them; MyKoraDemoGate.tsx still uses demoVisitorPermitted', () => {
-    expect(layoutSrc).not.toContain('realUserPermitted');
-    expect(demoGateSrc).toContain('demoVisitorPermitted');
-  });
-
-  it('13b. layout hard-blocks any other real session (realRole !== null) before falling back to demo-state', () => {
-    expect(layoutSrc).toContain('realRole !== null');
-  });
-
-  it('13c. MyKoraDemoGate is only reached when there is no real session', () => {
-    expect(layoutSrc).toContain('MyKoraDemoGate');
-    // The demo gate itself must not re-derive or trust any "real session" state —
-    // it is pure demo-state (useRole), which is fine precisely because the
-    // server layout already excluded all real sessions before reaching it.
-    expect(demoGateSrc).toContain("'use client'");
-    expect(demoGateSrc).toContain('useRole');
-  });
-});
-
-// ── 14–16: KORA Link card — canonical STRATO only ─────────────────────────────
-
-describe('B141-B — KORA Link card uses only canonical KoraStratoMark', () => {
-  // Extract the KORA Link card area from PIB page source.
-  // The card is identified by data-testid="kora-link-card".
-  const koraLinkStart = pibPageSrc.indexOf('data-testid="kora-link-card"');
-  const koraLinkSection = koraLinkStart > -1
-    ? pibPageSrc.substring(koraLinkStart, koraLinkStart + 800)
-    : '';
-
-  it('14. KORA Link card section does not use KoraActivationSignature', () => {
-    // KoraActivationSignature is in the PIB section above — never in the KORA Link card.
-    expect(koraLinkSection).not.toContain('KoraActivationSignature');
-  });
-
-  it('15. KORA Link card uses KoraStratoMark (canonical brand STRATO)', () => {
-    expect(koraLinkSection).toContain('KoraStratoMark');
-  });
-
-  it('16. KoraStratoMark in PIB page does not receive pillarBreakdown prop', () => {
-    // KoraStratoMark only accepts variant/size/className — never worker pillar data.
-    // Check the entire PIB page: no pillarBreakdown passed to KoraStratoMark.
-    const stratoCallIdx = pibPageSrc.indexOf('KoraStratoMark');
-    const stratoCall = stratoCallIdx > -1
-      ? pibPageSrc.substring(stratoCallIdx, stratoCallIdx + 200)
-      : '';
-    expect(stratoCall).not.toContain('pillarBreakdown');
-  });
-});
-
-// ── 17–18: middleware unchanged / existing WORKER guard preserved ───────────
+// ── 17–18: middleware unchanged / existing WORKER guard preserved (unaffected) ──
 // MYKORA-01 added getSessionKoraRole() to kora-session.ts (additive only) —
 // these assertions confirm the pre-existing requireWorkerUser() guard logic
-// was not weakened or removed by that addition.
+// was not weakened or removed by that addition. Unaffected by the B-WORKER
+// preview-runtime retirement above.
 
 describe('B141-B — middleware.ts unchanged, kora-session.ts WORKER guard preserved', () => {
   it('17. middleware.ts has no KORA_ADMIN redirect rule (unchanged)', () => {
-    // Middleware correctly has no special redirect for KORA_ADMIN.
-    // If a 'KORA_ADMIN' redirect rule were added, that would be a regression.
     expect(middlewareSrc).not.toContain("'KORA_ADMIN' redirect");
   });
 
   it('18. kora-session.ts requireWorkerUser() still blocks non-WORKER roles', () => {
-    // This function must not have been modified to bypass the worker gate.
     expect(sessionSrc).toContain('requireWorkerUser');
     expect(sessionSrc).toContain("!== 'WORKER'");
   });
 });
 
-// ── 19–22: B141-B2 — Sidebar KORA_ADMIN nav polish ───────────────────────────
+// ── 19–22: B141-B2 — Sidebar KORA_ADMIN nav polish (unaffected) ─────────────
 
 describe('B141-B2 — Sidebar KORA_ADMIN has Worker Preview links', () => {
-  // Extract the KORA_ADMIN nav section from Sidebar source.
-  // isAdminRole check gates the KORA_ADMIN branch — we check for /my-kora links there.
   const adminNavStart = sidebarSrc.indexOf("if (isAdminRole(role");
   const adminNavSection = adminNavStart > -1
     ? sidebarSrc.substring(adminNavStart, adminNavStart + 3500)
     : sidebarSrc;
 
-  // PRIOR HISTORY (accurate as of B141-B2, preserved verbatim): "KORA_ADMIN
-  // sidebar contains link to /my-kora (Worker Preview)" — the "My KORA Home"
-  // entry's admin-preview branch pointed at /my-kora. B-WORKER-4 (2026-09-06)
-  // repointed it to the canonical /admin/preview/worker hub — the last
-  // KORA_ADMIN Sidebar dependency on /my-kora.
   it('19. KORA_ADMIN sidebar Worker Preview no longer links to /my-kora — repointed to the admin preview hub', () => {
     expect(adminNavSection).toContain("isAdminPreview ? '/admin/preview/worker' : '/worker/workspace'");
   });
 
-  // PRIOR HISTORY (accurate as of B141-B2, preserved verbatim): asserted the
-  // sidebar's "Personal Impact Balance" link targeted /my-kora/personal-impact-balance.
-  // B-WORKER-2 (2026-09-06) repointed it to the canonical /worker/personal-impact-balance
-  // page built in B-WORKER-1, once that page existed — /my-kora/personal-impact-balance
-  // is no longer the sidebar's PIB destination for any role.
   it('20. KORA_ADMIN sidebar contains link to canonical /worker/personal-impact-balance', () => {
     expect(adminNavSection).toContain('/worker/personal-impact-balance');
     expect(adminNavSection).not.toContain('/my-kora/personal-impact-balance');
@@ -223,8 +91,6 @@ describe('B141-B2 — Sidebar KORA_ADMIN has Worker Preview links', () => {
 
   it('21. COMPANY_ADMIN sidebar nav does not contain Personal Impact Balance link', () => {
     const companyNavStart = sidebarSrc.indexOf("role === 'COMPANY_ADMIN'");
-    // End the window at the start of the next section (isWorkerRole), not at a fixed offset
-    // that could spill into the worker nav (which legitimately contains PIB links).
     const workerNavStart  = sidebarSrc.indexOf('if (isWorkerRole(role');
     const companyNavEnd   = workerNavStart > companyNavStart ? workerNavStart : companyNavStart + 1500;
     const companyNavSection = companyNavStart > -1
@@ -242,7 +108,7 @@ describe('B141-B2 — Sidebar KORA_ADMIN has Worker Preview links', () => {
   });
 });
 
-// ── 23–26: B141-B2 — /worker/* safe redirect for KORA_ADMIN ──────────────────
+// ── 23–26: B141-B2 — /worker/* safe redirect for KORA_ADMIN (unaffected) ────
 
 describe('B141-B2 — /worker/layout.tsx KORA_ADMIN hard block (B168-P3)', () => {
   it('23. worker layout imports getCurrentKoraUser for admin detection', () => {
@@ -250,182 +116,17 @@ describe('B141-B2 — /worker/layout.tsx KORA_ADMIN hard block (B168-P3)', () =>
   });
 
   it('24. worker layout hard-blocks KORA_ADMIN with explicit error (not redirect to /my-kora)', () => {
-    // B168-P3: KORA_ADMIN gets an explicit access-denied UI — not a redirect.
-    // Worker individual data is not accessible to KORA service team by design.
     expect(workerLayout).toContain('Worker individual data is not accessible to KORA service team by design');
     expect(workerLayout).not.toContain("redirect('/my-kora')");
   });
 
   it('25. worker layout still calls getCurrentWorkerUser (WORKER gate unchanged)', () => {
-    // The WORKER gate must not be removed or bypassed.
     expect(workerLayout).toContain('getCurrentWorkerUser');
   });
 
   it('26. requireWorkerUser() in kora-session.ts not modified (still blocks non-WORKER)', () => {
-    // requireWorkerUser exists and still guards with the WORKER role check.
     expect(sessionSrc).toContain('requireWorkerUser');
     expect(sessionSrc).toContain("koraRole !== 'WORKER'");
     expect(sessionSrc).toContain('Forbidden — WORKER role required');
-  });
-});
-
-// ── 27–37: B141-C — PIB visual layout correction ──────────────────────────────
-
-describe('B141-C — PIB page 2-col pillar/signature layout', () => {
-  it('27. PIB page contains data-testid="personal-impact-signature" (unified card wrapper)', () => {
-    // B141-F: dispersive 2-col grid replaced by single centered signature object.
-    expect(pibPageSrc).toContain('data-testid="personal-impact-signature"');
-  });
-
-  it('28. PIB page references all 5 pillar codes via PILLAR_LIGHT and passes breakdown to card', () => {
-    // Pillar codes appear in PILLAR_LIGHT (used by timeline section) — still present in page.
-    // B141-F: pillar_breakdown.map moved inside WorkerActivationSignatureCard.
-    // Page passes the breakdown via prop: pillarBreakdown={preview.pib_light.pillar_breakdown}.
-    expect(pibPageSrc).toContain('LIFE:');
-    expect(pibPageSrc).toContain('GROWTH:');
-    expect(pibPageSrc).toContain('CONNECTION:');
-    expect(pibPageSrc).toContain('IMPACT:');
-    expect(pibPageSrc).toContain('LEGACY:');
-    expect(pibPageSrc).toContain('pillar_breakdown}');
-  });
-
-  it('29. KoraActivationSignature no longer uses className="w-full" in PIB page', () => {
-    // The full-width class was the root cause of the progress-bar appearance.
-    // After B141-C the signature is constrained to ~176px (w-44).
-    expect(pibPageSrc).not.toContain('className="w-full"');
-  });
-
-  it('30. PIB page contains "KORA Activation Signature" as label text (in WorkerActivationSignatureCard)', () => {
-    // Label lives inside WorkerActivationSignatureCard component source.
-    const cardSrc = read('components/my-kora/WorkerActivationSignatureCard.tsx');
-    expect(cardSrc).toContain('KORA Activation Signature');
-  });
-
-  it('31. PIB page uses WorkerActivationSignatureCard (replaces bare w-44 signature)', () => {
-    // B141-D: bare w-44 removed, replaced by premium dark card component.
-    expect(pibPageSrc).toContain('WorkerActivationSignatureCard');
-    expect(pibPageSrc).not.toContain('className="w-44"');
-  });
-
-  it('32. data-testid="activation-profile-block" is still present below the signature object', () => {
-    expect(pibPageSrc).toContain('data-testid="activation-profile-block"');
-    // Profile block must appear AFTER the personal-impact-signature wrapper (B141-F).
-    const sigIdx     = pibPageSrc.indexOf('data-testid="personal-impact-signature"');
-    const profileIdx = pibPageSrc.indexOf('data-testid="activation-profile-block"');
-    expect(sigIdx).toBeGreaterThan(-1);
-    expect(profileIdx).toBeGreaterThan(sigIdx);
-  });
-
-  it('33. "Composizione del periodo, non una classifica." is present in the card component', () => {
-    // B141-F: copy moved inside WorkerActivationSignatureCard (pillar breakdown footer).
-    expect(cardSrc).toContain('Composizione del periodo, non una classifica.');
-  });
-
-  it('34. KORA Link still uses KoraStratoMark (not KoraActivationSignature)', () => {
-    const koraLinkStart   = pibPageSrc.indexOf('data-testid="kora-link-card"');
-    const koraLinkSection = koraLinkStart > -1
-      ? pibPageSrc.substring(koraLinkStart, koraLinkStart + 800)
-      : '';
-    expect(koraLinkSection).toContain('KoraStratoMark');
-    expect(koraLinkSection).not.toContain('KoraActivationSignature');
-  });
-
-  it('35. KORA Link card does not receive pillarBreakdown prop', () => {
-    const koraLinkStart   = pibPageSrc.indexOf('data-testid="kora-link-card"');
-    const koraLinkSection = koraLinkStart > -1
-      ? pibPageSrc.substring(koraLinkStart, koraLinkStart + 800)
-      : '';
-    expect(koraLinkSection).not.toContain('pillarBreakdown');
-  });
-
-  it('36. PIB page contains IU per pillar (iu_total displayed)', () => {
-    // Compact left column must show IU value per pillar.
-    expect(pibPageSrc).toContain('iu_total.toFixed(1)');
-  });
-
-  it('37. PIB page contains no forbidden copy (score, ranking, benchmark, leaderboard, trophy, avatar, personaggio)', () => {
-    const forbidden = ['leaderboard', 'trophy', 'avatar', 'personaggio'];
-    for (const word of forbidden) {
-      expect(pibPageSrc.toLowerCase()).not.toContain(word);
-    }
-  });
-});
-
-// ── 38–44: B141-D — WorkerActivationSignatureCard premium personal pictogram ──
-
-describe('B141-D — WorkerActivationSignatureCard premium card', () => {
-  it('38. WorkerActivationSignatureCard component file exists', () => {
-    expect(cardSrc.length).toBeGreaterThan(0);
-  });
-
-  it('39. WorkerActivationSignatureCard uses KoraActivationSignature (worker personal)', () => {
-    expect(cardSrc).toContain('KoraActivationSignature');
-  });
-
-  it('40. WorkerActivationSignatureCard does NOT use KoraStratoMark', () => {
-    // Card is personalized — brand canonical mark must not be used here.
-    expect(cardSrc).not.toContain('KoraStratoMark');
-  });
-
-  it('41. WorkerActivationSignatureCard has data-testid="worker-activation-signature-card"', () => {
-    expect(cardSrc).toContain('data-testid="worker-activation-signature-card"');
-  });
-
-  it('42. PIB page passes pillarBreakdown and periodIuTotal to WorkerActivationSignatureCard', () => {
-    // B157: data source changed from myKoraPreviewService → workerPIBService (contract swap).
-    // Personal card receives worker pillar data and IU total — personalised per worker.
-    expect(pibPageSrc).toContain('pillarBreakdown={pib.pillar_breakdown}');
-    // B141-F / B157: periodIuTotal passed from the pib contract.
-    expect(pibPageSrc).toContain('periodIuTotal={pib.period_iu_total}');
-  });
-
-  it('43. KORA Link section does not use KoraActivationSignature', () => {
-    // kora-link-card uses only KoraStratoMark canonical brand — no worker data.
-    const koraLinkStart   = pibPageSrc.indexOf('data-testid="kora-link-card"');
-    const koraLinkSection = koraLinkStart > -1
-      ? pibPageSrc.substring(koraLinkStart, koraLinkStart + 600)
-      : '';
-    expect(koraLinkSection).not.toContain('KoraActivationSignature');
-    expect(koraLinkSection).not.toContain('pillarBreakdown');
-  });
-
-  it('44. WorkerActivationSignatureCard uses light premium background token (canvas)', () => {
-    // canvas = #F6F4EF — light seal surface via ACTIVATION_SIGNATURE token, not hardcoded.
-    expect(cardSrc).toContain('canvas');
-    expect(cardSrc).toContain('ACTIVATION_SIGNATURE');
-  });
-
-  it('45. WorkerActivationSignatureCard is a sealed object — not banner or fixed full-width', () => {
-    // B141-F: card uses borderRadius + overflow:hidden. Max-width delegated to page wrapper.
-    expect(cardSrc).toContain('borderRadius');
-    expect(cardSrc).toContain('overflow');
-    expect(cardSrc).not.toContain("width: '100%'");
-    expect(cardSrc).not.toContain('w-full');
-  });
-
-  it('46. PIB page uses centered wrapper with max-width cap for the signature object', () => {
-    // B141-F: dispersive 2-col grid replaced by centered personal-impact-signature wrapper.
-    expect(pibPageSrc).toContain('personal-impact-signature');
-    expect(pibPageSrc).toContain('max-w-[560px]');
-  });
-});
-
-// ── 47–49: B141-F — Unified Personal Impact Signature object ──────────────────
-
-describe('B141-F — WorkerActivationSignatureCard unified signature object', () => {
-  it('47. WorkerActivationSignatureCard contains KoraLogo (real brand logo, on-light)', () => {
-    expect(cardSrc).toContain('KoraLogo');
-    expect(cardSrc).toContain("on-light");
-  });
-
-  it('48. WorkerActivationSignatureCard accepts periodIuTotal and renders Impact Units label', () => {
-    expect(cardSrc).toContain('periodIuTotal');
-    expect(cardSrc).toContain('Impact Units attivate');
-  });
-
-  it('49. WorkerActivationSignatureCard renders pillar breakdown inside the card', () => {
-    // B141-F: pillar rows are INSIDE the card — not in a separate page column.
-    expect(cardSrc).toContain('pillarBreakdown.map');
-    expect(cardSrc).toContain('iu_total.toFixed');
   });
 });

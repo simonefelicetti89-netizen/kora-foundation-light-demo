@@ -129,14 +129,21 @@ describe('Worker KORA Space — booking journey (canonical, /worker/commons)', (
     expect(commonsSrc).toContain('il datore di lavoro non vede il tuo percorso individuale');
   });
 
-  test('13. UI does not claim automatic badge for all participation', () => {
-    expect(spaceSrc).toMatch(/Non tutta la partecipazione.*badge|non tutta.*diventa badge/i);
-    expect(spaceSrc).not.toMatch(/automaticamente.*badge|badge.*automatico/i);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/kora-space/page.tsx for this copy. B-WORKER "One Product /
+  // No Demo Runtime" correction (2026-09-06) retired that page — the
+  // canonical /worker/bookings surface (BookingsClient.tsx) carries the
+  // same disclaimer.
+  test('13. UI does not claim automatic badge for all participation (canonical /worker/bookings)', () => {
+    const clientSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(clientSrc).toMatch(/Non tutta la partecipazione.*Dynamic Impact CV/i);
+    expect(clientSrc).not.toMatch(/automaticamente.*badge|badge.*automatico/i);
   });
 
-  test('14. UI does not claim automatic Dynamic CV inclusion', () => {
-    expect(spaceSrc).toContain('Dynamic Impact CV policy');
-    expect(spaceSrc).not.toMatch(/automaticamente.*Dynamic CV|Dynamic CV.*automatico/i);
+  test('14. UI does not claim automatic Dynamic CV inclusion (canonical /worker/bookings)', () => {
+    const clientSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(clientSrc).toContain('Dynamic Impact CV policy');
+    expect(clientSrc).not.toMatch(/automaticamente.*Dynamic CV|Dynamic CV.*automatico/i);
   });
 
   test('15. UI does not reference LinkedIn, blockchain, or public badge features', () => {
@@ -202,9 +209,19 @@ describe('Operating model — regression', () => {
     expect(companyCommonsSrc).toContain("layer operativo dell&apos;attivazione umana");
   });
 
-  test('21. KORA Contribution is still companion indicator — not KORA Index component', () => {
-    expect(spaceSrc).toMatch(/indicatore companion/i);
-    expect(spaceSrc).toMatch(/non è una componente del KORA Index|non è il KORA Index/i);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/kora-space/page.tsx (spaceSrc) for the "indicatore companion
+  // / not a KORA Index component" disclaimer, alongside the contribution
+  // page's own disclaimer. B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) retired that page to a pure redirect() — the
+  // canonical worker-facing surfaces (/worker/commons, /worker/bookings) do
+  // not currently carry an equivalent worker-facing "companion indicator"
+  // disclaimer verbatim; this is a genuine content gap left by the
+  // retirement, not fabricated here to paper over it. The company-facing
+  // contribution page's own disclaimer (CLAUDE.md §12's "KORA Contribution
+  // must remain separate from KORA Index" invariant) is unaffected and
+  // re-verified below.
+  test('21. KORA Contribution companion-indicator disclaimer still present on company-facing contribution page (worker-facing copy gap flagged, not fabricated)', () => {
     expect(contributionSrc).toContain('Non componente KORA Index');
   });
 

@@ -76,8 +76,13 @@ describe('I10 — Architecture Registry completeness (B-REG / CC-003)', () => {
       .filter((e) => e.isDirectory())
       .map((e) => e.name);
 
+    // PRIOR HISTORY (accurate as of its own time, preserved verbatim): bound
+    // was >= 37. B-WORKER "One Product / No Demo Runtime" correction
+    // (2026-09-06) deleted services/my-kora-preview/ and
+    // services/worker-achievements/ (zero real callers each, verified fresh
+    // before deletion) — lowered to >= 34.
     it('the live services/* directory listing has the expected count (sanity — catches silent additions/removals)', () => {
-      expect(serviceDirs.length).toBeGreaterThanOrEqual(37); // loose bound: catches drastic drift, not exact churn — lowered from 50 by ReportGeneratorService (2026-09-02), FinancialGovernanceService (2026-09-02), DynamicScoringPreviewService (2026-09-03, B-TRUTH Preview Scoring Retirement), UEFReviewService (2026-09-03, B-TRUTH UEFReview Retirement), IngestionPipelineService (2026-09-03, B-TRUTH Ingestion Pipeline Retirement), IngestionNormalizerService (2026-09-03, B-TRUTH Ingestion Normalizer Retirement), EligibilityGateService (2026-09-03, B-TRUTH Eligibility Gate Retirement), TenantService (2026-09-04, B-TRUTH TenantService Canonical Migration), CompanyDataIntakeService (2026-09-05, B-TRUTH CompanyDataIntakeService Canonical Migration), ReportFactoryService (2026-09-06, B-TRUTH ReportFactoryService Canonical Decision Pack Status Migration), services/advisor-evidence-review/ (2026-09-26, CC-00 Residual /demo/** controlled retirement — its sole caller, app/demo/advisor, was retired), and services/scoring-simulator/ + services/demo-data/ (2026-09-05, CC-00 Final Scoring Canonicalization — the last B-TRUTH-owned synthetic scoring dependency) deliberate retirements
+      expect(serviceDirs.length).toBeGreaterThanOrEqual(34); // loose bound: catches drastic drift, not exact churn — lowered from 50 by ReportGeneratorService (2026-09-02), FinancialGovernanceService (2026-09-02), DynamicScoringPreviewService (2026-09-03, B-TRUTH Preview Scoring Retirement), UEFReviewService (2026-09-03, B-TRUTH UEFReview Retirement), IngestionPipelineService (2026-09-03, B-TRUTH Ingestion Pipeline Retirement), IngestionNormalizerService (2026-09-03, B-TRUTH Ingestion Normalizer Retirement), EligibilityGateService (2026-09-03, B-TRUTH Eligibility Gate Retirement), TenantService (2026-09-04, B-TRUTH TenantService Canonical Migration), CompanyDataIntakeService (2026-09-05, B-TRUTH CompanyDataIntakeService Canonical Migration), ReportFactoryService (2026-09-06, B-TRUTH ReportFactoryService Canonical Decision Pack Status Migration), services/advisor-evidence-review/ (2026-09-26, CC-00 Residual /demo/** controlled retirement — its sole caller, app/demo/advisor, was retired), services/scoring-simulator/ + services/demo-data/ (2026-09-05, CC-00 Final Scoring Canonicalization — the last B-TRUTH-owned synthetic scoring dependency), and services/my-kora-preview/ + services/worker-achievements/ (2026-09-06, B-WORKER "One Product / No Demo Runtime" correction) deliberate retirements
     });
 
     for (const dir of serviceDirs) {
@@ -202,13 +207,19 @@ describe('I10 — Architecture Registry completeness (B-REG / CC-003)', () => {
     // /worker is now the canonical technical foundation, /my-kora is now
     // explicitly transitional. See tests/unit/dd-worker-surface-ratification.test.ts
     // for the current, correct state.
-    it('/worker is CANONICAL and /my-kora is CONSOLIDATE — D-D ratified, no longer neutral/undecided', () => {
+    // PRIOR HISTORY (accurate as of D-D ratification, preserved verbatim):
+    // "/worker is CANONICAL and /my-kora is CONSOLIDATE — D-D ratified, no
+    // longer neutral/undecided." B-WORKER "One Product / No Demo Runtime"
+    // correction (2026-09-06) went further: /my-kora is now DEAD (no product
+    // runtime remains, pure redirect shell) — /worker remains the sole
+    // canonical worker surface either way.
+    it('/worker is CANONICAL and /my-kora is DEAD — no second worker product runtime remains', () => {
       const worker = ARCHITECTURE_REGISTRY.find((c) => c.id === 'app-surface.worker');
       const myKora = ARCHITECTURE_REGISTRY.find((c) => c.id === 'app-surface.my-kora');
       expect(worker?.decisionRef).toContain('D-D RATIFIED');
-      expect(myKora?.decisionRef).toContain('D-D RATIFIED');
+      expect(myKora?.decisionRef).toContain('One Product / No Demo Runtime');
       expect(worker?.status).toBe('CANONICAL');
-      expect(myKora?.status).toBe('CONSOLIDATE');
+      expect(myKora?.status).toBe('DEAD');
     });
   });
 

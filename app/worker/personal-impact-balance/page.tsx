@@ -2,23 +2,22 @@
 // B-WORKER-1: canonical Personal Impact Balance page on the canonical /worker
 // surface — the first piece of D-D-mandated capability migration.
 //
-// Context: /my-kora/personal-impact-balance shows this same worker concept,
-// but through WorkerSessionProvider, which is unconditionally PREVIEW-mode
-// (see app/my-kora/_providers/WorkerSessionProvider.tsx) — a real WORKER
-// visiting it sees demo-persona fixture data, never their own. This page is
-// the real replacement: real requireWorkerUser() auth, real personal.worker_pib
-// (via workerPIBService.getPIBLive, isSynthetic: false) and real
-// personal.worker_participation (via the same computeActivationProfile()
-// used by /api/worker/activation-profile).
+// This page is the real implementation: real requireWorkerUser() auth, real
+// personal.worker_pib (via workerPIBService.getPIBLive, isSynthetic: false)
+// and real personal.worker_participation (via the same
+// computeActivationProfile() used by /api/worker/activation-profile).
 //
-// Scope discipline (B-WORKER-1): additive only. /my-kora is not modified or
-// redirected in this slice — see docs/CC024_WORKER_ARCHITECTURE_MATRIX.md §0
-// and the B-WORKER slice plan for why: /worker/workspace and the admin
-// pipeline console both still bridge real sessions into /my-kora for
-// capabilities (bookings list, this PIB view, KORA_ADMIN founder preview)
-// that had no canonical /worker replacement yet. This page removes PIB from
-// that list. Retiring the /my-kora bridge itself is a later, separate slice,
-// gated on parity for the remaining capabilities.
+// PRIOR HISTORY (accurate as of B-WORKER-1, preserved verbatim): "Scope
+// discipline: additive only. /my-kora is not modified or redirected in this
+// slice — /worker/workspace and the admin pipeline console both still
+// bridge real sessions into /my-kora for capabilities (bookings list, this
+// PIB view, KORA_ADMIN founder preview) that had no canonical /worker
+// replacement yet. This page removes PIB from that list. Retiring the
+// /my-kora bridge itself is a later, separate slice, gated on parity for
+// the remaining capabilities." B-WORKER "One Product / No Demo Runtime"
+// correction (2026-09-06): that later slice is this one — every /my-kora/**
+// page now redirects unconditionally to its canonical /worker/**
+// equivalent (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md).
 //
 // Privacy: identical invariants to /worker/workspace and /api/worker/pib —
 // not_employer_visible, not_performance_score, workerId from session only.

@@ -17,9 +17,14 @@ export type WorkerPseudonymId = string & { readonly _brand: 'WorkerPseudonymId' 
 // Whether a My KORA session is powered by real worker identity or preview data.
 //
 // PREVIEW  — synthetic persona data, no real worker JWT, no real PIB computation.
-//            Data source: MyKoraPreviewService (persona fixtures).
-//            Identity source: demo-state persona switcher.
-//            KORA Foundation Light is always PREVIEW.
+//            PRIOR HISTORY (preserved verbatim): "Data source: MyKoraPreviewService
+//            (persona fixtures). Identity source: demo-state persona switcher.
+//            KORA Foundation Light is always PREVIEW." B-WORKER "One Product /
+//            No Demo Runtime" correction (2026-09-06): MyKoraPreviewService and
+//            the demo-state persona switcher runtime it backed are retired
+//            (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md).
+//            This value is kept as a WorkerMode enum member for callers that
+//            still branch on it, but nothing in the repository produces it anymore.
 //
 // LIVE     — real Supabase worker session, WorkerKoraId resolved from JWT,
 //            PIB derived from per-worker UEF records via pipeline.
@@ -67,20 +72,11 @@ export interface WorkerSpaceCapability {
 }
 
 // ── Session factories ─────────────────────────────────────────────────────────
-
-export function makePreviewWorkerSession(
-  workerDisplayName?: string | null,
-): WorkerSession {
-  return {
-    workerMode:        'PREVIEW',
-    workerKoraId:      null,
-    workerDisplayName: workerDisplayName ?? null,
-    tenantId:          null,
-    isPreview:         true,
-    isLive:            false,
-    sessionLoading:    false,
-  };
-}
+//
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06):
+// makePreviewWorkerSession() (built WorkerMode: 'PREVIEW' sessions for the
+// retired WorkerSessionProvider) is removed — verified fresh to have zero
+// real callers once that provider was deleted.
 
 export function makeDisabledWorkerSession(): WorkerSession {
   return {

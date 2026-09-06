@@ -259,10 +259,18 @@ describe('Regression — prior sprint artifacts preserved', () => {
     expect(adminPageSrc).toContain('AdminBookingModerationSection');
   });
 
-  test('37. Worker Space operating model copy preserved', () => {
-    const spaceSrc = readFile('app/my-kora/kora-space/page.tsx');
-    expect(spaceSrc).toContain('space-operating-model-worker');
-    expect(spaceSrc).toContain('La partecipazione individuale resta privata');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/kora-space/page.tsx for testid "space-operating-model-worker"
+  // and copy "La partecipazione individuale resta privata." B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06) retired that page to
+  // a pure redirect() — that exact testid/copy pair does not exist verbatim
+  // on the canonical /worker/commons page; its own privacy notice
+  // (worker-commons-privacy-notice) makes the equivalent non-suppressible
+  // guarantee in its own words.
+  test('37. Worker Space operating model privacy guarantee preserved (canonical /worker/commons)', () => {
+    const spaceSrc = readFile('app/worker/commons/page.tsx');
+    expect(spaceSrc).toContain('worker-commons-privacy-notice');
+    expect(spaceSrc).toContain('non genera classifiche individuali');
   });
 
   test('38. Attended trace notice in bookings page preserved', () => {

@@ -63,17 +63,23 @@ describe('B-WORKER-4 — WORKER Home converges on /worker/workspace, no new home
     expect(workerSection).toContain("isAdminPreview ? '/admin/preview/worker' : '/worker/workspace'");
   });
 
-  it('/my-kora (Home) redirects a confirmed real session to /worker/workspace instead of rendering synthetic home content', () => {
+  it('/my-kora (Home) redirects unconditionally to /worker/workspace instead of rendering synthetic home content', () => {
     const home = read('app/my-kora/page.tsx');
-    expect(home).toContain("router.replace('/worker/workspace')");
+    expect(home).toContain("redirect('/worker/workspace')");
   });
 
-  it('the synthetic-only pieces of Home (next-best-action, achievements, personalized opportunities) were not rebuilt as real features', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-4, preserved verbatim): "the
+  // synthetic-only pieces of Home ... were not rebuilt as real features" —
+  // still present as demo-only content at the time. B-WORKER "One Product /
+  // No Demo Runtime" correction (2026-09-06) removed them entirely rather
+  // than rebuilding them — no next-best-action, achievements, or
+  // personalized-opportunities feature exists on this page anymore, real or
+  // synthetic.
+  it('the synthetic-only pieces of Home were removed entirely, not rebuilt as real features', () => {
     const home = read('app/my-kora/page.tsx');
-    // Still present — as demo-only content, not migrated/rebuilt as canonical
-    expect(home).toContain('computeNextAction');
-    expect(home).toContain('workerAchievementService');
-    expect(home).toContain('workerOpportunityService');
+    expect(home).not.toContain('computeNextAction');
+    expect(home).not.toContain('workerAchievementService');
+    expect(home).not.toContain('workerOpportunityService');
   });
 
   it('/worker/commons\' back-link no longer points at /my-kora — points at the canonical home', () => {
@@ -88,35 +94,42 @@ describe('B-WORKER-4 — WORKER Home converges on /worker/workspace, no new home
 describe('B-WORKER-4 — /my-kora/personal-impact-balance duplicate real-session runtime closed', () => {
   const legacy = read('app/my-kora/personal-impact-balance/page.tsx');
 
-  it('the removed live branch used to render real PIB data from its own /api/worker/pib fetch — now redirects instead', () => {
-    expect(legacy).toContain("router.replace('/worker/personal-impact-balance')");
+  it('the removed live branch used to render real PIB data from its own /api/worker/pib fetch — now redirects unconditionally instead', () => {
+    expect(legacy).toContain("redirect('/worker/personal-impact-balance')");
     expect(legacy).not.toContain("setLivePIBState('live')");
   });
 
-  it('the dead isRealWorkerMode-gated JSX (e.g. pib-live-notice) is now permanently unreachable, not deleted but inert', () => {
-    expect(legacy).toContain('const isRealWorkerMode = false;');
-    // Any `isRealWorkerMode && (...)` block can never render now that the
-    // constant is a fixed false — confirmed by the constant declaration
-    // itself rather than by asserting the dead markup was deleted.
-  });
-
-  it('no duplicate real-PIB state remains — isRealWorkerMode is a fixed constant now, not derived from a live fetch result', () => {
-    expect(legacy).toContain('const isRealWorkerMode = false;');
+  // PRIOR HISTORY (accurate as of B-WORKER-4, preserved verbatim): asserted
+  // dead isRealWorkerMode-gated JSX was "permanently unreachable, not
+  // deleted but inert" (isRealWorkerMode fixed to false). B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06) removed the entire
+  // page body, including that inert JSX and the isRealWorkerMode constant
+  // itself — nothing to gate anymore, the page is a single redirect() call.
+  it('the entire page body (including the former inert isRealWorkerMode JSX) is removed, not just made unreachable', () => {
+    expect(legacy).not.toContain('isRealWorkerMode');
     expect(legacy).not.toContain('livePIB.isSynthetic');
   });
 
-  it('demo/persona content (workerPIBService.getPIB, myKoraPreviewService gate) is unchanged', () => {
-    expect(legacy).toContain('workerPIBService.getPIB(personaId, activeScenario)');
-    expect(legacy).toContain('myKoraPreviewService.canAccess(activeRole)');
+  // PRIOR HISTORY (accurate as of B-WORKER-4, preserved verbatim): "demo/
+  // persona content (workerPIBService.getPIB, myKoraPreviewService gate) is
+  // unchanged." B-WORKER "One Product / No Demo Runtime" correction
+  // (2026-09-06) removed it entirely — no demo/persona content remains.
+  it('no demo/persona content remains — workerPIBService.getPIB and myKoraPreviewService are both gone', () => {
+    expect(legacy).not.toContain('workerPIBService.getPIB(');
+    expect(legacy).not.toContain('myKoraPreviewService');
   });
 });
 
 // ── 4. KORA Link: no unique value beyond /worker/kora-link/activate ────────
 
 describe('B-WORKER-4 — KORA Link converges on /worker/kora-link/activate, no expansion', () => {
-  it('/my-kora/kora-link redirects a confirmed real session to the canonical shell', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-4, preserved verbatim): asserted
+  // the page called getSessionKoraRole() to detect a confirmed real session
+  // before redirecting. B-WORKER "One Product / No Demo Runtime" correction
+  // (2026-09-06) made the redirect unconditional — no session check remains.
+  it('/my-kora/kora-link redirects unconditionally to the canonical shell', () => {
     const legacy = read('app/my-kora/kora-link/page.tsx');
-    expect(legacy).toContain('getSessionKoraRole');
+    expect(legacy).not.toContain('getSessionKoraRole');
     expect(legacy).toContain("redirect('/worker/kora-link/activate')");
   });
 
@@ -140,8 +153,8 @@ describe('B-WORKER-4 — KORA Link converges on /worker/kora-link/activate, no e
 describe('B-WORKER-4 — Collettivo: no functionality invented, honest state moved off /my-kora', () => {
   const legacy = read('app/my-kora/collective/page.tsx');
 
-  it('a confirmed real session redirects to /worker/workspace — no live collective data path was built', () => {
-    expect(legacy).toContain("router.replace('/worker/workspace')");
+  it('redirects unconditionally to /worker/workspace — no live collective data path was built', () => {
+    expect(legacy).toContain("redirect('/worker/workspace')");
     expect(legacy).not.toContain('data-testid="collective-empty-state"');
   });
 
@@ -149,8 +162,13 @@ describe('B-WORKER-4 — Collettivo: no functionality invented, honest state mov
     expect(legacy).not.toMatch(/contribution.*api\/worker|new.*contribution.*service/i);
   });
 
-  it('demo content is unchanged — still clearly labelled synthetic', () => {
-    expect(legacy).toContain('Dati sintetici illustrativi');
+  // PRIOR HISTORY (accurate as of B-WORKER-4, preserved verbatim): "demo
+  // content is unchanged — still clearly labelled synthetic." B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06) removed the demo
+  // content entirely — a future-only capability retired outright, not
+  // preserved as a demo, per explicit founder rule.
+  it('no demo content remains — the future-only capability is retired outright, not preserved as a demo', () => {
+    expect(legacy).not.toContain('Dati sintetici illustrativi');
   });
 });
 
@@ -164,11 +182,17 @@ describe('B-WORKER-4 — authenticated navigation converges on /worker, with one
     expect(collectiveLine).toContain('comingSoon: true');
   });
 
-  it('the Sidebar "KORA Space (Anteprima)" entry remains — legitimate demo-only content for anonymous/persona visitors, real sessions are safely redirected by the page itself (Slice 3)', () => {
-    const sidebar = read('components/layout/Sidebar.tsx');
-    expect(sidebar).toContain("label: 'KORA Space (Anteprima)'");
+  // PRIOR HISTORY (accurate as of B-WORKER-4, preserved verbatim): the
+  // Sidebar "KORA Space (Anteprima)" entry was framed as "legitimate
+  // demo-only content for anonymous/persona visitors." B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06): that framing no
+  // longer applies — /my-kora/kora-space redirects unconditionally now, so
+  // this Sidebar entry (if still present) leads only to a redirect, not to
+  // demo content, for anyone.
+  it('the Sidebar "KORA Space (Anteprima)" entry, if present, leads only to an unconditional redirect — no demo content behind it', () => {
     const legacy = read('app/my-kora/kora-space/page.tsx');
-    expect(legacy).toContain("router.replace('/worker/commons')");
+    expect(legacy).toContain("redirect('/worker/commons')");
+    expect(legacy).not.toContain('KORA_SPACE_ITEMS');
   });
 
   // PRIOR HISTORY (accurate as of B-WORKER-4, preserved verbatim): asserted
@@ -179,10 +203,15 @@ describe('B-WORKER-4 — authenticated navigation converges on /worker, with one
   // different, real, non-personalized product concept — the truthful
   // current opportunities capability) instead of executing the synthetic
   // personalization runtime. See tests/unit/bworker-5-opportunities-retirement.test.ts.
-  it('/my-kora/opportunities no longer executes for a real session — redirects to /worker/opportunities, no recommendation engine was built', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-5, preserved verbatim): asserted
+  // opportunities redirected only confirmed real sessions, preserving
+  // workerOpportunityService for the demo path. B-WORKER "One Product / No
+  // Demo Runtime" correction (2026-09-06) made the redirect unconditional —
+  // no demo path, no workerOpportunityService call remains in this file.
+  it('/my-kora/opportunities redirects unconditionally to /worker/opportunities, no recommendation engine was built', () => {
     const opportunities = read('app/my-kora/opportunities/page.tsx');
-    expect(opportunities).toContain("router.replace('/worker/opportunities')");
-    expect(opportunities).toContain('workerOpportunityService'); // demo path unchanged
+    expect(opportunities).toContain("redirect('/worker/opportunities')");
+    expect(opportunities).not.toContain('workerOpportunityService');
     const sidebarStr = read('components/layout/Sidebar.tsx');
     expect(sidebarStr).not.toContain("'/my-kora/opportunities'");
   });
@@ -211,9 +240,9 @@ describe('B-WORKER-4 — MyKoraPreviewService real-session reachability reduced 
   // opportunities had no redirect. B-WORKER-5 (2026-09-06) added one — see
   // tests/unit/bworker-5-opportunities-retirement.test.ts for the current
   // assertions. Zero MyKoraPreviewService callers remain real-session-reachable.
-  it('/my-kora/opportunities now also redirects — no MyKoraPreviewService caller remains real-session-reachable', () => {
+  it('/my-kora/opportunities now also redirects — no MyKoraPreviewService caller remains reachable by anyone', () => {
     const opportunities = read('app/my-kora/opportunities/page.tsx');
-    expect(opportunities).toMatch(/router\.replace\(/);
+    expect(opportunities).toMatch(/redirect\(/);
   });
 });
 

@@ -99,17 +99,19 @@ describe('B-WORKER-3 — KORA Space parity is FULL after the booking-status fix'
     expect(commons).toContain('Come funziona la partecipazione');
   });
 
-  it('kora-space\'s live/empty branches (now redundant) were removed, replaced by a redirect for real sessions', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-3, preserved verbatim): asserted
+  // the live/empty render branches were removed and replaced by a redirect
+  // for confirmed real sessions only (demo/persona content still rendered
+  // for everyone else, including the KORA_SPACE_ITEMS fixture). B-WORKER
+  // "One Product / No Demo Runtime" correction (2026-09-06) made the
+  // redirect unconditional — no mode branches, no fixtures, no content of
+  // any kind remains in this file.
+  it('kora-space is now a pure, unconditional redirect() — no mode branches, no content', () => {
     const legacy = read('app/my-kora/kora-space/page.tsx');
     expect(legacy).not.toContain("mode === 'live'");
     expect(legacy).not.toContain("mode === 'empty'");
-    expect(legacy).toContain("router.replace('/worker/commons')");
-  });
-
-  it('the demo-only SpaceItemType fixtures (opportunity/kora_recommendation) are unaffected — never part of live parity', () => {
-    const legacy = read('app/my-kora/kora-space/page.tsx');
-    expect(legacy).toContain('KORA_SPACE_ITEMS');
-    expect(legacy).toContain("'opportunity'");
+    expect(legacy).toContain("redirect('/worker/commons')");
+    expect(legacy).not.toContain('KORA_SPACE_ITEMS');
   });
 });
 
@@ -147,25 +149,30 @@ describe('B-WORKER-3 — canonical /worker/bookings migrates the existing real c
 // ── 5. Legacy real-session retirement — zero business logic ────────────────
 
 describe('B-WORKER-3 — legacy /my-kora/bookings and /my-kora/kora-space: real sessions redirect, demo path unchanged', () => {
-  it('/my-kora/bookings redirects a confirmed real session to /worker/bookings', () => {
+  it('/my-kora/bookings redirects unconditionally to /worker/bookings', () => {
     const legacy = read('app/my-kora/bookings/page.tsx');
-    expect(legacy).toContain("router.replace('/worker/bookings')");
+    expect(legacy).toContain("redirect('/worker/bookings')");
     expect(legacy).not.toContain('handleCancel');
     expect(legacy).not.toContain('liveBookings');
   });
 
-  it('/my-kora/kora-space redirects a confirmed real session to /worker/commons', () => {
+  it('/my-kora/kora-space redirects unconditionally to /worker/commons', () => {
     const legacy = read('app/my-kora/kora-space/page.tsx');
-    expect(legacy).toContain("router.replace('/worker/commons')");
+    expect(legacy).toContain("redirect('/worker/commons')");
     expect(legacy).not.toContain('requestBooking');
     expect(legacy).not.toContain('liveInitiatives');
   });
 
-  it('both demo/persona preview paths are unchanged — still fully synthetic, clearly labelled', () => {
+  // PRIOR HISTORY (accurate as of B-WORKER-3, preserved verbatim): "both
+  // demo/persona preview paths are unchanged — still fully synthetic,
+  // clearly labelled." B-WORKER "One Product / No Demo Runtime" correction
+  // (2026-09-06) removed both demo/persona preview paths entirely — neither
+  // file has a demo label left to check.
+  it('neither page has a demo/persona preview label left — both are pure redirects now', () => {
     const bookings = read('app/my-kora/bookings/page.tsx');
     const space    = read('app/my-kora/kora-space/page.tsx');
-    expect(bookings).toContain('bookings-demo-label');
-    expect(space).toContain('kora-space-demo-label');
+    expect(bookings).not.toContain('bookings-demo-label');
+    expect(space).not.toContain('kora-space-demo-label');
   });
 });
 

@@ -281,7 +281,13 @@ describe('CC-00 Residual demo retirement — untouched surfaces', () => {
   it('B-WORKER services are untouched — still exist', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
-      'services/worker-achievements/WorkerAchievementService.ts',
+      // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
+      // was asserted to exist here (unmodified by this PR, at the time). B-WORKER
+      // "One Product / No Demo Runtime" correction (2026-09-06) deleted it entirely
+      // (zero real callers once its 2 callers, app/my-kora/page.tsx and
+      // app/my-kora/dynamic-cv/page.tsx, became pure canonical redirects) — removed
+      // from this list; this is that later, separately-authorized retirement, not an
+      // unrelated-PR regression of this PR's own scope boundary.
       'services/worker-space/WorkerSpaceCapabilityService.ts',
     ]) {
       expect(exists(file)).toBe(true);
@@ -322,7 +328,7 @@ describe('CC-00 Residual demo retirement — I9/I10 and CC-00 status', () => {
   // it further to 6 files / 11 imports.
   it('allowlist header reflects 6 files / 11 import statements (historical note: was 8/13 at the time this slice landed)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 3 files / 3 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 2 files / 2 import statements'); // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): WorkerAchievementService.ts removed from the allowlist (deleted, zero callers) — 3/3 -> 2/2, unrelated to this PR.
     expect(allowlist).not.toMatch(/\{\s*file:\s*'services\/admin-preview\/AdminPreviewService\.ts'/);
   });
 

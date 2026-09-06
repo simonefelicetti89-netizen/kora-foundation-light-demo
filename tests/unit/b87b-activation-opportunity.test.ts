@@ -14,7 +14,7 @@ import {
   WorkerOpportunityService,
   workerOpportunityService,
 } from '../../services/worker-opportunity/WorkerOpportunityService';
-import type { PillarPreview } from '../../services/my-kora-preview/MyKoraPreviewService';
+import type { WorkerPillarData } from '@/lib/types/domains/worker-pib';
 
 // ── Fixture helpers ────────────────────────────────────────────────────────────
 
@@ -350,10 +350,20 @@ describe('deriveSignalsSlim — slim signal derivation for Decision Pack', () =>
 
 // ── Area 5: WorkerOpportunityService ─────────────────────────────────────────
 
+// PRIOR HISTORY (accurate as of B87-B, preserved verbatim): "returns empty
+// for COMPANY_ADMIN/ADVISOR role" and "generates opportunities for WORKER
+// role" called compute(personaId, role, scenarioId) — the demo entry point
+// that read persona fixtures via MyKoraPreviewService. B-WORKER "One
+// Product / No Demo Runtime" correction (2026-09-06): compute() is removed
+// (zero real callers, its sole caller was the now-retired
+// app/my-kora/opportunities/page.tsx). canAccess(role) — the role guard
+// compute() used internally — is preserved and tested directly below;
+// computeFromPillars() — the real technical foundation, unaffected by the
+// retirement — is tested via canAccess()-independent direct calls.
 describe('WorkerOpportunityService — worker opportunities', () => {
   const svc = new WorkerOpportunityService();
 
-  const PILLAR_FIXTURE: PillarPreview[] = [
+  const PILLAR_FIXTURE: WorkerPillarData[] = [
     { pillar: 'LIFE',       label: 'Life',       score: 52, iu_total: 1.78, trend: 'stable', event_count: 3 },
     { pillar: 'GROWTH',     label: 'Growth',     score: 37, iu_total: 1.33, trend: 'up',     event_count: 3 },
     { pillar: 'CONNECTION', label: 'Connection', score: 10, iu_total: 0.28, trend: 'stable', event_count: 2 },
@@ -361,25 +371,22 @@ describe('WorkerOpportunityService — worker opportunities', () => {
     { pillar: 'LEGACY',     label: 'Legacy',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
   ];
 
-  it('returns empty array for employer roles', () => {
+  it('returns a non-empty array from real pillar data', () => {
     const opps = svc.computeFromPillars(PILLAR_FIXTURE);
-    // Direct call passes — access guard tested via compute() below
     expect(Array.isArray(opps)).toBe(true);
-  });
-
-  it('returns empty for COMPANY_ADMIN role', () => {
-    const opps = svc.compute('persona-elena-m', 'COMPANY_ADMIN');
-    expect(opps).toHaveLength(0);
-  });
-
-  it('returns empty for ADVISOR role', () => {
-    const opps = svc.compute('persona-elena-m', 'ADVISOR');
-    expect(opps).toHaveLength(0);
-  });
-
-  it('generates opportunities for WORKER role', () => {
-    const opps = svc.compute('persona-elena-m', 'WORKER');
     expect(opps.length).toBeGreaterThan(0);
+  });
+
+  it('canAccess returns false for COMPANY_ADMIN role', () => {
+    expect(svc.canAccess('COMPANY_ADMIN')).toBe(false);
+  });
+
+  it('canAccess returns false for ADVISOR role', () => {
+    expect(svc.canAccess('ADVISOR')).toBe(false);
+  });
+
+  it('canAccess returns true for WORKER role', () => {
+    expect(svc.canAccess('WORKER')).toBe(true);
   });
 
   it('generates opportunities from pillar breakdown', () => {
@@ -535,7 +542,7 @@ describe('Methodology invariants — no formula changes', () => {
 
   it('WorkerOpportunityService singleton is accessible', () => {
     expect(workerOpportunityService).toBeDefined();
-    expect(typeof workerOpportunityService.compute).toBe('function');
+    expect(typeof workerOpportunityService.computeFromPillars).toBe('function');
   });
 });
 

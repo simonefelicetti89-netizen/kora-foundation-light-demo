@@ -70,35 +70,57 @@ describe('Worker KORA Space — mode detection and privacy', () => {
   // distinction with a single redirect for any confirmed real session — an
   // authenticated worker now never sees this page's own content at all
   // (real or synthetic), regardless of whether they have data yet.
-  test('6. My KORA kora-space page does not show synthetic data to authenticated workers — it redirects instead', () => {
-    expect(spaceSrc).toContain("'checking'");
-    expect(spaceSrc).toContain("router.replace('/worker/commons')");
+  // PRIOR HISTORY (accurate as of B-WORKER-3, preserved verbatim): asserted
+  // a 'checking' state existed before redirecting a confirmed real session.
+  // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) made
+  // the redirect unconditional — no checking state, no session probe.
+  test('6. My KORA kora-space page redirects unconditionally to /worker/commons — no content of its own', () => {
+    expect(spaceSrc).not.toContain("'checking'");
+    expect(spaceSrc).toContain("redirect('/worker/commons')");
   });
 
-  test('7. Demo/preview content is clearly labelled', () => {
-    expect(spaceSrc).toContain('kora-space-demo-label');
-    expect(spaceSrc).toMatch(/Demo preview|Dati dimostrativi|Non rappresenta/i);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "Demo/
+  // preview content is clearly labelled." B-WORKER "One Product / No Demo
+  // Runtime" correction (2026-09-06) removed the demo/preview content
+  // entirely — there is nothing left to label.
+  test('7. No demo/preview content remains to label — page is a pure redirect', () => {
+    expect(spaceSrc).not.toContain('kora-space-demo-label');
   });
 
-  test('8. Worker privacy copy exists (data-testid="space-employer-privacy-notice")', () => {
-    expect(spaceSrc).toContain('space-employer-privacy-notice');
-    expect(spaceSrc).toContain('Il datore di lavoro non vede il tuo percorso individuale');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/kora-space/page.tsx for testid "space-employer-privacy-notice".
+  // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) retired
+  // that page — the canonical /worker/commons page carries the equivalent
+  // guarantee under its own testid.
+  test('8. Worker privacy copy exists on canonical /worker/commons (data-testid="worker-commons-privacy-notice")', () => {
+    const commonsSrc = readFile('app/worker/commons/page.tsx');
+    expect(commonsSrc).toContain('worker-commons-privacy-notice');
+    expect(commonsSrc).toContain("il datore di lavoro non vede il tuo percorso individuale");
   });
 
   // PRIOR HISTORY (accurate as of the original four-state build, preserved
   // verbatim): asserted "appariranno qui" copy (the real-session, no-data-yet
   // wording) appeared alongside the empty-state testid. B-WORKER-3 retired
   // the real-session live/empty distinction here too (redirects to
-  // /worker/bookings instead) — this card now renders only for the demo
-  // path, with demo-appropriate copy.
-  test('9. Bookings page has empty state (data-testid="bookings-empty-state")', () => {
-    expect(bookingsSrc).toContain('bookings-empty-state');
-    expect(bookingsSrc).toContain("router.replace('/worker/bookings')");
+  // /worker/bookings instead). B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) made the redirect unconditional — the canonical
+  // /worker/bookings surface (BookingsClient.tsx) carries the empty state.
+  test('9. Bookings page redirects unconditionally; canonical /worker/bookings has the empty state', () => {
+    expect(bookingsSrc).not.toContain("'checking'");
+    expect(bookingsSrc).toContain("redirect('/worker/bookings')");
+    const clientSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(clientSrc).toContain('worker-bookings-empty-state');
   });
 
-  test('10. Bookings employer privacy notice exists', () => {
-    expect(bookingsSrc).toContain('bookings-employer-privacy-notice');
-    expect(bookingsSrc).toContain('Il datore di lavoro non vede il tuo percorso individuale');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/bookings/page.tsx for testid "bookings-employer-privacy-notice".
+  // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) retired
+  // that page — the canonical /worker/bookings surface carries the
+  // equivalent guarantee under its own testid.
+  test('10. Bookings employer privacy notice exists on canonical /worker/bookings', () => {
+    const clientSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(clientSrc).toContain('worker-bookings-employer-privacy-notice');
+    expect(clientSrc).toContain('Il datore di lavoro non vede il tuo percorso individuale');
   });
 });
 
@@ -150,10 +172,14 @@ describe('Worker personal trace — Space participation linkage', () => {
     bookingsSrc = readFile('app/my-kora/bookings/page.tsx');
   });
 
-  test('16. Space participation links to personal timeline conceptually', () => {
-    // space-timeline-connection-note must exist
-    expect(spaceSrc).toContain('space-timeline-connection-note');
-    expect(spaceSrc).toContain('timeline personale');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/kora-space/page.tsx for testid "space-timeline-connection-note".
+  // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) retired
+  // that page — the canonical /worker/bookings surface links participation
+  // to the personal timeline in its own copy.
+  test('16. Space participation links to personal timeline conceptually (canonical /worker/bookings)', () => {
+    const clientSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(clientSrc).toContain('timeline personale');
   });
 
   test('17. Dynamic Impact CV policy is respected — no automatic CV/badge from Space without policy', () => {

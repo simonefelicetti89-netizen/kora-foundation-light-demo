@@ -69,8 +69,13 @@ describe('B81-B Task 1 — worker-identity/types.ts: branded types', () => {
     expect(src).toContain("collectiveSupported");
   });
 
-  it('exports makePreviewWorkerSession factory', () => {
-    expect(src).toContain("makePreviewWorkerSession");
+  // PRIOR HISTORY (accurate as of B81-B, preserved verbatim): "exports
+  // makePreviewWorkerSession factory." B-WORKER "One Product / No Demo
+  // Runtime" correction (2026-09-06): makePreviewWorkerSession() is removed
+  // — its sole real caller, WorkerSessionProvider.tsx, is itself deleted
+  // (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md).
+  it('does not export makePreviewWorkerSession (retired with WorkerSessionProvider)', () => {
+    expect(src).not.toContain("export function makePreviewWorkerSession");
   });
 
   it('exports makeDisabledWorkerSession factory', () => {
@@ -84,18 +89,6 @@ describe('B81-B Task 1 — worker-identity/types.ts: branded types', () => {
 
 describe('B81-B Task 1 — session factory contracts (runtime)', () => {
   // Dynamic import to avoid TSC issues in the test runner
-  it('makePreviewWorkerSession returns PREVIEW mode with isPreview=true', async () => {
-    const { makePreviewWorkerSession } = await import('../../lib/worker-identity/types');
-    const s = makePreviewWorkerSession('Elena M.');
-    expect(s.workerMode).toBe('PREVIEW');
-    expect(s.isPreview).toBe(true);
-    expect(s.isLive).toBe(false);
-    expect(s.sessionLoading).toBe(false);
-    expect(s.workerKoraId).toBeNull();
-    expect(s.tenantId).toBeNull();
-    expect(s.workerDisplayName).toBe('Elena M.');
-  });
-
   it('makeDisabledWorkerSession returns DISABLED mode with all nulls', async () => {
     const { makeDisabledWorkerSession } = await import('../../lib/worker-identity/types');
     const s = makeDisabledWorkerSession();
@@ -118,154 +111,24 @@ describe('B81-B Task 1 — session factory contracts (runtime)', () => {
     expect(s.workerDisplayName).toBe('Marco T.');
     expect(s.tenantId).toBe('tenant-123');
   });
-
-  it('makePreviewWorkerSession with no arg → workerDisplayName is null', async () => {
-    const { makePreviewWorkerSession } = await import('../../lib/worker-identity/types');
-    const s = makePreviewWorkerSession();
-    expect(s.workerDisplayName).toBeNull();
-  });
 });
 
-// ── Task 2: WorkerSessionProvider ────────────────────────────────────────────
-
-describe('B81-B Task 2 — WorkerSessionProvider source', () => {
-  const src = read('app/my-kora/_providers/WorkerSessionProvider.tsx');
-
-  it('is a client component', () => {
-    expect(src).toContain("'use client'");
-  });
-
-  it('creates WorkerSessionContext with a disabled default', () => {
-    expect(src).toContain("WorkerSessionContext");
-    expect(src).toContain("makeDisabledWorkerSession");
-  });
-
-  it('exports useWorkerSession hook', () => {
-    expect(src).toContain("useWorkerSession");
-    expect(src).toContain("useContext");
-  });
-
-  it('exports WorkerSessionProvider component', () => {
-    expect(src).toContain("WorkerSessionProvider");
-  });
-
-  it('uses useMemo (not useState+useEffect) for synchronous PREVIEW resolution', () => {
-    expect(src).toContain("useMemo");
-  });
-
-  it('calls getWorkerContext to resolve session', () => {
-    expect(src).toContain("getWorkerContext");
-  });
-
-  it('passes liveSession: null (Foundation Light always PREVIEW)', () => {
-    expect(src).toContain("liveSession:");
-    expect(src).toContain("null");
-  });
-
-  it('reads activeRole and activePersona from demo-state', () => {
-    expect(src).toContain("useRole");
-    expect(src).toContain("usePersona");
-  });
-
-  it('calls isWorkerRole and isAdminRole for access gate', () => {
-    expect(src).toContain("isWorkerRole");
-    expect(src).toContain("isAdminRole");
-  });
-
-  it('documents Pilot+ migration path in comments', () => {
-    expect(src).toContain("Pilot+");
-    expect(src).toContain("Supabase");
-  });
-});
-
-// ── Task 3: getWorkerContext ─────────────────────────────────────────────────
-
-describe('B81-B Task 3 — worker-context.ts: getWorkerContext contract', () => {
-  const src = read('lib/worker-identity/worker-context.ts');
-
-  it('exports getWorkerContext function', () => {
-    expect(src).toContain("getWorkerContext");
-  });
-
-  it('exports WorkerContextInput interface', () => {
-    expect(src).toContain("WorkerContextInput");
-    expect(src).toContain("liveSession");
-    expect(src).toContain("previewPersonaName");
-    expect(src).toContain("accessPermitted");
-  });
-
-  it('exports workerSessionLabel helper', () => {
-    expect(src).toContain("workerSessionLabel");
-  });
-
-  it('exports isWorkerDataAccessible helper', () => {
-    expect(src).toContain("isWorkerDataAccessible");
-  });
-});
-
-describe('B81-B Task 3 — getWorkerContext runtime behaviour', () => {
-  it('returns DISABLED when accessPermitted=false', async () => {
-    const { getWorkerContext } = await import('../../lib/worker-identity/worker-context');
-    const s = getWorkerContext({ accessPermitted: false });
-    expect(s.workerMode).toBe('DISABLED');
-    expect(s.isPreview).toBe(false);
-    expect(s.isLive).toBe(false);
-  });
-
-  it('returns LIVE when liveSession is provided', async () => {
-    const { getWorkerContext } = await import('../../lib/worker-identity/worker-context');
-    const id = 'KORA-LIVE-TEST' as unknown as import('../../lib/worker-identity/types').WorkerKoraId;
-    const s = getWorkerContext({
-      liveSession: { workerKoraId: id, workerDisplayName: 'Test Worker', tenantId: 'tenant-test' },
-    });
-    expect(s.workerMode).toBe('LIVE');
-    expect(s.isLive).toBe(true);
-    expect(s.workerDisplayName).toBe('Test Worker');
-  });
-
-  it('returns PREVIEW by default (no liveSession, accessPermitted=true)', async () => {
-    const { getWorkerContext } = await import('../../lib/worker-identity/worker-context');
-    const s = getWorkerContext();
-    expect(s.workerMode).toBe('PREVIEW');
-    expect(s.isPreview).toBe(true);
-    expect(s.workerKoraId).toBeNull();
-  });
-
-  it('PREVIEW session carries previewPersonaName as workerDisplayName', async () => {
-    const { getWorkerContext } = await import('../../lib/worker-identity/worker-context');
-    const s = getWorkerContext({ previewPersonaName: 'Sofia R.' });
-    expect(s.workerDisplayName).toBe('Sofia R.');
-  });
-
-  it('isWorkerDataAccessible returns true for PREVIEW', async () => {
-    const { getWorkerContext, isWorkerDataAccessible } = await import('../../lib/worker-identity/worker-context');
-    const s = getWorkerContext();
-    expect(isWorkerDataAccessible(s)).toBe(true);
-  });
-
-  it('isWorkerDataAccessible returns false for DISABLED', async () => {
-    const { getWorkerContext, isWorkerDataAccessible } = await import('../../lib/worker-identity/worker-context');
-    const s = getWorkerContext({ accessPermitted: false });
-    expect(isWorkerDataAccessible(s)).toBe(false);
-  });
-
-  it('workerSessionLabel renders PREVIEW label', async () => {
-    const { getWorkerContext, workerSessionLabel } = await import('../../lib/worker-identity/worker-context');
-    const s = getWorkerContext({ previewPersonaName: 'Elena M.' });
-    const label = workerSessionLabel(s);
-    expect(label).toContain('PREVIEW');
-    expect(label).toContain('Elena M.');
-  });
-
-  it('workerSessionLabel renders non-active label for DISABLED', async () => {
-    const { getWorkerContext, workerSessionLabel } = await import('../../lib/worker-identity/worker-context');
-    const s = getWorkerContext({ accessPermitted: false });
-    const label = workerSessionLabel(s);
-    expect(label).toBeTruthy();
-    expect(label).not.toContain('PREVIEW');
-    expect(label).not.toContain('LIVE');
-  });
-});
+// PRIOR HISTORY (accurate as of B81-B, preserved as a record, not verbatim
+// given the volume): Task 2 tested app/my-kora/_providers/WorkerSessionProvider.tsx's
+// source (client component, WorkerSessionContext, useWorkerSession hook,
+// useMemo-based synchronous PREVIEW resolution, getWorkerContext call,
+// demo-state role reading). Task 3 tested lib/worker-identity/worker-context.ts's
+// getWorkerContext/workerSessionLabel/isWorkerDataAccessible contract and
+// runtime behavior (DISABLED/LIVE/PREVIEW dispatch).
+//
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): both
+// files are deleted — WorkerSessionProvider.tsx and worker-context.ts had
+// zero real callers once the anonymous/persona demo-visitor path
+// (MyKoraDemoGate.tsx, itself also deleted) was retired along with every
+// other /my-kora/** page becoming a pure canonical redirect
+// (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md). See
+// tests/unit/bworker-preview-runtime-retirement.test.ts for the regression
+// guard proving zero callers before deletion.
 
 // ── Task 4: WorkerSpaceCapabilityService ─────────────────────────────────────
 
@@ -383,94 +246,39 @@ describe('B81-B Task 5 — privacy-escalation-model.md', () => {
   });
 });
 
-// ── Task 6: app/my-kora/layout.tsx ───────────────────────────────────────────
-
-// PRIOR HISTORY (accurate as of B81-B/MYKORA-01, preserved verbatim): this
-// describe block asserted app/my-kora/layout.tsx itself imported and rendered
-// <WorkerSessionProvider> for "permitted" (real WORKER/KORA_ADMIN) sessions.
-// B-WORKER final cleanup (2026-09-06) retired that admission branch — real
-// sessions are redirected out of /my-kora entirely, never wrapped in
-// WorkerSessionProvider. The provider still exists and is still used, one
-// level down, exclusively by the anonymous/persona demo-visitor path
-// (MyKoraDemoGate.tsx).
-describe('B81-B Task 6 — My KORA layout delegates WorkerSessionProvider to the demo-visitor path', () => {
-  const src = read('app/my-kora/layout.tsx');
-  // MYKORA-01: the pure demo-visitor role predicate (isWorkerRole/isAdminRole)
-  // now lives in the client delegate, reached only when there is no real
-  // session — see app/my-kora/_providers/MyKoraDemoGate.tsx.
-  const demoGateSrc = read('app/my-kora/_providers/MyKoraDemoGate.tsx');
-
-  it('layout.tsx no longer imports or renders WorkerSessionProvider directly (redirects real sessions instead)', () => {
-    expect(src).not.toContain("from './_providers/WorkerSessionProvider'");
-    expect(src).not.toContain("<WorkerSessionProvider>");
+// PRIOR HISTORY (accurate as of B81-B/MYKORA-01/B-WORKER-final-cleanup,
+// preserved as a record, not verbatim given the volume): Task 6 asserted
+// app/my-kora/layout.tsx delegated WorkerSessionProvider rendering to the
+// anonymous/persona demo-visitor path (MyKoraDemoGate.tsx) after real
+// sessions were redirected out at the layout level. Task 7 asserted
+// app/my-kora/page.tsx, dynamic-cv/page.tsx, and collective/page.tsx each
+// carried a "B81-B route classification" comment documenting their PREVIEW
+// mode and Pilot+ migration path.
+//
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06):
+// MyKoraDemoGate.tsx, WorkerSessionProvider.tsx, and worker-context.ts are
+// all deleted. app/my-kora/layout.tsx is now a trivial pass-through (no
+// session check, no role branching, no provider of any kind — see its own
+// header comment). Every /my-kora/** page, including the three named above,
+// is now a one-line unconditional redirect() to its canonical /worker/**
+// equivalent — there is no PREVIEW-mode route classification left to
+// document on these files. See tests/unit/bworker-preview-runtime-retirement.test.ts
+// for the regression guard proving this for all 9 routes.
+describe('B81-B Task 6/7 — My KORA layout and pages are now unconditional redirects', () => {
+  it('layout.tsx no longer imports or renders WorkerSessionProvider, MyKoraDemoGate, or any session logic', () => {
+    const src = read('app/my-kora/layout.tsx');
+    expect(src).not.toContain("WorkerSessionProvider");
+    expect(src).not.toContain("MyKoraDemoGate");
+    expect(src).not.toContain("PrivacyBoundaryNotice");
   });
 
-  it('MyKoraDemoGate.tsx still imports and renders WorkerSessionProvider for demo visitors', () => {
-    expect(demoGateSrc).toContain("from './WorkerSessionProvider'");
-    expect(demoGateSrc).toContain("<WorkerSessionProvider>");
-  });
-
-  it('gates demo visitors on isWorkerRole and isAdminRole (MyKoraDemoGate.tsx)', () => {
-    expect(demoGateSrc).toContain("isWorkerRole");
-    expect(demoGateSrc).toContain("isAdminRole");
-  });
-
-  it('shows PrivacyBoundaryNotice for blocked employer roles (real session in layout, demo visitor in MyKoraDemoGate)', () => {
-    expect(src).toContain("PrivacyBoundaryNotice");
-    expect(src).toContain("employer_role");
-    expect(demoGateSrc).toContain("PrivacyBoundaryNotice");
-    expect(demoGateSrc).toContain("employer_role");
-  });
-
-  it('documents current PREVIEW mode and Pilot+ path (WorkerSessionProvider)', () => {
-    // MYKORA-01 moved the layout to a server-side guard; the PREVIEW/Pilot+
-    // migration note now lives on WorkerSessionProvider, the component that
-    // actually resolves PREVIEW vs LIVE worker data.
-    const providerSrc = read('app/my-kora/_providers/WorkerSessionProvider.tsx');
-    expect(providerSrc).toContain("PREVIEW");
-    expect(providerSrc).toContain("Pilot+");
-  });
-});
-
-// ── Task 7: Route classification comments ────────────────────────────────────
-
-describe('B81-B Task 7 — route classification comments on My KORA pages', () => {
-  const mainSrc       = read('app/my-kora/page.tsx');
-  const dynamicCvSrc  = read('app/my-kora/dynamic-cv/page.tsx');
-  const collectiveSrc = read('app/my-kora/collective/page.tsx');
-
-  it('/my-kora page has B81-B route classification comment', () => {
-    expect(mainSrc).toContain("B81-B route classification");
-    expect(mainSrc).toContain("PREVIEW");
-  });
-
-  it('/my-kora page documents Pilot+ migration path', () => {
-    expect(mainSrc).toContain("Pilot+");
-    expect(mainSrc).toContain("WorkerSessionProvider");
-  });
-
-  it('/my-kora/dynamic-cv has B81-B route classification comment', () => {
-    expect(dynamicCvSrc).toContain("B81-B route classification");
-    expect(dynamicCvSrc).toContain("PREVIEW");
-  });
-
-  it('/my-kora/dynamic-cv documents Pilot+ migration path', () => {
-    expect(dynamicCvSrc).toContain("Pilot+");
-    expect(dynamicCvSrc).toContain("DynamicCVService");
-  });
-
-  it('/my-kora/collective has B81-B route classification comment', () => {
-    expect(collectiveSrc).toContain("B81-B route classification");
-    expect(collectiveSrc).toContain("PREVIEW");
-  });
-
-  it('/my-kora/collective documents no-social-feed constraint', () => {
-    expect(collectiveSrc).toContain("social feed");
-  });
-
-  it('/my-kora/collective documents Pilot+ migration path', () => {
-    expect(collectiveSrc).toContain("Pilot+");
-    expect(collectiveSrc).toContain("UEF");
+  it('/my-kora, /my-kora/dynamic-cv, and /my-kora/collective are pure redirect() calls', () => {
+    for (const rel of ['app/my-kora/page.tsx', 'app/my-kora/dynamic-cv/page.tsx', 'app/my-kora/collective/page.tsx']) {
+      const src = read(rel);
+      expect(src).toContain("redirect(");
+      expect(src).not.toContain("B81-B route classification");
+      expect(src).not.toContain("WorkerSessionProvider");
+    }
   });
 });
 
@@ -585,14 +393,15 @@ describe('B81-B Verification — no scoring, methodology, auth, or DB changes', 
     expect(workerIdentitySrc).not.toContain("supabase");
   });
 
-  it('WorkerSessionProvider does not call Supabase (Foundation Light gate)', () => {
-    const src = read('app/my-kora/_providers/WorkerSessionProvider.tsx');
-    // Supabase is mentioned only in comments (Pilot+ migration path).
-    // Actual code must not import the Supabase client library.
-    expect(src).not.toContain("createClient");
-    expect(src).not.toContain("@supabase/supabase-js");
-    // liveSession is always null — no actual live session resolution
-    expect(src).toContain("liveSession:        null");
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "WorkerSessionProvider does not call Supabase (Foundation Light gate)."
+  // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06):
+  // WorkerSessionProvider.tsx is deleted (zero real callers) — there is no
+  // longer a synthetic liveSession:null gate to check; app/worker/** routes
+  // use real Supabase sessions directly, which is the correct, non-demo
+  // behavior this test previously guarded against for a demo-only surface.
+  it('WorkerSessionProvider.tsx no longer exists (retired with the demo runtime)', () => {
+    expect(exists('app/my-kora/_providers/WorkerSessionProvider.tsx')).toBe(false);
   });
 
   it('no new KORA Index components added (10-component structure fixed)', () => {
@@ -611,14 +420,18 @@ describe('B81-B Verification — no scoring, methodology, auth, or DB changes', 
     expect(src).not.toContain("employer_can_view_pib");
   });
 
-  it('worker-identity files do not contain live authentication logic', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // "worker-identity files do not contain live authentication logic" —
+  // checked lib/worker-identity/types.ts and worker-context.ts. B-WORKER
+  // "One Product / No Demo Runtime" correction (2026-09-06):
+  // worker-context.ts is deleted (zero real callers). types.ts survives
+  // (still used by lib/workforce/workforce-rules.ts and
+  // WorkerSpaceCapabilityService.ts) and is re-checked alone.
+  it('lib/worker-identity/types.ts does not contain live authentication logic', () => {
     const typesSrc = read('lib/worker-identity/types.ts');
-    const ctxSrc   = read('lib/worker-identity/worker-context.ts');
-    for (const src of [typesSrc, ctxSrc]) {
-      expect(src).not.toContain("nextauth");
-      expect(src).not.toContain("auth.signIn");
-      expect(src).not.toContain("createClient");
-    }
+    expect(typesSrc).not.toContain("nextauth");
+    expect(typesSrc).not.toContain("auth.signIn");
+    expect(typesSrc).not.toContain("createClient");
   });
 
   it('docs/privacy-escalation-model.md explicitly states not implemented in Foundation Light', () => {

@@ -27,32 +27,26 @@ const sidebarSrc  = read('components/layout/Sidebar.tsx');
 const permsSrc    = read('lib/permissions/index.ts');
 
 // ── 8–11: Worker view structure ───────────────────────────────────────────────
-
-describe('B142-A — KORA Space worker view structure', () => {
-  it('8. worker view renders kora-space-worker testid', () => {
-    expect(workerSrc).toContain('data-testid="kora-space-worker"');
+//
+// PRIOR HISTORY (accurate as of B142-A, preserved verbatim): tests 8-11
+// checked app/my-kora/kora-space/page.tsx for its own worker-view testid,
+// 4-part privacy notice, dynamic space-card testids (ks-001..004), and
+// myKoraPreviewService.canAccess-gated access-denied block.
+//
+// B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): the
+// page is now a one-line, unconditional redirect() to /worker/commons — none
+// of this worker-view content exists on it anymore. The canonical
+// /worker/commons page (its own privacy notice: worker-commons-privacy-notice)
+// is the real worker-facing KORA Space surface now.
+describe('B-WORKER preview retirement — /my-kora/kora-space is a pure canonical redirect', () => {
+  it('redirects unconditionally to /worker/commons, for every visitor', () => {
+    expect(workerSrc).toContain("redirect('/worker/commons')");
   });
 
-  it('9. worker view has privacy notice with all 4 required strings', () => {
-    expect(workerSrc).toContain('data-testid="kora-space-worker-privacy"');
-    expect(workerSrc).toContain('KORA Space mostra contenuti e opportunità condivise. Non espone dati individuali dei lavoratori.');
-    expect(workerSrc).toContain('Le richieste dei lavoratori sono gestite solo in forma aggregata o supervisionata.');
-    expect(workerSrc).toContain('La partecipazione individuale non è visibile all');
-    expect(workerSrc).toContain('KORA misura l');
-  });
-
-  it('10. worker view renders space cards with dynamic worker testid pattern', () => {
-    expect(workerSrc).toContain('`kora-space-worker-card-${item.id}`');
-    expect(workerSrc).toContain("'ks-001'");
-    expect(workerSrc).toContain("'ks-002'");
-    expect(workerSrc).toContain("'ks-003'");
-    expect(workerSrc).toContain("'ks-004'");
-  });
-
-  it('11. worker view guards access via myKoraPreviewService.canAccess', () => {
-    expect(workerSrc).toContain('myKoraPreviewService');
-    expect(workerSrc).toContain('canAccess');
-    expect(workerSrc).toContain('data-testid="access-denied"');
+  it('no worker-view content, privacy notice, space cards, or synthetic access gate remains', () => {
+    expect(workerSrc).not.toContain('data-testid="kora-space-worker"');
+    expect(workerSrc).not.toContain('myKoraPreviewService');
+    expect(workerSrc).not.toContain('KORA_SPACE_ITEMS');
   });
 });
 

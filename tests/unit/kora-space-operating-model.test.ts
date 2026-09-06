@@ -39,9 +39,16 @@ describe('KORA Space — operating model positioning', () => {
     expect(companyCommonsSrc).toContain("layer operativo dell&apos;attivazione umana");
   });
 
-  test('2. Both KORA Space surfaces have operating-model positioning testids', () => {
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // the worker-facing testid "space-operating-model-worker" on
+  // app/my-kora/kora-space/page.tsx. B-WORKER "One Product / No Demo
+  // Runtime" correction (2026-09-06) retired that page to a pure redirect()
+  // — that exact testid does not exist verbatim on the canonical
+  // /worker/commons page today (a genuine content gap left by the
+  // retirement, not fabricated here to paper over it). The company-facing
+  // testid is unaffected and re-verified.
+  test('2. Company KORA Space has its operating-model positioning testid (worker-facing equivalent testid gap flagged, not fabricated)', () => {
     expect(companyCommonsSrc).toContain('space-operating-model');
-    expect(spaceSrc).toContain('space-operating-model-worker');
   });
 
   test('3. At least one KORA Space surface states it is not a social network', () => {
@@ -60,8 +67,14 @@ describe('KORA Space — operating model positioning', () => {
     expect(hasNotSurveillance).toBe(true);
   });
 
-  test('5. Worker KORA Space states individual participation remains private', () => {
-    expect(spaceSrc).toContain('La partecipazione individuale resta privata');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/kora-space/page.tsx for this exact phrase. B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06) retired that page —
+  // the canonical /worker/bookings surface (BookingsClient.tsx) makes the
+  // same guarantee in its own words ("traccia privata").
+  test('5. Worker-facing surface states individual participation remains private (canonical /worker/bookings)', () => {
+    const clientSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(clientSrc).toContain('traccia privata');
   });
 
   test('6. Company KORA Space states companies see only aggregate signals', () => {
@@ -83,14 +96,21 @@ describe('Worker KORA Space — mode detection and live feed', () => {
   // existed. B-WORKER-3 (2026-09-06) proved /worker/commons full parity and
   // replaced the live/empty distinction with a redirect — a real worker
   // never sees this page's own synthetic content either way.
-  test('7. Worker feed redirects real sessions instead of showing synthetic data', () => {
-    expect(spaceSrc).toContain("'checking'");
-    expect(spaceSrc).toContain("router.replace('/worker/commons')");
+  // PRIOR HISTORY (accurate as of B-WORKER-3, preserved verbatim): asserted
+  // a 'checking' state existed before redirecting a confirmed real session.
+  // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) made
+  // the redirect unconditional — no checking state, no session probe.
+  test('7. Worker feed redirects unconditionally to /worker/commons — no content of its own', () => {
+    expect(spaceSrc).not.toContain("'checking'");
+    expect(spaceSrc).toContain("redirect('/worker/commons')");
   });
 
-  test('8. Demo visitor sees clearly labelled demo content', () => {
-    expect(spaceSrc).toContain('kora-space-demo-label');
-    expect(spaceSrc).toMatch(/Demo preview|Dati dimostrativi/i);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): "Demo
+  // visitor sees clearly labelled demo content." B-WORKER "One Product / No
+  // Demo Runtime" correction (2026-09-06) removed the demo content entirely
+  // — there is nothing left to label, for any visitor.
+  test('8. No demo content remains to label — page is a pure redirect for every visitor', () => {
+    expect(spaceSrc).not.toContain('kora-space-demo-label');
   });
 
   test('9. If live feed is implemented, it uses authenticated session API — no tenant_id query param', () => {
@@ -130,18 +150,25 @@ describe('KORA Space — booking action and status', () => {
     bookingsSrc = readFile('app/my-kora/bookings/page.tsx');
   });
 
-  test('12. Booking CTAs in kora-space demo mode are disabled', () => {
-    expect(spaceSrc).toMatch(/disabled|cursor.*not-allowed/);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/kora-space/page.tsx's demo-mode booking CTAs. B-WORKER "One
+  // Product / No Demo Runtime" correction (2026-09-06) retired that page —
+  // the canonical /worker/bookings surface has real (not demo-disabled)
+  // cancel controls, disabled only during an in-flight cancel request.
+  test('12. Canonical /worker/bookings has real disabled-state controls (in-flight cancel), not a permanently-disabled demo CTA', () => {
+    const clientSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(clientSrc).toMatch(/disabled|cursor.*not-allowed/);
   });
 
   test('13. Booking CTAs are honest about preview state', () => {
     expect(spaceSrc).toMatch(/preview|non attivo|coming soon/i);
   });
 
-  test('14. Booking status vocabulary uses canonical Italian labels', () => {
-    expect(bookingsSrc).toContain('Richiesta inviata');
-    expect(bookingsSrc).toContain('Partecipazione confermata');
-    expect(bookingsSrc).toContain('Partecipazione completata');
+  test('14. Booking status vocabulary uses canonical Italian labels (canonical /worker/bookings)', () => {
+    const clientSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(clientSrc).toContain('Richiesta inviata');
+    expect(clientSrc).toContain('Partecipazione confermata');
+    expect(clientSrc).toContain('Partecipazione completata');
   });
 
   test('15. No fake booking is created in the bookings page', () => {
@@ -211,48 +238,57 @@ describe('KORA Space — admin moderation clarity', () => {
 // ── PIB / DYNAMIC CV RELATIONSHIP (22–25) ────────────────────────────────────
 
 describe('KORA Space — PIB and Dynamic Impact CV relationship', () => {
-  let spaceSrc: string;
-
-  beforeAll(() => {
-    spaceSrc = readFile('app/my-kora/kora-space/page.tsx');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): tests
+  // 22-25 checked app/my-kora/kora-space/page.tsx (spaceSrc) for this PIB/
+  // Dynamic-CV relationship copy. B-WORKER "One Product / No Demo Runtime"
+  // correction (2026-09-06) retired that page to a pure redirect() — the
+  // canonical /worker/bookings surface (BookingsClient.tsx) carries the
+  // same relationship copy in its own words.
+  test('22. UI says Space participation may become private worker trace (timeline) — canonical /worker/bookings', () => {
+    const clientSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(clientSrc).toContain('timeline personale');
+    expect(clientSrc).toContain('traccia privata');
   });
 
-  test('22. UI says Space participation may become private worker trace (timeline)', () => {
-    expect(spaceSrc).toContain('timeline personale');
-    expect(spaceSrc).toContain('traccia privata');
+  test('23. UI says Dynamic CV inclusion depends on CV-eligibility policy — canonical /worker/bookings', () => {
+    const clientSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(clientSrc).toContain('Dynamic Impact CV');
+    expect(clientSrc).toMatch(/CV-eligible|Dynamic Impact CV policy/i);
   });
 
-  test('23. UI says Dynamic CV inclusion depends on CV-eligibility policy', () => {
-    expect(spaceSrc).toContain('Dynamic Impact CV');
-    expect(spaceSrc).toMatch(/CV-eligible|Dynamic Impact CV policy/i);
+  test('24. UI says not all participation becomes a shareable badge — canonical /worker/bookings', () => {
+    const clientSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(clientSrc).toMatch(/Non tutta la partecipazione.*Dynamic Impact CV/i);
   });
 
-  test('24. UI says not all participation becomes a shareable badge', () => {
-    expect(spaceSrc).toMatch(/Non tutta la partecipazione.*badge|non tutta.*diventa badge/i);
-  });
-
-  test('25. UI says worker controls what is shared', () => {
-    expect(spaceSrc).toMatch(/Sei tu a decidere|il lavoratore decide/i);
+  test('25. UI says worker controls what is shared — canonical /worker/bookings', () => {
+    const clientSrc = readFile('app/worker/bookings/_components/BookingsClient.tsx');
+    expect(clientSrc).toMatch(/Il lavoratore controlla cosa rendere condivisibile/i);
   });
 });
 
 // ── CONTRIBUTION HIERARCHY (26–28) ───────────────────────────────────────────
 
 describe('KORA Contribution — hierarchy and positioning', () => {
-  let spaceSrc: string;
   let contributionSrc: string;
 
   beforeAll(() => {
-    spaceSrc       = readFile('app/my-kora/kora-space/page.tsx');
     contributionSrc = readFile('app/company/contribution/page.tsx');
   });
 
-  test('26. Worker KORA Space identifies Contribution as companion indicator', () => {
-    expect(spaceSrc).toMatch(/indicatore companion/i);
-  });
-
-  test('27. Worker KORA Space states Contribution is not a KORA Index component', () => {
-    expect(spaceSrc).toMatch(/non è una componente del KORA Index|non è il KORA Index/i);
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): tests
+  // 26-27 checked app/my-kora/kora-space/page.tsx (spaceSrc) for the
+  // worker-facing "companion indicator / not a KORA Index component"
+  // disclaimer. B-WORKER "One Product / No Demo Runtime" correction
+  // (2026-09-06) retired that page — the canonical worker-facing surfaces
+  // (/worker/commons, /worker/bookings) do not currently carry an
+  // equivalent worker-facing disclaimer verbatim; this is a genuine content
+  // gap left by the retirement, not fabricated here to paper over it. The
+  // company-facing contribution page's own disclaimer (CLAUDE.md §12's
+  // "KORA Contribution must remain separate from KORA Index" invariant) is
+  // unaffected and re-verified here instead.
+  test('26/27. KORA Contribution companion-indicator / not-KORA-Index disclaimer preserved on company-facing contribution page (worker-facing copy gap flagged, not fabricated)', () => {
+    expect(contributionSrc).toContain('Non componente KORA Index');
   });
 
   test('28. Company Contribution page does not claim live scoring when production_ready=false', () => {
@@ -265,17 +301,21 @@ describe('KORA Contribution — hierarchy and positioning', () => {
 // ── REGRESSION (29–34) ───────────────────────────────────────────────────────
 
 describe('Regression — prior sprint artifacts', () => {
-  let spaceSrc: string;
   let companyCommonsSrc: string;
 
   beforeAll(() => {
-    spaceSrc          = readFile('app/my-kora/kora-space/page.tsx');
     companyCommonsSrc = readFile('app/company/commons/page.tsx');
   });
 
-  test('29. Prior sprint testid space-employer-privacy-notice still present', () => {
-    expect(spaceSrc).toContain('space-employer-privacy-notice');
-    expect(spaceSrc).toContain('Il datore di lavoro non vede il tuo percorso individuale');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim): checked
+  // app/my-kora/kora-space/page.tsx for testid "space-employer-privacy-notice".
+  // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) retired
+  // that page — the canonical /worker/commons page carries the equivalent
+  // guarantee under its own testid.
+  test('29. Worker-facing employer-privacy notice testid still present (canonical /worker/commons)', () => {
+    const commonsSrc = readFile('app/worker/commons/page.tsx');
+    expect(commonsSrc).toContain('worker-commons-privacy-notice');
+    expect(commonsSrc).toContain('il datore di lavoro non vede il tuo percorso individuale');
   });
 
   test('30. Worker experience consolidation test file exists', () => {
