@@ -67,9 +67,11 @@ void _HISTORICAL_EXPECTED_BTRUTH_FILES;
 // verbatim): included 'services/worker-achievements/WorkerAchievementService.ts'.
 // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) deleted
 // that file entirely (zero real callers once its 2 callers became pure
-// canonical redirects) and removed it from the allowlist — 2 files remain.
+// canonical redirects) and removed it from the allowlist — 2 files remained.
+// B-WORKER AccountProvisioning dead-code retirement (2026-09-06, the next
+// slice) deleted 'services/account/AccountProvisioningService.ts' too (zero
+// real callers of any of its 18 methods) — 1 file remains.
 const EXPECTED_BWORKER_FILES = [
-  'services/account/AccountProvisioningService.ts',
   'services/worker-provisioning/WorkerProvisioningService.ts',
 ].sort();
 
@@ -120,10 +122,9 @@ describe('CC-00 I9 Governance Ratification — CC-022 gate is B-TRUTH-scoped', (
   // Canonicalization (2026-09-05) exercised exactly that divergence: the
   // B-TRUTH count dropped to 0 while the total dropped only to 3 (the
   // B-WORKER-owned subset, untouched).
-  it('the B-TRUTH-scoped count (the CC-022 closure gate) is independent of the total allowlist count — B-TRUTH is now 0, total is 3', () => {
+  it('the B-TRUTH-scoped count (the CC-022 closure gate) is independent of the total allowlist count — B-TRUTH is now 0, total is 1', () => {
     expect(BTRUTH_OWNED_SYNTHETIC_IMPORTS.length).toBe(0);
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(2);
-    expect(BTRUTH_OWNED_SYNTHETIC_IMPORTS.length).toBeLessThan(SYNTHETIC_IMPORT_ALLOWLIST.length);
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(1);
   });
 
   it('the Master Plan records the B-TRUTH-scoped reinterpretation of CC-022 without erasing the original "I9 = 0" wording', () => {
@@ -156,15 +157,15 @@ describe('CC-00 I9 Governance Ratification — CC-022 gate is B-TRUTH-scoped', (
 // (zero real callers) — 2 files remain.
 describe('CC-00 I9 Governance Ratification — visibility preserved', () => {
   it('the total allowlist count remains fully visible (not hidden behind the ownership split)', () => {
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(2);
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(1);
   });
 });
 
 // ── 6. No generic exemption or wildcard exists ──────────────────────────────
 
 describe('CC-00 I9 Governance Ratification — no generic exemption', () => {
-  it('exactly 2 named files carry owner B_WORKER — not a pattern, not a wildcard (WorkerAchievementService retired since)', () => {
-    expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBe(2);
+  it('exactly 1 named file carries owner B_WORKER — not a pattern, not a wildcard (WorkerAchievementService and AccountProvisioningService both retired since)', () => {
+    expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBe(1);
     expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.map((e) => e.file).sort()).toEqual(EXPECTED_BWORKER_FILES);
   });
 
@@ -196,19 +197,25 @@ describe('CC-00 I9 Governance Ratification — B-WORKER residuals remain open, n
   // asserted svc.account, svc.worker-achievements, and svc.worker-provisioning
   // were all CONSOLIDATE (not CANONICAL/FROZEN — i.e. not marked permanent).
   // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06):
-  // svc.worker-achievements is retired (status DEAD, file deleted) — DEAD is
-  // not "permanent/canonical/exempt" either, it is the opposite (marked for
-  // removal, already actioned). The remaining 2 real I9 blockers stay
-  // CONSOLIDATE, not permanent.
+  // svc.worker-achievements is retired (status DEAD, file deleted). B-WORKER
+  // AccountProvisioning dead-code retirement (2026-09-06, the next slice)
+  // retired svc.account too (status DEAD, file deleted). DEAD is not
+  // "permanent/canonical/exempt" either — it is the opposite (marked
+  // retired, already actioned). The one remaining real I9 blocker,
+  // svc.worker-provisioning, stays CONSOLIDATE, not permanent.
   it('no B-WORKER-owned entry is marked permanent, canonical, or exempt in the registry', () => {
     const registry = read('lib/architecture/registry.ts');
-    for (const id of ["id: 'svc.account'", "id: 'svc.worker-provisioning'"]) {
+    for (const id of ["id: 'svc.worker-provisioning'"]) {
       const idx = registry.indexOf(id);
       expect(idx).toBeGreaterThan(-1);
       const entry = registry.slice(idx, registry.indexOf('{ id:', idx + 10));
       expect(entry).toMatch(/status:\s*'CONSOLIDATE'/);
       expect(entry).not.toMatch(/status:\s*'CANONICAL'|status:\s*'FROZEN'/);
     }
+    const accountIdx = registry.indexOf("id: 'svc.account'");
+    expect(accountIdx).toBeGreaterThan(-1);
+    const accountEntry = registry.slice(accountIdx, registry.indexOf('{ id:', accountIdx + 10));
+    expect(accountEntry).toMatch(/status:\s*'DEAD'/);
   });
 });
 
@@ -235,23 +242,27 @@ describe('CC-00 I9 Governance Ratification — runtime: B-TRUTH retired, B-WORKE
     expect(codeOnly).not.toContain('evaluateFromSeed');
   });
 
-  it('the B-WORKER worker/account cluster files still exist and still carry their original synthetic imports (no runtime change); WorkerAchievementService retired since', () => {
+  it('the remaining B-WORKER worker cluster file still exists and still carries its original synthetic import (no runtime change); WorkerAchievementService and AccountProvisioningService both retired since', () => {
     for (const file of EXPECTED_BWORKER_FILES) {
       expect(exists(file)).toBe(true);
     }
     const liveFiles = new Set(SYNTHETIC_IMPORT_ALLOWLIST.map((e) => e.file));
     for (const file of EXPECTED_BWORKER_FILES) expect(liveFiles.has(file)).toBe(true);
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted
   // all 3 reason strings, including WorkerAchievementService's, were present.
   // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06) removed
   // that entry (and its reason string) entirely along with the file.
-  it('WorkerProvisioningService and AccountProvisioningService source files are unmodified in behavior (reason text unchanged since this slice)', () => {
+  // B-WORKER AccountProvisioning dead-code retirement (2026-09-06, the next
+  // slice) removed AccountProvisioningService's entry (and its reason
+  // string) too.
+  it('WorkerProvisioningService source file is unmodified in behavior (reason text unchanged since this slice)', () => {
     const allowlistSrc = read('lib/security/synthetic-import-allowlist.ts');
     expect(allowlistSrc).toContain("reason: 'Demo worker roster seed for provisioning flows.'");
-    expect(allowlistSrc).toContain("reason: 'Demo account registry — reads synthetic user accounts.'");
+    expect(allowlistSrc).not.toContain("reason: 'Demo account registry — reads synthetic user accounts.'");
     expect(allowlistSrc).not.toContain("reason: 'Worker-private demo achievements seed.'");
   });
 });
@@ -259,11 +270,17 @@ describe('CC-00 I9 Governance Ratification — runtime: B-TRUTH retired, B-WORKE
 // ── 10. B-WORKER has not started ────────────────────────────────────────────
 
 describe('CC-00 I9 Governance Ratification — B-WORKER not started', () => {
-  it('no My KORA live-session identity model was introduced by this slice', () => {
-    const accountSrc = read('services/account/AccountProvisioningService.ts');
-    // getCurrentDemoUser() must still be the demo-state persona resolver —
-    // this slice does not touch it, per its own governance-only scope.
-    expect(accountSrc).toContain('getCurrentDemoUser');
+  // PRIOR HISTORY (accurate as of its own time, preserved verbatim):
+  // asserted getCurrentDemoUser() was still present in
+  // AccountProvisioningService.ts, untouched by this governance-only slice.
+  // getCurrentDemoUser() itself was later removed once zero-caller
+  // (B-WORKER final cleanup, 2026-09-06), and the file that held it is now
+  // deleted entirely (B-WORKER AccountProvisioning dead-code retirement,
+  // 2026-09-06) — there is no My KORA live-session identity model to check
+  // for, because the demo-state persona resolver it would have
+  // distinguished from is itself retired.
+  it('no My KORA live-session identity model was introduced by this slice or since — the demo-state resolver was retired, not replaced', () => {
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of its own time, preserved verbatim): asserted

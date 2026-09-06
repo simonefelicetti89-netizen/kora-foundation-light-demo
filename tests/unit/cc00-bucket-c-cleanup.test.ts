@@ -229,14 +229,14 @@ describe('CC-00 Bucket C cleanup — worker/account cluster untouched', () => {
   // Runtime" correction (2026-09-06) deleted that file entirely (zero real
   // callers, no replacement domain invented) — a later, separately-
   // authorized retirement, not a regression of this PR's own scope.
-  it('WorkerProvisioningService and AccountProvisioningService still import their synthetic fixtures; WorkerAchievementService retired since', () => {
+  // B-WORKER AccountProvisioning dead-code retirement (2026-09-06, the next
+  // slice) deleted AccountProvisioningService.ts too, for the same reason.
+  it('WorkerProvisioningService still imports its synthetic fixture; WorkerAchievementService and AccountProvisioningService both retired since', () => {
     expect(read('services/worker-provisioning/WorkerProvisioningService.ts')).toContain(
       "from '@/data/synthetic/worker-roster.json'",
     );
-    expect(read('services/account/AccountProvisioningService.ts')).toContain(
-      "from '@/data/synthetic/user-accounts.json'",
-    );
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 
   // PRIOR HISTORY (accurate as of CC-00 Bucket C cleanup, preserved
@@ -294,6 +294,6 @@ describe('CC-00 Bucket C cleanup — governance unchanged, CC-00 status', () => 
 
   it('I9 allowlist header reflects 6 files / 11 import statements', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 2 files / 2 import statements'); // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): WorkerAchievementService.ts removed from the allowlist (deleted, zero callers) — 3/3 -> 2/2, unrelated to this PR.
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 1 files / 1 import statements'); // B-WORKER AccountProvisioning dead-code retirement (2026-09-06): AccountProvisioningService.ts removed from the allowlist (deleted, zero callers) — 2/2 -> 1/1, unrelated to this PR.
   });
 });

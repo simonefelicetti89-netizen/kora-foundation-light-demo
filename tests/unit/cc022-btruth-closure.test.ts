@@ -91,11 +91,13 @@ describe('CC-022 — B-WORKER residuals untouched by this closure', () => {
   // PRIOR HISTORY (accurate as of CC-022, preserved verbatim): "exactly the
   // 3 known B-WORKER files remain." B-WORKER "One Product / No Demo Runtime"
   // correction (2026-09-06) retired WorkerAchievementService.ts (zero real
-  // callers) — 2 files remain, both still owner: B_WORKER.
-  it('exactly the 2 known B-WORKER files remain, same owner (WorkerAchievementService retired since)', () => {
+  // callers) — 2 files remained. B-WORKER AccountProvisioning dead-code
+  // retirement (2026-09-06, the next slice) retired AccountProvisioningService.ts
+  // too (zero real callers of any of its 18 methods) — 1 file remains,
+  // still owner: B_WORKER.
+  it('exactly the 1 known B-WORKER file remains, same owner (WorkerAchievementService and AccountProvisioningService both retired since)', () => {
     const files = BWORKER_OWNED_SYNTHETIC_IMPORTS.map((e) => e.file).sort();
     expect(files).toEqual([
-      'services/account/AccountProvisioningService.ts',
       'services/worker-provisioning/WorkerProvisioningService.ts',
     ].sort());
   });
@@ -108,11 +110,13 @@ describe('CC-022 — B-WORKER residuals untouched by this closure', () => {
 
   // PRIOR HISTORY (accurate as of CC-022, preserved verbatim): asserted
   // getCurrentDemoUser() was still defined, still synthetic. B-WORKER final
-  // cleanup (2026-09-06) found it zero-caller and removed it.
-  it('AccountProvisioningService.ts still exists — getCurrentDemoUser() was removed separately once proven zero-caller', () => {
-    const src = read('services/account/AccountProvisioningService.ts');
-    expect(src).not.toContain('getCurrentDemoUser(role?: string): KoraUserAccount');
-    expect(src).toMatch(/from ['"][^'"]*\/data\/synthetic\/user-accounts\.json['"]/);
+  // cleanup (2026-09-06) found it zero-caller and removed it — the file
+  // itself was still alive at that time. B-WORKER AccountProvisioning
+  // dead-code retirement (2026-09-06, the next slice) exhaustively
+  // re-verified all 18 remaining methods and found them zero-caller too —
+  // the file itself is now deleted.
+  it('AccountProvisioningService.ts no longer exists — getCurrentDemoUser() and every other method were both eventually proven zero-caller', () => {
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 });
 
@@ -263,17 +267,19 @@ describe('CC-022 — B-WORKER not started, CC-023 not started, CC-00 remains OPE
 
   // PRIOR HISTORY (accurate as of CC-022, preserved verbatim): asserted all
   // 3 files existed unchanged. B-WORKER "One Product / No Demo Runtime"
-  // correction (2026-09-06) retired WorkerAchievementService.ts (zero real
-  // callers, no replacement domain invented) — this is a genuine, later,
-  // separately-authorized closure, not undisclosed B-WORKER product work.
+  // correction (2026-09-06) retired WorkerAchievementService.ts, and
+  // B-WORKER AccountProvisioning dead-code retirement (2026-09-06, the next
+  // slice) retired AccountProvisioningService.ts too — both zero real
+  // callers, no replacement domain invented — genuine, later,
+  // separately-authorized closures, not undisclosed B-WORKER product work.
   it('no runtime code implements B-WORKER product decisions or adversarial (CC-023) tooling', () => {
     for (const file of [
       'services/worker-provisioning/WorkerProvisioningService.ts',
-      'services/account/AccountProvisioningService.ts',
     ]) {
       expect(exists(file)).toBe(true); // unchanged, still synthetic — not migrated
     }
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
+    expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
 });
 

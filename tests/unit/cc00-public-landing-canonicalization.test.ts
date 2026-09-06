@@ -281,7 +281,7 @@ describe('CC-00 Public Landing canonicalization — I9 reflects the import remov
   // tests/unit/cc00-residual-demo-retirement.test.ts.
   it('allowlist header reflects 6 files / 11 import statements (historical note: was 16, then 13, imports at the time this slice landed)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 2 files / 2 import statements'); // B-WORKER "One Product / No Demo Runtime" correction (2026-09-06): WorkerAchievementService.ts removed from the allowlist (deleted, zero callers) — 3/3 -> 2/2, unrelated to this PR.
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 1 files / 1 import statements'); // B-WORKER AccountProvisioning dead-code retirement (2026-09-06): AccountProvisioningService.ts removed from the allowlist (deleted, zero callers) — 2/2 -> 1/1, unrelated to this PR.
   });
 
   // app/demo/gtm/page.tsx and components/demo/DemoGuideContent.tsx were

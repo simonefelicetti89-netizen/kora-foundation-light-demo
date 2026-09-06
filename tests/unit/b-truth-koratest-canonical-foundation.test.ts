@@ -259,9 +259,13 @@ describe('B-TRUTH — this PR touches ONLY foundation, not the B95-B/B95-C clust
   // Pack Status Migration (PR 4 of the same plan, 2026-09-06) later,
   // separately, retired it entirely. See
   // tests/unit/b-truth-reportfactory-canonical-decision-pack-status.test.ts.
-  it('AccountProvisioningService and AdminPreviewService still exist — TenantService, CompanyDataIntakeService, and ReportFactoryService have since been separately retired (historical note)', () => {
+  // AccountProvisioningService.ts was accurately untouched by THIS PR at
+  // the time this test was written. B-WORKER AccountProvisioning dead-code
+  // retirement (2026-09-06, a later, separate, bounded PR) retired it
+  // entirely — zero real callers of any of its 18 methods, confirmed
+  // exhaustively. See tests/unit/bworker-accountprovisioning-retirement.test.ts.
+  it('AdminPreviewService still exists — TenantService, CompanyDataIntakeService, ReportFactoryService, and AccountProvisioningService have since been separately retired (historical note)', () => {
     for (const file of [
-      'services/account/AccountProvisioningService.ts',
       'services/admin-preview/AdminPreviewService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
@@ -270,6 +274,7 @@ describe('B-TRUTH — this PR touches ONLY foundation, not the B95-B/B95-C clust
       'services/tenant/TenantService.ts',
       'services/company-data-intake/CompanyDataIntakeService.ts',
       'services/report-factory/ReportFactoryService.ts',
+      'services/account/AccountProvisioningService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(false);
     }
