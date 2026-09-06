@@ -32,19 +32,27 @@
 // last B-TRUTH-owned synthetic scoring dependency). DEMO_COMPANY_ID
 // ('meridiana-group') is not a real tenant_code and has no canonical
 // scoring row to read instead, so this leg honestly reports false rather
-// than fabricating a replacement value — the same "honest zero for a
-// non-canonical company_id" pattern already applied to this same panel's
-// worker-count sub-values (see svc.worker-provisioning's own registry
-// entry). Worker provisioning and worker space remain UNCHANGED, still
-// keyed by DEMO_COMPANY_ID — separate, later, B-WORKER-territory slices.
+// than fabricating a replacement value. DEMO_COMPANY_ID remains used only
+// for this scoring leg and for display text below — unrelated to worker
+// provisioning, which is now canonical (see next note).
+//
+// B-WORKER WorkerProvisioning Canonicalization (2026-09-06): the "Workforce"
+// step's totalWorkers/Worker Space capability are now read from a canonical
+// workerProvisioning prop (fetched server-side by page.tsx from
+// personal.worker_identity, keyed by the real tenant.id — not
+// DEMO_COMPANY_ID) instead of calling
+// workerProvisioningService.getWorkerProvisioningSummary()/
+// workerSpaceCapabilityService.getCapabilityByCompanyId() here.
+// services/worker-provisioning/WorkerProvisioningService.ts is retired
+// entirely.
 
 import Link from 'next/link';
 import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
-import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 import { workerSpaceCapabilityService } from '@/services/worker-space/WorkerSpaceCapabilityService';
 import type { CanonicalDataIntakeStatus } from '@/lib/live/data-intake-status-view';
 import type { CanonicalDecisionPackStatus } from '@/lib/live/decision-pack-status-view';
 import type { CanonicalAccountProvisioningStatus } from '@/lib/live/account-provisioning-status-view';
+import type { CanonicalWorkerProvisioningStatus } from '@/lib/live/worker-provisioning-status-view';
 import {
   LIFECYCLE_STEPS,
   deriveAllStepStatuses,
@@ -236,14 +244,16 @@ function RoleContextLinks() {
 
 // ── Main client component ───────────────────────────────────────────────────────
 
-export function PilotLifecycleClient({ tenant, dataIntake, decisionPack, accountProvisioning }: { tenant: CanonicalPilotTenant | null; dataIntake: CanonicalDataIntakeStatus; decisionPack: CanonicalDecisionPackStatus; accountProvisioning: CanonicalAccountProvisioningStatus }) {
-  const workerSumm   = workerProvisioningService.getWorkerProvisioningSummary(DEMO_COMPANY_ID);
-  const capability   = workerSpaceCapabilityService.getCapabilityByCompanyId(DEMO_COMPANY_ID);
+export function PilotLifecycleClient({ tenant, dataIntake, decisionPack, accountProvisioning, workerProvisioning }: { tenant: CanonicalPilotTenant | null; dataIntake: CanonicalDataIntakeStatus; decisionPack: CanonicalDecisionPackStatus; accountProvisioning: CanonicalAccountProvisioningStatus; workerProvisioning: CanonicalWorkerProvisioningStatus }) {
+  const capability = workerSpaceCapabilityService.getCapabilityFromCounts(
+    workerProvisioning.my_kora_enabled_count,
+    workerProvisioning.total_workers,
+  );
 
   const inputs: LifecycleStatusInputs = {
     tenantExists:       !!tenant,
     hasCompanyUser:     accountProvisioning.hasCompanyUser,
-    totalWorkers:       workerSumm.total_workers,
+    totalWorkers:       workerProvisioning.total_workers,
     hasSubmission:      dataIntake.batchCount > 0 || (tenant?.onboarding_status !== 'not_started'),
     submissionPending:  dataIntake.intakeStatus === 'validation_required',
     hasReviewedData:    dataIntake.batchCount > 0 && dataIntake.intakeStatus === 'ready_for_ingestion',

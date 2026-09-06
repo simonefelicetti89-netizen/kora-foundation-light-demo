@@ -259,24 +259,20 @@ describe('CC-023 — no persistent downstream output seeding', () => {
 
 // ── 10. Exactly tracked B-WORKER residuals ──────────────────────────────────
 
-describe('CC-023 — B-WORKER residuals are exactly the tracked 1, unchanged', () => {
+describe('CC-023 — B-WORKER residuals are now fully retired (I9 = 0)', () => {
   // PRIOR HISTORY (accurate as of CC-023, preserved verbatim): "exactly the
-  // 3 known files" including WorkerAchievementService.ts. B-WORKER "One
-  // Product / No Demo Runtime" correction (2026-09-06) deleted it (zero real
-  // callers) — 2 files remained. B-WORKER AccountProvisioning dead-code
-  // retirement (2026-09-06, the next slice) deleted AccountProvisioningService.ts
-  // too (zero real callers of any of its 18 methods) — 1 file remains.
-  it('BWORKER_OWNED_SYNTHETIC_IMPORTS is exactly the 1 known file (WorkerAchievementService and AccountProvisioningService both retired since)', () => {
+  // 3 known files." Three later, separate, bounded B-WORKER slices each
+  // retired one entry in turn — the last being WorkerProvisioningService.ts
+  // (B-WORKER WorkerProvisioning Canonicalization, 2026-09-06).
+  it('BWORKER_OWNED_SYNTHETIC_IMPORTS is now empty', () => {
     const files = BWORKER_OWNED_SYNTHETIC_IMPORTS.map((e) => e.file).sort();
-    expect(files).toEqual([
-      'services/worker-provisioning/WorkerProvisioningService.ts',
-    ].sort());
+    expect(files).toEqual([]);
   });
 
-  it('no new B_WORKER residual and no B_TRUTH residual relabeled to escape closure', () => {
-    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(1);
+  it('no new B_WORKER residual and no B_TRUTH residual relabeled to escape closure — global count is genuinely zero', () => {
+    expect(SYNTHETIC_IMPORT_ALLOWLIST.length).toBe(0);
     expect(BTRUTH_OWNED_SYNTHETIC_IMPORTS.length).toBe(0);
-    expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBe(1);
+    expect(BWORKER_OWNED_SYNTHETIC_IMPORTS.length).toBe(0);
   });
 });
 

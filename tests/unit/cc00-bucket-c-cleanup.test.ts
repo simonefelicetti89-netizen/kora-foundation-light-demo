@@ -231,10 +231,12 @@ describe('CC-00 Bucket C cleanup — worker/account cluster untouched', () => {
   // authorized retirement, not a regression of this PR's own scope.
   // B-WORKER AccountProvisioning dead-code retirement (2026-09-06, the next
   // slice) deleted AccountProvisioningService.ts too, for the same reason.
-  it('WorkerProvisioningService still imports its synthetic fixture; WorkerAchievementService and AccountProvisioningService both retired since', () => {
-    expect(read('services/worker-provisioning/WorkerProvisioningService.ts')).toContain(
-      "from '@/data/synthetic/worker-roster.json'",
-    );
+  // B-WORKER WorkerProvisioning Canonicalization (2026-09-06, the final
+  // B-WORKER implementation slice) retired WorkerProvisioningService.ts
+  // itself — its 2 real callers migrated to canonical
+  // personal.worker_identity reads.
+  it('the entire worker/account cluster (WorkerProvisioningService, WorkerAchievementService, AccountProvisioningService) is retired', () => {
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
     expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
   });
@@ -294,6 +296,6 @@ describe('CC-00 Bucket C cleanup — governance unchanged, CC-00 status', () => 
 
   it('I9 allowlist header reflects 6 files / 11 import statements', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 1 files / 1 import statements'); // B-WORKER AccountProvisioning dead-code retirement (2026-09-06): AccountProvisioningService.ts removed from the allowlist (deleted, zero callers) — 2/2 -> 1/1, unrelated to this PR.
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 0 files / 0 import statements'); // B-WORKER AccountProvisioning dead-code retirement (2026-09-06): AccountProvisioningService.ts removed from the allowlist (deleted, zero callers) — 2/2 -> 1/1, unrelated to this PR.
   });
 });

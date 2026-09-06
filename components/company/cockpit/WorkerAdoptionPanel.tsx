@@ -6,14 +6,26 @@
 // CC-018 / B-TRUTH: pillar distribution is fetched from /api/company/pillar-adoption
 // (live, session-authenticated — tenant resolved server-side, never from a
 // client-supplied companyId) instead of being read synchronously from the
-// synthetic-backed WorkerPillarAdoptionService. capability/summary below are
-// unrelated worker-identity seed groups, out of CC-018 scope (deferred to B-WORKER).
+// synthetic-backed WorkerPillarAdoptionService.
+//
+// B-WORKER WorkerProvisioning Canonicalization (2026-09-06): capability/
+// summary are no longer computed internally from a client-supplied
+// companyId via workerProvisioningService (retired entirely) — this
+// component is currently unmounted on any live route (deliberately, per
+// B105/B133 — see lib/architecture/registry.ts svc.worker-pillar-adoption),
+// but is kept compiling and ready for re-integration, matching that
+// registry note's own expectation. Whoever re-mounts it should fetch
+// personal.worker_identity server-side (via
+// lib/live/worker-provisioning-status-view.ts, same pattern as
+// PilotLifecycleClient.tsx / WorkforceQuickAccessPanel.tsx) and pass the
+// resulting counts down as the workerProvisioning prop — this component
+// itself performs no fetch and has no synthetic dependency.
 
 import { useEffect, useState } from 'react';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { workerSpaceCapabilityService } from '@/services/worker-space/WorkerSpaceCapabilityService';
-import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
+import type { CanonicalWorkerProvisioningStatus } from '@/lib/live/worker-provisioning-status-view';
 import type { PillarAdoptionResult } from '@/services/worker-pillar-adoption/WorkerPillarAdoptionService';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
@@ -97,12 +109,14 @@ function MetricTile({ label, value, sub }: MetricTileProps) {
 }
 
 interface Props {
-  companyId: string;
+  workerProvisioning: CanonicalWorkerProvisioningStatus;
 }
 
-export function WorkerAdoptionPanel({ companyId }: Props) {
-  const capability = workerSpaceCapabilityService.getCapabilityByCompanyId(companyId);
-  const summary    = workerProvisioningService.getWorkerProvisioningSummary(companyId);
+export function WorkerAdoptionPanel({ workerProvisioning: summary }: Props) {
+  const capability = workerSpaceCapabilityService.getCapabilityFromCounts(
+    summary.my_kora_enabled_count,
+    summary.total_workers,
+  );
 
   const [pillarData, setPillarData] = useState<PillarAdoptionResult | null>(null);
 

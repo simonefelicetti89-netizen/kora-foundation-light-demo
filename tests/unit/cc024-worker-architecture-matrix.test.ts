@@ -131,7 +131,12 @@ describe('CC-024 — no runtime/auth/service code was touched', () => {
   // too — 1 remains.
   it('the 1 remaining B-WORKER-owned synthetic residual is untouched; WorkerAchievementService and AccountProvisioningService both retired since', () => {
     for (const file of [
-      'services/worker-provisioning/WorkerProvisioningService.ts',
+      // PRIOR HISTORY: 'services/worker-provisioning/WorkerProvisioningService.ts'
+      // was asserted to exist here (unmodified by this PR, at the time). B-WORKER
+      // WorkerProvisioning Canonicalization (2026-09-06) retired it entirely (its 2
+      // real callers migrated to canonical personal.worker_identity reads) —
+      // removed from this list; this is that later, separately-authorized
+      // retirement, not an unrelated-PR regression of this PR's own scope boundary.
     ]) {
       expect(exists(file)).toBe(true);
     }

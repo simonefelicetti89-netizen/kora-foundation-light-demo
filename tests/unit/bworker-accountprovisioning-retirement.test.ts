@@ -131,59 +131,53 @@ describe('B-WORKER AccountProvisioning retirement — canonical account authorit
 
 // ── 5. I9 reduced by exactly one ────────────────────────────────────────────
 
-describe('B-WORKER AccountProvisioning retirement — I9 allowlist reduced by exactly one', () => {
-  it('the allowlist has exactly 1 entry, owner B_WORKER, WorkerProvisioningService only', () => {
+// PRIOR HISTORY (accurate as of this file's first version, preserved
+// verbatim): "the allowlist has exactly 1 entry, owner B_WORKER,
+// WorkerProvisioningService only" — this slice's own target state. B-WORKER
+// WorkerProvisioning Canonicalization (2026-09-06, the very next slice)
+// retired that last entry too — its 2 real callers migrated to canonical
+// personal.worker_identity reads. The allowlist is now empty.
+describe('B-WORKER AccountProvisioning retirement — I9 allowlist later reduced to zero', () => {
+  it('the allowlist is now empty — WorkerProvisioningService was the last entry, since retired', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
     const arrayStart = allowlist.indexOf('export const SYNTHETIC_IMPORT_ALLOWLIST');
     const arrayEnd = allowlist.indexOf('];', arrayStart);
     const arrayBody = allowlist.slice(arrayStart, arrayEnd);
     const files = [...arrayBody.matchAll(/file: '([^']+)'/g)].map((m) => m[1]);
-    const owners = [...arrayBody.matchAll(/owner: '([^']+)'/g)].map((m) => m[1]);
-    expect(files).toEqual(['services/worker-provisioning/WorkerProvisioningService.ts']);
-    expect(owners).toEqual(['B_WORKER']);
+    expect(files).toEqual([]);
   });
 
-  it('the allowlist header count reflects 1 files / 1 import statements', () => {
+  it('the allowlist header count reflects 0 files / 0 import statements', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 1 files / 1 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 0 files / 0 import statements');
   });
 });
 
-// ── 6. WorkerProvisioningService remains untouched ──────────────────────────
+// ── 6. WorkerProvisioningService — later retired (superseded section) ──────
 
-describe('B-WORKER AccountProvisioning retirement — WorkerProvisioningService untouched', () => {
-  it('WorkerProvisioningService.ts still exists, still imports its synthetic seed', () => {
-    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(true);
-    const src = read('services/worker-provisioning/WorkerProvisioningService.ts');
-    expect(src).toContain("from '@/data/synthetic/worker-roster.json'");
+// PRIOR HISTORY (accurate as of this file's first version, preserved as a
+// record): this section asserted WorkerProvisioningService.ts still
+// existed, still imported its synthetic seed, and was still called by name
+// from PilotLifecycleClient.tsx, RosterImportModal.tsx,
+// WorkforceQuickAccessPanel.tsx, WorkerAdoptionPanel.tsx, and
+// WorkerSpaceCapabilityService.ts — this slice's own explicit boundary was
+// NOT to canonicalize it. B-WORKER WorkerProvisioning Canonicalization
+// (2026-09-06, the very next slice) did canonicalize it: the file and its
+// seed are deleted; all 5 real callers migrated to
+// lib/live/worker-provisioning-status-view.ts (2 real methods) or
+// lib/roster-import/roster-record-builder.ts (the pure, already-synthetic-
+// independent importDemoRoster, relocated unchanged). The schema-gap and
+// email-safety findings below remained accurate right up until that slice
+// re-traced them to their real consumers and found no schema change was
+// actually needed — see tests/unit/bworker-workerprovisioning-canonicalization.test.ts.
+describe('B-WORKER AccountProvisioning retirement — WorkerProvisioningService later retired, not touched here', () => {
+  it('WorkerProvisioningService.ts no longer exists', () => {
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
   });
 
-  it('WorkerProvisioningService real callers are unchanged', () => {
-    for (const file of [
-      'app/admin/pipeline/_components/PilotLifecycleClient.tsx',
-      'app/admin/companies/_components/RosterImportModal.tsx',
-      'components/admin/WorkforceQuickAccessPanel.tsx',
-      'components/company/cockpit/WorkerAdoptionPanel.tsx',
-      'services/worker-space/WorkerSpaceCapabilityService.ts',
-    ]) {
-      expect(read(file)).toContain('workerProvisioningService');
-    }
-  });
-
-  it('no worker schema was modified — the department/site/my_kora_enabled/pib_private_enabled gap remains, not fabricated', () => {
+  it('no worker schema was modified by THIS slice — the department/site/my_kora_enabled/pib_private_enabled gap this slice found was later resolved without a schema change', () => {
     const src = read('app/api/admin/workers/list/route.ts');
     expect(src).toContain("select('id, worker_ref, status, created_at')");
-    expect(src).not.toContain('department');
-    expect(src).not.toContain('my_kora_enabled');
-    expect(src).not.toContain('pib_private_enabled');
-  });
-
-  it('no email/invite API route was called by this retirement (bulk-provision and provision routes untouched, still real but unused by RosterImportModal)', () => {
-    expect(exists('app/api/admin/workers/provision/route.ts')).toBe(true);
-    expect(exists('app/api/admin/workers/bulk-provision/route.ts')).toBe(true);
-    const rosterModal = read('app/admin/companies/_components/RosterImportModal.tsx');
-    expect(rosterModal).toContain('workerProvisioningService.importDemoRoster');
-    expect(rosterModal).not.toContain('/api/admin/workers/bulk-provision');
   });
 });
 
@@ -216,12 +210,17 @@ describe('B-WORKER AccountProvisioning retirement — registry corrected', () =>
     expect(entry).toMatch(/deletableWhen:\s*'Already deleted/);
   });
 
-  it('svc.worker-provisioning remains CONSOLIDATE, unchanged', () => {
+  // PRIOR HISTORY (accurate as of this retirement, preserved verbatim):
+  // asserted svc.worker-provisioning remained CONSOLIDATE, unchanged by this
+  // slice — true at the time (only AccountProvisioning was retired here).
+  // B-WORKER WorkerProvisioning Canonicalization (2026-09-06, the next and
+  // final B-WORKER implementation slice) retired it too — now DEAD.
+  it('svc.worker-provisioning is now DEAD (retired by the next B-WORKER slice)', () => {
     const registry = read('lib/architecture/registry.ts');
     const idx = registry.indexOf("id: 'svc.worker-provisioning'");
     expect(idx).toBeGreaterThan(-1);
     const entry = registry.slice(idx, registry.indexOf('{ id:', idx + 10));
-    expect(entry).toContain("status: 'CONSOLIDATE'");
+    expect(entry).toContain("status: 'DEAD'");
   });
 
   it('docs/ARCHITECTURE_REGISTRY.md is regenerated and reflects the retirement', () => {

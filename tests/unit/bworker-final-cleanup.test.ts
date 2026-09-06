@@ -139,37 +139,33 @@ describe('B-WORKER final cleanup — AccountProvisioningService.getCurrentDemoUs
 // No Demo Runtime" correction (2026-09-06): WorkerAchievementService.ts is
 // deleted (zero real callers once its 2 callers became pure redirects) and
 // removed from the allowlist entirely — 2 B_WORKER-owned entries remain.
-describe('B-WORKER final cleanup — I9 residuals (WorkerAchievementService and AccountProvisioningService retired, WorkerProvisioning honestly not closed)', () => {
-  it('I9 allowlist has exactly 1 B_WORKER-owned entry — WorkerAchievementService and AccountProvisioningService both removed, not silently kept', () => {
+// PRIOR HISTORY (accurate as of this file's own time, preserved as a
+// record): asserted 1 B_WORKER-owned entry remained (WorkerProvisioningService),
+// with real callers still in the live admin console and a genuine schema
+// gap not fabricated. B-WORKER WorkerProvisioning Canonicalization
+// (2026-09-06, the final B-WORKER implementation slice) retired that last
+// entry too — its 2 real methods migrated to canonical
+// personal.worker_identity reads via lib/live/worker-provisioning-status-view.ts;
+// no schema was changed to do it (the department/site/my_kora_enabled gap
+// this note worried about turned out not to be read by any real caller of
+// those 2 methods once traced precisely). See
+// tests/unit/bworker-workerprovisioning-canonicalization.test.ts.
+describe('B-WORKER final cleanup — I9 residuals now fully retired (I9 = 0)', () => {
+  it('I9 allowlist is now empty', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
     const arrayStart = allowlist.indexOf('export const SYNTHETIC_IMPORT_ALLOWLIST');
     const arrayEnd = allowlist.indexOf('];', arrayStart);
     const arrayBody = allowlist.slice(arrayStart, arrayEnd);
     const matches = arrayBody.match(/owner: 'B_WORKER'/g) ?? [];
-    expect(matches.length).toBe(1);
+    expect(matches.length).toBe(0);
     const files = [...arrayBody.matchAll(/file: '([^']+)'/g)].map(m => m[1]);
-    expect(files).toContain('services/worker-provisioning/WorkerProvisioningService.ts');
-    expect(files).not.toContain('services/account/AccountProvisioningService.ts');
-    expect(files).not.toContain('services/worker-achievements/WorkerAchievementService.ts');
+    expect(files).toEqual([]);
   });
 
-  it('WorkerAchievementService.ts and AccountProvisioningService.ts no longer exist', () => {
+  it('WorkerAchievementService.ts, AccountProvisioningService.ts, and WorkerProvisioningService.ts no longer exist', () => {
     expect(exists('services/worker-achievements/WorkerAchievementService.ts')).toBe(false);
     expect(exists('services/account/AccountProvisioningService.ts')).toBe(false);
-  });
-
-  it('WorkerProvisioningService callers remain in the live admin console — genuinely unresolved, not demo-only', () => {
-    const panel = read('components/admin/WorkforceQuickAccessPanel.tsx');
-    expect(panel).toContain('workerProvisioningService.getWorkerProvisioningSummary');
-    // The panel\'s own comment documents this as a known, separate, later slice.
-    expect(panel).toMatch(/unmigrated|B-WORKER-territory slice/);
-  });
-
-  it('personal.worker_identity (the canonical replacement) lacks the fields the admin UI displays — schema gap, not fabricated', () => {
-    const api = read('app/api/admin/workers/list/route.ts');
-    expect(api).toContain("select('id, worker_ref, status, created_at')");
-    expect(api).not.toContain('department');
-    expect(api).not.toContain('my_kora_enabled');
+    expect(exists('services/worker-provisioning/WorkerProvisioningService.ts')).toBe(false);
   });
 });
 

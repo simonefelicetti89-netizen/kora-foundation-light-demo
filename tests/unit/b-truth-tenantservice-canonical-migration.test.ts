@@ -119,11 +119,17 @@ describe('B-TRUTH — migrated consumers use a canonical tenant source', () => {
     expect(src).not.toMatch(/from\s+['"][^'"]*data\/synthetic\//);
   });
 
+  // PRIOR HISTORY (accurate as of this migration, preserved verbatim):
+  // asserted the exact JSX '<WorkforceQuickAccessPanel tenants={tenants} />'.
+  // B-WORKER WorkerProvisioning Canonicalization (2026-09-06) added a second
+  // prop (workerProvisioningByTenant, canonical personal.worker_identity
+  // counts) — the tenants prop and its canonical, unfiltered fetch are
+  // unchanged.
   it('app/admin/companies/page.tsx fetches canonical tenants with no tenant_kind filter and passes them to the panel', () => {
     const src = read('app/admin/companies/page.tsx');
     expect(src).toContain(".schema('analytics').from('tenant')");
     expect(src).not.toContain(".eq('tenant_kind'");
-    expect(src).toContain('<WorkforceQuickAccessPanel tenants={tenants} />');
+    expect(src).toContain('<WorkforceQuickAccessPanel tenants={tenants}');
   });
 
   it('components/admin/WorkforceQuickAccessPanel.tsx accepts tenants as a prop, no self-fetch', () => {
@@ -230,7 +236,12 @@ describe('B-TRUTH — this PR touched ONLY the TenantService migration (one PR =
 
   it('B-WORKER members remain untouched — still exist; the final scoring group was later retired by CC-00 Final Scoring Canonicalization (2026-09-05), unrelated to this PR', () => {
     for (const file of [
-      'services/worker-provisioning/WorkerProvisioningService.ts',
+      // PRIOR HISTORY: 'services/worker-provisioning/WorkerProvisioningService.ts'
+      // was asserted to exist here (unmodified by this PR, at the time). B-WORKER
+      // WorkerProvisioning Canonicalization (2026-09-06) retired it entirely (its 2
+      // real callers migrated to canonical personal.worker_identity reads) —
+      // removed from this list; this is that later, separately-authorized
+      // retirement, not an unrelated-PR regression of this PR's own scope boundary.
       // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
       // was asserted to exist here (unmodified by this PR, at the time). B-WORKER
       // "One Product / No Demo Runtime" correction (2026-09-06) deleted it entirely

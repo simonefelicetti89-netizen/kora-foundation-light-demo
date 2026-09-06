@@ -200,7 +200,12 @@ describe('B-TRUTH — responsibility split preserved: no My KORA/session behavio
 
   it('B-WORKER services are untouched — still exist, unmodified reachability', () => {
     for (const file of [
-      'services/worker-provisioning/WorkerProvisioningService.ts',
+      // PRIOR HISTORY: 'services/worker-provisioning/WorkerProvisioningService.ts'
+      // was asserted to exist here (unmodified by this PR, at the time). B-WORKER
+      // WorkerProvisioning Canonicalization (2026-09-06) retired it entirely (its 2
+      // real callers migrated to canonical personal.worker_identity reads) —
+      // removed from this list; this is that later, separately-authorized
+      // retirement, not an unrelated-PR regression of this PR's own scope boundary.
       // PRIOR HISTORY: 'services/worker-achievements/WorkerAchievementService.ts'
       // was asserted to exist here (unmodified by this PR, at the time). B-WORKER
       // "One Product / No Demo Runtime" correction (2026-09-06) deleted it entirely
@@ -323,6 +328,6 @@ describe('B-TRUTH — registry and I9 reflect the migration', () => {
   // by THIS PR" (this migration), it changed by a much later one.
   it('allowlist header count reflects the current total, 1 files / 1 import statements (this PR itself made no synthetic-import change; the count changed later, via B-WORKER AccountProvisioning dead-code retirement)', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 1 files / 1 import statements');
+    expect(allowlist).toContain('CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 0 files / 0 import statements');
   });
 });

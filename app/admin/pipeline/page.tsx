@@ -36,9 +36,17 @@
 // (2026-09-06). AccountProvisioningService.ts remains alive only for its
 // other, unrelated, individually-unproven-dead methods.
 //
-// Every OTHER step's data source (worker provisioning, scoring) is
-// UNCHANGED — those remain separate, later migration slices, still keyed by
-// the DEMO_COMPANY_ID constant inside PilotLifecycleClient.tsx.
+// B-WORKER WorkerProvisioning Canonicalization (2026-09-06): the "Workforce"
+// step's totalWorkers/Worker Space signal is now read directly from
+// personal.worker_identity (canonical, keyed by the real tenant.id) instead
+// of the synthetic data/synthetic/worker-roster.json fixture, via the
+// shared pure view builder lib/live/worker-provisioning-status-view.ts.
+// services/worker-provisioning/WorkerProvisioningService.ts is retired
+// entirely — this was the final B-WORKER I9 synthetic runtime import.
+//
+// Every OTHER step's data source (scoring) is UNCHANGED — that remains a
+// separate, later slice, still keyed by the DEMO_COMPANY_ID constant inside
+// PilotLifecycleClient.tsx.
 //
 // PILOT_LIFECYCLE_TENANT_CODE is a temporary single-tenant default for this
 // still-single-company B95-B UI (see PR #140's KoraTest canonical
@@ -53,6 +61,7 @@ import { PilotLifecycleClient, type CanonicalPilotTenant } from './_components/P
 import { buildDataIntakeStatusView, type CanonicalDataIntakeStatus, type SourceBatchStatusRow } from '@/lib/live/data-intake-status-view';
 import { buildDecisionPackStatusView, type CanonicalDecisionPackStatus, type DecisionPackVersionStatusRow } from '@/lib/live/decision-pack-status-view';
 import { buildAccountProvisioningStatusView, type CanonicalAccountProvisioningStatus, type AuthUserAppMetadataRow } from '@/lib/live/account-provisioning-status-view';
+import { buildWorkerProvisioningStatusView, type CanonicalWorkerProvisioningStatus } from '@/lib/live/worker-provisioning-status-view';
 
 const PILOT_LIFECYCLE_TENANT_CODE = 'KORATEST-01';
 
@@ -108,12 +117,24 @@ export default async function PilotLifecyclePage() {
     );
   }
 
+  let workerProvisioning: CanonicalWorkerProvisioningStatus = { total_workers: 0, my_kora_enabled_count: 0, active_worker_accounts: 0 };
+  if (tenant) {
+    const { data: workerRows, error: workerErr } = await db
+      .schema('personal').from('worker_identity')
+      .select('status')
+      .eq('tenant_id', tenant.id);
+    if (workerErr) throw new Error(`[KORA] worker_identity lookup failed: ${workerErr.message}`);
+
+    workerProvisioning = buildWorkerProvisioningStatusView((workerRows ?? []) as Array<{ status: string }>);
+  }
+
   return (
     <PilotLifecycleClient
       tenant={tenant}
       dataIntake={dataIntake}
       decisionPack={decisionPack}
       accountProvisioning={accountProvisioning}
+      workerProvisioning={workerProvisioning}
     />
   );
 }

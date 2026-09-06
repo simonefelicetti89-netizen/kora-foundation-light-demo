@@ -11,6 +11,7 @@ import { CompanyConsolePanel } from './_components/CompanyConsolePanel';
 import { WorkforceQuickAccessPanel } from '@/components/admin/WorkforceQuickAccessPanel';
 import { redirect } from 'next/navigation';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { buildWorkerProvisioningStatusMap, type WorkerIdentityStatusRow } from '@/lib/live/worker-provisioning-status-view';
 
 const FROM_LABELS: Record<string, string> = {
   workspace:   'Spazio Azienda',
@@ -51,6 +52,24 @@ export default async function CompanyConsolePage({
   if (tenantsErr) throw new Error(`[KORA] tenant list fetch failed: ${tenantsErr.message}`);
   const tenants = (tenantRows ?? []) as Array<{ id: string; tenant_code: string; company_name: string }>;
 
+  // B-WORKER WorkerProvisioning Canonicalization (2026-09-06): per-tenant
+  // worker counts for WorkforceQuickAccessPanel are now read from
+  // personal.worker_identity (canonical, keyed by real tenant.id) instead
+  // of the synthetic data/synthetic/worker-roster.json fixture, via the
+  // shared pure view builder lib/live/worker-provisioning-status-view.ts.
+  // One query for all tenants on this page (not one per tenant) — grouped
+  // client-side by tenant_id.
+  const tenantIds = tenants.map((t) => t.id);
+  let workerProvisioningByTenant: Record<string, { total_workers: number; my_kora_enabled_count: number; active_worker_accounts: number }> = {};
+  if (tenantIds.length > 0) {
+    const { data: workerRows, error: workerErr } = await db
+      .schema('personal').from('worker_identity')
+      .select('tenant_id, status')
+      .in('tenant_id', tenantIds);
+    if (workerErr) throw new Error(`[KORA] worker_identity lookup failed: ${workerErr.message}`);
+    workerProvisioningByTenant = buildWorkerProvisioningStatusMap((workerRows ?? []) as WorkerIdentityStatusRow[]);
+  }
+
   return (
     <>
       {fromSection && (
@@ -60,7 +79,7 @@ export default async function CompanyConsolePage({
           Seleziona un&apos;azienda per aprire la sezione.
         </div>
       )}
-      <WorkforceQuickAccessPanel tenants={tenants} />
+      <WorkforceQuickAccessPanel tenants={tenants} workerProvisioningByTenant={workerProvisioningByTenant} />
       <CompanyConsolePanel userEmail={auth.email} />
     </>
   );
