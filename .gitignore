@@ -49,3 +49,6 @@ next-env.d.ts
 # CI-generated test reports (never committed — see .github/workflows/ci.yml)
 /rls-integration-report.json
 /kora-link-behavioral-report.json
+
+# KORA private audit workspace
+.kora-audit/
