@@ -105,11 +105,18 @@ CREATE INDEX IF NOT EXISTS idx_observed_investment_fact_created      ON analytic
 
 -- ── 2. RLS — Pattern A (tenant-claim-bound), per docs/RLS_COMPANY_SCOPED_PATTERN.md ──
 -- Identical shape to analytics.source_batch/kora_index_result (migration
--- 001): KORA_ADMIN gets full access; COMPANY_ADMIN/COMPANY_VIEWER get
--- SELECT only, scoped by tenant claim. Writes happen exclusively through the
--- server-side Investment Map service (getSupabaseServiceClient(), bypasses
--- RLS by role) — no ordinary session ever inserts this table directly, same
+-- 001): KORA_ADMIN gets full access; COMPANY_ADMIN gets SELECT only, scoped
+-- by tenant claim. Writes happen exclusively through the server-side
+-- Investment Map service (getSupabaseServiceClient(), bypasses RLS by
+-- role) — no ordinary session ever inserts this table directly, same
 -- convention as every other Pattern-A table in this schema.
+--
+-- AUD-W1-001 (Wave 1 Consolidation Audit, P3 hygiene): this policy originally
+-- also matched COMPANY_VIEWER, a role removed from the codebase under B143
+-- (lib/constants/kora.ts REMOVED_KORA_ROLES) before this migration was ever
+-- shipped to staging/production. The clause was dead (unreachable) code, not
+-- a privilege gap, but is corrected here pre-first-rollout — matching
+-- migration 055's need_hypothesis policy, which never repeated it.
 
 ALTER TABLE analytics.observed_investment_fact ENABLE ROW LEVEL SECURITY;
 ALTER TABLE analytics.observed_investment_fact FORCE ROW LEVEL SECURITY;
@@ -119,7 +126,7 @@ CREATE POLICY "kora_admin_all_observed_investment_fact" ON analytics.observed_in
 
 CREATE POLICY "company_own_observed_investment_fact_read" ON analytics.observed_investment_fact
   FOR SELECT USING (
-    kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
+    kora.kora_role() = 'COMPANY_ADMIN'
     AND tenant_id = kora.tenant_id()
   );
 
