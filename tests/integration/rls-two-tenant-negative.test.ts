@@ -90,14 +90,23 @@
  *     needed at all under the direct-DB approach, since claims are
  *     fabricated directly as a transaction-local GUC.
  *
- * TABLE SCOPE (unchanged from the original PostgREST version — see
- * docs/RLS_03_THROWAWAY_SUPABASE_CHECKLIST.md §E for why):
+ * TABLE SCOPE (original four unchanged from the original PostgREST version —
+ * see docs/RLS_03_THROWAWAY_SUPABASE_CHECKLIST.md §E for why; a fifth table
+ * added by KORA-WP-010, see below):
  *   IN:  analytics.tenant, analytics.source_batch, analytics.kora_index_result,
- *        analytics.activation_result.
+ *        analytics.activation_result — all four tenant-claim-bound
+ *        (`kora.tenant_id()`), covered by `queryAsTenant()` below.
+ *   IN (added by KORA-WP-010, migration 052): analytics.company_memberships —
+ *        IDENTITY-bound (`auth_user_id = auth.uid()`), not tenant-claim-bound
+ *        — see the "KORA-WP-010" describe block below, which uses its own
+ *        `queryMembershipsAsIdentity()` helper (adds a `sub` claim so
+ *        `auth.uid()` resolves, mirroring RLS-05's established pattern for
+ *        identity-bound policies) rather than `queryAsTenant()`.
  *   OUT (explicitly, never touched here): personal.* (all worker-individual
- *        tables — reserved for RLS-05), analytics.uef_record (no direct
- *        COMPANY_ADMIN policy exists on it), commons.* (commons.post has a
- *        deliberate cross-tenant WORKER policy — needs its own dedicated
+ *        tables — RLS-05, already implemented — see
+ *        tests/integration/rls-worker-isolation.test.ts), analytics.uef_record
+ *        (no direct COMPANY_ADMIN policy exists on it), commons.* (commons.post
+ *        has a deliberate cross-tenant WORKER policy — needs its own dedicated
  *        test), gov.*, audit.*, network.* (not tenant-scoped), and anything
  *        under KORA Link (frozen, out of scope — supabase/proposed/034-036).
  *
@@ -213,6 +222,15 @@ const RLS03_REPORTING_PERIOD = 'RLS03-SYNTHETIC';
 const RLS03_TABLES = ['kora_index_result', 'source_batch', 'activation_result'] as const;
 type Rls03Table = (typeof RLS03_TABLES)[number];
 
+// ── KORA-WP-010 addition: analytics.company_memberships fixture identities ──
+// Fabricated, non-Supabase-Auth UUIDs (no FK to auth.users, same precedent as
+// RLS-05's WORKER_A_AUTH_UID/WORKER_B_AUTH_UID) — auth.uid() only reads the
+// transaction-local claims GUC set per-assertion below, so these never need
+// to correspond to a real signed-in user.
+const MEMBERSHIP_ADMIN_A_AUTH_UID = '00000000-0000-4000-c000-0000000000a1';
+const MEMBERSHIP_ADMIN_B_AUTH_UID = '00000000-0000-4000-c000-0000000000b2';
+const MEMBERSHIP_ENDED_AUTH_UID = '00000000-0000-4000-c000-0000000000e3';
+
 describe.skipIf(!ready)(
   'RLS-03 — synthetic two-tenant negative DB test (direct Postgres; not RLS-02 static, not browser E2E)',
   () => {
@@ -297,6 +315,35 @@ describe.skipIf(!ready)(
           [tenantId, RLS03_REPORTING_PERIOD],
         );
       }
+
+      // ── KORA-WP-010 addition: analytics.company_memberships fixture ──────
+      // Clean up any leftover rows from a prior incomplete run first (same
+      // idempotency discipline as the blocks above), scoped strictly to this
+      // file's own fabricated auth_user_id values.
+      await privilegedClient.query(
+        `DELETE FROM analytics.company_memberships WHERE auth_user_id = ANY($1)`,
+        [[MEMBERSHIP_ADMIN_A_AUTH_UID, MEMBERSHIP_ADMIN_B_AUTH_UID, MEMBERSHIP_ENDED_AUTH_UID]],
+      );
+
+      await privilegedClient.query(
+        `INSERT INTO analytics.company_memberships (tenant_id, auth_user_id, status)
+         VALUES ($1, $2, 'active')`,
+        [tenantAId, MEMBERSHIP_ADMIN_A_AUTH_UID],
+      );
+
+      await privilegedClient.query(
+        `INSERT INTO analytics.company_memberships (tenant_id, auth_user_id, status)
+         VALUES ($1, $2, 'active')`,
+        [tenantBId, MEMBERSHIP_ADMIN_B_AUTH_UID],
+      );
+
+      // A membership that has already ENDED — proves the self-read policy's
+      // `status = 'active'` guard, not merely identity ownership.
+      await privilegedClient.query(
+        `INSERT INTO analytics.company_memberships (tenant_id, auth_user_id, status, ended_at)
+         VALUES ($1, $2, 'ended', now())`,
+        [tenantAId, MEMBERSHIP_ENDED_AUTH_UID],
+      );
     });
 
     afterAll(async () => {
@@ -305,6 +352,13 @@ describe.skipIf(!ready)(
       // scoped STRICTLY to this test's own tenant codes — never a blanket
       // delete of any table.
       if (!privilegedClient) return;
+
+      // KORA-WP-010 addition: company_memberships teardown, scoped strictly
+      // to this file's own fabricated auth_user_id values.
+      await privilegedClient.query(
+        `DELETE FROM analytics.company_memberships WHERE auth_user_id = ANY($1)`,
+        [[MEMBERSHIP_ADMIN_A_AUTH_UID, MEMBERSHIP_ADMIN_B_AUTH_UID, MEMBERSHIP_ENDED_AUTH_UID]],
+      );
 
       const tenantRows = await privilegedClient.query<{ id: string }>(
         `SELECT id FROM analytics.tenant WHERE tenant_code = ANY($1)`,
@@ -396,5 +450,94 @@ describe.skipIf(!ready)(
         });
       });
     }
+
+    // ── KORA-WP-010 — analytics.company_memberships (identity-bound, NOT
+    // tenant-claim-bound — see migration 052) ─────────────────────────────
+    //
+    // Unlike the four tables above, this policy checks `auth_user_id =
+    // auth.uid()`, never a tenant claim — so this helper sets a `sub` claim
+    // (mirroring RLS-05's established shape for identity-bound policies)
+    // and the claimed kora_tenant_id is deliberately allowed to be WRONG in
+    // some assertions below, specifically to prove it has no effect.
+    async function queryMembershipsAsIdentity(
+      authUserId: string,
+      claimedTenantId: string,
+      role: 'COMPANY_ADMIN' | 'KORA_ADMIN' = 'COMPANY_ADMIN',
+    ) {
+      await privilegedClient.query('BEGIN');
+      try {
+        await privilegedClient.query('SET LOCAL ROLE authenticated');
+
+        const claims = JSON.stringify({
+          sub: authUserId,
+          app_metadata: { kora_role: role, kora_tenant_id: claimedTenantId },
+        });
+        await privilegedClient.query(`SELECT set_config('request.jwt.claims', $1, true)`, [claims]);
+
+        const result = await privilegedClient.query(
+          `SELECT id, tenant_id, auth_user_id, status FROM analytics.company_memberships`,
+        );
+        return { data: result.rows, error: null as Error | null };
+      } catch (error) {
+        return { data: null, error: error as Error };
+      } finally {
+        await privilegedClient.query('ROLLBACK');
+      }
+    }
+
+    describe('analytics.company_memberships (KORA-WP-010, identity-bound)', () => {
+      it('Admin A (COMPANY_ADMIN) can read their own active membership row (positive control)', async () => {
+        const { data, error } = await queryMembershipsAsIdentity(MEMBERSHIP_ADMIN_A_AUTH_UID, tenantAId);
+        expect(error).toBeNull();
+        expect(data).not.toBeNull();
+        expect(data!.length).toBe(1);
+        expect(data![0].auth_user_id).toBe(MEMBERSHIP_ADMIN_A_AUTH_UID);
+      });
+
+      it('Admin B (COMPANY_ADMIN) can read their own active membership row (positive control)', async () => {
+        const { data, error } = await queryMembershipsAsIdentity(MEMBERSHIP_ADMIN_B_AUTH_UID, tenantBId);
+        expect(error).toBeNull();
+        expect(data!.length).toBe(1);
+        expect(data![0].auth_user_id).toBe(MEMBERSHIP_ADMIN_B_AUTH_UID);
+      });
+
+      it('Admin A never sees Admin B\'s membership row (cross-identity denial, unfiltered SELECT *)', async () => {
+        const { data, error } = await queryMembershipsAsIdentity(MEMBERSHIP_ADMIN_A_AUTH_UID, tenantAId);
+        expect(error).toBeNull();
+        expect(data!.some((row) => row.auth_user_id === MEMBERSHIP_ADMIN_B_AUTH_UID)).toBe(false);
+      });
+
+      it('claim-tampering resistance: presenting Company B\'s tenant claim does not grant Admin A access to Admin B\'s row', async () => {
+        // Admin A's own identity (sub) is real; the kora_tenant_id claim is
+        // deliberately set to Company B's tenant — an impersonation attempt.
+        // The policy ignores the tenant claim entirely (auth_user_id =
+        // auth.uid() is the only check), so this must still return ONLY
+        // Admin A's own row, never Admin B's.
+        const { data, error } = await queryMembershipsAsIdentity(MEMBERSHIP_ADMIN_A_AUTH_UID, tenantBId);
+        expect(error).toBeNull();
+        expect(data!.length).toBe(1);
+        expect(data![0].auth_user_id).toBe(MEMBERSHIP_ADMIN_A_AUTH_UID);
+        expect(data![0].tenant_id).toBe(tenantAId); // still A's real tenant, not the claimed one
+      });
+
+      it('an ended membership is not returned to its own identity (lifecycle guard, not just ownership)', async () => {
+        const { data, error } = await queryMembershipsAsIdentity(MEMBERSHIP_ENDED_AUTH_UID, tenantAId);
+        expect(error).toBeNull();
+        expect(data!.length).toBe(0);
+      });
+
+      it('KORA_ADMIN positive control: legitimate cross-tenant admin access still works on this table', async () => {
+        const { data, error } = await queryMembershipsAsIdentity(
+          '00000000-0000-4000-c000-000000000000', // arbitrary — KORA_ADMIN's policy does not check auth_user_id
+          tenantAId,
+          'KORA_ADMIN',
+        );
+        expect(error).toBeNull();
+        const authUserIds = data!.map((row) => row.auth_user_id);
+        expect(authUserIds).toContain(MEMBERSHIP_ADMIN_A_AUTH_UID);
+        expect(authUserIds).toContain(MEMBERSHIP_ADMIN_B_AUTH_UID);
+        expect(authUserIds).toContain(MEMBERSHIP_ENDED_AUTH_UID); // admin sees ended rows too, unlike the self-read policy
+      });
+    });
   },
 );
