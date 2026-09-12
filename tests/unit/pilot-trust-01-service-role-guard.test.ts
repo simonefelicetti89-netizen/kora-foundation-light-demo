@@ -58,6 +58,23 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // not a user-facing read.
   { path: 'lib/live/persistence.ts', reason: 'batch write of scoring computation results — admin-triggered pipeline persistence, not a user-facing read' },
 
+  // KORA-WP-004: new Company Membership service — server-only by design
+  // (see the module's own header comment), not wired into any client route
+  // or authentication path; the only writer of analytics.company_memberships.
+  { path: 'lib/company-membership/membership-service.ts', reason: 'documented server-only service — Company Membership creation/termination, KORA-WP-004' },
+
+  // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
+  // called @supabase/supabase-js's createClient() directly, invisible to this
+  // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
+  // from app/api/admin/decision-pack/** (already-allowlisted app/api/admin/
+  // prefix, KORA_ADMIN-only) AND from app/api/company/decision-pack/** — a
+  // Company reading its OWN Decision Pack. The latter is the same class of
+  // documented pre-existing self-service exception as app/partner/workspace/
+  // page.tsx below (not fixed here, not endorsed as ideal — RLS-based access
+  // for a company's own decision-pack read is a separate, out-of-scope
+  // architectural question from "consolidate the duplicated factory").
+  { path: 'lib/decision-pack/pdf-data.ts', reason: 'consolidated in KORA-WP-003 (previously an inline createClient() call); reads a tenant\'s persisted Decision Pack data for both admin and company-self routes — see comment for the company-self caveat, a pre-existing status this WP made visible, not newly created' },
+
   // ── Documented pre-existing exceptions (NOT part of this sprint's 6-page
   // scope) — real, tracked, not silently endorsed ─────────────────────────
   {

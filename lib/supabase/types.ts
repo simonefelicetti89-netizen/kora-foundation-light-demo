@@ -40,6 +40,28 @@ export type TenantInsert = Omit<TenantRow, 'id' | 'created_at' | 'updated_at'> &
   updated_at?: string;
 };
 
+// ── analytics.company_memberships (KORA-WP-004) ──────────────────────────────
+
+export interface CompanyMembershipRow {
+  id: string;
+  tenant_id: string;
+  auth_user_id: string;
+  role: string;
+  status: string;
+  ended_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type CompanyMembershipInsert = Pick<CompanyMembershipRow, 'tenant_id' | 'auth_user_id'> & {
+  id?: string;
+  role?: string;
+  status?: string;
+  ended_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
 // ── personal.workforce_baseline ───────────────────────────────────────────────
 
 export interface WorkforceBaselineRow {
@@ -394,6 +416,7 @@ export interface Database {
   analytics: {
     Tables: {
       tenant:                 { Row: TenantRow;              Insert: TenantInsert;       Update: Partial<TenantInsert>; Relationships: [] };
+      company_memberships:    { Row: CompanyMembershipRow;   Insert: CompanyMembershipInsert; Update: Partial<CompanyMembershipInsert>; Relationships: [] };
       source_batch:           { Row: SourceBatchRow;         Insert: Omit<SourceBatchRow,  'id'|'created_at'|'updated_at'>; Update: Partial<SourceBatchRow>; Relationships: [] };
       uef_record:             { Row: UefRecordRow;           Insert: Omit<UefRecordRow,    'id'|'created_at'|'updated_at'>; Update: Partial<UefRecordRow>; Relationships: [] };
       kora_index_result:      { Row: KoraIndexResultRow;     Insert: Omit<KoraIndexResultRow, 'id'|'created_at'>; Update: Partial<KoraIndexResultRow>; Relationships: [] };
