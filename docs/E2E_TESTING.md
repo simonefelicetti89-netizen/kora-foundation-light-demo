@@ -194,8 +194,16 @@ Il dev server (`npm run dev`) usa `.env.local` che punta a **staging** (`haqf***
 
 Per run contro staging remoto senza avviare dev server locale:
 ```bash
-PLAYWRIGHT_BASE_URL=https://kora-staging.vercel.app npm run test:e2e
+PLAYWRIGHT_BASE_URL=https://kora-foundation-light-demo.vercel.app npm run test:e2e
 ```
+
+Verifica rapida che il deploy sia raggiungibile (senza eseguire la suite E2E):
+```bash
+curl https://kora-foundation-light-demo.vercel.app/api/health
+```
+(atteso: `{"status":"ok","service":"kora","database":"reachable"}` — non verifica quale commit sia deployato, solo che l'app e il DB siano raggiungibili.)
+
+> **Nota (2026-09-12):** l'URL precedentemente documentato qui (`kora-staging.vercel.app`) è risultato stale — punta oggi a un'applicazione di terze parti non correlata, non a questo repository. Usare solo l'URL sopra, verificato tramite l'health endpoint dell'app.
 
 La config Playwright legge `baseURL` da `playwright.config.ts` ma può essere overridata via env.
 Aggiungere in `playwright.config.ts`:
