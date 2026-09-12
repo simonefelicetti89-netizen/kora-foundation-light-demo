@@ -72,6 +72,11 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // policy only; writes happen exclusively through this service).
   { path: 'lib/investment-map/observed-investment-fact-service.ts', reason: 'documented server-only service — Observed Investment Fact creation/query, KORA-WP-014' },
 
+  // KORA-WP-009: internal admin operator identity + capability/RBAC grants —
+  // server-only, not Company-scoped, no client route or authentication path
+  // calls it (foundation-only, no route enforcement integration this WP).
+  { path: 'lib/admin-capability/capability-service.ts', reason: 'documented server-only service — internal operator/capability grant management + hasAdminCapability() check, KORA-WP-009' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called

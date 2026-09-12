@@ -448,6 +448,42 @@ export type ObservedInvestmentFactInsert = Pick<
   created_at?: string;
 };
 
+// ── gov.internal_operator / gov.capability_grant (KORA-WP-009) ─────────────────
+
+export interface InternalOperatorRow {
+  id: string;
+  auth_user_id: string;
+  status: 'active' | 'inactive';
+  deactivated_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type InternalOperatorInsert = Pick<InternalOperatorRow, 'auth_user_id'> & {
+  id?: string;
+  status?: 'active' | 'inactive';
+  deactivated_at?: string | null;
+};
+
+export interface CapabilityGrantRow {
+  id: string;
+  operator_id: string;
+  capability_domain: string;
+  action: string;
+  status: 'active' | 'revoked';
+  revoked_at: string | null;
+  granted_by_operator_id: string | null;
+  granted_at: string;
+}
+
+export type CapabilityGrantInsert = Pick<CapabilityGrantRow, 'operator_id' | 'capability_domain' | 'action'> & {
+  id?: string;
+  status?: 'active' | 'revoked';
+  revoked_at?: string | null;
+  granted_by_operator_id?: string | null;
+  granted_at?: string;
+};
+
 // ── network.partner_profile ───────────────────────────────────────────────────
 
 export interface PartnerProfileRow {
@@ -513,6 +549,8 @@ export interface Database {
   gov: {
     Tables: {
       budget_governance: { Row: BudgetGovernanceRow; Insert: Omit<BudgetGovernanceRow,'id'|'created_at'|'updated_at'>; Update: Partial<BudgetGovernanceRow>; Relationships: [] };
+      internal_operator: { Row: InternalOperatorRow; Insert: InternalOperatorInsert; Update: Partial<InternalOperatorInsert>; Relationships: [] };
+      capability_grant:  { Row: CapabilityGrantRow;  Insert: CapabilityGrantInsert;  Update: Partial<CapabilityGrantInsert>;  Relationships: [] };
     };
     Views:          Record<string, never>;
     Functions:      Record<string, never>;
