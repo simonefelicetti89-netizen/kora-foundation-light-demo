@@ -388,6 +388,31 @@ export interface AuditLogRow {
   // No updated_at — append-only by design
 }
 
+// ── audit.governance_event (KORA-WP-005) ──────────────────────────────────────
+
+export interface GovernanceEventRow {
+  id: string;
+  source_module: string;
+  actor_role: string;
+  actor_id: string;
+  event_type: string;
+  object_type: string | null;
+  object_id: string | null;
+  tenant_id: string | null;
+  payload: Json;
+  occurred_at: string;
+  // No updated_at — append-only by design, DB-trigger-enforced
+}
+
+export type GovernanceEventInsert = Pick<GovernanceEventRow, 'source_module' | 'actor_role' | 'actor_id' | 'event_type'> & {
+  id?: string;
+  object_type?: string | null;
+  object_id?: string | null;
+  tenant_id?: string | null;
+  payload?: Json;
+  occurred_at?: string;
+};
+
 // ── network.partner_profile ───────────────────────────────────────────────────
 
 export interface PartnerProfileRow {
@@ -463,6 +488,7 @@ export interface Database {
   audit: {
     Tables: {
       audit_log: { Row: AuditLogRow; Insert: Omit<AuditLogRow,'id'|'created_at'>; Update: never; Relationships: [] };
+      governance_event: { Row: GovernanceEventRow; Insert: GovernanceEventInsert; Update: never; Relationships: [] };
     };
     Views:          Record<string, never>;
     Functions:      Record<string, never>;

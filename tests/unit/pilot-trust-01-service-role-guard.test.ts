@@ -63,6 +63,10 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // or authentication path; the only writer of analytics.company_memberships.
   { path: 'lib/company-membership/membership-service.ts', reason: 'documented server-only service — Company Membership creation/termination, KORA-WP-004' },
 
+  // KORA-WP-005: shared governance event/provenance substrate — server-only,
+  // insertion-only, no client route or authentication path ever calls it.
+  { path: 'lib/audit/governance-event.ts', reason: 'documented server-only service — append-only governance event recording, KORA-WP-005' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
