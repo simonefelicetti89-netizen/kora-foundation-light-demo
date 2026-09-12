@@ -484,6 +484,36 @@ export type CapabilityGrantInsert = Pick<CapabilityGrantRow, 'operator_id' | 'ca
   granted_at?: string;
 };
 
+// ── advisor.advisor_identity / advisor.advisor_role_qualification (KORA-WP-030) ──
+
+export interface AdvisorIdentityRow {
+  id: string;
+  auth_user_id: string;
+  full_name: string;
+  status: 'candidate_onboarding' | 'active' | 'unavailable' | 'globally_suspended' | 'inactive_offboarded';
+  created_at: string;
+  updated_at: string;
+}
+
+export type AdvisorIdentityInsert = Pick<AdvisorIdentityRow, 'auth_user_id' | 'full_name'> & {
+  id?: string;
+  status?: AdvisorIdentityRow['status'];
+};
+
+export interface AdvisorRoleQualificationRow {
+  id: string;
+  advisor_id: string;
+  role: 'Company Advisor' | 'Partner Advisor';
+  status: 'CANDIDATE' | 'QUALIFICATION IN PROGRESS' | 'QUALIFIED' | 'RENEWAL DUE' | 'EXPIRED' | 'SUSPENDED' | 'REVOKED';
+  created_at: string;
+  updated_at: string;
+}
+
+export type AdvisorRoleQualificationInsert = Pick<AdvisorRoleQualificationRow, 'advisor_id' | 'role'> & {
+  id?: string;
+  status?: AdvisorRoleQualificationRow['status'];
+};
+
 // ── analytics.need_hypothesis (KORA-WP-017) ─────────────────────────────────────
 
 export interface NeedHypothesisRow {
@@ -600,6 +630,18 @@ export interface Database {
         Update: Partial<Omit<PartnerProfileRow, 'id' | 'created_at'>>;
         Relationships: [];
       };
+    };
+    Views:          Record<string, never>;
+    Functions:      Record<string, never>;
+    Enums:          Record<string, never>;
+    CompositeTypes: Record<string, never>;
+  };
+
+  // ── advisor schema (KORA-WP-030) ──────────────────────────────────────────
+  advisor: {
+    Tables: {
+      advisor_identity: { Row: AdvisorIdentityRow; Insert: AdvisorIdentityInsert; Update: Partial<AdvisorIdentityInsert>; Relationships: [] };
+      advisor_role_qualification: { Row: AdvisorRoleQualificationRow; Insert: AdvisorRoleQualificationInsert; Update: Partial<AdvisorRoleQualificationInsert>; Relationships: [] };
     };
     Views:          Record<string, never>;
     Functions:      Record<string, never>;

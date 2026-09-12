@@ -82,6 +82,14 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // happen exclusively through this service, same as KORA-WP-014).
   { path: 'lib/needs-map/need-hypothesis-service.ts', reason: 'documented server-only service — Need Hypothesis creation/query, KORA-WP-017' },
 
+  // KORA-WP-030: Advisor Identity/Role Qualification — server-only by design.
+  // Unlike Company-scoped tables, no self-service write grant exists at all
+  // (migration 056: authenticated gets SELECT only) — a qualification is a
+  // governed capability (doc 76 §4), never self-declared, so every write
+  // (identity/qualification creation, status transitions) goes exclusively
+  // through this service.
+  { path: 'lib/advisor-identity/advisor-identity-service.ts', reason: 'documented server-only service — Advisor Identity/Role Qualification creation/query, KORA-WP-030' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called

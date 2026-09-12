@@ -60,12 +60,23 @@ const nextConfig: NextConfig = {
   // 308 (permanent) so browser caches the new location and bookmarks update.
   async redirects() {
     return [
-      // CC-00 Residual demo retirement (2026-09-26): /demo/advisor is retired
-      // (ADVISOR is a real active role, but no canonical advisor workspace
-      // model exists yet — deferred, NETWORK track) — old bookmarks land on
-      // the /demo hub instead of a route that no longer exists.
-      { source: '/advisor',              destination: '/demo',                permanent: true },
-      { source: '/advisor/:path*',       destination: '/demo',                permanent: true },
+      // KORA-WP-030 (2026-09-12): the /advisor -> /demo redirect pair added by
+      // CC-00 Residual demo retirement (2026-09-26 [sic — dated ahead of this
+      // WP in the repo's own history]) is REMOVED here. That redirect existed
+      // specifically because "no canonical advisor workspace model exists
+      // yet" (its own comment, preserved above for context) — this WP is
+      // exactly the one that builds that model (app/advisor/layout.tsx +
+      // page.tsx, the real Advisor self-view). Leaving the redirect in place
+      // would make WP-030's own required UI ("app/advisor route tree begins",
+      // file 102) completely unreachable — every request to /advisor or any
+      // /advisor/* path would bounce to /demo before Next.js's own router
+      // ever resolved the new real page. Found during this WP's own
+      // Current-Code-Truth investigation (Step 4/40), not anticipated by
+      // file 102's own text. lib/architecture/registry.ts's 'Advisor' entry
+      // (still labeled TO_BUILD/NETWORK-track) is now stale in the same way —
+      // disclosed as a documentation-hygiene follow-up in this WP's report,
+      // not fixed here (no test depends on it, and it is not a routing
+      // blocker like this redirect was).
       // CC-00 Residual demo retirement (2026-09-26): /demo/guide is retired
       // (pure navigation/doctrine duplicate of /demo root + CLAUDE.md) — old
       // bookmarks of the legacy /demo-guide path now land on /demo instead.

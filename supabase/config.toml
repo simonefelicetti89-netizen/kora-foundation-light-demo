@@ -31,7 +31,14 @@ port = 54321
 # the real staging/production project's own PostgREST API settings (Supabase
 # dashboard) already expose `gov` — this local file fix does not, and cannot,
 # touch that remote configuration.
-schemas = ["public", "graphql_public", "analytics", "personal", "commons", "network", "audit", "gov"]
+#
+# KORA-WP-030 (2026-09-12): added `advisor` proactively (new schema, this
+# migration) — added ahead of time specifically to avoid repeating the exact
+# gov/WP-009 PGRST106 defect class above, since advisor.advisor_identity/
+# advisor_role_qualification are queried via `.schema('advisor')` by this
+# WP's own service. Same open question applies: whether staging/production's
+# own dashboard API settings expose `advisor` is unconfirmed from this repo.
+schemas = ["public", "graphql_public", "analytics", "personal", "commons", "network", "audit", "gov", "advisor"]
 # Extra schemas to add to the search_path of every request.
 extra_search_path = ["public", "extensions"]
 # The maximum number of rows returns from a view, table, or stored procedure. Limits payload size
