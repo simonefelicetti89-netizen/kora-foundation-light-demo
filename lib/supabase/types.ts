@@ -514,6 +514,55 @@ export type AdvisorRoleQualificationInsert = Pick<AdvisorRoleQualificationRow, '
   status?: AdvisorRoleQualificationRow['status'];
 };
 
+// ── advisor.advisor_assignment / advisor.advisor_prerequisite_eligibility (KORA-WP-031) ──
+
+export interface AdvisorAssignmentRow {
+  id: string;
+  advisor_id: string;
+  organisation_type: 'company';
+  company_id: string;
+  role: 'Company Advisor' | 'Partner Advisor';
+  status: 'active' | 'ended';
+  effective_from: string;
+  effective_to: string | null;
+  reason: string | null;
+  conflict_flag: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type AdvisorAssignmentInsert = Pick<AdvisorAssignmentRow, 'advisor_id' | 'company_id' | 'role'> & {
+  id?: string;
+  organisation_type?: AdvisorAssignmentRow['organisation_type'];
+  status?: AdvisorAssignmentRow['status'];
+  effective_to?: string | null;
+  reason?: string | null;
+  conflict_flag?: boolean;
+};
+
+export interface AdvisorPrerequisiteEligibilityRow {
+  id: string;
+  role_qualification_id: string;
+  status: 'MET' | 'NOT_MET';
+  source_reference: string | null;
+  effective_date: string | null;
+  expiry_date: string | null;
+  last_verified_at: string | null;
+  verified_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type AdvisorPrerequisiteEligibilityInsert = Pick<AdvisorPrerequisiteEligibilityRow, 'role_qualification_id'> & {
+  id?: string;
+  status?: AdvisorPrerequisiteEligibilityRow['status'];
+  source_reference?: string | null;
+  effective_date?: string | null;
+  expiry_date?: string | null;
+  last_verified_at?: string | null;
+  verified_by?: string | null;
+};
+
 // ── analytics.need_hypothesis (KORA-WP-017) ─────────────────────────────────────
 
 export interface NeedHypothesisRow {
@@ -637,11 +686,13 @@ export interface Database {
     CompositeTypes: Record<string, never>;
   };
 
-  // ── advisor schema (KORA-WP-030) ──────────────────────────────────────────
+  // ── advisor schema (KORA-WP-030, extended KORA-WP-031) ────────────────────
   advisor: {
     Tables: {
       advisor_identity: { Row: AdvisorIdentityRow; Insert: AdvisorIdentityInsert; Update: Partial<AdvisorIdentityInsert>; Relationships: [] };
       advisor_role_qualification: { Row: AdvisorRoleQualificationRow; Insert: AdvisorRoleQualificationInsert; Update: Partial<AdvisorRoleQualificationInsert>; Relationships: [] };
+      advisor_assignment: { Row: AdvisorAssignmentRow; Insert: AdvisorAssignmentInsert; Update: Partial<AdvisorAssignmentInsert>; Relationships: [] };
+      advisor_prerequisite_eligibility: { Row: AdvisorPrerequisiteEligibilityRow; Insert: AdvisorPrerequisiteEligibilityInsert; Update: Partial<AdvisorPrerequisiteEligibilityInsert>; Relationships: [] };
     };
     Views:          Record<string, never>;
     Functions:      Record<string, never>;

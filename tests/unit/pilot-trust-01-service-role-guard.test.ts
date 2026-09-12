@@ -90,6 +90,13 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // through this service.
   { path: 'lib/advisor-identity/advisor-identity-service.ts', reason: 'documented server-only service — Advisor Identity/Role Qualification creation/query, KORA-WP-030' },
 
+  // KORA-WP-031: Advisor Assignment + Validity Rule + Minimum
+  // Prerequisite-Eligibility Data — server-only by design, same rationale as
+  // WP-030 immediately above. No route/UI exists over this WP (registry:
+  // "UI: N/A at this WP") — this service is itself the authorization
+  // boundary (every mutating function checks actorRole === 'KORA_ADMIN').
+  { path: 'lib/advisor-assignment/advisor-assignment-service.ts', reason: 'documented server-only service — Advisor Assignment creation/validity/prerequisite-eligibility, KORA-WP-031' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
