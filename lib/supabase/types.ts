@@ -484,6 +484,26 @@ export type CapabilityGrantInsert = Pick<CapabilityGrantRow, 'operator_id' | 'ca
   granted_at?: string;
 };
 
+// ── analytics.need_hypothesis (KORA-WP-017) ─────────────────────────────────────
+
+export interface NeedHypothesisRow {
+  id: string;
+  tenant_id: string;
+  statement: string;
+  classification: 'Hypothesis' | 'Emerging' | 'Supported' | 'Insufficient-Evidence-Unknown';
+  recorded_by_role: string;
+  recorded_by_id: string;
+  created_at: string;
+}
+
+export type NeedHypothesisInsert = Pick<
+  NeedHypothesisRow,
+  'tenant_id' | 'statement' | 'recorded_by_role' | 'recorded_by_id'
+> & {
+  id?: string;
+  created_at?: string;
+};
+
 // ── network.partner_profile ───────────────────────────────────────────────────
 
 export interface PartnerProfileRow {
@@ -522,6 +542,7 @@ export interface Database {
       confidence_result:      { Row: ConfidenceResultRow;    Insert: Omit<ConfidenceResultRow,'id'|'created_at'|'updated_at'>; Update: Partial<ConfidenceResultRow>; Relationships: [] };
       decision_pack_version:  { Row: DecisionPackVersionRow; Insert: Omit<DecisionPackVersionRow,'id'|'created_at'|'updated_at'>; Update: Partial<DecisionPackVersionRow>; Relationships: [] };
       observed_investment_fact: { Row: ObservedInvestmentFactRow; Insert: ObservedInvestmentFactInsert; Update: never; Relationships: [] };
+      need_hypothesis: { Row: NeedHypothesisRow; Insert: NeedHypothesisInsert; Update: never; Relationships: [] };
     };
     Views:          Record<string, never>;
     Functions:      Record<string, never>;

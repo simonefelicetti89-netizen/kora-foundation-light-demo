@@ -226,7 +226,11 @@ const RLS03_REPORTING_PERIOD = 'RLS03-SYNTHETIC';
 // (tenant-claim-bound, `tenant_id = kora.tenant_id()`, migration 053),
 // exactly like the three original tables, so it fits the same generic
 // queryAsTenant() loop below without any new helper.
-const RLS03_TABLES = ['kora_index_result', 'source_batch', 'activation_result', 'observed_investment_fact'] as const;
+// KORA-WP-017: analytics.need_hypothesis added — also Pattern A (migration
+// 055), using ONLY the COMPANY_ADMIN role (COMPANY_VIEWER was removed from
+// this codebase, B143 — this table's own policy correctly omits it, unlike
+// the older precedent tables' still-inert COMPANY_VIEWER clause).
+const RLS03_TABLES = ['kora_index_result', 'source_batch', 'activation_result', 'observed_investment_fact', 'need_hypothesis'] as const;
 type Rls03Table = (typeof RLS03_TABLES)[number];
 
 // ── KORA-WP-010 addition: analytics.company_memberships fixture identities ──
@@ -303,6 +307,10 @@ describe.skipIf(!ready)(
         `DELETE FROM analytics.observed_investment_fact WHERE tenant_id = ANY($1) AND purpose = $2`,
         [[tenantAId, tenantBId], RLS03_REPORTING_PERIOD],
       );
+      await privilegedClient.query(
+        `DELETE FROM analytics.need_hypothesis WHERE tenant_id = ANY($1) AND statement = $2`,
+        [[tenantAId, tenantBId], RLS03_REPORTING_PERIOD],
+      );
 
       for (const tenantId of [tenantAId, tenantBId]) {
         await privilegedClient.query(
@@ -332,6 +340,15 @@ describe.skipIf(!ready)(
           `INSERT INTO analytics.observed_investment_fact
              (tenant_id, recorded_by_role, recorded_by_id, purpose)
            VALUES ($1, 'KORA_ADMIN', 'rls03-fixture', $2)`,
+          [tenantId, RLS03_REPORTING_PERIOD],
+        );
+
+        // KORA-WP-017: statement doubles as this fixture's own tag (the
+        // table has no reporting_period column either).
+        await privilegedClient.query(
+          `INSERT INTO analytics.need_hypothesis
+             (tenant_id, statement, recorded_by_role, recorded_by_id)
+           VALUES ($1, $2, 'KORA_ADMIN', 'rls03-fixture')`,
           [tenantId, RLS03_REPORTING_PERIOD],
         );
       }
@@ -391,6 +408,7 @@ describe.skipIf(!ready)(
         await privilegedClient.query(`DELETE FROM analytics.activation_result WHERE tenant_id = ANY($1)`, [ids]);
         await privilegedClient.query(`DELETE FROM analytics.source_batch WHERE tenant_id = ANY($1)`, [ids]);
         await privilegedClient.query(`DELETE FROM analytics.observed_investment_fact WHERE tenant_id = ANY($1)`, [ids]);
+        await privilegedClient.query(`DELETE FROM analytics.need_hypothesis WHERE tenant_id = ANY($1)`, [ids]);
         await privilegedClient.query(`DELETE FROM analytics.tenant WHERE tenant_code = ANY($1)`, [
           RLS03_TENANT_CODES as unknown as string[],
         ]);

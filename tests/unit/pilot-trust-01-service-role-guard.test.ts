@@ -77,6 +77,11 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // calls it (foundation-only, no route enforcement integration this WP).
   { path: 'lib/admin-capability/capability-service.ts', reason: 'documented server-only service — internal operator/capability grant management + hasAdminCapability() check, KORA-WP-009' },
 
+  // KORA-WP-017: Need Hypothesis creation/query — server-only, matches the
+  // Pattern-A convention (Company sessions read via RLS policy only; writes
+  // happen exclusively through this service, same as KORA-WP-014).
+  { path: 'lib/needs-map/need-hypothesis-service.ts', reason: 'documented server-only service — Need Hypothesis creation/query, KORA-WP-017' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
