@@ -162,11 +162,21 @@ describe('KORA-WP-030 — createAdvisorIdentity: one identity per person', () =>
     );
   });
 
-  it('never imports the WP-006 governed-action catalogue (real import statement, not explanatory prose)', async () => {
+  it('WP-030\'s own functions (identity/qualification creation, status update) never call recordGovernedAction — only WP-032\'s later-added grantAdvisorRoleQualification does', async () => {
+    // KORA-WP-032 (2026-09-13) legitimately added a `recordGovernedAction`
+    // import and call to this SAME file, for its own grantAdvisorRoleQualification
+    // function — the real, WP-006-catalogue-named owning workflow for
+    // ADVISOR_ROLE_QUALIFICATION_CHANGE (see report 119). This test is
+    // narrowed to the file's WP-030-owned portion only (everything before the
+    // WP-032 section banner), so it still locks in the original invariant —
+    // WP-030's own three functions never claim that governed-action category
+    // — without false-failing on WP-032's legitimate, later, separate use.
     const src = readFileSync(join(process.cwd(), 'lib/advisor-identity/advisor-identity-service.ts'), 'utf8');
-    const codeLines = src.split('\n').filter((l) => !l.trim().startsWith('//'));
+    const wp032Marker = src.indexOf('KORA-WP-032 — Advisor Governance');
+    expect(wp032Marker).toBeGreaterThan(-1); // sanity: the WP-032 section must actually exist to slice against
+    const wp030Portion = src.slice(0, wp032Marker);
+    const codeLines = wp030Portion.split('\n').filter((l) => !l.trim().startsWith('//'));
     const code = codeLines.join('\n');
-    expect(code).not.toMatch(/from ['"]@\/lib\/audit\/governed-action-catalog['"]/);
     expect(code).not.toContain('recordGovernedAction(');
   });
 

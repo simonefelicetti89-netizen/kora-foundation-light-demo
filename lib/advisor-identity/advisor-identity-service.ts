@@ -26,6 +26,7 @@
 
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { recordGovernanceEvent } from '@/lib/audit/governance-event';
+import { recordGovernedAction } from '@/lib/audit/governed-action-catalog';
 
 // Doc 76 §14 — Advisor Identity Lifecycle (one per person), independent of
 // per-role qualification lifecycle.
@@ -263,4 +264,136 @@ export async function updateAdvisorRoleQualificationStatus(
   });
 
   return qualification;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// KORA-WP-032 — Advisor Governance: Qualification Grant, Manual First-Pilot.
+//
+// Doc 81 (DD-1.1) §11 — "Advisor Role Qualification Grant Authority
+// Strengthened": authority belongs to KORA Advisor Governance; Academy
+// completion does not grant the qualification; the Advisor cannot self-grant;
+// the candidate cannot approve their own qualification. "First controlled
+// pilot rule: an explicit, authorized KORA governance decision is required
+// to grant or renew each Advisor Role Qualification." No auto-grant, no
+// policy engine, no batch — one explicit decision per qualification.
+//
+// This is deliberately a NARROW wrapper, not a new lifecycle mechanism: it
+// reuses migration 056's existing physical model and service_role-only
+// grants unchanged (no new migration — see report 119, Data/Migration
+// Impact). What it adds beyond WP-030's already-existing
+// updateAdvisorRoleQualificationStatus() is (a) a function named and scoped
+// exactly to the governed "grant/renew" decision, not generic status CRUD,
+// and (b) — unlike WP-030's own events — this is finally the real owning
+// workflow WP-006's governed-action catalogue named for
+// ADVISOR_ROLE_QUALIFICATION_CHANGE ("Advisor Role Qualification =
+// KORA-WP-032", governed-action-catalog.ts's own header comment), so this
+// function calls recordGovernedAction() with that exact category, not the
+// generic substrate.
+//
+// GRANT/RENEW SCOPE (this WP's own reasoned boundary, disclosed in report
+// 119 — doc 81 does not enumerate exact from-states): allowed from
+// CANDIDATE, QUALIFICATION IN PROGRESS, RENEWAL DUE, or EXPIRED (the last
+// two both being what "renew" means) — i.e. any non-terminal, non-QUALIFIED
+// state. Rejected from an already-QUALIFIED state (duplicate-grant guard)
+// and from SUSPENDED/REVOKED (reinstatement is a distinct, unbuilt governed
+// action, not a "grant"). Revocation/suspension themselves are explicitly
+// out of this WP's scope (registry Out of Scope: "automated/policy-based
+// grant"; no revoke/suspend acceptance criterion exists for WP-032).
+
+const GRANT_ELIGIBLE_STATUSES: readonly QualificationStatus[] = [
+  'CANDIDATE', 'QUALIFICATION IN PROGRESS', 'RENEWAL DUE', 'EXPIRED',
+];
+
+export interface GrantAdvisorRoleQualificationParams {
+  qualificationId: string;
+  grantedByOperatorId: string;
+}
+
+export async function grantAdvisorRoleQualification(
+  params: GrantAdvisorRoleQualificationParams,
+): Promise<AdvisorRoleQualification> {
+  const db = getSupabaseServiceClient();
+
+  // Look up the existing row first — grant never creates one (Step 26 of
+  // this WP's authorization: "Grant to nonexistent [qualification record]
+  // must fail safely" — creation remains WP-030's createAdvisorRoleQualification,
+  // called separately, before any grant decision can be made).
+  const { data: existing, error: lookupError } = await db
+    .schema('advisor')
+    .from('advisor_role_qualification')
+    .select()
+    .eq('id', params.qualificationId)
+    .maybeSingle();
+
+  if (lookupError) {
+    throw new Error(`[KORA] grantAdvisorRoleQualification failed: ${lookupError.message}`);
+  }
+  if (!existing) {
+    throw new Error('[KORA] grantAdvisorRoleQualification rejected: no qualification record exists for this id — create one first.');
+  }
+
+  const current = toAdvisorRoleQualification(existing as AdvisorRoleQualificationDbRow);
+
+  if (current.status === 'QUALIFIED') {
+    throw new Error('[KORA] grantAdvisorRoleQualification rejected: this qualification is already QUALIFIED — duplicate grant.');
+  }
+  if (!GRANT_ELIGIBLE_STATUSES.includes(current.status)) {
+    throw new Error(`[KORA] grantAdvisorRoleQualification rejected: cannot grant from status "${current.status}" — not eligible for grant/renew.`);
+  }
+
+  const previousStatus = current.status;
+
+  const { data: updated, error: updateError } = await db
+    .schema('advisor')
+    .from('advisor_role_qualification')
+    .update({ status: 'QUALIFIED' })
+    .eq('id', params.qualificationId)
+    .select()
+    .single();
+
+  if (updateError || !updated) {
+    throw new Error(`[KORA] grantAdvisorRoleQualification failed: ${updateError?.message ?? 'no data returned'}`);
+  }
+
+  const granted = toAdvisorRoleQualification(updated as AdvisorRoleQualificationDbRow);
+
+  // The real owning workflow for ADVISOR_ROLE_QUALIFICATION_CHANGE (WP-006's
+  // own catalogue comment names this exact WP) — not the generic substrate.
+  await recordGovernedAction({
+    category: 'ADVISOR_ROLE_QUALIFICATION_CHANGE',
+    actorRole: 'KORA_ADMIN',
+    actorId: params.grantedByOperatorId,
+    objectType: 'advisor_role_qualification',
+    objectId: granted.id,
+    payload: {
+      verb: previousStatus === 'EXPIRED' || previousStatus === 'RENEWAL DUE' ? 'renew' : 'grant',
+      advisorId: granted.advisorId,
+      role: granted.role,
+      previousStatus,
+      newStatus: 'QUALIFIED',
+    },
+  });
+
+  return granted;
+}
+
+// ── listAllAdvisorIdentities — minimal Admin grant-UI support ───────────────
+// Lets the Admin grant surface show which Advisors exist to grant a
+// qualification to. Read-only; no filtering/search logic beyond what the
+// minimal Admin UI (file 102: "UI: Admin grant UI (minimal)") requires.
+
+export async function listAllAdvisorIdentities(): Promise<AdvisorIdentity[]> {
+  const db = getSupabaseServiceClient();
+
+  const { data, error } = await db
+    .schema('advisor')
+    .from('advisor_identity')
+    .select()
+    .order('full_name', { ascending: true });
+
+  if (error) {
+    throw new Error(`[KORA] listAllAdvisorIdentities failed: ${error.message}`);
+  }
+
+  return ((data ?? []) as AdvisorIdentityDbRow[]).map(toAdvisorIdentity);
 }
