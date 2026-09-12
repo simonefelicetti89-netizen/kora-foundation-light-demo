@@ -59,7 +59,7 @@ describe('PILOT-SAAS-01 — COMPANY_VIEWER is fully removed at the app layer (B1
   });
 });
 
-describe('PILOT-SAAS-01 — ADVISOR has DB-layer support but zero session/route enforcement today', () => {
+describe('PILOT-SAAS-01 / KORA-WP-002 — ADVISOR has a session guard, but still zero real route/identity today', () => {
   it('lib/constants/kora.ts still lists ADVISOR as a permission-layer role', () => {
     // This is intentionally still true — ADVISOR exists in the general
     // permission/routing layer (lib/permissions/index.ts) even though it has
@@ -68,15 +68,23 @@ describe('PILOT-SAAS-01 — ADVISOR has DB-layer support but zero session/route 
     expect(KORA_ROLES).toContain('ADVISOR');
   });
 
-  it('kora-session.ts exports no requireAdvisorUser()/isAdvisorUser() guard', () => {
-    // Guards against a future accidental partial-enablement (e.g. someone
-    // adding a guard without also updating the readiness docs and the
-    // access matrix). If this test starts failing because a real guard was
-    // added deliberately, update docs/access-matrix.md and
-    // docs/FUTURE_ROLES_AND_SURFACES.md in the same change, then update this test.
+  // KORA-WP-002 (2026-09-12) deliberately added requireAdvisorUser() /
+  // isAdvisorUser() — this test previously guarded against exactly that
+  // export existing accidentally; per its own prior instruction, this change
+  // is accompanied by updates to docs/access-matrix.md and
+  // docs/FUTURE_ROLES_AND_SURFACES.md in the same change. ADVISOR still has
+  // no Identity table (KORA-WP-030), no real /advisor route, and is still
+  // absent from ACTIVE_KORA_ROLES — only the session-guard layer changed.
+  it('kora-session.ts now exports requireAdvisorUser()/isAdvisorUser()/getCurrentAdvisorUser() (KORA-WP-002)', () => {
     const exportNames = Object.keys(koraSession);
-    expect(exportNames).not.toContain('requireAdvisorUser');
-    expect(exportNames).not.toContain('isAdvisorUser');
+    expect(exportNames).toContain('requireAdvisorUser');
+    expect(exportNames).toContain('isAdvisorUser');
+    expect(exportNames).toContain('getCurrentAdvisorUser');
+  });
+
+  it('ADVISOR remains absent from ACTIVE_KORA_ROLES — the guard is additive, not a role-activation decision', () => {
+    expect(ACTIVE_KORA_ROLES as readonly string[]).not.toContain('ADVISOR');
+    expect(FUTURE_KORA_ROLES).toContain('ADVISOR');
   });
 });
 

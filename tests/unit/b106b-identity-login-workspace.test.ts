@@ -62,9 +62,12 @@ describe('B106-B — kora-session: auth metadata canonici', () => {
 
   // isKoraAuthError's union accurately included KoraDemoUser at the time
   // this test was written. CC-00 DEMO_VIEWER role retirement (2026-09-26)
-  // removed KoraDemoUser entirely — the union now covers only real roles.
-  it('isKoraAuthError type guard accetta tutti i ruoli reali (historical note: used to also include KoraDemoUser, B129)', () => {
-    expect(session).toContain('KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | NextResponse');
+  // removed KoraDemoUser entirely. KORA-WP-002 (2026-09-12) added
+  // KoraAdvisorUser to the union (a session-guard-recognized role, still no
+  // Identity table) — the union now covers all five real/session-guarded
+  // roles, still no demo role.
+  it('isKoraAuthError type guard accetta tutti i ruoli reali (historical note: used to also include KoraDemoUser, B129; KoraAdvisorUser added KORA-WP-002)', () => {
+    expect(session).toContain('KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraAdvisorUser | NextResponse');
     const codeOnly = session.split('\n').filter((line) => !line.trim().startsWith('//')).join('\n');
     expect(codeOnly).not.toContain('KoraDemoUser');
   });

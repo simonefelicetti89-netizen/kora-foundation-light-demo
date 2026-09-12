@@ -158,14 +158,19 @@ export async function middleware(request: NextRequest) {
   // B168-P3: Block KORA_ADMIN from worker-individual paths — defense in depth layer 1.
   // canAccess() returns DENY for KORA_ADMIN on worker-individual in ALL environments.
   // This is the middleware layer; worker layout and RLS provide layers 2 and 3.
+  // KORA-WP-002: ADVISOR joins this same block — canAccess() already returns
+  // DENY for ADVISOR on worker_individual_pib in every environment (no
+  // Advisor Identity table or route exists yet to redirect to, so a blocked
+  // Advisor session goes to '/' rather than a role-specific home).
   const isKoraAdmin = sessionKoraRole === 'KORA_ADMIN';
-  if (isKoraAdmin) {
+  const isAdvisor = sessionKoraRole === 'ADVISOR';
+  if (isKoraAdmin || isAdvisor) {
     const workerIndividualPrefixes = ['/worker/'];
     const isWorkerPath = workerIndividualPrefixes.some((p) => pathname.startsWith(p));
     if (isWorkerPath) {
-      const decision = canAccess('KORA_ADMIN', 'worker_individual_pib', 'live');
+      const decision = canAccess(isKoraAdmin ? 'KORA_ADMIN' : 'ADVISOR', 'worker_individual_pib', 'live');
       if (!decision.allowed) {
-        const url = new URL('/admin', request.url);
+        const url = new URL(isKoraAdmin ? '/admin' : '/', request.url);
         url.searchParams.set('blocked', 'worker_individual_access_denied');
         return NextResponse.redirect(url);
       }

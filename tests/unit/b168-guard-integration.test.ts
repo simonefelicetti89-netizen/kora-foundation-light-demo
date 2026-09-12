@@ -39,10 +39,12 @@ describe('B168 — Layer 1: middleware worker-individual block', () => {
     expect(middleware).toContain("sessionKoraRole === 'KORA_ADMIN'");
   });
 
-  it('blocca /worker/* paths per KORA_ADMIN', () => {
+  it('blocca /worker/* paths per KORA_ADMIN (e, da KORA-WP-002, ADVISOR nello stesso blocco)', () => {
     expect(middleware).toContain("'/worker/'");
-    // Il blocco usa canAccess, non un check inline arbitrario
-    expect(middleware).toContain("canAccess('KORA_ADMIN', 'worker_individual_pib'");
+    // Il blocco usa canAccess, non un check inline arbitrario — KORA-WP-002
+    // ha esteso questa stessa chiamata a coprire anche ADVISOR (ternario sul
+    // ruolo, stessa risorsa 'worker_individual_pib').
+    expect(middleware).toContain("canAccess(isKoraAdmin ? 'KORA_ADMIN' : 'ADVISOR', 'worker_individual_pib'");
   });
 
   it('redirect KORA_ADMIN→/admin con blocked param (non silenzioso)', () => {
