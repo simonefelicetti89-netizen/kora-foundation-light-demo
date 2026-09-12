@@ -3,11 +3,15 @@
  *
  * SCOPE: captures CURRENT, unmodified behavior of the canonical builder
  * (lib/decision-pack/pdf-data.ts: fetchPdfData) so any future refactor can
- * be diffed against it. Mocks only the Supabase I/O boundary
- * (`@supabase/supabase-js`'s createClient, the exact import fetchPdfData
- * uses — NOT `@/lib/supabase/server`) — the real function runs unmodified.
- * Same technique as tests/unit/pilot-trust-04-worker-tenant-suspension.test.ts
- * and tests/unit/cc012-confidence-adversarial.test.ts's persistence test.
+ * be diffed against it. Mocks only the Supabase I/O boundary — originally
+ * `@supabase/supabase-js`'s createClient (the exact import fetchPdfData used
+ * at the time this test was written); KORA-WP-003 (2026-09-12) consolidated
+ * fetchPdfData onto the canonical `getSupabaseServiceClient()` factory
+ * (`@/lib/supabase/server`), so the mock now targets that import instead —
+ * the real function still runs unmodified, only the I/O boundary it calls
+ * through changed. Same technique as
+ * tests/unit/pilot-trust-04-worker-tenant-suspension.test.ts and
+ * tests/unit/cc012-confidence-adversarial.test.ts's persistence test.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -51,8 +55,8 @@ function makeMockClient(tableData: Record<string, QueryResult>) {
 
 let currentTableData: Record<string, QueryResult> = {};
 
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: () => makeMockClient(currentTableData),
+vi.mock('@/lib/supabase/server', () => ({
+  getSupabaseServiceClient: () => makeMockClient(currentTableData),
 }));
 
 beforeEach(() => {

@@ -28,11 +28,12 @@
 // canonical — see lib/architecture/registry.ts for their recorded status.
 //
 // Reads persisted scoring results from Supabase for any tenant — NO scoring recalculation.
-// Uses service_role server-side only (never exposed to client).
+// Uses service_role server-side only (never exposed to client), via the
+// canonical getSupabaseServiceClient() factory (lib/supabase/server.ts) —
+// previously an inline createClient() call, consolidated in KORA-WP-003.
 // isLiveData = true for all non-OP-001 tenants (OP-001 is synthetic demo only).
 
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/lib/supabase/types';
+import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { computeExecutiveIntelligence } from '@/services/executive-intelligence/ExecutiveIntelligenceService';
 import { getNormativeMappingLight, type NormativeMappingLight } from '@/lib/normative-mapping/normative-mapping-light';
 
@@ -235,11 +236,7 @@ export async function fetchPdfData(
   tenantCode: string,
   reportingPeriod: string,
 ): Promise<PdfData | null> {
-  const db = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  const db = getSupabaseServiceClient();
 
   const { data: tenant } = await db.schema('analytics').from('tenant')
     .select('id,company_name').eq('tenant_code', tenantCode).maybeSingle();
