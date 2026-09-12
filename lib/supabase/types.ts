@@ -413,6 +413,41 @@ export type GovernanceEventInsert = Pick<GovernanceEventRow, 'source_module' | '
   occurred_at?: string;
 };
 
+// ── analytics.observed_investment_fact (KORA-WP-014) ────────────────────────────
+
+export interface ObservedInvestmentFactRow {
+  id: string;
+  tenant_id: string;
+  source_batch_id: string | null;
+  recorded_by_role: string;
+  recorded_by_id: string;
+  purpose: string;
+  amount: string | number | null; // numeric column — comes back as string from postgres
+  provider: string | null;
+  population_descriptor: string | null;
+  reach_summary: string | null;
+  evidence_summary: string | null;
+  unknown_fields: string[];
+  commitment_ref: null; // always null — DB CHECK-enforced, see migration 053
+  created_at: string;
+  // No updated_at — no mutation path exists for this table
+}
+
+export type ObservedInvestmentFactInsert = Pick<
+  ObservedInvestmentFactRow,
+  'tenant_id' | 'recorded_by_role' | 'recorded_by_id' | 'purpose'
+> & {
+  id?: string;
+  source_batch_id?: string | null;
+  amount?: number | null;
+  provider?: string | null;
+  population_descriptor?: string | null;
+  reach_summary?: string | null;
+  evidence_summary?: string | null;
+  unknown_fields?: string[];
+  created_at?: string;
+};
+
 // ── network.partner_profile ───────────────────────────────────────────────────
 
 export interface PartnerProfileRow {
@@ -450,6 +485,7 @@ export interface Database {
       activation_result:      { Row: ActivationResultRow;    Insert: Omit<ActivationResultRow,'id'|'created_at'|'updated_at'>; Update: Partial<ActivationResultRow>; Relationships: [] };
       confidence_result:      { Row: ConfidenceResultRow;    Insert: Omit<ConfidenceResultRow,'id'|'created_at'|'updated_at'>; Update: Partial<ConfidenceResultRow>; Relationships: [] };
       decision_pack_version:  { Row: DecisionPackVersionRow; Insert: Omit<DecisionPackVersionRow,'id'|'created_at'|'updated_at'>; Update: Partial<DecisionPackVersionRow>; Relationships: [] };
+      observed_investment_fact: { Row: ObservedInvestmentFactRow; Insert: ObservedInvestmentFactInsert; Update: never; Relationships: [] };
     };
     Views:          Record<string, never>;
     Functions:      Record<string, never>;

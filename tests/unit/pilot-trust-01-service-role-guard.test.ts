@@ -67,6 +67,11 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // insertion-only, no client route or authentication path ever calls it.
   { path: 'lib/audit/governance-event.ts', reason: 'documented server-only service — append-only governance event recording, KORA-WP-005' },
 
+  // KORA-WP-014: Investment Map Core (Observed Investment Fact) — server-only
+  // service, matches the Pattern-A convention (Company sessions read via RLS
+  // policy only; writes happen exclusively through this service).
+  { path: 'lib/investment-map/observed-investment-fact-service.ts', reason: 'documented server-only service — Observed Investment Fact creation/query, KORA-WP-014' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called

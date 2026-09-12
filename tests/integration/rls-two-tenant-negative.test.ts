@@ -92,10 +92,13 @@
  *
  * TABLE SCOPE (original four unchanged from the original PostgREST version —
  * see docs/RLS_03_THROWAWAY_SUPABASE_CHECKLIST.md §E for why; a fifth table
- * added by KORA-WP-010, see below):
+ * added by KORA-WP-010, a sixth by KORA-WP-014, see below):
  *   IN:  analytics.tenant, analytics.source_batch, analytics.kora_index_result,
  *        analytics.activation_result — all four tenant-claim-bound
  *        (`kora.tenant_id()`), covered by `queryAsTenant()` below.
+ *   IN (added by KORA-WP-014, migration 053): analytics.observed_investment_fact
+ *        — also Pattern A (tenant-claim-bound), fits the same `RLS03_TABLES`
+ *        loop/`queryAsTenant()` helper directly, no new helper needed.
  *   IN (added by KORA-WP-010, migration 052): analytics.company_memberships —
  *        IDENTITY-bound (`auth_user_id = auth.uid()`), not tenant-claim-bound
  *        — see the "KORA-WP-010" describe block below, which uses its own
@@ -219,7 +222,11 @@ const ready = config !== null && allowed;
 
 const RLS03_TENANT_CODES = ['RLS03-A', 'RLS03-B'] as const;
 const RLS03_REPORTING_PERIOD = 'RLS03-SYNTHETIC';
-const RLS03_TABLES = ['kora_index_result', 'source_batch', 'activation_result'] as const;
+// KORA-WP-014: analytics.observed_investment_fact added — it is Pattern A
+// (tenant-claim-bound, `tenant_id = kora.tenant_id()`, migration 053),
+// exactly like the three original tables, so it fits the same generic
+// queryAsTenant() loop below without any new helper.
+const RLS03_TABLES = ['kora_index_result', 'source_batch', 'activation_result', 'observed_investment_fact'] as const;
 type Rls03Table = (typeof RLS03_TABLES)[number];
 
 // ── KORA-WP-010 addition: analytics.company_memberships fixture identities ──
@@ -292,6 +299,10 @@ describe.skipIf(!ready)(
         `DELETE FROM analytics.source_batch WHERE tenant_id = ANY($1) AND reporting_period = $2`,
         [[tenantAId, tenantBId], RLS03_REPORTING_PERIOD],
       );
+      await privilegedClient.query(
+        `DELETE FROM analytics.observed_investment_fact WHERE tenant_id = ANY($1) AND purpose = $2`,
+        [[tenantAId, tenantBId], RLS03_REPORTING_PERIOD],
+      );
 
       for (const tenantId of [tenantAId, tenantBId]) {
         await privilegedClient.query(
@@ -312,6 +323,15 @@ describe.skipIf(!ready)(
           `INSERT INTO analytics.activation_result
              (tenant_id, reporting_period, methodology_version_id, calibration_status)
            VALUES ($1, $2, 'KORA Methodology v0.1', 'pre_empirical_calibration')`,
+          [tenantId, RLS03_REPORTING_PERIOD],
+        );
+
+        // KORA-WP-014: purpose doubles as this fixture's own tag (the table
+        // has no reporting_period column) — reused as the cleanup key above.
+        await privilegedClient.query(
+          `INSERT INTO analytics.observed_investment_fact
+             (tenant_id, recorded_by_role, recorded_by_id, purpose)
+           VALUES ($1, 'KORA_ADMIN', 'rls03-fixture', $2)`,
           [tenantId, RLS03_REPORTING_PERIOD],
         );
       }
@@ -370,6 +390,7 @@ describe.skipIf(!ready)(
         await privilegedClient.query(`DELETE FROM analytics.kora_index_result WHERE tenant_id = ANY($1)`, [ids]);
         await privilegedClient.query(`DELETE FROM analytics.activation_result WHERE tenant_id = ANY($1)`, [ids]);
         await privilegedClient.query(`DELETE FROM analytics.source_batch WHERE tenant_id = ANY($1)`, [ids]);
+        await privilegedClient.query(`DELETE FROM analytics.observed_investment_fact WHERE tenant_id = ANY($1)`, [ids]);
         await privilegedClient.query(`DELETE FROM analytics.tenant WHERE tenant_code = ANY($1)`, [
           RLS03_TENANT_CODES as unknown as string[],
         ]);
