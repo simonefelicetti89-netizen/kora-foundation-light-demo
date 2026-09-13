@@ -2,17 +2,17 @@
 
 // app/advisor/companies/page.tsx
 // KORA-WP-033 — Company Advisor Action-Matrix Surface + Portal Pilot Slice.
+// KORA-WP-035 — Advisor Calendar & Call/Appointment Lineage (appointments
+// toggle added alongside the existing messages toggle — no navigation
+// redesign, per this WP's own Step 33 discipline).
 //
 // The Advisor's own "app/advisor Company surface" (file 102's own Proposed
 // New field): the list of Companies the Advisor is currently assigned to
 // (Assignment Role Context, KORA-WP-031), each with the same minimal
-// non-calendar contact/message surface as the Company side. No calendar, no
-// booking, no case list, no document center — those are KORA-WP-034/035/036.
-//
-// "Early-Slice: ADVISOR-002 (one environment, no second portal; full
-// completion KORA-WP-064)" — this page is deliberately minimal, no
-// navigation polish, no dashboard. Reached from app/advisor's own self-view
-// page; not part of any full portal shell (that is KORA-WP-064's scope).
+// non-calendar contact/message surface as the Company side, plus the
+// ability to confirm/reschedule/cancel an appointment the Company requested.
+// The Advisor never creates an appointment (doc 73 §13: Company/Partner-
+// initiated only). No case list, no document center — KORA-WP-034/036.
 
 import { useEffect, useState } from 'react';
 import { TOKENS, BADGE_TOKENS } from '@/lib/design/kora-design-tokens';
@@ -33,6 +33,20 @@ interface ContactMessage {
   createdAt: string;
 }
 
+interface Appointment {
+  id: string;
+  startsAt: string;
+  endsAt: string;
+  subject: string;
+  status: 'requested' | 'confirmed' | 'completed' | 'rescheduled' | 'cancelled' | 'no-show';
+  rescheduledFromId: string | null;
+}
+
+const STATUS_LABEL: Record<Appointment['status'], string> = {
+  requested: 'Richiesto', confirmed: 'Confermato', completed: 'Concluso',
+  rescheduled: 'Riprogrammato', cancelled: 'Annullato', 'no-show': 'Non presentato',
+};
+
 export default function AdvisorCompaniesPage() {
   const [companies, setCompanies] = useState<AssignedCompany[]>([]);
   const [state, setState] = useState<'loading' | 'loaded' | 'error'>('loading');
@@ -41,6 +55,8 @@ export default function AdvisorCompaniesPage() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [expandedAppointments, setExpandedAppointments] = useState<string | null>(null);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   async function load() {
     try {
@@ -110,6 +126,52 @@ export default function AdvisorCompaniesPage() {
     }
   }
 
+  async function loadAppointments(assignmentId: string) {
+    try {
+      const r = await fetch(`/api/advisor/companies/${assignmentId}/appointments`, { credentials: 'include' });
+      const d = await r.json();
+      setAppointments(d.ok ? (d.appointments ?? []) : []);
+    } catch {
+      setAppointments([]);
+    }
+  }
+
+  async function toggleAppointments(assignmentId: string) {
+    if (expandedAppointments === assignmentId) {
+      setExpandedAppointments(null);
+      return;
+    }
+    setExpandedAppointments(assignmentId);
+    await loadAppointments(assignmentId);
+  }
+
+  async function appointmentAction(assignmentId: string, appointmentId: string, action: 'confirm' | 'cancel' | 'reschedule') {
+    let body: Record<string, string> = { action };
+    if (action === 'cancel') {
+      const reason = window.prompt('Motivo dell’annullamento:');
+      if (!reason?.trim()) return;
+      body = { ...body, reason };
+    }
+    if (action === 'reschedule') {
+      const reason = window.prompt('Motivo della riprogrammazione:');
+      if (!reason?.trim()) return;
+      const startsAt = window.prompt('Nuova data/ora di inizio (es. 2026-10-01T10:00):');
+      if (!startsAt) return;
+      const endsAt = window.prompt('Nuova data/ora di fine (es. 2026-10-01T11:00):');
+      if (!endsAt) return;
+      body = { ...body, reason, startsAt: new Date(startsAt).toISOString(), endsAt: new Date(endsAt).toISOString() };
+    }
+    try {
+      const r = await fetch(`/api/advisor/companies/${assignmentId}/appointments/${appointmentId}`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      const d = await r.json();
+      if (d.ok) await loadAppointments(assignmentId); else window.alert(d.error ?? 'Operazione non riuscita.');
+    } catch {
+      window.alert('Errore di rete.');
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
@@ -164,12 +226,52 @@ export default function AdvisorCompaniesPage() {
                 </span>
               </div>
 
-              <button
-                onClick={() => openThread(c.assignmentId)}
-                style={{ fontSize: '11px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer', marginTop: 10, padding: 0 }}
-              >
-                {expanded === c.assignmentId ? 'Chiudi messaggi' : 'Messaggi'}
-              </button>
+              <div className="flex gap-3" style={{ marginTop: 10 }}>
+                <button
+                  onClick={() => openThread(c.assignmentId)}
+                  style={{ fontSize: '11px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  {expanded === c.assignmentId ? 'Chiudi messaggi' : 'Messaggi'}
+                </button>
+                <button
+                  onClick={() => toggleAppointments(c.assignmentId)}
+                  style={{ fontSize: '11px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  {expandedAppointments === c.assignmentId ? 'Chiudi appuntamenti' : 'Appuntamenti'}
+                </button>
+              </div>
+
+              {expandedAppointments === c.assignmentId && (
+                <div style={{ marginTop: 12 }}>
+                  {appointments.length === 0 && (
+                    <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>Nessun appuntamento ancora.</p>
+                  )}
+                  <ul className="space-y-2">
+                    {appointments.map((a) => (
+                      <li key={a.id} className="flex items-center justify-between gap-3" style={{ fontSize: '12px', color: TOKENS.inkSecondary }}>
+                        <span>
+                          <strong style={{ color: TOKENS.ink }}>{a.subject}</strong> — {new Date(a.startsAt).toLocaleString('it-IT')} ({STATUS_LABEL[a.status]})
+                        </span>
+                        {a.status === 'requested' && (
+                          <button onClick={() => appointmentAction(c.assignmentId, a.id, 'confirm')} style={{ fontSize: '10px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer' }}>
+                            Conferma
+                          </button>
+                        )}
+                        {(a.status === 'requested' || a.status === 'confirmed') && (
+                          <span className="flex gap-2">
+                            <button onClick={() => appointmentAction(c.assignmentId, a.id, 'reschedule')} style={{ fontSize: '10px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer' }}>
+                              Riprogramma
+                            </button>
+                            <button onClick={() => appointmentAction(c.assignmentId, a.id, 'cancel')} style={{ fontSize: '10px', color: TOKENS.critical, background: 'none', border: 'none', cursor: 'pointer' }}>
+                              Annulla
+                            </button>
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {expanded === c.assignmentId && (
                 <div style={{ marginTop: 12 }}>

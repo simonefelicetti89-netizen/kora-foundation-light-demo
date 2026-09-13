@@ -102,6 +102,11 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // bypasses requireCompanyUser()/requireAdvisorUser() to reach this file.
   { path: 'lib/advisor-portal/advisor-portal-service.ts', reason: 'documented server-only service — Company/Advisor assigned-relationship read + contact-message send, KORA-WP-033' },
 
+  // KORA-WP-035: Advisor Calendar & Call/Appointment Lineage — server-only,
+  // same rationale as WP-033 immediately above. Every mutating function
+  // re-verifies the caller is a genuine party to the Assignment itself.
+  { path: 'lib/advisor-portal/advisor-appointment-service.ts', reason: 'documented server-only service — Advisor appointment create/confirm/reschedule/cancel with lineage, KORA-WP-035' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called

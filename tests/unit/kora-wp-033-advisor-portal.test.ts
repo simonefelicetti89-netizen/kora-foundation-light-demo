@@ -472,8 +472,24 @@ describe('KORA-WP-033 — scope integrity: no calendar/booking, no Case, no docu
   const allSrc = files.join('\n');
   const code = allSrc.split('\n').filter((l) => !l.trim().startsWith('//') && !l.trim().startsWith('*')).join('\n');
 
-  it('no calendar/booking concept anywhere (KORA-WP-035 scope)', () => {
-    expect(code).not.toMatch(/calendar|booking|appointment|reschedule|availability_slot|videocall|video_call/i);
+  // WP-033-exclusive files only (the two page.tsx files are now legitimately
+  // shared with KORA-WP-035, which extends them with its own appointment
+  // section — see kora-wp-035-advisor-appointment.test.ts for that WP's own
+  // scope-integrity checks). This narrower scan preserves the original
+  // "WP-033 itself never implements WP-035 prematurely" guard without
+  // false-failing on WP-035's later, authorized, shared-file addition —
+  // same technique as this session's kora-wp-030 test narrowing.
+  const wp033ExclusiveSrc = [
+    'lib/advisor-portal/advisor-action-matrix.ts',
+    'lib/advisor-portal/advisor-portal-service.ts',
+    'app/api/company/advisor/route.ts',
+    'app/api/advisor/companies/route.ts',
+    'app/api/advisor/companies/[assignmentId]/messages/route.ts',
+  ].map((p) => readFileSync(join(process.cwd(), p), 'utf8')).join('\n');
+  const codeExclusive = wp033ExclusiveSrc.split('\n').filter((l) => !l.trim().startsWith('//') && !l.trim().startsWith('*')).join('\n');
+
+  it('no calendar/booking concept anywhere in WP-033-exclusive files (KORA-WP-035 scope)', () => {
+    expect(codeExclusive).not.toMatch(/calendar|booking|appointment|reschedule|availability_slot|videocall|video_call/i);
   });
 
   it('no Task/Case concept anywhere (KORA-WP-034 scope)', () => {
