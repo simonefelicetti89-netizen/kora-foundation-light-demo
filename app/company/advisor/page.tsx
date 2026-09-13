@@ -8,6 +8,10 @@
 // KORA-WP-036 — Advisor Document/Note Five-Class Taxonomy (Company-visible
 // shared notes section added — read-only: the Company never creates any
 // class, per doc 73 §6/§14's "Advisor drafts, Company reads" pattern).
+// Founder Decision 4 (WP-036 semantic gate): once the Assignment ends, the
+// existing sections below render read-only from history (no send/book
+// form) — retention ≠ operational access. A former Advisor is never shown
+// as the Company's current Advisor.
 //
 // The first visible Company↔Advisor surface: the Company's own assigned
 // Advisor (name, role, validity), a minimal non-calendar contact/message
@@ -65,8 +69,14 @@ const STATUS_LABEL: Record<Appointment['status'], string> = {
   'no-show': 'Non presentato',
 };
 
+interface AdvisorHistory {
+  fullName: string;
+  status: 'active' | 'ended';
+}
+
 export default function CompanyAdvisorPage() {
   const [advisor, setAdvisor] = useState<AssignedAdvisor | null>(null);
+  const [advisorHistory, setAdvisorHistory] = useState<AdvisorHistory | null>(null);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [state, setState] = useState<'loading' | 'loaded' | 'error'>('loading');
@@ -105,9 +115,13 @@ export default function CompanyAdvisorPage() {
       const d = await r.json();
       if (d.ok) {
         setAdvisor(d.advisor);
+        setAdvisorHistory(d.advisorHistory ?? null);
         setMessages(d.messages ?? []);
         setState('loaded');
-        if (d.advisor) {
+        // Founder Decision 4: history sections load whenever there is EITHER
+        // a current active Advisor OR a past (ended) relationship — never
+        // gated on "current" alone, since retention ≠ operational access.
+        if (d.advisor || d.advisorHistory) {
           await loadAppointments();
           await loadContent();
         }
@@ -232,7 +246,7 @@ export default function CompanyAdvisorPage() {
         </div>
       )}
 
-      {state === 'loaded' && !advisor && (
+      {state === 'loaded' && !advisor && !advisorHistory && (
         <div className="rounded-[16px] px-5 py-4" style={{ background: TOKENS.taupe, border: `1px solid ${TOKENS.inkBorderStrong}` }}>
           <p style={{ fontSize: '11px', fontWeight: 700, color: TOKENS.ink, marginBottom: 6 }}>
             Nessun Advisor assegnato
@@ -243,28 +257,33 @@ export default function CompanyAdvisorPage() {
         </div>
       )}
 
-      {state === 'loaded' && advisor && (
+      {state === 'loaded' && (advisor || advisorHistory) && (
         <>
           <div className="rounded-[16px] px-5 py-4" style={{ background: TOKENS.surface, border: TOKENS.cardBorder }}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p style={{ fontSize: '15px', fontWeight: 700, color: TOKENS.ink, marginBottom: 2 }}>{advisor.fullName}</p>
-                <p style={{ fontSize: '11px', color: TOKENS.inkSecondary }}>{advisor.role}</p>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: TOKENS.ink, marginBottom: 2 }}>{advisor ? advisor.fullName : advisorHistory?.fullName}</p>
+                {advisor && <p style={{ fontSize: '11px', color: TOKENS.inkSecondary }}>{advisor.role}</p>}
               </div>
               <span
                 style={{
                   fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap', padding: '3px 10px', borderRadius: '999px',
-                  background: advisor.valid ? BADGE_TOKENS.eligible.bg : BADGE_TOKENS.draft.bg,
-                  color: advisor.valid ? BADGE_TOKENS.eligible.text : BADGE_TOKENS.draft.text,
-                  border: `1px solid ${advisor.valid ? BADGE_TOKENS.eligible.border : BADGE_TOKENS.draft.border}`,
+                  background: advisor ? (advisor.valid ? BADGE_TOKENS.eligible.bg : BADGE_TOKENS.draft.bg) : BADGE_TOKENS.draft.bg,
+                  color: advisor ? (advisor.valid ? BADGE_TOKENS.eligible.text : BADGE_TOKENS.draft.text) : BADGE_TOKENS.draft.text,
+                  border: `1px solid ${advisor ? (advisor.valid ? BADGE_TOKENS.eligible.border : BADGE_TOKENS.draft.border) : BADGE_TOKENS.draft.border}`,
                 }}
               >
-                {advisor.valid ? 'Relazione attiva' : 'In attivazione'}
+                {advisor ? (advisor.valid ? 'Relazione attiva' : 'In attivazione') : 'Relazione terminata'}
               </span>
             </div>
-            {!advisor.valid && (
+            {advisor && !advisor.valid && (
               <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 8 }}>
                 La relazione con questo Advisor è registrata ma non ancora pienamente operativa.
+              </p>
+            )}
+            {!advisor && advisorHistory && (
+              <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 8 }}>
+                Questa relazione è terminata. Puoi ancora consultare lo storico qui sotto — non è più possibile inviare nuovi messaggi, richiedere nuovi appuntamenti o riceverne di nuovi da questo Advisor.
               </p>
             )}
           </div>
@@ -279,35 +298,37 @@ export default function CompanyAdvisorPage() {
             <ul className="space-y-2" style={{ marginBottom: 12 }}>
               {messages.map((m) => (
                 <li key={m.id} style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
-                  <strong style={{ color: TOKENS.ink }}>{m.senderRole === 'COMPANY_ADMIN' ? 'Tu' : advisor.fullName}:</strong>{' '}
+                  <strong style={{ color: TOKENS.ink }}>{m.senderRole === 'COMPANY_ADMIN' ? 'Tu' : (advisor?.fullName ?? advisorHistory?.fullName)}:</strong>{' '}
                   {m.body}
                 </li>
               ))}
             </ul>
 
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Scrivi un messaggio…"
-                style={{
-                  flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px',
-                  border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink,
-                }}
-              />
-              <button
-                onClick={send}
-                disabled={sending || !draft.trim()}
-                style={{
-                  fontSize: '11px', fontWeight: 700, color: '#FFFFFF', background: TOKENS.accent,
-                  border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer',
-                  opacity: sending || !draft.trim() ? 0.6 : 1,
-                }}
-              >
-                {sending ? 'Invio…' : 'Invia'}
-              </button>
-            </div>
+            {advisor && (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="Scrivi un messaggio…"
+                  style={{
+                    flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px',
+                    border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink,
+                  }}
+                />
+                <button
+                  onClick={send}
+                  disabled={sending || !draft.trim()}
+                  style={{
+                    fontSize: '11px', fontWeight: 700, color: '#FFFFFF', background: TOKENS.accent,
+                    border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer',
+                    opacity: sending || !draft.trim() ? 0.6 : 1,
+                  }}
+                >
+                  {sending ? 'Invio…' : 'Invia'}
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="rounded-[16px] px-5 py-4" style={{ background: TOKENS.surface, border: TOKENS.cardBorder }}>
@@ -324,7 +345,7 @@ export default function CompanyAdvisorPage() {
                     <strong style={{ color: TOKENS.ink }}>{a.subject}</strong> — {new Date(a.startsAt).toLocaleString('it-IT')} ({STATUS_LABEL[a.status]})
                     {a.rescheduledFromId && <em> · riprogrammato</em>}
                   </span>
-                  {(a.status === 'requested' || a.status === 'confirmed') && (
+                  {advisor && (a.status === 'requested' || a.status === 'confirmed') && (
                     <span className="flex gap-2">
                       <button onClick={() => rescheduleAppointment(a.id)} style={{ fontSize: '10px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer' }}>
                         Riprogramma
@@ -338,28 +359,32 @@ export default function CompanyAdvisorPage() {
               ))}
             </ul>
 
-            <p style={{ fontSize: '11px', fontWeight: 700, color: TOKENS.ink, marginBottom: 8 }}>Richiedi un nuovo appuntamento</p>
-            <div className="space-y-2">
-              <input
-                type="text" value={newSubject} onChange={(e) => setNewSubject(e.target.value)} placeholder="Oggetto (es. Q2 Review)"
-                style={{ width: '100%', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }}
-              />
-              <div className="flex gap-2">
-                <input type="datetime-local" value={newStartsAt} onChange={(e) => setNewStartsAt(e.target.value)} style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }} />
-                <input type="datetime-local" value={newEndsAt} onChange={(e) => setNewEndsAt(e.target.value)} style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }} />
-                <button
-                  onClick={bookAppointment}
-                  disabled={booking || !newSubject.trim() || !newStartsAt || !newEndsAt}
-                  style={{
-                    fontSize: '11px', fontWeight: 700, color: '#FFFFFF', background: TOKENS.accent,
-                    border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', whiteSpace: 'nowrap',
-                    opacity: booking || !newSubject.trim() || !newStartsAt || !newEndsAt ? 0.6 : 1,
-                  }}
-                >
-                  {booking ? 'Invio…' : 'Richiedi'}
-                </button>
-              </div>
-            </div>
+            {advisor && (
+              <>
+                <p style={{ fontSize: '11px', fontWeight: 700, color: TOKENS.ink, marginBottom: 8 }}>Richiedi un nuovo appuntamento</p>
+                <div className="space-y-2">
+                  <input
+                    type="text" value={newSubject} onChange={(e) => setNewSubject(e.target.value)} placeholder="Oggetto (es. Q2 Review)"
+                    style={{ width: '100%', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }}
+                  />
+                  <div className="flex gap-2">
+                    <input type="datetime-local" value={newStartsAt} onChange={(e) => setNewStartsAt(e.target.value)} style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }} />
+                    <input type="datetime-local" value={newEndsAt} onChange={(e) => setNewEndsAt(e.target.value)} style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }} />
+                    <button
+                      onClick={bookAppointment}
+                      disabled={booking || !newSubject.trim() || !newStartsAt || !newEndsAt}
+                      style={{
+                        fontSize: '11px', fontWeight: 700, color: '#FFFFFF', background: TOKENS.accent,
+                        border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', whiteSpace: 'nowrap',
+                        opacity: booking || !newSubject.trim() || !newStartsAt || !newEndsAt ? 0.6 : 1,
+                      }}
+                    >
+                      {booking ? 'Invio…' : 'Richiedi'}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="rounded-[16px] px-5 py-4" style={{ background: TOKENS.surface, border: TOKENS.cardBorder }}>

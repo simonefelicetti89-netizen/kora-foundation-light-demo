@@ -56,13 +56,7 @@ vi.mock('@/lib/supabase/server', () => ({
     schema: (schemaName: string) => ({
       from: (table: string) => {
         if (schemaName === 'advisor' && table === 'advisor_assignment') {
-          return {
-            select: () => ({
-              eq: (_col: string, val: string) => ({
-                maybeSingle: async () => ({ data: assignments.find((a) => a.id === val) ?? null, error: null }),
-              }),
-            }),
-          };
+          return { select: () => makeAssignmentSelectChain() };
         }
         if (schemaName === 'advisor' && table === 'advisor_content_record') {
           return {
@@ -100,6 +94,27 @@ function makeContentChain(filters: Record<string, unknown>) {
   return {
     eq(col: string, val: unknown) { return makeContentChain({ ...filters, [col]: val }); },
     order: async () => ({ data: matches(), error: null }),
+  };
+}
+
+// Founder Decision 4: getCompanyAssignmentForHistoricalRead() queries
+// advisor_assignment via .eq('company_id', ...).order(...).limit(1)
+// .maybeSingle() — a different shape than the .eq('id', ...).maybeSingle()
+// used elsewhere, so this chain supports both.
+function makeAssignmentSelectChain(filters: Record<string, unknown> = {}) {
+  const matches = () => assignments.filter((a) => Object.entries(filters).every(([k, v]) => (a as unknown as Record<string, unknown>)[k] === v));
+  return {
+    eq(col: string, val: unknown) { return makeAssignmentSelectChain({ ...filters, [col]: val }); },
+    maybeSingle: async () => ({ data: matches()[0] ?? null, error: null }),
+    order(_col: string, _opts?: { ascending?: boolean }) {
+      const list = matches();
+      return {
+        then: (resolve: (v: { data: typeof list; error: null }) => void) => resolve({ data: list, error: null }),
+        limit: (n: number) => ({
+          maybeSingle: async () => ({ data: list.slice(0, n)[0] ?? null, error: null }),
+        }),
+      };
+    },
   };
 }
 
@@ -354,8 +369,11 @@ vi.mock('@/lib/advisor-identity/advisor-identity-service', () => ({
   getAdvisorIdentityByAuthUserId: (...args: unknown[]) => mockGetAdvisorIdentity(...args),
 }));
 
+const mockGetCompanyAssignmentForHistoricalRead = vi.fn();
+
 vi.mock('@/lib/advisor-portal/advisor-portal-service', () => ({
   getCompanyAssignedAdvisor: (...args: unknown[]) => mockGetCompanyAssignedAdvisor(...args),
+  getCompanyAssignmentForHistoricalRead: (...args: unknown[]) => mockGetCompanyAssignmentForHistoricalRead(...args),
 }));
 
 // Routes call the REAL advisor-content-service, which in turn hits the
@@ -366,7 +384,7 @@ vi.mock('@/lib/advisor-portal/advisor-portal-service', () => ({
 
 describe('KORA-WP-036 — GET /api/company/advisor/content', () => {
   beforeEach(() => {
-    mockRequireCompanyUser.mockReset(); mockGetCompanyAssignedAdvisor.mockReset();
+    mockRequireCompanyUser.mockReset(); mockGetCompanyAssignedAdvisor.mockReset(); mockGetCompanyAssignmentForHistoricalRead.mockReset();
   });
 
   it('returns the auth error unchanged when not COMPANY_ADMIN', async () => {
@@ -376,9 +394,9 @@ describe('KORA-WP-036 — GET /api/company/advisor/content', () => {
     expect(res.status).toBe(403);
   });
 
-  it('returns empty content when no Advisor is assigned (no error)', async () => {
+  it('returns empty content when no Advisor has ever been assigned (no error)', async () => {
     mockRequireCompanyUser.mockResolvedValue({ id: 'u1', email: 'a@x.test', tenantId: 'company-1', koraRole: 'COMPANY_ADMIN', userStatus: 'active' });
-    mockGetCompanyAssignedAdvisor.mockResolvedValue(null);
+    mockGetCompanyAssignmentForHistoricalRead.mockResolvedValue(null);
     const { GET } = await import('@/app/api/company/advisor/content/route');
     const res = await GET(new NextRequest('http://localhost/x'));
     const json = await res.json();
@@ -393,13 +411,29 @@ describe('KORA-WP-036 — GET /api/company/advisor/content', () => {
     await createAdvisorContent({ assignmentId: 'assign-route-1', class: 'ADVISOR_INTERNAL_NOTE', body: 'internal', callerAdvisorId: 'adv-1', actorId: 'u1' });
 
     mockRequireCompanyUser.mockResolvedValue({ id: 'u1', email: 'a@x.test', tenantId: 'company-1', koraRole: 'COMPANY_ADMIN', userStatus: 'active' });
-    mockGetCompanyAssignedAdvisor.mockResolvedValue({ assignmentId: 'assign-route-1' });
+    mockGetCompanyAssignmentForHistoricalRead.mockResolvedValue({ assignmentId: 'assign-route-1', advisorId: 'adv-1', fullName: 'Advisor One', status: 'active' });
     const { GET } = await import('@/app/api/company/advisor/content/route');
     const res = await GET(new NextRequest('http://localhost/x'));
     const json = await res.json();
     expect(json.ok).toBe(true);
     expect(json.content.length).toBe(1);
     expect(json.content[0].class).toBe('ORGANISATION_SHAREABLE_NOTE');
+  });
+
+  // Founder Decision 4 (WP-036 semantic gate): Company retains read access
+  // to history after the Assignment ends.
+  it('returns the Company-visible content even after the Assignment has ended', async () => {
+    seedAssignment({ id: 'assign-route-2', company_id: 'company-1', status: 'ended' });
+    const { createAdvisorContent } = await import('@/lib/advisor-portal/advisor-content-service');
+    await createAdvisorContent({ assignmentId: 'assign-route-2', class: 'ORGANISATION_SHAREABLE_NOTE', body: 'shareable', callerAdvisorId: 'adv-1', actorId: 'u1' });
+
+    mockRequireCompanyUser.mockResolvedValue({ id: 'u1', email: 'a@x.test', tenantId: 'company-1', koraRole: 'COMPANY_ADMIN', userStatus: 'active' });
+    mockGetCompanyAssignmentForHistoricalRead.mockResolvedValue({ assignmentId: 'assign-route-2', advisorId: 'adv-1', fullName: 'Advisor One', status: 'ended' });
+    const { GET } = await import('@/app/api/company/advisor/content/route');
+    const res = await GET(new NextRequest('http://localhost/x'));
+    const json = await res.json();
+    expect(json.ok).toBe(true);
+    expect(json.content.length).toBe(1);
   });
 });
 

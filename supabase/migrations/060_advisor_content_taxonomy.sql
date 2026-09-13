@@ -2,15 +2,25 @@
 -- KORA — Migration 060: Advisor Document/Note Five-Class Taxonomy
 -- Migration:   060_advisor_content_taxonomy
 -- Created:     2026-09-13
--- Revised:     2026-09-13 — Founder-approved cross-WP correction (WP-036
---              semantic gate, Decision H-A) added: this migration now also
---              replaces the pre-existing Advisor-own SELECT policies on
+-- Revised:     2026-09-13 (pass 1) — Founder-approved cross-WP correction
+--              (WP-036 semantic gate, Decision H-A) added: this migration
+--              now also replaces the pre-existing Advisor-own SELECT
+--              policies on advisor_contact_message (058) and
+--              advisor_appointment (059) with a corrected definition
+--              requiring an active Assignment. See the dedicated section
+--              below, near the GRANTs.
+-- Revised:     2026-09-13 (pass 2) — Founder Decision 4 added: Company
+--              retains read-only access to its own historical
+--              Company-visible records after the Assignment ends
+--              (retention ≠ operational access). Adds one SECURITY
+--              DEFINER helper (advisor.company_owns_assignment_history)
+--              and replaces the Company-own SELECT policies on
 --              advisor_contact_message (058) and advisor_appointment (059)
---              with a corrected definition requiring an active Assignment.
---              See the dedicated section below, near the GRANTs. Migrations
---              058/059 are NOT edited in place — they remain byte-identical
---              on disk and on staging; only this later, still-LOCAL-ONLY
---              migration changes what those two policies say.
+--              — see the dedicated section below, near the ROLLBACK.
+--              Migrations 057/058/059 are NOT edited in place across
+--              either pass — they remain byte-identical on disk and on
+--              staging; only this later, still-LOCAL-ONLY migration
+--              changes what those policies say.
 -- Block:       KORA-WP-036 — Advisor Document/Note Five-Class Taxonomy
 -- Gate:        Gate 2 CLOSED WITH CONDITIONS (staging authorized) — written and
 --              validated LOCAL/test only by this task. NOT applied to staging
@@ -185,6 +195,54 @@ CREATE INDEX IF NOT EXISTS idx_advisor_content_record_class      ON advisor.advi
 -- Class 1 and shared (shared=true) Class 5 only — never Classes 2/3/4, and
 -- never an unshared Class 5.
 
+-- ── company_owns_assignment_history() — SECURITY DEFINER, Founder Decision 4 ─
+-- Founder Decision 4 (WP-036 semantic gate): "Company retains read-only
+-- access to its canonically Company-visible history after the Advisor
+-- Assignment ends" — deliberately NOT status-filtered (retention ≠
+-- operational access; that distinction is the Advisor-side H-A correction
+-- above, not this one).
+--
+-- Same proven-safe SECURITY DEFINER technique as
+-- advisor.company_has_active_advisor() (migration 058, real-DB validated):
+-- the Company-own SELECT policies on advisor_contact_message (058) and
+-- advisor_appointment (059) resolve `assignment_id IN (SELECT id FROM
+-- advisor.advisor_assignment WHERE company_id = ...)` — a raw subquery
+-- against advisor_assignment, which is itself subject to migration 057's
+-- OWN Company-own policy (`advisor_assignment_company_own_select`,
+-- untouched, NOT modified by this migration), which requires
+-- `status = 'active'`. That cascades into the Company's own historical
+-- messages/appointments/content collapsing to zero at the RLS layer once
+-- an Assignment ends — discovered during this WP's own real-DB validation
+-- (see report 123 §17). This function reads advisor_assignment with the
+-- function owner's own visibility (SECURITY DEFINER bypasses RLS
+-- internally), without ever touching or weakening migration 057's own
+-- policy. `SET search_path` pinned per Postgres's SECURITY DEFINER
+-- hardening guidance.
+--
+-- This is the RLS-layer, defense-in-depth correction. The actual
+-- enforcement boundary for this application is the service layer
+-- (advisor-portal-service.ts's new getCompanyAssignmentForHistoricalRead,
+-- and the unchanged listContentForCompany/listContactMessages/
+-- listAppointmentsForAssignment for the Company party, none of which ever
+-- checked status), since every real read goes through the service-role
+-- client, which bypasses RLS entirely (`rolbypassrls = true`).
+
+CREATE OR REPLACE FUNCTION advisor.company_owns_assignment_history(p_assignment_id uuid, p_company_id uuid)
+  RETURNS boolean
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path = pg_catalog, advisor
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM advisor.advisor_assignment
+    WHERE id = p_assignment_id AND company_id = p_company_id
+  );
+$$;
+
+REVOKE ALL ON FUNCTION advisor.company_owns_assignment_history(uuid, uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION advisor.company_owns_assignment_history(uuid, uuid) TO authenticated;
+
 ALTER TABLE advisor.advisor_content_record ENABLE ROW LEVEL SECURITY;
 ALTER TABLE advisor.advisor_content_record FORCE ROW LEVEL SECURITY;
 
@@ -219,9 +277,7 @@ CREATE POLICY "advisor_content_record_company_own_select" ON advisor.advisor_con
       class = 'ORGANISATION_SHAREABLE_NOTE'
       OR (class = 'COMMUNICATION_FOLLOWUP' AND shared = true)
     )
-    AND assignment_id IN (
-      SELECT id FROM advisor.advisor_assignment WHERE company_id = kora.tenant_id()
-    )
+    AND advisor.company_owns_assignment_history(assignment_id, kora.tenant_id())
   );
 
 -- ── GRANTs ───────────────────────────────────────────────────────────────────
@@ -277,11 +333,38 @@ CREATE POLICY "advisor_appointment_advisor_own_select" ON advisor.advisor_appoin
     )
   );
 
--- Company-own policies (058, 059) are NOT touched — Company retention of
--- its own historical messages/appointments is canonical regardless of the
--- Assignment's current status, and is unaffected by this correction.
 -- Class 3 (audit/provenance) is unaffected — KORA_ADMIN access to it was
 -- never conditioned on Assignment status and remains so.
+
+-- ── FOUNDER DECISION 4 — Company historical-read RLS correction ────────────
+-- Founder Decision 4 (WP-036 semantic gate): retention ≠ operational
+-- access. The Company-own SELECT policies on advisor_contact_message (058)
+-- and advisor_appointment (059) are replaced here (same DROP+CREATE
+-- technique as the Advisor-side correction above — 058/059 files
+-- themselves remain byte-identical) to use the new
+-- company_owns_assignment_history() helper instead of a raw subquery
+-- against advisor_assignment, which was silently collapsing to zero once
+-- an Assignment ended (migration 057's own Company-own policy on
+-- advisor_assignment requires `status='active'`, and that RLS restriction
+-- was transparently propagating into every subquery against it — see the
+-- helper function's own header comment above for the full explanation).
+-- Migration 057 itself is NOT modified.
+
+DROP POLICY IF EXISTS "advisor_contact_message_company_own_select" ON advisor.advisor_contact_message;
+
+CREATE POLICY "advisor_contact_message_company_own_select" ON advisor.advisor_contact_message
+  FOR SELECT USING (
+    kora.kora_role() = 'COMPANY_ADMIN'
+    AND advisor.company_owns_assignment_history(assignment_id, kora.tenant_id())
+  );
+
+DROP POLICY IF EXISTS "advisor_appointment_company_own_select" ON advisor.advisor_appointment;
+
+CREATE POLICY "advisor_appointment_company_own_select" ON advisor.advisor_appointment
+  FOR SELECT USING (
+    kora.kora_role() = 'COMPANY_ADMIN'
+    AND advisor.company_owns_assignment_history(assignment_id, kora.tenant_id())
+  );
 
 -- ── Reload PostgREST schema cache ─────────────────────────────────────────
 
@@ -318,9 +401,30 @@ NOTIFY pgrst, 'reload schema';
 --       WHERE ai.auth_user_id = auth.uid()
 --     )
 --   );
+-- -- Restore the original (pre-Decision-4) 058/059 Company-own SELECT policies:
+-- DROP POLICY IF EXISTS "advisor_contact_message_company_own_select" ON advisor.advisor_contact_message;
+-- CREATE POLICY "advisor_contact_message_company_own_select" ON advisor.advisor_contact_message
+--   FOR SELECT USING (
+--     kora.kora_role() = 'COMPANY_ADMIN'
+--     AND assignment_id IN (
+--       SELECT id FROM advisor.advisor_assignment WHERE company_id = kora.tenant_id()
+--     )
+--   );
+-- DROP POLICY IF EXISTS "advisor_appointment_company_own_select" ON advisor.advisor_appointment;
+-- CREATE POLICY "advisor_appointment_company_own_select" ON advisor.advisor_appointment
+--   FOR SELECT USING (
+--     kora.kora_role() = 'COMPANY_ADMIN'
+--     AND assignment_id IN (
+--       SELECT id FROM advisor.advisor_assignment WHERE company_id = kora.tenant_id()
+--     )
+--   );
+-- REVOKE EXECUTE ON FUNCTION advisor.company_owns_assignment_history(uuid, uuid) FROM authenticated;
+-- DROP FUNCTION IF EXISTS advisor.company_owns_assignment_history(uuid, uuid);
 -- NOTE: unlike the original claim on this migration ("touching no existing
 -- column, row, policy, table, or schema"), this revised migration DOES
--- replace two pre-existing policies (058/059's Advisor-own SELECT) with a
--- Founder-approved (H-A) corrected definition — see the section above.
--- No table, column, GRANT, or Company-facing policy from 001-059 is
--- touched; rollback of that part is the two DROP/CREATE pairs above.
+-- replace four pre-existing policies (058/059's Advisor-own AND
+-- Company-own SELECT) with Founder-approved (H-A / Decision 4) corrected
+-- definitions, and adds one new SECURITY DEFINER helper function — see the
+-- two dedicated sections above. No table, column, GRANT, or migration
+-- 057 (or any other migration 001-059) is touched; rollback of the policy
+-- changes is the four DROP/CREATE pairs above plus the function drop.

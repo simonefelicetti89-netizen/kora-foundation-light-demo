@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getCompanyAssignedAdvisor } from '@/lib/advisor-portal/advisor-portal-service';
+import { getCompanyAssignedAdvisor, getCompanyAssignmentForHistoricalRead } from '@/lib/advisor-portal/advisor-portal-service';
 import { createAppointment, listAppointmentsForAssignment } from '@/lib/advisor-portal/advisor-appointment-service';
 
 function safeErrorResponse(err: unknown, fallback: string) {
@@ -27,11 +27,14 @@ export async function GET(request: NextRequest) {
   if (isKoraAuthError(auth)) return auth;
 
   try {
-    const advisor = await getCompanyAssignedAdvisor(auth.tenantId);
-    if (!advisor) {
+    // Founder Decision 4: read via the historical resolver (any status) —
+    // retention ≠ operational access. New bookings still use the
+    // active-only resolver below.
+    const historical = await getCompanyAssignmentForHistoricalRead(auth.tenantId);
+    if (!historical) {
       return NextResponse.json({ ok: true, appointments: [] });
     }
-    const appointments = await listAppointmentsForAssignment({ assignmentId: advisor.assignmentId, callerTenantId: auth.tenantId });
+    const appointments = await listAppointmentsForAssignment({ assignmentId: historical.assignmentId, callerTenantId: auth.tenantId });
     return NextResponse.json({ ok: true, appointments });
   } catch (err) {
     console.error('[company/advisor/appointments] read failed:', err);

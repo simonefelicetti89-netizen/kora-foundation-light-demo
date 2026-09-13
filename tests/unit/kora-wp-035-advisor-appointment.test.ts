@@ -431,8 +431,11 @@ vi.mock('@/lib/advisor-identity/advisor-identity-service', () => ({
   getAdvisorIdentityByAuthUserId: (...args: unknown[]) => mockGetAdvisorIdentity(...args),
 }));
 
+const mockGetCompanyAssignmentForHistoricalRead = vi.fn();
+
 vi.mock('@/lib/advisor-portal/advisor-portal-service', () => ({
   getCompanyAssignedAdvisor: (...args: unknown[]) => mockGetCompanyAssignedAdvisor(...args),
+  getCompanyAssignmentForHistoricalRead: (...args: unknown[]) => mockGetCompanyAssignmentForHistoricalRead(...args),
 }));
 
 describe('KORA-WP-035 — POST /api/company/advisor/appointments — auth + booking boundary', () => {
@@ -461,6 +464,39 @@ describe('KORA-WP-035 — POST /api/company/advisor/appointments — auth + book
     const req = new NextRequest('http://localhost/api/company/advisor/appointments', { method: 'POST', body: JSON.stringify({ subject: 'x', startsAt: '2026-10-01T10:00:00Z', endsAt: '2026-10-01T11:00:00Z' }) });
     const res = await POST(req);
     expect(res.status).toBe(422);
+  });
+
+  // Founder Decision 4: historical read authority never becomes mutation
+  // authority — a new booking is still denied with 422 once the Assignment
+  // has ended (getCompanyAssignedAdvisor, active-only, correctly returns
+  // null; the POST path is unchanged by this remediation).
+  it('rejects a new booking with 422 once the Assignment has ended', async () => {
+    mockRequireCompanyUser.mockResolvedValue({ id: 'u1', email: 'a@x.test', tenantId: 'company-1', koraRole: 'COMPANY_ADMIN', userStatus: 'active' });
+    mockGetCompanyAssignedAdvisor.mockResolvedValue(null); // ended assignment: the active-only resolver returns null
+    const { POST } = await import('@/app/api/company/advisor/appointments/route');
+    const req = new NextRequest('http://localhost/api/company/advisor/appointments', { method: 'POST', body: JSON.stringify({ subject: 'x', startsAt: '2026-10-01T10:00:00Z', endsAt: '2026-10-01T11:00:00Z' }) });
+    const res = await POST(req);
+    expect(res.status).toBe(422);
+  });
+});
+
+describe('KORA-WP-035 — GET /api/company/advisor/appointments — historical read (Founder Decision 4)', () => {
+  beforeEach(() => { mockRequireCompanyUser.mockReset(); mockGetCompanyAssignmentForHistoricalRead.mockReset(); });
+
+  it('returns appointment history even after the Assignment has ended', async () => {
+    seedAssignment({ status: 'ended' });
+    const { createAppointment } = await import('@/lib/advisor-portal/advisor-appointment-service');
+    // The Assignment was active at creation time in reality; this test
+    // seeds the appointment directly to isolate the read path.
+    await createAppointment({ assignmentId: 'assign-1', startsAt: '2026-10-01T10:00:00Z', endsAt: '2026-10-01T11:00:00Z', subject: 'x', callerTenantId: 'company-1', actorId: 'u1' });
+
+    mockRequireCompanyUser.mockResolvedValue({ id: 'u1', email: 'a@x.test', tenantId: 'company-1', koraRole: 'COMPANY_ADMIN', userStatus: 'active' });
+    mockGetCompanyAssignmentForHistoricalRead.mockResolvedValue({ assignmentId: 'assign-1', advisorId: 'adv-1', fullName: 'Advisor One', status: 'ended' });
+    const { GET } = await import('@/app/api/company/advisor/appointments/route');
+    const res = await GET(new NextRequest('http://localhost/api/company/advisor/appointments'));
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.appointments.length).toBe(1);
   });
 });
 

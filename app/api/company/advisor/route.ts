@@ -12,21 +12,27 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getCompanyAssignedAdvisor, sendContactMessage, listContactMessages } from '@/lib/advisor-portal/advisor-portal-service';
+import { getCompanyAssignedAdvisor, getCompanyAssignmentForHistoricalRead, sendContactMessage, listContactMessages } from '@/lib/advisor-portal/advisor-portal-service';
 
 export async function GET(request: NextRequest) {
   const auth = await requireCompanyUser(request);
   if (isKoraAuthError(auth)) return auth;
 
   try {
-    const advisor = await getCompanyAssignedAdvisor(auth.tenantId);
-    if (!advisor) {
+    // Founder Decision 4: history is read via the historical resolver (any
+    // status), never the active-only one — retention ≠ operational access.
+    const historical = await getCompanyAssignmentForHistoricalRead(auth.tenantId);
+    if (!historical) {
       return NextResponse.json({ ok: true, advisor: null, messages: [] });
     }
 
-    const messages = await listContactMessages({ assignmentId: advisor.assignmentId, callerTenantId: auth.tenantId });
+    // The Company-facing "current Advisor" card must still require an
+    // active Assignment — a former Advisor is never shown as current.
+    const currentAdvisor = historical.status === 'active' ? await getCompanyAssignedAdvisor(auth.tenantId) : null;
 
-    return NextResponse.json({ ok: true, advisor, messages });
+    const messages = await listContactMessages({ assignmentId: historical.assignmentId, callerTenantId: auth.tenantId });
+
+    return NextResponse.json({ ok: true, advisor: currentAdvisor, advisorHistory: { fullName: historical.fullName, status: historical.status }, messages });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[company/advisor] read failed:', msg);

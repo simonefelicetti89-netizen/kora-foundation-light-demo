@@ -12,7 +12,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getCompanyAssignedAdvisor } from '@/lib/advisor-portal/advisor-portal-service';
+import { getCompanyAssignmentForHistoricalRead } from '@/lib/advisor-portal/advisor-portal-service';
 import { listContentForCompany } from '@/lib/advisor-portal/advisor-content-service';
 
 export async function GET(request: NextRequest) {
@@ -20,12 +20,15 @@ export async function GET(request: NextRequest) {
   if (isKoraAuthError(auth)) return auth;
 
   try {
-    const advisor = await getCompanyAssignedAdvisor(auth.tenantId);
-    if (!advisor) {
+    // Founder Decision 4: read via the historical resolver (any status) —
+    // retention ≠ operational access. Content is Advisor-authored only, so
+    // this route never had a write path to keep active-only.
+    const historical = await getCompanyAssignmentForHistoricalRead(auth.tenantId);
+    if (!historical) {
       return NextResponse.json({ ok: true, content: [] });
     }
 
-    const content = await listContentForCompany(auth.tenantId, advisor.assignmentId);
+    const content = await listContentForCompany(auth.tenantId, historical.assignmentId);
     return NextResponse.json({ ok: true, content });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

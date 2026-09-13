@@ -118,6 +118,75 @@ export async function getCompanyAssignedAdvisor(tenantId: string): Promise<Compa
   };
 }
 
+// ── getCompanyAssignmentForHistoricalRead — Founder Decision 4 ──────────────
+// Founder Decision 4 (WP-036 semantic gate): "Company retains read-only
+// access to its canonically Company-visible history after the Advisor
+// Assignment ends" — retention is a different question from the current
+// operational relationship. Deliberately NOT status-filtered.
+//
+// This function answers ONLY "what is the most recent Assignment this
+// Company has ever had, so its historical records can be read" — it must
+// NEVER be used to authorize a new write (createAppointment,
+// sendContactMessage, createAdvisorContent all correctly continue to use
+// getCompanyAssignedAdvisor above, which stays active-only). Pilot-minimum
+// scope: resolves the single most recent Assignment (any status), matching
+// the first-pilot "one active Company Advisor at a time" cardinality
+// (doc 73 §3) — a Company with more than one *ended* Assignment over time
+// (e.g. two different past Advisors) will see history from only the most
+// recent one through this path; a full multi-Advisor history browser is
+// out of this narrow scope (no new History Center — Founder instruction).
+//
+// Field-minimized identically to getCompanyAssignedAdvisor: no
+// qualification/eligibility internals, no auth_user_id — plus `status` so
+// the caller can render "past" rather than implying a current relationship
+// (a former Advisor must never be displayed as the Company's CURRENT
+// Advisor).
+
+export interface CompanyHistoricalAssignment {
+  assignmentId: string;
+  advisorId: string;
+  fullName: string;
+  status: 'active' | 'ended';
+}
+
+export async function getCompanyAssignmentForHistoricalRead(tenantId: string): Promise<CompanyHistoricalAssignment | null> {
+  const db = getSupabaseServiceClient();
+
+  const { data: assignment, error: assignmentError } = await db
+    .schema('advisor')
+    .from('advisor_assignment')
+    .select()
+    .eq('company_id', tenantId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (assignmentError) {
+    throw new Error(`[KORA] getCompanyAssignmentForHistoricalRead failed: ${assignmentError.message}`);
+  }
+  if (!assignment) {
+    return null;
+  }
+
+  const { data: identity, error: identityError } = await db
+    .schema('advisor')
+    .from('advisor_identity')
+    .select('id, full_name')
+    .eq('id', assignment.advisor_id)
+    .maybeSingle();
+
+  if (identityError || !identity) {
+    throw new Error(`[KORA] getCompanyAssignmentForHistoricalRead failed: ${identityError?.message ?? 'advisor identity not found'}`);
+  }
+
+  return {
+    assignmentId: assignment.id,
+    advisorId: identity.id,
+    fullName: identity.full_name,
+    status: assignment.status as 'active' | 'ended',
+  };
+}
+
 // ── getAdvisorAssignedCompanies — the Advisor's own read path ───────────────
 // Scoped exclusively by the trusted, session-derived advisorId (resolved via
 // getAdvisorIdentityByAuthUserId(auth.id), never a request parameter).

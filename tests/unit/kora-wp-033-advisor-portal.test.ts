@@ -104,7 +104,18 @@ function makeSelectChain<T extends object>(rows: () => T[], filters: Record<stri
   return {
     eq(col: string, val: unknown) { return makeSelectChain(rows, { ...filters, [col]: val }); },
     maybeSingle: async () => ({ data: matches()[0] ?? null, error: null }),
-    order: async () => ({ data: matches(), error: null }),
+    // order() is used two ways in real code: awaited directly (old usage,
+    // kept working via `then`), and chained with .limit().maybeSingle()
+    // (getCompanyAssignmentForHistoricalRead, Founder Decision 4).
+    order(_col: string, _opts?: { ascending?: boolean }) {
+      const list = matches();
+      return {
+        then: (resolve: (v: { data: T[]; error: null }) => void) => resolve({ data: list, error: null }),
+        limit: (n: number) => ({
+          maybeSingle: async () => ({ data: list.slice(0, n)[0] ?? null, error: null }),
+        }),
+      };
+    },
   };
 }
 
@@ -395,6 +406,23 @@ describe('KORA-WP-033 — GET /api/company/advisor — auth boundary', () => {
     const body = await res.json();
     expect(body.advisor?.advisorId).toBe('adv-1');
   });
+
+  // Founder Decision 4 (WP-036 semantic gate): Company retains read access
+  // to its message history after the Assignment ends — the former Advisor
+  // is never shown as the current Advisor.
+  it('after the Assignment ends: message history is still readable, but advisor is null (no current Advisor)', async () => {
+    const assignment = seedFullValidScenario();
+    messages.push({ id: 'msg-1', assignment_id: 'assign-1', sender_role: 'COMPANY_ADMIN', body: 'hi', created_at: 'x' });
+    assignment.status = 'ended';
+    mockRequireCompanyUser.mockResolvedValue({ id: 'u1', email: 'a@x.test', tenantId: 'company-1', koraRole: 'COMPANY_ADMIN', userStatus: 'active' });
+    const { GET } = await import('@/app/api/company/advisor/route');
+    const res = await GET(new NextRequest('http://localhost/api/company/advisor'));
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.advisor).toBeNull();
+    expect(body.advisorHistory?.status).toBe('ended');
+    expect(body.messages.length).toBe(1);
+  });
 });
 
 describe('KORA-WP-033 — POST /api/company/advisor — send boundary', () => {
@@ -433,6 +461,20 @@ describe('KORA-WP-033 — POST /api/company/advisor — send boundary', () => {
     const body = await res.json();
     expect(res.status).toBe(200);
     expect(body.ok).toBe(true);
+  });
+
+  // Founder Decision 4: historical read authority never becomes mutation
+  // authority — a new message to a former Advisor is still denied with
+  // 422, exactly like "no Advisor assigned" (the route's POST path still
+  // uses the active-only resolver, unchanged).
+  it('rejects a new message with 422 once the Assignment has ended', async () => {
+    const assignment = seedFullValidScenario();
+    assignment.status = 'ended';
+    mockRequireCompanyUser.mockResolvedValue({ id: 'u1', email: 'a@x.test', tenantId: 'company-1', koraRole: 'COMPANY_ADMIN', userStatus: 'active' });
+    const { POST } = await import('@/app/api/company/advisor/route');
+    const req = new NextRequest('http://localhost/api/company/advisor', { method: 'POST', body: JSON.stringify({ body: 'Ciao' }) });
+    const res = await POST(req);
+    expect(res.status).toBe(422);
   });
 });
 
