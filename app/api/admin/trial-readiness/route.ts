@@ -110,9 +110,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const tenantIds = tenants.map(t => t.id);
 
   // ── 2. Pipeline data — fetch in parallel ─────────────────────────────────────
+  // NOTE (AUD-W2-ITEM-10a): personal.worker_profile_private carries no
+  // tenant_id column at all — its only relationship to a tenant is
+  // indirect, via worker_id -> personal.worker_identity.id -> tenant_id.
+  // The pre-existing query here selected a tenant_id column that never
+  // existed on this table. worker_profile_private is therefore fetched in
+  // a second, sequential round-trip (below), filtered by the worker ids
+  // already resolved from worker_identity in this batch, and attributed to
+  // a tenant via that id map — not by a (nonexistent) direct column.
   const [
     batchRes, uefRes, kiRes, dpRes,
-    workerRes, profileRes, initiativeRes, participationRes, partnerRes,
+    workerRes, initiativeRes, participationRes, partnerRes,
   ] = await Promise.all([
     // last source_batch per tenant
     tenantIds.length > 0
@@ -145,17 +153,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [], error: null }),
 
-    // worker_identity counts per tenant (status only — no emails/refs)
+    // worker_identity counts per tenant (status only — no emails/refs).
+    // `id` is selected only so worker_profile_private (below) can be
+    // attributed to a tenant indirectly — never exposed in the response.
     tenantIds.length > 0
       ? db.schema('personal').from('worker_identity')
-          .select('tenant_id, status')
-          .in('tenant_id', tenantIds)
-      : Promise.resolve({ data: [], error: null }),
-
-    // worker_profile_private onboarding status per tenant
-    tenantIds.length > 0
-      ? db.schema('personal').from('worker_profile_private')
-          .select('tenant_id, onboarding_completed_at')
+          .select('id, tenant_id, status')
           .in('tenant_id', tenantIds)
       : Promise.resolve({ data: [], error: null }),
 
@@ -188,6 +191,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const dpRows            = (dpRes.data           ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const workerRows        = (workerRes.data        ?? []) as any[];
+
+  // ── worker_profile_private — second, sequential round-trip (AUD-W2-ITEM-10a) ─
+  // Filtered by worker_identity.id (this batch's own worker ids), then
+  // attributed to a tenant via the same id -> tenant_id map — the only
+  // canonical relationship this table has to a tenant.
+  const workerIdToTenantId = new Map<string, string>(
+    workerRows.map((w: { id: string; tenant_id: string }) => [w.id, w.tenant_id]),
+  );
+  const workerIds = workerRows.map((w: { id: string }) => w.id);
+  const profileRes = workerIds.length > 0
+    ? await db.schema('personal').from('worker_profile_private')
+        .select('worker_id, onboarding_completed_at')
+        .in('worker_id', workerIds)
+    : { data: [], error: null };
+  if (profileRes.error) return NextResponse.json({ error: profileRes.error.message }, { status: 500 });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const profileRows       = (profileRes.data       ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -235,8 +253,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const workerActive  = tenantWorkers.filter((w: { status: string }) => w.status === 'active').length;
     const workerInvited = tenantWorkers.filter((w: { status: string }) => w.status === 'invited').length;
 
-    // Onboarding count
-    const tenantProfiles = profileRows.filter((p: { tenant_id: string }) => p.tenant_id === tid);
+    // Onboarding count — attributed via worker_id -> worker_identity.tenant_id
+    // (worker_profile_private itself carries no tenant_id column).
+    const tenantProfiles = profileRows.filter(
+      (p: { worker_id: string }) => workerIdToTenantId.get(p.worker_id) === tid,
+    );
     const onboardingComplete = tenantProfiles.filter(
       (p: { onboarding_completed_at: string | null }) => p.onboarding_completed_at !== null
     ).length;

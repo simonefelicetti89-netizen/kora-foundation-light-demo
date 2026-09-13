@@ -391,11 +391,14 @@ describe('KORA-WP-041 — GATE: Advisor global offboarding revokes BOTH independ
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('KORA-WP-041 — scope integrity', () => {
-  it('migration 062 does not exist', () => {
+  it('KORA-WP-041 itself introduced no migration — no offboarding-named migration exists, and 062 (when present) is a later, unrelated Consolidation Audit remediation, not an offboarding schema change', () => {
     expect(existsSync(join(process.cwd(), 'supabase/migrations/062_offboarding.sql'))).toBe(false);
     const migrationsDir = join(process.cwd(), 'supabase/migrations');
     const files = readdirSync(migrationsDir) as string[];
-    expect(files.some((f: string) => f.startsWith('062_'))).toBe(false);
+    const migration062 = files.find((f) => f.startsWith('062_'));
+    if (!migration062) return; // still true: no 062 at all
+    const src = readFileSync(join(migrationsDir, migration062), 'utf-8');
+    expect(src).not.toMatch(/offboard|CREATE TABLE|ALTER TABLE.*ADD COLUMN/i);
   });
 
   it('operational-case-service.ts CASE_LINKED_OBJECT_TYPES was not extended with an offboarding-specific value', () => {

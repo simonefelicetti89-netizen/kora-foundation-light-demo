@@ -146,21 +146,17 @@ See `.kora-audit/output/126_KORA_WP_041_IMPLEMENTATION_REPORT.md` §26.
   explicitly if and when needed — not an automatic consequence of
   offboarding, and not something a Manual Governed playbook should decide
   on its own.
-- **Known, pre-existing gap surfaced (not introduced) by this playbook's
-  dry-run, explicitly not fixed here:** `createOperationalCase()`'s own
-  `assertAdvisorTiedToCompany()` check (`KORA-WP-007`,
-  `lib/operations/operational-case-service.ts`) matches ANY
-  `advisor_assignment` row for (advisor, company) — active or ended — with
-  no `status` filter. `KORA-WP-034`'s own dedicated entry point
-  (`assertActiveAssignmentAndGetCompanyId()`) correctly requires an active
-  Assignment, but the older, still-present `app/api/advisor/cases` route
-  (built by `KORA-WP-007` itself) does not. This means an Advisor whose
-  Assignment this playbook just ended could, in principle, still create a
-  new Case for that Company through that older route — `advisor_identity.status`
-  provides no independent block either (`requireAdvisorUser()` does not
-  check it — see report 126 §Gate 6). This is a genuine, cross-WP finding
-  in shared `KORA-WP-007` code, not a WP-041-owned defect — flagged for
-  Founder review, not corrected in this WP.
+- **RESOLVED (Consolidation Audit Wave 2, AUD-W2-ITEM-9):** the gap this
+  playbook's own dry-run originally surfaced — `createOperationalCase()`'s
+  `assertAdvisorTiedToCompany()` matching an ENDED Assignment with no
+  status filter, via the older `app/api/advisor/cases` route — was closed
+  by retiring that redundant route entirely. `KORA-WP-034`'s own
+  Assignment-scoped route (`assertActiveAssignmentAndGetCompanyId()`) is
+  now the sole Advisor-origin Case entry path, so an Advisor whose
+  Assignment this playbook just ended can no longer create or transition a
+  Case for that Company through any route. See
+  `.kora-audit/output/127_KORA_CONSOLIDATION_AUDIT_IMPLEMENTATION_WAVE_2.md`
+  for the finding and its remediation.
 
 ---
 

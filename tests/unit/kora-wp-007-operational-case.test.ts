@@ -480,52 +480,23 @@ vi.mock('@/lib/advisor-identity/advisor-identity-service', () => ({
   getAdvisorIdentityByAuthUserId: (...args: unknown[]) => mockGetAdvisorIdentity(...args),
 }));
 
-describe('KORA-WP-007 — GET/POST /api/advisor/cases', () => {
-  beforeEach(() => { mockRequireAdvisorUser.mockReset(); mockGetAdvisorIdentity.mockReset(); });
-
-  it('GET returns the auth error unchanged when not ADVISOR', async () => {
-    mockRequireAdvisorUser.mockResolvedValue(NextResponse.json({ error: 'Forbidden' }, { status: 403 }));
-    const { GET } = await import('@/app/api/advisor/cases/route');
-    const res = await GET(new NextRequest('http://localhost/x'));
-    expect(res.status).toBe(403);
-  });
-
-  it('GET rejects with 403 when no Advisor profile is resolved', async () => {
-    mockRequireAdvisorUser.mockResolvedValue({ id: 'u1', email: 'a@x.test', koraRole: 'ADVISOR' });
-    mockGetAdvisorIdentity.mockResolvedValue(null);
-    const { GET } = await import('@/app/api/advisor/cases/route');
-    const res = await GET(new NextRequest('http://localhost/x'));
-    expect(res.status).toBe(403);
-  });
-
-  it('POST rejects an unrecognized organisationType with 400', async () => {
-    mockRequireAdvisorUser.mockResolvedValue({ id: 'u1', email: 'a@x.test', koraRole: 'ADVISOR' });
-    const { POST } = await import('@/app/api/advisor/cases/route');
-    const req = new NextRequest('http://localhost/x', { method: 'POST', body: JSON.stringify({ organisationType: 'worker', subject: 'x' }) });
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-  });
-
-  it('POST rejects a missing subject with 400', async () => {
-    mockRequireAdvisorUser.mockResolvedValue({ id: 'u1', email: 'a@x.test', koraRole: 'ADVISOR' });
-    const { POST } = await import('@/app/api/advisor/cases/route');
-    const req = new NextRequest('http://localhost/x', { method: 'POST', body: JSON.stringify({ organisationType: 'company', organisationId: 'company-1' }) });
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-  });
-
-  it('POST creates a Case on success', async () => {
-    seedAssignment();
-    mockRequireAdvisorUser.mockResolvedValue({ id: 'u1', email: 'a@x.test', koraRole: 'ADVISOR' });
-    mockGetAdvisorIdentity.mockResolvedValue({ id: 'adv-1' });
-    const { POST } = await import('@/app/api/advisor/cases/route');
-    const req = new NextRequest('http://localhost/x', { method: 'POST', body: JSON.stringify({ organisationType: 'company', organisationId: 'company-1', subject: 'x' }) });
-    const res = await POST(req);
-    const json = await res.json();
-    expect(res.status).toBe(200);
-    expect(json.ok).toBe(true);
-  });
-});
+// KORA-WP-007's own original Advisor-origin route,
+// `app/api/advisor/cases/{,[caseId]}/route.ts`, was retired during
+// Consolidation Audit Wave 2 remediation (AUD-W2-ITEM-9): it authorized
+// Advisor-origin Case creation/transition via `assertAdvisorTiedToCompany()`,
+// which matched ANY advisor_assignment row (active OR ended) with no
+// status filter — unlike KORA-WP-034's own dedicated
+// `assertActiveAssignmentAndGetCompanyId()`, which correctly requires an
+// ACTIVE Assignment (Founder Decision H-A). The route had zero real UI
+// consumer (confirmed by repo-wide search) and WP-007's own Acceptance
+// ("one Case from an Advisor flow and one from an Admin flow both
+// queryable through one interface") was never a promise of this specific
+// HTTP contract — it is satisfied by the shared `operational-case-service.ts`
+// primitive, still exercised by KORA-WP-034's own route (its own test
+// file, kora-wp-034-advisor-cases.test.ts) and by the KORA_ADMIN route
+// below. Retiring this route, rather than adding a redundant local status
+// check, leaves exactly ONE canonical Advisor Case entry path (KORA-WP-034)
+// with no risk of the two ever disagreeing again.
 
 describe('KORA-WP-007 — GET/POST /api/admin/cases', () => {
   beforeEach(() => { mockRequireKoraAdmin.mockReset(); });
@@ -575,8 +546,8 @@ describe('KORA-WP-007 — POST /api/admin/cases/[caseId] — reassignment path',
 describe('KORA-WP-007 — scope integrity: Case only, no Task, no downstream WP anticipation', () => {
   const files = [
     'lib/operations/operational-case-service.ts',
-    'app/api/advisor/cases/route.ts',
-    'app/api/advisor/cases/[assignmentId]/route.ts'.replace('[assignmentId]', '[caseId]'),
+    // app/api/advisor/cases/{,[caseId]}/route.ts retired, AUD-W2-ITEM-9 —
+    // KORA-WP-034's own route is now the sole Advisor-origin Case entry path.
     'app/api/admin/cases/route.ts',
     'app/api/admin/cases/[caseId]/route.ts',
     'app/admin/cases/page.tsx',

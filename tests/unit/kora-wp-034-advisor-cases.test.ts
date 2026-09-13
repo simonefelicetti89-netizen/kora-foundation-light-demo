@@ -427,9 +427,12 @@ describe('KORA-WP-034 — scope integrity: no Task, no second Case truth, no Com
     expect(categoryLines.length).toBe(14);
   });
 
-  it('no migration 062 exists', () => {
+  it('KORA-WP-034 itself introduced no migration (062, when present, is a later, unrelated Consolidation Audit remediation — AUD-W2-ITEM-10b, worker_profile_private GRANT — not a Case/Task schema change)', () => {
     const migFiles = readdirSync(join(process.cwd(), 'supabase/migrations'));
-    expect(migFiles.some((f) => f.startsWith('062'))).toBe(false);
+    const migration062 = migFiles.find((f) => f.startsWith('062'));
+    if (!migration062) return; // still true: no 062 at all
+    const src = readFileSync(join(process.cwd(), 'supabase/migrations', migration062), 'utf8');
+    expect(src).not.toMatch(/operational_case|advisor_case|gov\.task|CREATE TABLE|ALTER TABLE.*ADD COLUMN/i);
   });
 
   it('migration 061 is unchanged by this WP (WP-034 reuses it, never modifies it)', () => {
