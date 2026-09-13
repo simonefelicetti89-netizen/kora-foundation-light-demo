@@ -112,6 +112,11 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // filtering is defense-in-depth on top of RLS, never the sole boundary.
   { path: 'lib/advisor-portal/advisor-content-service.ts', reason: 'documented server-only service — Advisor five-class content create/list, KORA-WP-036' },
 
+  // KORA-WP-034: Advisor Tasks & Cases — server-only, same rationale as
+  // every other Advisor-domain service. Thin Assignment-scoping layer over
+  // WP-007's own operational-case-service.ts, never a second Case truth.
+  { path: 'lib/advisor-portal/advisor-case-service.ts', reason: 'documented server-only service — Advisor-facing Assignment-scoped Case list/create/transition over KORA-WP-007, KORA-WP-034' },
+
   // KORA-WP-007: Operational Case Primitive — server-only, same rationale
   // as every other domain service. Every mutating function re-verifies
   // the caller's role and (for Advisor) ownership before any write.

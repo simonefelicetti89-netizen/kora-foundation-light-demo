@@ -9,15 +9,25 @@
 // added — the Advisor may create the four Advisor-authored classes; the
 // governance-authored Class 3 audit/provenance record has no UI in this
 // pilot slice, KORA_ADMIN/service-only, per this WP's own Out of Scope).
+// KORA-WP-034 — Advisor Tasks & Cases (Case toggle added — reuses the
+// shared KORA-WP-007 Operational Case primitive; "Tasks" in the WP title
+// names no separate persisted entity — see
+// lib/advisor-portal/advisor-case-service.ts's own header). Only the two
+// canonical actions named by this WP's own Acceptance ("creates/resolves")
+// are exposed: "Avvia" (open -> in-progress, the necessary bridge — the
+// canonical graph does not allow open -> resolved directly) and "Risolvi"
+// (in-progress -> resolved, terminal). "Blocca"/"Escalation" remain
+// service-supported (WP-007's own transition graph) but are intentionally
+// not exposed in this UI slice, per this WP's own "expose only exact
+// canonical Advisor actions" discipline.
 //
 // The Advisor's own "app/advisor Company surface" (file 102's own Proposed
 // New field): the list of Companies the Advisor is currently assigned to
 // (Assignment Role Context, KORA-WP-031), each with the same minimal
 // non-calendar contact/message surface as the Company side, the ability to
-// confirm/reschedule/cancel an appointment, and now notes/references
-// classified per doc 73 §14's five-class taxonomy. No case list, no
-// document/file upload — KORA-WP-034, storage-provider selection (Out of
-// Scope).
+// confirm/reschedule/cancel an appointment, notes/references classified
+// per doc 73 §14's five-class taxonomy, and now its own Cases. No
+// document/file upload — storage-provider selection (Out of Scope).
 
 import { useEffect, useState } from 'react';
 import { TOKENS, BADGE_TOKENS } from '@/lib/design/kora-design-tokens';
@@ -70,6 +80,21 @@ const STATUS_LABEL: Record<Appointment['status'], string> = {
   rescheduled: 'Riprogrammato', cancelled: 'Annullato', 'no-show': 'Non presentato',
 };
 
+type CaseStatus = 'open' | 'in-progress' | 'blocked' | 'resolved' | 'escalated';
+
+interface OperationalCaseItem {
+  id: string;
+  subject: string;
+  status: CaseStatus;
+  priority: string | null;
+  resolutionNote: string | null;
+  createdAt: string;
+}
+
+const CASE_STATUS_LABEL: Record<CaseStatus, string> = {
+  open: 'Aperto', 'in-progress': 'In corso', blocked: 'Bloccato', resolved: 'Risolto', escalated: 'Escalato',
+};
+
 export default function AdvisorCompaniesPage() {
   const [companies, setCompanies] = useState<AssignedCompany[]>([]);
   const [state, setState] = useState<'loading' | 'loaded' | 'error'>('loading');
@@ -87,6 +112,10 @@ export default function AdvisorCompaniesPage() {
   const [newShared, setNewShared] = useState(false);
   const [newPurpose, setNewPurpose] = useState('');
   const [savingContent, setSavingContent] = useState(false);
+  const [expandedCases, setExpandedCases] = useState<string | null>(null);
+  const [cases, setCases] = useState<OperationalCaseItem[]>([]);
+  const [newCaseSubject, setNewCaseSubject] = useState('');
+  const [savingCase, setSavingCase] = useState(false);
 
   async function load() {
     try {
@@ -249,6 +278,60 @@ export default function AdvisorCompaniesPage() {
     }
   }
 
+  async function loadCases(assignmentId: string) {
+    try {
+      const r = await fetch(`/api/advisor/companies/${assignmentId}/cases`, { credentials: 'include' });
+      const d = await r.json();
+      setCases(d.ok ? (d.cases ?? []) : []);
+    } catch {
+      setCases([]);
+    }
+  }
+
+  async function toggleCases(assignmentId: string) {
+    if (expandedCases === assignmentId) {
+      setExpandedCases(null);
+      return;
+    }
+    setExpandedCases(assignmentId);
+    await loadCases(assignmentId);
+  }
+
+  async function saveCase(assignmentId: string) {
+    if (!newCaseSubject.trim()) return;
+    setSavingCase(true);
+    try {
+      const r = await fetch(`/api/advisor/companies/${assignmentId}/cases`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subject: newCaseSubject }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        setNewCaseSubject('');
+        await loadCases(assignmentId);
+      } else {
+        window.alert(d.error ?? 'Creazione non riuscita.');
+      }
+    } catch {
+      window.alert('Errore di rete.');
+    } finally {
+      setSavingCase(false);
+    }
+  }
+
+  // Only the two canonical actions this WP's own Acceptance names —
+  // "Avvia" (open -> in-progress) and "Risolvi" (in-progress -> resolved).
+  async function caseTransition(assignmentId: string, caseId: string, newStatus: CaseStatus) {
+    try {
+      const r = await fetch(`/api/advisor/companies/${assignmentId}/cases/${caseId}`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }),
+      });
+      const d = await r.json();
+      if (d.ok) await loadCases(assignmentId); else window.alert(d.error ?? 'Operazione non riuscita.');
+    } catch {
+      window.alert('Errore di rete.');
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
@@ -322,7 +405,59 @@ export default function AdvisorCompaniesPage() {
                 >
                   {expandedContent === c.assignmentId ? 'Chiudi note' : 'Note e riferimenti'}
                 </button>
+                <button
+                  onClick={() => toggleCases(c.assignmentId)}
+                  style={{ fontSize: '11px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  {expandedCases === c.assignmentId ? 'Chiudi Case' : 'Case'}
+                </button>
               </div>
+
+              {expandedCases === c.assignmentId && (
+                <div style={{ marginTop: 12 }}>
+                  {cases.length === 0 && (
+                    <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 10 }}>Nessun Case ancora.</p>
+                  )}
+                  <ul className="space-y-2" style={{ marginBottom: 12 }}>
+                    {cases.map((cs) => (
+                      <li key={cs.id} className="flex items-center justify-between gap-3" style={{ fontSize: '12px', color: TOKENS.inkSecondary }}>
+                        <span>
+                          <strong style={{ color: TOKENS.ink }}>{cs.subject}</strong> — {CASE_STATUS_LABEL[cs.status]}
+                        </span>
+                        <span className="flex gap-2">
+                          {cs.status === 'open' && (
+                            <button onClick={() => caseTransition(c.assignmentId, cs.id, 'in-progress')} style={{ fontSize: '10px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer' }}>
+                              Avvia
+                            </button>
+                          )}
+                          {cs.status === 'in-progress' && (
+                            <button onClick={() => caseTransition(c.assignmentId, cs.id, 'resolved')} style={{ fontSize: '10px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer' }}>
+                              Risolvi
+                            </button>
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex gap-2">
+                    <input
+                      type="text" value={newCaseSubject} onChange={(e) => setNewCaseSubject(e.target.value)} placeholder="Oggetto del nuovo Case…"
+                      style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }}
+                    />
+                    <button
+                      onClick={() => saveCase(c.assignmentId)}
+                      disabled={savingCase || !newCaseSubject.trim()}
+                      style={{
+                        fontSize: '11px', fontWeight: 700, color: '#FFFFFF', background: TOKENS.accent,
+                        border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer',
+                        opacity: savingCase || !newCaseSubject.trim() ? 0.6 : 1,
+                      }}
+                    >
+                      {savingCase ? 'Creazione…' : 'Crea'}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {expandedContent === c.assignmentId && (
                 <div style={{ marginTop: 12 }}>

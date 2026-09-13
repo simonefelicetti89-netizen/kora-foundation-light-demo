@@ -556,6 +556,20 @@ describe('KORA-WP-035 — scope integrity: no video provider, no external calend
   const allSrc = files.join('\n');
   const code = allSrc.split('\n').filter((l) => !l.trim().startsWith('//') && !l.trim().startsWith('*')).join('\n');
 
+  // WP-035-exclusive files only (the two page.tsx files are now legitimately
+  // shared with KORA-WP-034, which extends them with its own Case section
+  // using a caseId parameter — see kora-wp-034-advisor-cases.test.ts for
+  // that WP's own scope-integrity checks). Same narrowing technique as
+  // kora-wp-033's own test file.
+  const wp035ExclusiveSrc = [
+    'lib/advisor-portal/advisor-appointment-service.ts',
+    'app/api/company/advisor/appointments/route.ts',
+    'app/api/company/advisor/appointments/[appointmentId]/route.ts',
+    'app/api/advisor/companies/[assignmentId]/appointments/route.ts',
+    'app/api/advisor/companies/[assignmentId]/appointments/[appointmentId]/route.ts',
+  ].map((p) => readFileSync(join(process.cwd(), p), 'utf8')).join('\n');
+  const codeExclusive = wp035ExclusiveSrc.split('\n').filter((l) => !l.trim().startsWith('//') && !l.trim().startsWith('*')).join('\n');
+
   it('no video-call provider integration (Zoom/Meet/Teams/Webex, OAuth, conference URL)', () => {
     expect(code).not.toMatch(/zoom|google.?meet|teams\.microsoft|webex|conferenceUrl|meetingUrl|videoProvider|oauth/i);
   });
@@ -584,8 +598,8 @@ describe('KORA-WP-035 — scope integrity: no video provider, no external calend
     expect(code).not.toMatch(/worker_identity|personal\.worker|employeeName|individualNeed/i);
   });
 
-  it('no internal-context field anywhere (only "subject" — the Shared half of doc 76 §12)', () => {
-    expect(code).not.toMatch(/internalContext|internal_context|caseId|case_id|internalNote/i);
+  it('no internal-context field anywhere in WP-035-exclusive files (only "subject" — the Shared half of doc 76 §12)', () => {
+    expect(codeExclusive).not.toMatch(/internalContext|internal_context|caseId|case_id|internalNote/i);
   });
 
   it('does not invent a 15th governed-action category', () => {

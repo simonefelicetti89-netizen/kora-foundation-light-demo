@@ -560,8 +560,8 @@ describe('KORA-WP-033 — scope integrity: no calendar/booking, no Case, no docu
     expect(codeExclusive).not.toMatch(/calendar|booking|appointment|reschedule|availability_slot|videocall|video_call/i);
   });
 
-  it('no Task/Case concept anywhere (KORA-WP-034 scope)', () => {
-    expect(code).not.toMatch(/operational_case|advisorTask|caseStatus|escalat/i);
+  it('no Task/Case concept anywhere in WP-033-exclusive files (KORA-WP-034 scope)', () => {
+    expect(codeExclusive).not.toMatch(/operational_case|advisorTask|caseStatus|escalat/i);
   });
 
   it('no five-class document taxonomy anywhere (KORA-WP-036 scope)', () => {
