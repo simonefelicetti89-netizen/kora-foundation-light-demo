@@ -49,8 +49,13 @@ interface CaseRow {
   created_at: string; updated_at: string;
 }
 
+interface TenantRow { id: string; }
+interface PartnerProfileRow { id: string; }
+
 let assignments: AssignmentRow[] = [];
 let cases: CaseRow[] = [];
+let tenants: TenantRow[] = [];
+let partnerProfiles: PartnerProfileRow[] = [];
 let idCounter = 0;
 
 const recordGovernanceEventMock = vi.fn(async (p: Record<string, unknown>) => ({ id: 'ev-1', ...p, occurredAt: 'now' }));
@@ -69,6 +74,24 @@ vi.mock('@/lib/supabase/server', () => ({
                     error: null,
                   }),
                 }),
+              }),
+            }),
+          };
+        }
+        if (schemaName === 'analytics' && table === 'tenant') {
+          return {
+            select: () => ({
+              eq: (_col: string, val: string) => ({
+                maybeSingle: async () => ({ data: tenants.find((t) => t.id === val) ?? null, error: null }),
+              }),
+            }),
+          };
+        }
+        if (schemaName === 'network' && table === 'partner_profile') {
+          return {
+            select: () => ({
+              eq: (_col: string, val: string) => ({
+                maybeSingle: async () => ({ data: partnerProfiles.find((p) => p.id === val) ?? null, error: null }),
               }),
             }),
           };
@@ -144,14 +167,31 @@ vi.mock('@/lib/audit/governance-event', () => ({
   recordGovernanceEvent: (p: Record<string, unknown>) => recordGovernanceEventMock(p),
 }));
 
+function seedTenant(id = 'company-1'): TenantRow {
+  const row: TenantRow = { id };
+  tenants.push(row);
+  return row;
+}
+
+function seedPartnerProfile(id = 'partner-1'): PartnerProfileRow {
+  const row: PartnerProfileRow = { id };
+  partnerProfiles.push(row);
+  return row;
+}
+
+// Mirrors the real advisor_assignment.company_id -> analytics.tenant FK:
+// a genuine Assignment cannot exist against a company that doesn't exist,
+// so seeding an Assignment also seeds its Company, exactly like the real
+// schema (see migration 057's own FK).
 function seedAssignment(overrides: Partial<AssignmentRow> = {}): AssignmentRow {
   const row: AssignmentRow = { id: overrides.id ?? 'assign-1', advisor_id: overrides.advisor_id ?? 'adv-1', company_id: overrides.company_id ?? 'company-1' };
   assignments.push(row);
+  seedTenant(row.company_id);
   return row;
 }
 
 beforeEach(() => {
-  assignments = []; cases = []; idCounter = 0;
+  assignments = []; cases = []; tenants = []; partnerProfiles = []; idCounter = 0;
   recordGovernanceEventMock.mockClear();
 });
 
@@ -220,11 +260,52 @@ describe('KORA-WP-007 — createOperationalCase: Admin-origin flow', () => {
     expect(c.owningAdvisorId).toBeNull();
   });
 
-  it('creates a company-scoped Admin-origin Case with no Assignment check', async () => {
+  it('creates a company-scoped Admin-origin Case with no Assignment check, but still requires a real Company', async () => {
+    seedTenant('company-9');
     const { createOperationalCase } = await import('@/lib/operations/operational-case-service');
     const c = await createOperationalCase({ organisationType: 'company', organisationId: 'company-9', subject: 'Onboarding blocker', callerRole: 'KORA_ADMIN', actorId: 'admin1' });
     expect(c.organisationId).toBe('company-9');
     expect(c.owningAdvisorId).toBeNull();
+  });
+
+  it('creates a partner-scoped Admin-origin Case when the Partner exists', async () => {
+    seedPartnerProfile('partner-9');
+    const { createOperationalCase } = await import('@/lib/operations/operational-case-service');
+    const c = await createOperationalCase({ organisationType: 'partner', organisationId: 'partner-9', subject: 'Certification blocker', callerRole: 'KORA_ADMIN', actorId: 'admin1' });
+    expect(c.organisationType).toBe('partner');
+    expect(c.organisationId).toBe('partner-9');
+  });
+});
+
+// Founder Gate A (polymorphic organisation-scope integrity, pre-push
+// review): a KORA_ADMIN-origin Case must not be creatable against an
+// orphan or type-confused organisation_id.
+describe('KORA-WP-007 — Gate A: polymorphic organisation-scope integrity', () => {
+  it('rejects a company-scoped Case whose organisationId does not identify a real Company', async () => {
+    const { createOperationalCase } = await import('@/lib/operations/operational-case-service');
+    await expect(createOperationalCase({ organisationType: 'company', organisationId: 'no-such-company', subject: 'x', callerRole: 'KORA_ADMIN', actorId: 'admin1' }))
+      .rejects.toThrow(/does not identify a real Company/);
+    expect(cases.length).toBe(0);
+  });
+
+  it('rejects a partner-scoped Case whose organisationId does not identify a real Partner', async () => {
+    const { createOperationalCase } = await import('@/lib/operations/operational-case-service');
+    await expect(createOperationalCase({ organisationType: 'partner', organisationId: 'no-such-partner', subject: 'x', callerRole: 'KORA_ADMIN', actorId: 'admin1' }))
+      .rejects.toThrow(/does not identify a real Partner/);
+  });
+
+  it('rejects a Company id claimed as a Partner (type confusion)', async () => {
+    seedTenant('company-1'); // exists as a Company, never as a Partner
+    const { createOperationalCase } = await import('@/lib/operations/operational-case-service');
+    await expect(createOperationalCase({ organisationType: 'partner', organisationId: 'company-1', subject: 'x', callerRole: 'KORA_ADMIN', actorId: 'admin1' }))
+      .rejects.toThrow(/does not identify a real Partner/);
+  });
+
+  it('rejects a Partner id claimed as a Company (type confusion)', async () => {
+    seedPartnerProfile('partner-1'); // exists as a Partner, never as a Company
+    const { createOperationalCase } = await import('@/lib/operations/operational-case-service');
+    await expect(createOperationalCase({ organisationType: 'company', organisationId: 'partner-1', subject: 'x', callerRole: 'KORA_ADMIN', actorId: 'admin1' }))
+      .rejects.toThrow(/does not identify a real Company/);
   });
 });
 
@@ -312,6 +393,72 @@ describe('KORA-WP-007 — transitionOperationalCaseStatus: the required status-t
     const t = await transitionOperationalCaseStatus({ caseId: created.id, newStatus: 'open', newOwningAdvisorId: 'adv-2', callerRole: 'KORA_ADMIN', actorId: 'admin1' });
     expect(t.owningAdvisorId).toBe('adv-2');
     expect(recordGovernanceEventMock).toHaveBeenLastCalledWith(expect.objectContaining({ eventType: 'operational_case.reassigned' }));
+  });
+});
+
+// Founder Gate B (canonical lifecycle transitions, pre-push review): doc 79
+// §13's exact frozen graph — open -> {in-progress, blocked, escalated};
+// in-progress -> {resolved}; blocked -> {in-progress}; escalated ->
+// {in-progress, resolved}; resolved is terminal.
+describe('KORA-WP-007 — Gate B: canonical lifecycle transition matrix (doc 79 §13)', () => {
+  async function seedCaseAt(status: CaseRow['status']) {
+    seedAssignment();
+    const { createOperationalCase } = await import('@/lib/operations/operational-case-service');
+    const created = await createOperationalCase({ organisationType: 'company', organisationId: 'company-1', subject: 'x', callerRole: 'ADVISOR', callerAdvisorId: 'adv-1', actorId: 'u1' });
+    if (status !== 'open') {
+      const row = cases.find((c) => c.id === created.id);
+      if (row) row.status = status; // seed directly at the target starting state, bypassing the graph
+    }
+    return created;
+  }
+
+  it.each([
+    ['open', 'in-progress'],
+    ['open', 'blocked'],
+    ['open', 'escalated'],
+    ['in-progress', 'resolved'],
+    ['blocked', 'in-progress'],
+    ['escalated', 'in-progress'],
+    ['escalated', 'resolved'],
+  ] as const)('ALLOWS %s -> %s', async (from, to) => {
+    const created = await seedCaseAt(from);
+    const { transitionOperationalCaseStatus } = await import('@/lib/operations/operational-case-service');
+    const result = await transitionOperationalCaseStatus({ caseId: created.id, newStatus: to, callerRole: 'ADVISOR', callerAdvisorId: 'adv-1', actorId: 'u1' });
+    expect(result.status).toBe(to);
+  });
+
+  it.each([
+    ['open', 'resolved'],
+    ['in-progress', 'blocked'],
+    ['in-progress', 'escalated'],
+    ['blocked', 'resolved'],
+    ['blocked', 'escalated'],
+    ['resolved', 'open'],
+    ['resolved', 'in-progress'],
+    ['resolved', 'escalated'],
+  ] as const)('DENIES %s -> %s', async (from, to) => {
+    const created = await seedCaseAt(from);
+    const { transitionOperationalCaseStatus } = await import('@/lib/operations/operational-case-service');
+    await expect(transitionOperationalCaseStatus({ caseId: created.id, newStatus: to, callerRole: 'ADVISOR', callerAdvisorId: 'adv-1', actorId: 'u1' }))
+      .rejects.toThrow(/cannot transition from/);
+  });
+
+  it('RESOLVED is terminal — no outgoing transition exists', async () => {
+    const created = await seedCaseAt('resolved');
+    const { transitionOperationalCaseStatus, CASE_ALLOWED_TRANSITIONS } = await import('@/lib/operations/operational-case-service');
+    expect(CASE_ALLOWED_TRANSITIONS.resolved).toEqual([]);
+    for (const target of ['open', 'in-progress', 'blocked', 'escalated'] as const) {
+      await expect(transitionOperationalCaseStatus({ caseId: created.id, newStatus: target, callerRole: 'ADVISOR', callerAdvisorId: 'adv-1', actorId: 'u1' }))
+        .rejects.toThrow(/cannot transition from/);
+    }
+  });
+
+  it('a same-status update (reassignment/resolution-note only) is never treated as a graph transition', async () => {
+    const created = await seedCaseAt('open');
+    const { transitionOperationalCaseStatus } = await import('@/lib/operations/operational-case-service');
+    const result = await transitionOperationalCaseStatus({ caseId: created.id, newStatus: 'open', resolutionNote: 'note only', callerRole: 'ADVISOR', callerAdvisorId: 'adv-1', actorId: 'u1' });
+    expect(result.status).toBe('open');
+    expect(result.resolutionNote).toBe('note only');
   });
 });
 

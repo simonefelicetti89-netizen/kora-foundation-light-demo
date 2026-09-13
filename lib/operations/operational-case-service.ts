@@ -101,6 +101,48 @@ async function assertAdvisorTiedToCompany(
   }
 }
 
+// Founder Gate A (polymorphic organisation-scope integrity, pre-push
+// review): organisation_id cannot carry a native FK (it targets a
+// different table depending on organisation_type — see migration 061's
+// own header), so referential integrity for a *company*/*partner*-scoped
+// Case is enforced here, at the service layer, by resolving organisation_id
+// against the correct canonical table for that exact organisation_type
+// before any insert — for EVERY caller, not only Advisor. For the
+// Advisor-origin path this is transitively already guaranteed
+// (advisor_assignment.company_id itself carries a real FK to
+// analytics.tenant — an Assignment cannot exist against a fake company),
+// but the KORA_ADMIN-origin path had no such transitive guarantee at all
+// prior to this check: nothing previously stopped a KORA_ADMIN-origin
+// Case from being created with an organisation_id that names no real
+// Company or Partner, or a Company's id claimed as a Partner's (or vice
+// versa) — this function closes exactly that gap, uniformly, for both
+// callers. `admin` needs no check — organisation_id is NULL by contract
+// (`operational_case_org_id_required_unless_admin`).
+async function assertOrganisationExists(
+  db: ReturnType<typeof getSupabaseServiceClient>,
+  organisationType: CaseOrganisationType,
+  organisationId: string,
+): Promise<void> {
+  if (organisationType === 'company') {
+    const { data, error } = await db.schema('analytics').from('tenant').select('id').eq('id', organisationId).maybeSingle();
+    if (error) {
+      throw new Error(`[KORA] createOperationalCase failed: ${error.message}`);
+    }
+    if (!data) {
+      throw new Error('[KORA] createOperationalCase rejected: organisationId does not identify a real Company.');
+    }
+  } else if (organisationType === 'partner') {
+    const { data, error } = await db.schema('network').from('partner_profile').select('id').eq('id', organisationId).maybeSingle();
+    if (error) {
+      throw new Error(`[KORA] createOperationalCase failed: ${error.message}`);
+    }
+    if (!data) {
+      throw new Error('[KORA] createOperationalCase rejected: organisationId does not identify a real Partner.');
+    }
+  }
+  // 'admin': no organisationId to check (NULL by contract).
+}
+
 // ── createOperationalCase — ADVISOR or KORA_ADMIN only ──────────────────────
 
 export interface CreateOperationalCaseParams {
@@ -154,6 +196,10 @@ export async function createOperationalCase(params: CreateOperationalCaseParams)
     owningAdvisorId = params.callerAdvisorId;
   } else if (params.callerRole !== 'KORA_ADMIN') {
     throw new Error('[KORA] createOperationalCase rejected: unsupported caller role.');
+  }
+
+  if (params.organisationType !== 'admin') {
+    await assertOrganisationExists(db, params.organisationType, params.organisationId as string);
   }
 
   const { data, error } = await db
@@ -239,6 +285,31 @@ export async function listOperationalCases(params: ListOperationalCasesParams): 
   return ((data ?? []) as CaseDbRow[]).map(toCase);
 }
 
+// Founder Gate B (canonical lifecycle transitions, pre-push review): doc 73
+// §12 names only the five-word status vocabulary, with no transition graph
+// — but doc 79 §13 ("Operational Case State Model," explicitly the same
+// model, "Identical to DD-2's Case primitive") gives the exact frozen
+// graph, verbatim:
+//
+//   open → in-progress → resolved
+//      \-> blocked -> in-progress
+//      \-> escalated -> (higher-authority handling) -> in-progress | resolved
+//
+// Read literally (both branches drawn from `open`, not `in-progress`):
+// OPEN can go to in-progress, blocked, or escalated. IN-PROGRESS can only
+// go to resolved. BLOCKED can only return to in-progress. ESCALATED can
+// go to in-progress or resolved. RESOLVED is terminal (no outgoing edge
+// drawn anywhere). This was NOT enforced in the first version of this
+// service (any target status was accepted from any current status) —
+// found and fixed before any push, per the same discipline as Gate A.
+export const CASE_ALLOWED_TRANSITIONS: Record<CaseStatus, readonly CaseStatus[]> = {
+  open: ['in-progress', 'blocked', 'escalated'],
+  'in-progress': ['resolved'],
+  blocked: ['in-progress'],
+  escalated: ['in-progress', 'resolved'],
+  resolved: [],
+};
+
 // ── transitionOperationalCaseStatus — the required status-transition op ─────
 // ADVISOR may transition only a Case they own; KORA_ADMIN may transition
 // any Case (including reassignment via newOwningAdvisorId — the "handoff
@@ -276,6 +347,16 @@ export async function transitionOperationalCaseStatus(params: TransitionOperatio
     }
   } else if (params.callerRole !== 'KORA_ADMIN') {
     throw new Error('[KORA] transitionOperationalCaseStatus rejected: unsupported caller role.');
+  }
+
+  // A "transition" that leaves status unchanged (e.g. a pure reassignment
+  // or resolution-note update) is not a graph edge at all — only an
+  // actual status change is checked against CASE_ALLOWED_TRANSITIONS.
+  if (params.newStatus !== existing.status) {
+    const allowed = CASE_ALLOWED_TRANSITIONS[existing.status];
+    if (!allowed.includes(params.newStatus)) {
+      throw new Error(`[KORA] transitionOperationalCaseStatus rejected: cannot transition from "${existing.status}" to "${params.newStatus}" (doc 79 §13's canonical Case state model).`);
+    }
   }
 
   const update: Record<string, unknown> = { status: params.newStatus };

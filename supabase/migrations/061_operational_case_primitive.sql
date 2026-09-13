@@ -2,6 +2,17 @@
 -- KORA — Migration 061: Operational Case Primitive
 -- Migration:   061_operational_case_primitive
 -- Created:     2026-09-13
+-- Revised:     2026-09-13 — Founder pre-push review (Gates A/B) found and
+--              fixed two real gaps before this migration was ever pushed
+--              or applied anywhere: (A) the KORA_ADMIN-origin creation
+--              path performed no existence check on organisation_id at
+--              all — see this migration's own "FOUNDER GATE A FINDING"
+--              note near the organisation-scope header below; (B) no
+--              lifecycle transition graph was enforced anywhere — doc 79
+--              §13 (companion to doc 78, same Case model) gives the exact
+--              frozen graph, now enforced both in the service layer and
+--              by a new DB trigger — see the dedicated section near the
+--              RLS policies below.
 -- Block:       KORA-WP-007 — Operational Case Primitive
 -- Gate:        Gate 2 CLOSED WITH CONDITIONS (staging authorized) — written and
 --              validated LOCAL/test only by this task. NOT applied to staging
@@ -52,18 +63,34 @@
 -- `organisation_type` is `company` | `partner` | `admin` (doc 78 §30's own
 -- three-way extension). `organisation_id` cannot carry a single physical
 -- FK because it refers to two different tables (`analytics.tenant` for
--- company, `network.partner_identity` for partner) depending on that type,
--- and is NULL for `admin` (an internal/administrative Case with no
--- specific Company or Partner — doc 78 §30's own worked examples: "finance
--- exception," "conflict/recusal escalation" can be organisation-less).
--- Referential integrity for `company`/`partner` is enforced at the service
--- layer, which validates existence in the correct target table before
--- insert — the same trade-off already accepted implicitly wherever a
--- polymorphic reference exists without a native Postgres conditional FK.
+-- company, `network.partner_profile` for partner — the organisation-level
+-- Partner table, distinct from `network.partner_identity`, which is a
+-- Partner *user*'s auth-mapping record, not the organisation) depending on
+-- that type, and is NULL for `admin` (an internal/administrative Case with
+-- no specific Company or Partner — doc 78 §30's own worked examples:
+-- "finance exception," "conflict/recusal escalation" can be
+-- organisation-less). Referential integrity for `company`/`partner` is
+-- enforced at the service layer (`assertOrganisationExists()`), which
+-- validates existence in the correct target table before insert, for
+-- EVERY caller — the same trade-off already accepted implicitly wherever
+-- a polymorphic reference exists without a native Postgres conditional FK.
+--
+-- FOUNDER GATE A FINDING (pre-push review, fixed before any push/staging):
+-- the Advisor-origin path was always protected transitively
+-- (`advisor_assignment.company_id` itself carries a real FK to
+-- `analytics.tenant` — an Assignment cannot exist against a fake company),
+-- but the first version of this service performed NO existence check at
+-- all for the KORA_ADMIN-origin path — a KORA_ADMIN-created Case could be
+-- inserted with an `organisation_id` naming no real Company/Partner, or a
+-- Company's id claimed as a Partner's. `assertOrganisationExists()` closes
+-- this gap uniformly for both callers, found and fixed before this
+-- migration was ever pushed or applied anywhere.
+--
 -- Only `company` is exercised by this WP's own Acceptance test (Advisor
 -- and Admin flows both use `company`); `partner` is included in the CHECK
 -- vocabulary because doc 78 §30 names it as part of the same frozen
--- three-way scope, not because this WP builds Partner-side consumption.
+-- three-way scope, not because this WP builds Partner-side consumption —
+-- its existence-check path is nonetheless real and tested.
 --
 -- LINKED CANONICAL OBJECT — no fabricated FK to non-existent tables
 -- ─────────────────────────────────────────────────────────────────────────
@@ -202,6 +229,42 @@ CREATE TRIGGER trg_operational_case_updated_at
   BEFORE UPDATE ON gov.operational_case
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+-- ── Canonical lifecycle transition guard (doc 79 §13, Founder Gate B) ───────
+-- Physical, defense-in-depth enforcement of the exact frozen graph:
+--   open → in-progress → resolved
+--      \-> blocked -> in-progress
+--      \-> escalated -> (higher-authority handling) -> in-progress | resolved
+-- RESOLVED is terminal. The real enforcement boundary is the service layer
+-- (operational-case-service.ts's own CASE_ALLOWED_TRANSITIONS, which
+-- returns a clear, class-specific error) — this trigger exists so the
+-- invariant holds even for a write that reaches the table by any other
+-- path, per this WP's own "do not leave important integrity solely to the
+-- service layer" discipline.
+
+CREATE OR REPLACE FUNCTION gov.operational_case_guard_transition()
+  RETURNS trigger
+  LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.status = OLD.status THEN
+    RETURN NEW; -- not a transition (reassignment / resolution-note update)
+  END IF;
+  IF NOT (
+    (OLD.status = 'open' AND NEW.status IN ('in-progress', 'blocked', 'escalated'))
+    OR (OLD.status = 'in-progress' AND NEW.status = 'resolved')
+    OR (OLD.status = 'blocked' AND NEW.status = 'in-progress')
+    OR (OLD.status = 'escalated' AND NEW.status IN ('in-progress', 'resolved'))
+  ) THEN
+    RAISE EXCEPTION 'operational_case: cannot transition from % to % (doc 79 §13 canonical Case state model)', OLD.status, NEW.status;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_operational_case_guard_transition
+  BEFORE UPDATE OF status ON gov.operational_case
+  FOR EACH ROW EXECUTE FUNCTION gov.operational_case_guard_transition();
+
 -- ── RLS ──────────────────────────────────────────────────────────────────────
 -- Defense-in-depth only — the real enforcement boundary is the service
 -- layer (lib/operations/operational-case-service.ts), since every actual
@@ -264,6 +327,8 @@ NOTIFY pgrst, 'reload schema';
 -- DROP POLICY IF EXISTS "operational_case_advisor_own_insert" ON gov.operational_case;
 -- DROP POLICY IF EXISTS "operational_case_advisor_own_select" ON gov.operational_case;
 -- DROP POLICY IF EXISTS "operational_case_kora_admin_all" ON gov.operational_case;
+-- DROP TRIGGER IF EXISTS trg_operational_case_guard_transition ON gov.operational_case;
+-- DROP FUNCTION IF EXISTS gov.operational_case_guard_transition();
 -- DROP TRIGGER IF EXISTS trg_operational_case_updated_at ON gov.operational_case;
 -- DROP INDEX IF EXISTS gov.idx_operational_case_status;
 -- DROP INDEX IF EXISTS gov.idx_operational_case_advisor;
