@@ -97,6 +97,11 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // boundary (every mutating function checks actorRole === 'KORA_ADMIN').
   { path: 'lib/advisor-assignment/advisor-assignment-service.ts', reason: 'documented server-only service — Advisor Assignment creation/validity/prerequisite-eligibility, KORA-WP-031' },
 
+  // KORA-WP-033: Company Advisor Action-Matrix Surface + Portal Pilot Slice —
+  // server-only, same rationale as WP-030/031 immediately above. No route
+  // bypasses requireCompanyUser()/requireAdvisorUser() to reach this file.
+  { path: 'lib/advisor-portal/advisor-portal-service.ts', reason: 'documented server-only service — Company/Advisor assigned-relationship read + contact-message send, KORA-WP-033' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called

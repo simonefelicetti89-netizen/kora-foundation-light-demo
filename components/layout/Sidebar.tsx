@@ -119,6 +119,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Network',
         items: [
+          { href: '/company/advisor', label: 'Il tuo Advisor', description: 'Advisor assegnato e messaggi' },
           { href: '/company/commons', label: 'KORA Space' },
           { href: '/company/kora-link', label: 'KORA Link' },
           { href: '/company/kora-link/campaigns', label: 'Campagne KORA Link', description: 'Anteprima design — nessuna campagna reale', preview: true },

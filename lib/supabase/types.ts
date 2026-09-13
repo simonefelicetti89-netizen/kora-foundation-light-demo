@@ -563,6 +563,20 @@ export type AdvisorPrerequisiteEligibilityInsert = Pick<AdvisorPrerequisiteEligi
   verified_by?: string | null;
 };
 
+// ── advisor.advisor_contact_message (KORA-WP-033) ───────────────────────────────
+
+export interface AdvisorContactMessageRow {
+  id: string;
+  assignment_id: string;
+  sender_role: 'COMPANY_ADMIN' | 'ADVISOR';
+  body: string;
+  created_at: string;
+}
+
+export type AdvisorContactMessageInsert = Pick<AdvisorContactMessageRow, 'assignment_id' | 'sender_role' | 'body'> & {
+  id?: string;
+};
+
 // ── analytics.need_hypothesis (KORA-WP-017) ─────────────────────────────────────
 
 export interface NeedHypothesisRow {
@@ -693,6 +707,7 @@ export interface Database {
       advisor_role_qualification: { Row: AdvisorRoleQualificationRow; Insert: AdvisorRoleQualificationInsert; Update: Partial<AdvisorRoleQualificationInsert>; Relationships: [] };
       advisor_assignment: { Row: AdvisorAssignmentRow; Insert: AdvisorAssignmentInsert; Update: Partial<AdvisorAssignmentInsert>; Relationships: [] };
       advisor_prerequisite_eligibility: { Row: AdvisorPrerequisiteEligibilityRow; Insert: AdvisorPrerequisiteEligibilityInsert; Update: Partial<AdvisorPrerequisiteEligibilityInsert>; Relationships: [] };
+      advisor_contact_message: { Row: AdvisorContactMessageRow; Insert: AdvisorContactMessageInsert; Update: Partial<AdvisorContactMessageInsert>; Relationships: [] };
     };
     Views:          Record<string, never>;
     Functions:      Record<string, never>;

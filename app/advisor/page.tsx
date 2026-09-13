@@ -8,6 +8,7 @@
 // capability (doc 76 §4), service-role/KORA_ADMIN only — out of this WP's
 // UI scope entirely (Step 27/18 of this WP's own authorization).
 
+import Link from 'next/link';
 import { requireAdvisorUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import {
   getAdvisorIdentityByAuthUserId,
@@ -107,6 +108,14 @@ export default async function AdvisorProfilePage() {
             ))}
           </ul>
         )}
+      </div>
+
+      <div>
+        {/* KORA-WP-033 — minimal entry point to the Company surface. No
+            navigation shell/polish here (KORA-WP-064's scope); one plain link. */}
+        <Link href="/advisor/companies" style={{ fontSize: '12px', fontWeight: 700, color: '#C76F3D' }}>
+          Le tue Company →
+        </Link>
       </div>
     </div>
   );
