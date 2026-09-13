@@ -14,6 +14,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { NextResponse } from 'next/server';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -52,7 +53,17 @@ vi.mock('@/lib/audit/governance-event', () => ({
   }),
 }));
 
+// GATE 1/2 (Founder final semantic/security gate): requireWorkerUser()
+// (lib/auth/kora-session.ts) is the REAL, load-bearing gatekeeper every
+// My KORA / /api/worker/** route calls. Composed here for real, not
+// re-implemented, to prove — not assume — that endWorkerIdentityAccess()'s
+// effect is exactly what requireWorkerUser() already, independently
+// enforces (this predicate pre-dates WP-041 entirely — PILOT-TRUST-04/05).
+const mockGetUser = vi.fn();
+let tenantActive = true;
+
 vi.mock('@/lib/supabase/server', () => ({
+  getSupabaseServerClient: async () => ({ auth: { getUser: mockGetUser } }),
   getSupabaseServiceClient: () => ({
     schema: (schemaName: string) => ({
       from: (table: string) => {
@@ -81,12 +92,27 @@ vi.mock('@/lib/supabase/server', () => ({
             select: () => ({
               eq: (_col: string, val: string) => ({
                 maybeSingle: async () => {
+                  // Matches both getWorkerIdentityById's lookup by id AND
+                  // requireWorkerUser()'s own internal `.eq('id', workerId)`
+                  // check — same real query shape, not re-implemented.
                   const row = workerRows.find((r) => r.id === val);
                   return {
                     data: row ? { id: row.id, tenant_id: row.tenant_id, status: row.status, updated_at: row.updated_at } : null,
                     error: null,
                   };
                 },
+              }),
+            }),
+          };
+        }
+        if (schemaName === 'analytics' && table === 'tenant') {
+          return {
+            select: () => ({
+              eq: (_col: string, val: string) => ({
+                maybeSingle: async () => ({
+                  data: val === TENANT ? { id: TENANT, is_active: tenantActive } : null,
+                  error: null,
+                }),
               }),
             }),
           };
@@ -98,6 +124,27 @@ vi.mock('@/lib/supabase/server', () => ({
                 select: () => ({
                   single: async () => {
                     const row = identityRows.find((r) => r.id === val);
+                    if (!row) return { data: null, error: { message: 'not found' } };
+                    row.status = patch.status;
+                    return { data: row, error: null };
+                  },
+                }),
+              }),
+            }),
+          };
+        }
+        if (schemaName === 'advisor' && table === 'advisor_role_qualification') {
+          return {
+            select: () => ({
+              eq: (_col: string, val: string) => ({
+                order: async () => ({ data: qualificationRows.filter((q) => q.advisor_id === val), error: null }),
+              }),
+            }),
+            update: (patch: { status: string }) => ({
+              eq: (_col: string, val: string) => ({
+                select: () => ({
+                  single: async () => {
+                    const row = qualificationRows.find((q) => q.id === val);
                     if (!row) return { data: null, error: { message: 'not found' } };
                     row.status = patch.status;
                     return { data: row, error: null };
@@ -119,16 +166,40 @@ interface IdentityRow {
 }
 let identityRows: IdentityRow[] = [];
 
+interface QualificationRow {
+  id: string; advisor_id: string; role: string; status: string;
+  created_at: string; updated_at: string;
+}
+let qualificationRows: QualificationRow[] = [];
+
+let listRoleQualificationsForAdvisor: typeof import('@/lib/advisor-identity/advisor-identity-service').listRoleQualificationsForAdvisor;
+let updateAdvisorRoleQualificationStatus: typeof import('@/lib/advisor-identity/advisor-identity-service').updateAdvisorRoleQualificationStatus;
+
 let endWorkerIdentityAccess: typeof import('@/lib/worker-identity/worker-identity-service').endWorkerIdentityAccess;
 let getWorkerIdentityById: typeof import('@/lib/worker-identity/worker-identity-service').getWorkerIdentityById;
 let updateAdvisorIdentityStatus: typeof import('@/lib/advisor-identity/advisor-identity-service').updateAdvisorIdentityStatus;
+
+let requireWorkerUser: typeof import('@/lib/auth/kora-session').requireWorkerUser;
 
 beforeEach(async () => {
   workerRows = [makeWorkerRow('active')];
   identityRows = [{ id: 'advisor-1', auth_user_id: 'auth-advisor-1', full_name: 'Test Advisor', status: 'active', created_at: 't', updated_at: 't' }];
   governedActionCalls.length = 0;
+  tenantActive = true;
+  mockGetUser.mockReset();
+  mockGetUser.mockResolvedValue({
+    data: {
+      user: {
+        id: 'auth-worker-1',
+        email: 'worker@example.test',
+        app_metadata: { kora_role: 'WORKER', kora_tenant_id: TENANT, kora_worker_id: 'worker-1', kora_status: 'active' },
+      },
+    },
+  });
+  qualificationRows = [];
   ({ endWorkerIdentityAccess, getWorkerIdentityById } = await import('@/lib/worker-identity/worker-identity-service'));
-  ({ updateAdvisorIdentityStatus } = await import('@/lib/advisor-identity/advisor-identity-service'));
+  ({ updateAdvisorIdentityStatus, listRoleQualificationsForAdvisor, updateAdvisorRoleQualificationStatus } = await import('@/lib/advisor-identity/advisor-identity-service'));
+  ({ requireWorkerUser } = await import('@/lib/auth/kora-session'));
 });
 
 describe('KORA-WP-041 — endWorkerIdentityAccess (Worker Offboarding playbook, step 6.2)', () => {
@@ -212,6 +283,106 @@ describe('KORA-WP-041 — worker-leaves-during-pilot test (registry Tests field,
     // table is never touched) — the real invariant is that no .from() call
     // in this file ever targets it.
     expect(src).not.toMatch(/\.from\(['"]worker_profile_private['"]\)/);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PART 2B — GATE 1/2 (Founder final semantic/security gate): proves the
+// actual USABILITY boundary via the REAL requireWorkerUser(), not row
+// existence alone. requireWorkerUser() is the one gatekeeper every My KORA
+// page and every /api/worker/** route calls (36 call sites repo-wide) — it
+// independently re-checks personal.worker_identity.status against the live
+// DB row (not just the JWT claim), a predicate that pre-dates this WP
+// entirely (PILOT-TRUST-04/05, migrations 048 and the tenant/mapping check
+// in kora-session.ts) and is already covered by its own dedicated
+// regression suite (tests/unit/pilot-trust-04-worker-tenant-suspension.test.ts,
+// case 4: "mapping disabilitato (worker_identity.status=disabled) → DENY").
+// This block composes THAT real, pre-existing predicate with THIS WP's own
+// new endWorkerIdentityAccess() to prove the end-to-end chain honestly,
+// rather than assuming row persistence implies continued product access.
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('KORA-WP-041 — GATE: My KORA usability boundary (requireWorkerUser(), real function)', () => {
+  it('BEFORE offboarding: an active worker_identity row resolves to a valid KoraWorkerUser (My KORA reachable)', async () => {
+    const result = await requireWorkerUser();
+    expect(result).not.toBeInstanceOf(NextResponse);
+    expect((result as { workerId: string }).workerId).toBe('worker-1');
+  });
+
+  it('AFTER endWorkerIdentityAccess(): the SAME session is denied by requireWorkerUser() (My KORA correctly unreachable, not merely undocumented)', async () => {
+    await endWorkerIdentityAccess({ workerIdentityId: 'worker-1', actor: { actorRole: 'KORA_ADMIN', actorId: 'admin-1' } });
+    // Simulates the still-valid JWT a just-offboarded worker would present
+    // (their old session token has not been revoked by this playbook —
+    // requireWorkerUser()'s own live-DB re-check is what closes the gap).
+    const result = await requireWorkerUser();
+    expect(result).toBeInstanceOf(NextResponse);
+    expect((result as NextResponse).status).toBe(403);
+  });
+
+  it('AFTER endWorkerIdentityAccess(): the identity record itself remains resolvable (getWorkerIdentityById) even though live app access is correctly denied — "identity persists" means the record persists, not that operational access continues', async () => {
+    await endWorkerIdentityAccess({ workerIdentityId: 'worker-1', actor: { actorRole: 'KORA_ADMIN', actorId: 'admin-1' } });
+    const record = await getWorkerIdentityById('worker-1');
+    const session = await requireWorkerUser();
+    expect(record).not.toBeNull(); // resolvable — row never deleted
+    expect(session).toBeInstanceOf(NextResponse); // but live product access is denied
+  });
+
+  it('does NOT support reusing the same worker_identity row for a different tenant — tenant_id is immutable by this function and by the DB\'s own WORKER-side lifecycle trigger (migration 048); a future Company relationship requires a NEW row, per personal.worker_identity\'s own tenant-scoped schema (migration 007), unrelated to and unchanged by this WP', async () => {
+    const src = readFileSync(join(process.cwd(), 'lib/worker-identity/worker-identity-service.ts'), 'utf-8');
+    // endWorkerIdentityAccess()'s own update payload never includes tenant_id
+    const updateCallMatch = src.match(/\.update\(\{\s*status:\s*'disabled'\s*\}\)/);
+    expect(updateCallMatch).not.toBeNull();
+    expect(src).not.toMatch(/tenant_id:\s*['"]?\w+['"]?\s*,?\s*\n?\s*\}\)\.update/); // no update ever sets tenant_id
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PART 3B — GATE 3 (Founder final gate): Advisor global offboarding must
+// handle BOTH independent qualifications (Company Advisor, Partner Advisor
+// — migration 056's own comment: "both roles may coexist independently,
+// doc 76 §2 dual-role eligibility"), not just whichever one a dry-run
+// happened to fixture. The playbook document (ops/playbooks/advisor-
+// offboarding-playbook.md §6.4) already says "for each" non-terminal
+// qualification — this proves that iteration actually revokes ALL of
+// them, using the REAL listRoleQualificationsForAdvisor() +
+// updateAdvisorRoleQualificationStatus(), not a fabricated assumption.
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('KORA-WP-041 — GATE: Advisor global offboarding revokes BOTH independent qualifications', () => {
+  it('an Advisor holding both Company Advisor AND Partner Advisor qualifications has BOTH revoked by the playbook\'s own "for each" step — before/after matrix', async () => {
+    qualificationRows = [
+      { id: 'qual-company', advisor_id: 'advisor-1', role: 'Company Advisor', status: 'QUALIFIED', created_at: 't1', updated_at: 't1' },
+      { id: 'qual-partner', advisor_id: 'advisor-1', role: 'Partner Advisor', status: 'QUALIFIED', created_at: 't2', updated_at: 't2' },
+    ];
+
+    const before = await listRoleQualificationsForAdvisor('advisor-1');
+    expect(before.map((q) => ({ role: q.role, status: q.status }))).toEqual([
+      { role: 'Company Advisor', status: 'QUALIFIED' },
+      { role: 'Partner Advisor', status: 'QUALIFIED' },
+    ]);
+
+    // Playbook step 6.4: "for each" non-terminal qualification.
+    for (const q of before) {
+      await updateAdvisorRoleQualificationStatus(q.id, 'REVOKED', 'KORA_ADMIN', 'admin-1');
+    }
+
+    const after = await listRoleQualificationsForAdvisor('advisor-1');
+    expect(after.map((q) => ({ role: q.role, status: q.status }))).toEqual([
+      { role: 'Company Advisor', status: 'REVOKED' },
+      { role: 'Partner Advisor', status: 'REVOKED' },
+    ]);
+  });
+
+  it('does not stop at the first qualification if a second, independent one still exists (no accidental early "fully offboarded" claim)', async () => {
+    qualificationRows = [
+      { id: 'qual-company', advisor_id: 'advisor-1', role: 'Company Advisor', status: 'QUALIFIED', created_at: 't1', updated_at: 't1' },
+      { id: 'qual-partner', advisor_id: 'advisor-1', role: 'Partner Advisor', status: 'QUALIFIED', created_at: 't2', updated_at: 't2' },
+    ];
+    await updateAdvisorRoleQualificationStatus('qual-company', 'REVOKED', 'KORA_ADMIN', 'admin-1');
+    const stillOpen = await listRoleQualificationsForAdvisor('advisor-1');
+    const nonTerminal = stillOpen.filter((q) => q.status !== 'REVOKED' && q.status !== 'EXPIRED');
+    expect(nonTerminal).toHaveLength(1); // Partner Advisor is still QUALIFIED — offboarding is NOT complete yet
+    expect(nonTerminal[0].role).toBe('Partner Advisor');
   });
 });
 

@@ -63,6 +63,18 @@ governed by the mechanism `KORA-WP-031` already built.
    (`transitionOperationalCaseStatus({ caseId, newStatus: <unchanged current status>, newOwningAdvisorId: <replacement advisor id>, callerRole: 'KORA_ADMIN', actorId })`
    — already existing, `KORA-WP-007`, no new function needed) or to
    **resolve** it directly if it no longer needs an owner.
+
+   **Operator-verified precondition before reassigning (Manual Governed —
+   not enforced by any engine, and this playbook does not add one):**
+   `transitionOperationalCaseStatus()`'s `newOwningAdvisorId` parameter
+   accepts any `advisor_identity.id` with no eligibility check at all — the
+   KORA_ADMIN operator must confirm, before reassigning a Company-scoped
+   Case, that the receiving Advisor already has (or is concurrently being
+   given) an **active** Assignment to that same Company and a **QUALIFIED**
+   Company Advisor role qualification. This is a human governance check,
+   consistent with Manual Governed — inventing an automatic eligibility
+   engine here would go beyond this WP's authorization (no new
+   authorization model, no Case-ownership redesign).
 6. Call `updateAdvisorIdentityStatus(advisorId, 'inactive_offboarded', actorRole, actorId)`
    (`lib/advisor-identity/advisor-identity-service.ts` — **new in this WP**,
    see note below) — done last, after every Assignment/Qualification/Case
@@ -119,6 +131,36 @@ See `.kora-audit/output/126_KORA_WP_041_IMPLEMENTATION_REPORT.md` §26.
   `advisor_identity`/`advisor_role_qualification` model already covers:
   Partner offboarding overall is explicitly out of `KORA-WP-041`'s scope
   (registry Out of Scope field).
+- **Assignment-level reassignment is a distinct, separate decision from
+  Case-ownership reassignment (step 6.5) and is NOT performed by this
+  playbook's ordered steps.** Doc `73` (DD-2, Advisor Canonical Operating
+  Model) describes two different things under the word "reassignment": (a)
+  Case-ownership handoff (§12, what step 6.5 does), and (b) Assignment
+  reassignment — "offboarding closes all active Assignments (with
+  reassignment where needed)" — meaning a **new** `advisor_assignment` row
+  opened for a replacement Advisor so the Company keeps coverage. This
+  playbook only ever **ends** Assignments (step 6.3); it never creates a
+  replacement one. Whether the Company needs continued Advisor coverage,
+  and who the replacement is, is a separate KORA_ADMIN governance decision
+  (`createAdvisorAssignment()`, `KORA-WP-031`, unchanged) to be triggered
+  explicitly if and when needed — not an automatic consequence of
+  offboarding, and not something a Manual Governed playbook should decide
+  on its own.
+- **Known, pre-existing gap surfaced (not introduced) by this playbook's
+  dry-run, explicitly not fixed here:** `createOperationalCase()`'s own
+  `assertAdvisorTiedToCompany()` check (`KORA-WP-007`,
+  `lib/operations/operational-case-service.ts`) matches ANY
+  `advisor_assignment` row for (advisor, company) — active or ended — with
+  no `status` filter. `KORA-WP-034`'s own dedicated entry point
+  (`assertActiveAssignmentAndGetCompanyId()`) correctly requires an active
+  Assignment, but the older, still-present `app/api/advisor/cases` route
+  (built by `KORA-WP-007` itself) does not. This means an Advisor whose
+  Assignment this playbook just ended could, in principle, still create a
+  new Case for that Company through that older route — `advisor_identity.status`
+  provides no independent block either (`requireAdvisorUser()` does not
+  check it — see report 126 §Gate 6). This is a genuine, cross-WP finding
+  in shared `KORA-WP-007` code, not a WP-041-owned defect — flagged for
+  Founder review, not corrected in this WP.
 
 ---
 
