@@ -5,13 +5,17 @@
 // KORA-WP-035 — Advisor Calendar & Call/Appointment Lineage (appointments
 // section added below the existing profile/message surface — no navigation
 // or redesign, per this WP's own Step 32 discipline).
+// KORA-WP-036 — Advisor Document/Note Five-Class Taxonomy (Company-visible
+// shared notes section added — read-only: the Company never creates any
+// class, per doc 73 §6/§14's "Advisor drafts, Company reads" pattern).
 //
 // The first visible Company↔Advisor surface: the Company's own assigned
 // Advisor (name, role, validity), a minimal non-calendar contact/message
-// surface, and now the ability to request an appointment ("Call") with the
-// assigned Advisor. No video-call provider, no external calendar sync, no
-// document center, no case list — those are KORA-WP-036/034 or explicitly
-// deferred (video-call provider integration, file 102's own Out of Scope).
+// surface, the ability to request an appointment ("Call"), and now the
+// Company-visible shared notes (Class 1 + shared Class 5 only — never the
+// Advisor's internal/confidential classes, file 102's own class-based
+// visibility field). No video-call provider, no external calendar sync, no
+// document/file upload, no Case list — deferred/out of scope respectively.
 //
 // Field-minimized by design (see lib/advisor-portal/advisor-portal-service.ts
 // header): no biography, no headshot, no rating, no phone/email — none of
@@ -45,6 +49,13 @@ interface Appointment {
   rescheduledFromId: string | null;
 }
 
+interface ContentRecord {
+  id: string;
+  class: 'ORGANISATION_SHAREABLE_NOTE' | 'ADVISOR_INTERNAL_NOTE' | 'AUDIT_PROVENANCE_RECORD' | 'CONFIDENTIAL_REFERENCE' | 'COMMUNICATION_FOLLOWUP';
+  body: string;
+  createdAt: string;
+}
+
 const STATUS_LABEL: Record<Appointment['status'], string> = {
   requested: 'Richiesto',
   confirmed: 'Confermato',
@@ -66,6 +77,7 @@ export default function CompanyAdvisorPage() {
   const [newStartsAt, setNewStartsAt] = useState('');
   const [newEndsAt, setNewEndsAt] = useState('');
   const [booking, setBooking] = useState(false);
+  const [content, setContent] = useState<ContentRecord[]>([]);
 
   async function loadAppointments() {
     try {
@@ -77,6 +89,16 @@ export default function CompanyAdvisorPage() {
     }
   }
 
+  async function loadContent() {
+    try {
+      const r = await fetch('/api/company/advisor/content', { credentials: 'include' });
+      const d = await r.json();
+      setContent(d.ok ? (d.content ?? []) : []);
+    } catch {
+      setContent([]);
+    }
+  }
+
   async function load() {
     try {
       const r = await fetch('/api/company/advisor', { credentials: 'include' });
@@ -85,7 +107,10 @@ export default function CompanyAdvisorPage() {
         setAdvisor(d.advisor);
         setMessages(d.messages ?? []);
         setState('loaded');
-        if (d.advisor) await loadAppointments();
+        if (d.advisor) {
+          await loadAppointments();
+          await loadContent();
+        }
       } else {
         setErrorMsg(d.error ?? 'Errore nel caricamento.');
         setState('error');
@@ -335,6 +360,25 @@ export default function CompanyAdvisorPage() {
                 </button>
               </div>
             </div>
+          </div>
+
+          <div className="rounded-[16px] px-5 py-4" style={{ background: TOKENS.surface, border: TOKENS.cardBorder }}>
+            <p style={{ fontSize: '12px', fontWeight: 700, color: TOKENS.ink, marginBottom: 4 }}>Note condivise</p>
+            <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 10 }}>
+              Solo le note che l&apos;Advisor ha scelto di condividere con te — le sue note di lavoro interne non sono mai visibili qui.
+            </p>
+
+            {content.length === 0 && (
+              <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>Nessuna nota condivisa ancora.</p>
+            )}
+
+            <ul className="space-y-2">
+              {content.map((c) => (
+                <li key={c.id} style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
+                  {c.body}
+                </li>
+              ))}
+            </ul>
           </div>
         </>
       )}

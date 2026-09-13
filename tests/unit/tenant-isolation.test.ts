@@ -161,6 +161,10 @@ describe('Tenant Isolation — company routes: filtro tenant_id nelle query', ()
         // .eq('company_id', tenantId) filter lives inside
         // lib/advisor-portal/advisor-portal-service.ts, not the route.
         /getCompanyAssignedAdvisor/.test(code) ||
+        // KORA-WP-036: listContentForCompany(auth.tenantId, assignmentId) — the
+        // caller's trusted tenantId is checked against the Assignment's own
+        // company_id inside lib/advisor-portal/advisor-content-service.ts.
+        /listContentForCompany/.test(code) ||
         // KORA-WP-033: sendContactMessage({..., callerTenantId: auth.tenantId}) and
         // listContactMessages({..., callerTenantId: auth.tenantId}) — the caller's
         // trusted tenantId is passed through and checked against the Assignment's
@@ -322,7 +326,7 @@ describe('Tenant Isolation — copertura routes', () => {
     // P1 sprint added: /api/company/data-submissions/history, /api/company/initiatives/explainability
     // CC-018/B-TRUTH added: /api/company/pillar-adoption (seed group #1)
     // KORA-WP-018 added: /api/company/needs
-    expect(COMPANY_ROUTES.length).toBe(22);
+    expect(COMPANY_ROUTES.length).toBe(23);
   });
 
   it('copre tutte le admin routes (baseline: ≥45)', () => {

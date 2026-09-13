@@ -600,6 +600,25 @@ export type AdvisorAppointmentInsert = Pick<AdvisorAppointmentRow, 'assignment_i
   reason?: string | null;
 };
 
+// ── advisor.advisor_content_record (KORA-WP-036) ────────────────────────────────
+
+export interface AdvisorContentRecordRow {
+  id: string;
+  assignment_id: string;
+  class: 'ORGANISATION_SHAREABLE_NOTE' | 'ADVISOR_INTERNAL_NOTE' | 'AUDIT_PROVENANCE_RECORD' | 'CONFIDENTIAL_REFERENCE' | 'COMMUNICATION_FOLLOWUP';
+  body: string;
+  shared: boolean | null;
+  purpose: string | null;
+  created_by_role: 'ADVISOR' | 'KORA_ADMIN';
+  created_at: string;
+}
+
+export type AdvisorContentRecordInsert = Pick<AdvisorContentRecordRow, 'assignment_id' | 'class' | 'body' | 'created_by_role'> & {
+  id?: string;
+  shared?: boolean | null;
+  purpose?: string | null;
+};
+
 // ── analytics.need_hypothesis (KORA-WP-017) ─────────────────────────────────────
 
 export interface NeedHypothesisRow {
@@ -732,6 +751,7 @@ export interface Database {
       advisor_prerequisite_eligibility: { Row: AdvisorPrerequisiteEligibilityRow; Insert: AdvisorPrerequisiteEligibilityInsert; Update: Partial<AdvisorPrerequisiteEligibilityInsert>; Relationships: [] };
       advisor_contact_message: { Row: AdvisorContactMessageRow; Insert: AdvisorContactMessageInsert; Update: Partial<AdvisorContactMessageInsert>; Relationships: [] };
       advisor_appointment: { Row: AdvisorAppointmentRow; Insert: AdvisorAppointmentInsert; Update: Partial<AdvisorAppointmentInsert>; Relationships: [] };
+      advisor_content_record: { Row: AdvisorContentRecordRow; Insert: AdvisorContentRecordInsert; Update: Partial<AdvisorContentRecordInsert>; Relationships: [] };
     };
     Views:          Record<string, never>;
     Functions:      Record<string, never>;

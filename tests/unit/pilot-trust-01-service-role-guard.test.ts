@@ -107,6 +107,11 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // re-verifies the caller is a genuine party to the Assignment itself.
   { path: 'lib/advisor-portal/advisor-appointment-service.ts', reason: 'documented server-only service — Advisor appointment create/confirm/reschedule/cancel with lineage, KORA-WP-035' },
 
+  // KORA-WP-036: Advisor Document/Note Five-Class Taxonomy — server-only,
+  // same rationale as WP-033/035 immediately above. Class-aware read
+  // filtering is defense-in-depth on top of RLS, never the sole boundary.
+  { path: 'lib/advisor-portal/advisor-content-service.ts', reason: 'documented server-only service — Advisor five-class content create/list, KORA-WP-036' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called

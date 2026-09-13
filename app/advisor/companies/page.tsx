@@ -5,14 +5,19 @@
 // KORA-WP-035 — Advisor Calendar & Call/Appointment Lineage (appointments
 // toggle added alongside the existing messages toggle — no navigation
 // redesign, per this WP's own Step 33 discipline).
+// KORA-WP-036 — Advisor Document/Note Five-Class Taxonomy (content toggle
+// added — the Advisor may create the four Advisor-authored classes; the
+// governance-authored Class 3 audit/provenance record has no UI in this
+// pilot slice, KORA_ADMIN/service-only, per this WP's own Out of Scope).
 //
 // The Advisor's own "app/advisor Company surface" (file 102's own Proposed
 // New field): the list of Companies the Advisor is currently assigned to
 // (Assignment Role Context, KORA-WP-031), each with the same minimal
-// non-calendar contact/message surface as the Company side, plus the
-// ability to confirm/reschedule/cancel an appointment the Company requested.
-// The Advisor never creates an appointment (doc 73 §13: Company/Partner-
-// initiated only). No case list, no document center — KORA-WP-034/036.
+// non-calendar contact/message surface as the Company side, the ability to
+// confirm/reschedule/cancel an appointment, and now notes/references
+// classified per doc 73 §14's five-class taxonomy. No case list, no
+// document/file upload — KORA-WP-034, storage-provider selection (Out of
+// Scope).
 
 import { useEffect, useState } from 'react';
 import { TOKENS, BADGE_TOKENS } from '@/lib/design/kora-design-tokens';
@@ -42,6 +47,24 @@ interface Appointment {
   rescheduledFromId: string | null;
 }
 
+type ContentClass = 'ORGANISATION_SHAREABLE_NOTE' | 'ADVISOR_INTERNAL_NOTE' | 'CONFIDENTIAL_REFERENCE' | 'COMMUNICATION_FOLLOWUP';
+
+interface ContentRecord {
+  id: string;
+  class: ContentClass | 'AUDIT_PROVENANCE_RECORD';
+  body: string;
+  shared: boolean | null;
+  purpose: string | null;
+  createdAt: string;
+}
+
+const CLASS_LABEL: Record<ContentClass, string> = {
+  ORGANISATION_SHAREABLE_NOTE: 'Nota condivisibile con la Company',
+  ADVISOR_INTERNAL_NOTE: 'Nota interna (mai visibile alla Company)',
+  CONFIDENTIAL_REFERENCE: 'Riferimento riservato (per uno scopo specifico)',
+  COMMUNICATION_FOLLOWUP: 'Verbale di comunicazione/chiamata',
+};
+
 const STATUS_LABEL: Record<Appointment['status'], string> = {
   requested: 'Richiesto', confirmed: 'Confermato', completed: 'Concluso',
   rescheduled: 'Riprogrammato', cancelled: 'Annullato', 'no-show': 'Non presentato',
@@ -57,6 +80,13 @@ export default function AdvisorCompaniesPage() {
   const [sending, setSending] = useState(false);
   const [expandedAppointments, setExpandedAppointments] = useState<string | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [expandedContent, setExpandedContent] = useState<string | null>(null);
+  const [content, setContent] = useState<ContentRecord[]>([]);
+  const [newClass, setNewClass] = useState<ContentClass>('ORGANISATION_SHAREABLE_NOTE');
+  const [newBody, setNewBody] = useState('');
+  const [newShared, setNewShared] = useState(false);
+  const [newPurpose, setNewPurpose] = useState('');
+  const [savingContent, setSavingContent] = useState(false);
 
   async function load() {
     try {
@@ -172,6 +202,53 @@ export default function AdvisorCompaniesPage() {
     }
   }
 
+  async function loadContent(assignmentId: string) {
+    try {
+      const r = await fetch(`/api/advisor/companies/${assignmentId}/content`, { credentials: 'include' });
+      const d = await r.json();
+      setContent(d.ok ? (d.content ?? []) : []);
+    } catch {
+      setContent([]);
+    }
+  }
+
+  async function toggleContent(assignmentId: string) {
+    if (expandedContent === assignmentId) {
+      setExpandedContent(null);
+      return;
+    }
+    setExpandedContent(assignmentId);
+    await loadContent(assignmentId);
+  }
+
+  async function saveContent(assignmentId: string) {
+    if (!newBody.trim()) return;
+    if (newClass === 'CONFIDENTIAL_REFERENCE' && !newPurpose.trim()) {
+      window.alert('Lo scopo è obbligatorio per un riferimento riservato.');
+      return;
+    }
+    setSavingContent(true);
+    try {
+      const body: Record<string, unknown> = { class: newClass, body: newBody };
+      if (newClass === 'COMMUNICATION_FOLLOWUP') body.shared = newShared;
+      if (newClass === 'CONFIDENTIAL_REFERENCE') body.purpose = newPurpose;
+      const r = await fetch(`/api/advisor/companies/${assignmentId}/content`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        setNewBody(''); setNewPurpose(''); setNewShared(false);
+        await loadContent(assignmentId);
+      } else {
+        window.alert(d.error ?? 'Salvataggio non riuscito.');
+      }
+    } catch {
+      window.alert('Errore di rete.');
+    } finally {
+      setSavingContent(false);
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
@@ -239,7 +316,75 @@ export default function AdvisorCompaniesPage() {
                 >
                   {expandedAppointments === c.assignmentId ? 'Chiudi appuntamenti' : 'Appuntamenti'}
                 </button>
+                <button
+                  onClick={() => toggleContent(c.assignmentId)}
+                  style={{ fontSize: '11px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  {expandedContent === c.assignmentId ? 'Chiudi note' : 'Note e riferimenti'}
+                </button>
               </div>
+
+              {expandedContent === c.assignmentId && (
+                <div style={{ marginTop: 12 }}>
+                  {content.length === 0 && (
+                    <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 10 }}>Nessuna nota ancora.</p>
+                  )}
+                  <ul className="space-y-2" style={{ marginBottom: 12 }}>
+                    {content.map((rec) => (
+                      <li key={rec.id} style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: TOKENS.inkHint, textTransform: 'uppercase' }}>
+                          {rec.class === 'AUDIT_PROVENANCE_RECORD' ? 'Audit' : CLASS_LABEL[rec.class]}
+                          {rec.class === 'COMMUNICATION_FOLLOWUP' ? (rec.shared ? ' — condivisa' : ' — interna') : ''}
+                        </span>
+                        <br />
+                        {rec.body}
+                        {rec.purpose && <em style={{ display: 'block', color: TOKENS.inkHint }}>Scopo: {rec.purpose}</em>}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="space-y-2">
+                    <select
+                      value={newClass}
+                      onChange={(e) => setNewClass(e.target.value as ContentClass)}
+                      style={{ width: '100%', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }}
+                    >
+                      {(Object.keys(CLASS_LABEL) as ContentClass[]).map((cls) => (
+                        <option key={cls} value={cls}>{CLASS_LABEL[cls]}</option>
+                      ))}
+                    </select>
+                    <textarea
+                      value={newBody}
+                      onChange={(e) => setNewBody(e.target.value)}
+                      placeholder="Testo…"
+                      style={{ width: '100%', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink, minHeight: 60 }}
+                    />
+                    {newClass === 'CONFIDENTIAL_REFERENCE' && (
+                      <input
+                        type="text" value={newPurpose} onChange={(e) => setNewPurpose(e.target.value)} placeholder="Scopo (obbligatorio)"
+                        style={{ width: '100%', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }}
+                      />
+                    )}
+                    {newClass === 'COMMUNICATION_FOLLOWUP' && (
+                      <label style={{ fontSize: '11px', color: TOKENS.inkSecondary, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <input type="checkbox" checked={newShared} onChange={(e) => setNewShared(e.target.checked)} />
+                        Condividi con la Company
+                      </label>
+                    )}
+                    <button
+                      onClick={() => saveContent(c.assignmentId)}
+                      disabled={savingContent || !newBody.trim()}
+                      style={{
+                        fontSize: '11px', fontWeight: 700, color: '#FFFFFF', background: TOKENS.accent,
+                        border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer',
+                        opacity: savingContent || !newBody.trim() ? 0.6 : 1,
+                      }}
+                    >
+                      {savingContent ? 'Salvataggio…' : 'Salva'}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {expandedAppointments === c.assignmentId && (
                 <div style={{ marginTop: 12 }}>
