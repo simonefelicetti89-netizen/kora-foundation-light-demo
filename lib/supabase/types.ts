@@ -619,6 +619,39 @@ export type AdvisorContentRecordInsert = Pick<AdvisorContentRecordRow, 'assignme
   purpose?: string | null;
 };
 
+// ── gov.operational_case (KORA-WP-007) ──────────────────────────────────────────
+
+export interface OperationalCaseRow {
+  id: string;
+  organisation_type: 'company' | 'partner' | 'admin';
+  organisation_id: string | null;
+  linked_object_type: 'commitment' | 'program' | 'review' | 'certification' | 'capability_validation' | null;
+  linked_object_id: string | null;
+  owning_advisor_id: string | null;
+  created_by_role: 'ADVISOR' | 'KORA_ADMIN';
+  subject: string;
+  priority: string | null;
+  due_date: string | null;
+  status: 'open' | 'in-progress' | 'blocked' | 'resolved' | 'escalated';
+  escalation_target: string | null;
+  resolution_note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type OperationalCaseInsert = Pick<OperationalCaseRow, 'organisation_type' | 'created_by_role' | 'subject'> & {
+  id?: string;
+  organisation_id?: string | null;
+  linked_object_type?: OperationalCaseRow['linked_object_type'];
+  linked_object_id?: string | null;
+  owning_advisor_id?: string | null;
+  priority?: string | null;
+  due_date?: string | null;
+  status?: OperationalCaseRow['status'];
+  escalation_target?: string | null;
+  resolution_note?: string | null;
+};
+
 // ── analytics.need_hypothesis (KORA-WP-017) ─────────────────────────────────────
 
 export interface NeedHypothesisRow {
@@ -707,6 +740,7 @@ export interface Database {
       budget_governance: { Row: BudgetGovernanceRow; Insert: Omit<BudgetGovernanceRow,'id'|'created_at'|'updated_at'>; Update: Partial<BudgetGovernanceRow>; Relationships: [] };
       internal_operator: { Row: InternalOperatorRow; Insert: InternalOperatorInsert; Update: Partial<InternalOperatorInsert>; Relationships: [] };
       capability_grant:  { Row: CapabilityGrantRow;  Insert: CapabilityGrantInsert;  Update: Partial<CapabilityGrantInsert>;  Relationships: [] };
+      operational_case:  { Row: OperationalCaseRow;  Insert: OperationalCaseInsert;  Update: Partial<OperationalCaseInsert>;  Relationships: [] };
     };
     Views:          Record<string, never>;
     Functions:      Record<string, never>;

@@ -112,6 +112,11 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // filtering is defense-in-depth on top of RLS, never the sole boundary.
   { path: 'lib/advisor-portal/advisor-content-service.ts', reason: 'documented server-only service — Advisor five-class content create/list, KORA-WP-036' },
 
+  // KORA-WP-007: Operational Case Primitive — server-only, same rationale
+  // as every other domain service. Every mutating function re-verifies
+  // the caller's role and (for Advisor) ownership before any write.
+  { path: 'lib/operations/operational-case-service.ts', reason: 'documented server-only service — Operational Case create/list/status-transition, KORA-WP-007' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
