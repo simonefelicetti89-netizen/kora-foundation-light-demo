@@ -321,9 +321,14 @@ export default function AdvisorCompaniesPage() {
   // Only the two canonical actions this WP's own Acceptance names —
   // "Avvia" (open -> in-progress) and "Risolvi" (in-progress -> resolved).
   async function caseTransition(assignmentId: string, caseId: string, newStatus: CaseStatus) {
+    const body: Record<string, string> = { status: newStatus };
+    if (newStatus === 'resolved') {
+      const note = window.prompt('Nota di risoluzione (facoltativa):') ?? '';
+      if (note.trim()) body.resolutionNote = note;
+    }
     try {
       const r = await fetch(`/api/advisor/companies/${assignmentId}/cases/${caseId}`, {
-        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }),
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       });
       const d = await r.json();
       if (d.ok) await loadCases(assignmentId); else window.alert(d.error ?? 'Operazione non riuscita.');
@@ -420,22 +425,34 @@ export default function AdvisorCompaniesPage() {
                   )}
                   <ul className="space-y-2" style={{ marginBottom: 12 }}>
                     {cases.map((cs) => (
-                      <li key={cs.id} className="flex items-center justify-between gap-3" style={{ fontSize: '12px', color: TOKENS.inkSecondary }}>
-                        <span>
-                          <strong style={{ color: TOKENS.ink }}>{cs.subject}</strong> — {CASE_STATUS_LABEL[cs.status]}
-                        </span>
-                        <span className="flex gap-2">
-                          {cs.status === 'open' && (
-                            <button onClick={() => caseTransition(c.assignmentId, cs.id, 'in-progress')} style={{ fontSize: '10px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer' }}>
-                              Avvia
-                            </button>
-                          )}
-                          {cs.status === 'in-progress' && (
-                            <button onClick={() => caseTransition(c.assignmentId, cs.id, 'resolved')} style={{ fontSize: '10px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer' }}>
-                              Risolvi
-                            </button>
-                          )}
-                        </span>
+                      <li key={cs.id} style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
+                        <div className="flex items-center justify-between gap-3">
+                          <span>
+                            <strong style={{ color: TOKENS.ink }}>{cs.subject}</strong> — {CASE_STATUS_LABEL[cs.status]}
+                          </span>
+                          <span className="flex gap-2">
+                            {cs.status === 'open' && (
+                              <button onClick={() => caseTransition(c.assignmentId, cs.id, 'in-progress')} style={{ fontSize: '10px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer' }}>
+                                Avvia
+                              </button>
+                            )}
+                            {cs.status === 'in-progress' && (
+                              <button onClick={() => caseTransition(c.assignmentId, cs.id, 'resolved')} style={{ fontSize: '10px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer' }}>
+                                Risolvi
+                              </button>
+                            )}
+                          </span>
+                        </div>
+                        {/* Detail (file 102's own "UI: Advisor Case list/detail" — the
+                            full canonical field set, doc 73 §12, inline rather than a
+                            separate route, since nothing here needs its own navigation). */}
+                        <div style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 2 }}>
+                          Creato il {new Date(cs.createdAt).toLocaleDateString('it-IT')}
+                          {cs.priority && <> · Priorità: {cs.priority}</>}
+                        </div>
+                        {cs.resolutionNote && (
+                          <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 2 }}>Nota di risoluzione: {cs.resolutionNote}</p>
+                        )}
                       </li>
                     ))}
                   </ul>
