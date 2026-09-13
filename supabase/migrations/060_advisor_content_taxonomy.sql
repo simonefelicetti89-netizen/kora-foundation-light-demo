@@ -2,6 +2,15 @@
 -- KORA — Migration 060: Advisor Document/Note Five-Class Taxonomy
 -- Migration:   060_advisor_content_taxonomy
 -- Created:     2026-09-13
+-- Revised:     2026-09-13 — Founder-approved cross-WP correction (WP-036
+--              semantic gate, Decision H-A) added: this migration now also
+--              replaces the pre-existing Advisor-own SELECT policies on
+--              advisor_contact_message (058) and advisor_appointment (059)
+--              with a corrected definition requiring an active Assignment.
+--              See the dedicated section below, near the GRANTs. Migrations
+--              058/059 are NOT edited in place — they remain byte-identical
+--              on disk and on staging; only this later, still-LOCAL-ONLY
+--              migration changes what those two policies say.
 -- Block:       KORA-WP-036 — Advisor Document/Note Five-Class Taxonomy
 -- Gate:        Gate 2 CLOSED WITH CONDITIONS (staging authorized) — written and
 --              validated LOCAL/test only by this task. NOT applied to staging
@@ -182,6 +191,16 @@ ALTER TABLE advisor.advisor_content_record FORCE ROW LEVEL SECURITY;
 CREATE POLICY "advisor_content_record_kora_admin_all" ON advisor.advisor_content_record
   FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
 
+-- Founder Decision H-A (WP-036 semantic gate, doc 73 §15: "no active
+-- Assignment, no access — this is the single access-granting condition"):
+-- the Advisor's own operational read stops once the Assignment ends
+-- (`aa.status = 'active'`). This does not affect the Company-own policy
+-- below, nor Class 3 (KORA_ADMIN retains access regardless of any
+-- Assignment's status, by design). The actual enforcement boundary for
+-- this application is the service layer (advisor-content-service.ts),
+-- since every service call uses the service-role client, which bypasses
+-- RLS (`rolbypassrls = true`) — this policy is defense-in-depth, not the
+-- primary gate.
 CREATE POLICY "advisor_content_record_advisor_own_select" ON advisor.advisor_content_record
   FOR SELECT USING (
     kora.kora_role() = 'ADVISOR'
@@ -189,7 +208,7 @@ CREATE POLICY "advisor_content_record_advisor_own_select" ON advisor.advisor_con
     AND assignment_id IN (
       SELECT aa.id FROM advisor.advisor_assignment aa
       JOIN advisor.advisor_identity ai ON ai.id = aa.advisor_id
-      WHERE ai.auth_user_id = auth.uid()
+      WHERE ai.auth_user_id = auth.uid() AND aa.status = 'active'
     )
   );
 
@@ -213,12 +232,63 @@ CREATE POLICY "advisor_content_record_company_own_select" ON advisor.advisor_con
 GRANT SELECT, INSERT ON advisor.advisor_content_record TO service_role;
 GRANT SELECT ON advisor.advisor_content_record TO authenticated;
 
+-- ── FOUNDER-APPROVED CROSS-WP CORRECTION (WP-036 semantic gate) ─────────────
+-- Decision H-A: "no active Assignment, no access — this is the single
+-- access-granting condition" (doc 73 §15) applies to the Advisor's own
+-- operational access across every Company↔Advisor surface built so far —
+-- not only WP-036's new content table. Prior migrations 058 (WP-033
+-- contact messages) and 059 (WP-035 appointments) each defined an
+-- Advisor-own SELECT policy with no such check, discovered during this
+-- WP-036 Founder semantic review. Migrations 058/059 are already applied
+-- to staging and are not edited in place — instead this later migration
+-- (060, still LOCAL ONLY at the time this correction was authored)
+-- replaces those two policies with a corrected definition, exactly as any
+-- later migration may alter an object an earlier one created. No table,
+-- column, or Company-facing policy is touched — only the two Advisor-own
+-- SELECT policies gain the same `aa.status = 'active'` condition already
+-- applied to WP-036's own advisor_content_record_advisor_own_select above.
+-- As with that policy, the real enforcement boundary is the service layer
+-- (advisor-portal-service.ts / advisor-appointment-service.ts), since
+-- every read here goes through the service-role client, which bypasses
+-- RLS entirely (`rolbypassrls = true`) — these corrected policies are
+-- defense-in-depth, not the primary gate.
+
+DROP POLICY IF EXISTS "advisor_contact_message_advisor_own_select" ON advisor.advisor_contact_message;
+
+CREATE POLICY "advisor_contact_message_advisor_own_select" ON advisor.advisor_contact_message
+  FOR SELECT USING (
+    kora.kora_role() = 'ADVISOR'
+    AND assignment_id IN (
+      SELECT aa.id FROM advisor.advisor_assignment aa
+      JOIN advisor.advisor_identity ai ON ai.id = aa.advisor_id
+      WHERE ai.auth_user_id = auth.uid() AND aa.status = 'active'
+    )
+  );
+
+DROP POLICY IF EXISTS "advisor_appointment_advisor_own_select" ON advisor.advisor_appointment;
+
+CREATE POLICY "advisor_appointment_advisor_own_select" ON advisor.advisor_appointment
+  FOR SELECT USING (
+    kora.kora_role() = 'ADVISOR'
+    AND assignment_id IN (
+      SELECT aa.id FROM advisor.advisor_assignment aa
+      JOIN advisor.advisor_identity ai ON ai.id = aa.advisor_id
+      WHERE ai.auth_user_id = auth.uid() AND aa.status = 'active'
+    )
+  );
+
+-- Company-own policies (058, 059) are NOT touched — Company retention of
+-- its own historical messages/appointments is canonical regardless of the
+-- Assignment's current status, and is unaffected by this correction.
+-- Class 3 (audit/provenance) is unaffected — KORA_ADMIN access to it was
+-- never conditioned on Assignment status and remains so.
+
 -- ── Reload PostgREST schema cache ─────────────────────────────────────────
 
 NOTIFY pgrst, 'reload schema';
 
 -- ── ROLLBACK ─────────────────────────────────────────────────────────────────
--- NOTIFY pgrst, 'reload schema'; -- after the REVOKEs/DROPs below
+-- NOTIFY pgrst, 'reload schema'; -- after the REVOKEs/DROPs/re-CREATEs below
 -- REVOKE SELECT ON advisor.advisor_content_record FROM authenticated;
 -- REVOKE SELECT, INSERT ON advisor.advisor_content_record FROM service_role;
 -- DROP POLICY IF EXISTS "advisor_content_record_company_own_select" ON advisor.advisor_content_record;
@@ -227,6 +297,30 @@ NOTIFY pgrst, 'reload schema';
 -- DROP INDEX IF EXISTS advisor.idx_advisor_content_record_class;
 -- DROP INDEX IF EXISTS advisor.idx_advisor_content_record_assignment;
 -- DROP TABLE IF EXISTS advisor.advisor_content_record;
--- Rollback is safe at any time: this migration creates one new table,
--- touching no existing column, row, policy, table, or schema — migrations
--- 001–059 remain exactly as they were.
+-- -- Restore the original (pre-H-A) 058/059 Advisor-own SELECT policies:
+-- DROP POLICY IF EXISTS "advisor_contact_message_advisor_own_select" ON advisor.advisor_contact_message;
+-- CREATE POLICY "advisor_contact_message_advisor_own_select" ON advisor.advisor_contact_message
+--   FOR SELECT USING (
+--     kora.kora_role() = 'ADVISOR'
+--     AND assignment_id IN (
+--       SELECT aa.id FROM advisor.advisor_assignment aa
+--       JOIN advisor.advisor_identity ai ON ai.id = aa.advisor_id
+--       WHERE ai.auth_user_id = auth.uid()
+--     )
+--   );
+-- DROP POLICY IF EXISTS "advisor_appointment_advisor_own_select" ON advisor.advisor_appointment;
+-- CREATE POLICY "advisor_appointment_advisor_own_select" ON advisor.advisor_appointment
+--   FOR SELECT USING (
+--     kora.kora_role() = 'ADVISOR'
+--     AND assignment_id IN (
+--       SELECT aa.id FROM advisor.advisor_assignment aa
+--       JOIN advisor.advisor_identity ai ON ai.id = aa.advisor_id
+--       WHERE ai.auth_user_id = auth.uid()
+--     )
+--   );
+-- NOTE: unlike the original claim on this migration ("touching no existing
+-- column, row, policy, table, or schema"), this revised migration DOES
+-- replace two pre-existing policies (058/059's Advisor-own SELECT) with a
+-- Founder-approved (H-A) corrected definition — see the section above.
+-- No table, column, GRANT, or Company-facing policy from 001-059 is
+-- touched; rollback of that part is the two DROP/CREATE pairs above.

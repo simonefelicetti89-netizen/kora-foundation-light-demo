@@ -152,10 +152,12 @@ function seedFullValidScenario() {
   qualifications.push({ id: 'qual-1', advisor_id: 'adv-1', role: 'Company Advisor', status: 'QUALIFIED' });
   eligibilities.push({ id: 'elig-1', role_qualification_id: 'qual-1', status: 'MET', expiry_date: null });
   tenants.push({ id: 'company-1', company_name: 'Company One' });
-  assignments.push({
+  const assignment = {
     id: 'assign-1', advisor_id: 'adv-1', organisation_type: 'company', company_id: 'company-1',
     role: 'Company Advisor', status: 'active', conflict_flag: false, updated_at: '2026-09-13T00:00:00.000Z',
-  });
+  };
+  assignments.push(assignment);
+  return assignment;
 }
 
 beforeEach(() => {
@@ -326,6 +328,30 @@ describe('KORA-WP-033 — listContactMessages', () => {
     const { listContactMessages } = await import('@/lib/advisor-portal/advisor-portal-service');
     await expect(listContactMessages({ assignmentId: 'assign-1', callerTenantId: 'company-2' })).rejects.toThrow(/not a party/);
     await expect(listContactMessages({ assignmentId: 'assign-1', callerAdvisorId: 'adv-2' })).rejects.toThrow(/not a party/);
+  });
+
+  // Founder Decision H-A (WP-036 semantic gate, doc 73 §15): the Advisor's
+  // own operational read ends when the Assignment ends; the Company's own
+  // retained visibility is unaffected.
+  it('Advisor is denied after the Assignment ends — Company retention is unaffected', async () => {
+    const assignment = seedFullValidScenario();
+    messages.push({ id: 'msg-1', assignment_id: 'assign-1', sender_role: 'COMPANY_ADMIN', body: 'hi', created_at: 'x' });
+    const { listContactMessages } = await import('@/lib/advisor-portal/advisor-portal-service');
+    assignment.status = 'ended';
+    await expect(listContactMessages({ assignmentId: 'assign-1', callerAdvisorId: 'adv-1' })).rejects.toThrow(/Assignment has ended/);
+    const stillForCompany = await listContactMessages({ assignmentId: 'assign-1', callerTenantId: 'company-1' });
+    expect(stillForCompany.length).toBe(1);
+  });
+
+  it('Advisor access returns once a new active Assignment exists (no permanent ban)', async () => {
+    const assignment = seedFullValidScenario();
+    messages.push({ id: 'msg-1', assignment_id: 'assign-1', sender_role: 'COMPANY_ADMIN', body: 'hi', created_at: 'x' });
+    const { listContactMessages } = await import('@/lib/advisor-portal/advisor-portal-service');
+    assignment.status = 'ended';
+    await expect(listContactMessages({ assignmentId: 'assign-1', callerAdvisorId: 'adv-1' })).rejects.toThrow(/Assignment has ended/);
+    assignment.status = 'active';
+    const result = await listContactMessages({ assignmentId: 'assign-1', callerAdvisorId: 'adv-1' });
+    expect(result.length).toBe(1);
   });
 });
 

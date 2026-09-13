@@ -75,7 +75,7 @@ async function assertAdvisorIsParty(
   db: ReturnType<typeof getSupabaseServiceClient>,
   assignmentId: string,
   callerAdvisorId: string,
-): Promise<void> {
+): Promise<{ status: string }> {
   const { data: assignment, error } = await db
     .schema('advisor')
     .from('advisor_assignment')
@@ -89,6 +89,7 @@ async function assertAdvisorIsParty(
   if (!assignment || assignment.advisor_id !== callerAdvisorId) {
     throw new Error('[KORA] content operation rejected: caller is not the Advisor party to this Assignment.');
   }
+  return { status: assignment.status as string };
 }
 
 // ── createAdvisorContent — ADVISOR-only, classes 1/2/4/5 ────────────────────
@@ -262,7 +263,15 @@ export async function listContentForCompany(tenantId: string, assignmentId: stri
 export async function listContentForAdvisor(callerAdvisorId: string, assignmentId: string): Promise<AdvisorContentRecord[]> {
   const db = getSupabaseServiceClient();
 
-  await assertAdvisorIsParty(db, assignmentId, callerAdvisorId);
+  const { status } = await assertAdvisorIsParty(db, assignmentId, callerAdvisorId);
+
+  // Founder Decision H-A (WP-036 semantic gate, doc 73 §15): the Advisor's
+  // own operational read access ends when the Assignment ends. Company's
+  // own visibility (listContentForCompany) is unaffected — Company
+  // retention is canonical regardless of the Assignment's current status.
+  if (status !== 'active') {
+    throw new Error('[KORA] listContentForAdvisor rejected: Advisor Assignment has ended — operational access no longer applies.');
+  }
 
   const { data, error } = await db
     .schema('advisor')

@@ -71,7 +71,7 @@ async function assertCallerIsParty(
   assignmentId: string,
   callerTenantId?: string,
   callerAdvisorId?: string,
-): Promise<{ companyId: string; advisorId: string }> {
+): Promise<{ companyId: string; advisorId: string; status: string; isAdvisorParty: boolean }> {
   const { data: assignment, error } = await db
     .schema('advisor')
     .from('advisor_assignment')
@@ -92,7 +92,7 @@ async function assertCallerIsParty(
     throw new Error('[KORA] appointment operation rejected: caller is not a party to this Assignment.');
   }
 
-  return { companyId: assignment.company_id, advisorId: assignment.advisor_id };
+  return { companyId: assignment.company_id, advisorId: assignment.advisor_id, status: assignment.status as string, isAdvisorParty: Boolean(isAdvisorParty) };
 }
 
 // ── createAppointment — COMPANY-only, requires a currently valid Assignment ──
@@ -367,7 +367,15 @@ export interface ListAppointmentsParams {
 export async function listAppointmentsForAssignment(params: ListAppointmentsParams): Promise<Appointment[]> {
   const db = getSupabaseServiceClient();
 
-  await assertCallerIsParty(db, params.assignmentId, params.callerTenantId, params.callerAdvisorId);
+  const { status, isAdvisorParty } = await assertCallerIsParty(db, params.assignmentId, params.callerTenantId, params.callerAdvisorId);
+
+  // Founder Decision H-A (WP-036 semantic gate, doc 73 §15): the Advisor's
+  // own operational read access ends when the Assignment ends. The
+  // Company's own retained visibility is unaffected — Company history is
+  // canonical regardless of the Assignment's current status.
+  if (isAdvisorParty && status !== 'active') {
+    throw new Error('[KORA] listAppointmentsForAssignment rejected: Advisor Assignment has ended — operational access no longer applies.');
+  }
 
   const { data, error } = await db
     .schema('advisor')

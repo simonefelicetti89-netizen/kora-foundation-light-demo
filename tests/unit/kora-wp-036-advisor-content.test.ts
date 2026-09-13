@@ -37,7 +37,7 @@ describe('KORA-WP-036 — five-class vocabulary (doc 73 §14, verbatim)', () => 
 // PART 2 — service: mocked Supabase + governance + validity evaluator
 // ═══════════════════════════════════════════════════════════════════════════
 
-interface AssignmentRow { id: string; advisor_id: string; company_id: string; }
+interface AssignmentRow { id: string; advisor_id: string; company_id: string; status: string; }
 interface ContentRow {
   id: string; assignment_id: string; class: string; body: string;
   shared: boolean | null; purpose: string | null; created_by_role: string; created_at: string;
@@ -112,7 +112,10 @@ vi.mock('@/lib/advisor-assignment/advisor-assignment-service', () => ({
 }));
 
 function seedAssignment(overrides: Partial<AssignmentRow> = {}): AssignmentRow {
-  const row: AssignmentRow = { id: overrides.id ?? 'assign-1', advisor_id: overrides.advisor_id ?? 'adv-1', company_id: overrides.company_id ?? 'company-1' };
+  const row: AssignmentRow = {
+    id: overrides.id ?? 'assign-1', advisor_id: overrides.advisor_id ?? 'adv-1', company_id: overrides.company_id ?? 'company-1',
+    status: overrides.status ?? 'active',
+  };
   assignments.push(row);
   return row;
 }
@@ -295,6 +298,40 @@ describe('KORA-WP-036 — listContentForAdvisor: classes 1/2/4/5, never Class 3'
     await seedAll();
     const { listContentForAdvisor } = await import('@/lib/advisor-portal/advisor-content-service');
     await expect(listContentForAdvisor('adv-2', 'assign-1')).rejects.toThrow(/not the Advisor party/);
+  });
+
+  // Founder Decision H-A (WP-036 semantic gate, doc 73 §15): the Advisor's
+  // own operational read ends when the Assignment ends — Classes 1/2/4/5
+  // all deny; Company's own retention (listContentForCompany) is unaffected.
+  it('denies Advisor read of Classes 1/2/4/5 once the Assignment ends — Company retention unaffected', async () => {
+    const assignment = seedAssignment();
+    const { createAdvisorContent, listContentForAdvisor, listContentForCompany } = await import('@/lib/advisor-portal/advisor-content-service');
+    await createAdvisorContent({ assignmentId: 'assign-1', class: 'ORGANISATION_SHAREABLE_NOTE', body: 'c1', callerAdvisorId: 'adv-1', actorId: 'u1' });
+    await createAdvisorContent({ assignmentId: 'assign-1', class: 'ADVISOR_INTERNAL_NOTE', body: 'c2', callerAdvisorId: 'adv-1', actorId: 'u1' });
+    await createAdvisorContent({ assignmentId: 'assign-1', class: 'CONFIDENTIAL_REFERENCE', body: 'c4', purpose: 'p', callerAdvisorId: 'adv-1', actorId: 'u1' });
+    await createAdvisorContent({ assignmentId: 'assign-1', class: 'COMMUNICATION_FOLLOWUP', body: 'c5', shared: true, callerAdvisorId: 'adv-1', actorId: 'u1' });
+
+    const whileActive = await listContentForAdvisor('adv-1', 'assign-1');
+    expect(whileActive.length).toBe(4);
+
+    assignment.status = 'ended';
+    await expect(listContentForAdvisor('adv-1', 'assign-1')).rejects.toThrow(/Assignment has ended/);
+
+    const stillForCompany = await listContentForCompany('company-1', 'assign-1');
+    expect(stillForCompany.length).toBe(2); // Class 1 + shared Class 5, unchanged
+  });
+
+  it('Advisor access returns once a new active Assignment exists (no permanent ban)', async () => {
+    const assignment = seedAssignment();
+    const { createAdvisorContent, listContentForAdvisor } = await import('@/lib/advisor-portal/advisor-content-service');
+    await createAdvisorContent({ assignmentId: 'assign-1', class: 'ORGANISATION_SHAREABLE_NOTE', body: 'c1', callerAdvisorId: 'adv-1', actorId: 'u1' });
+
+    assignment.status = 'ended';
+    await expect(listContentForAdvisor('adv-1', 'assign-1')).rejects.toThrow(/Assignment has ended/);
+
+    assignment.status = 'active';
+    const list = await listContentForAdvisor('adv-1', 'assign-1');
+    expect(list.length).toBe(1);
   });
 });
 

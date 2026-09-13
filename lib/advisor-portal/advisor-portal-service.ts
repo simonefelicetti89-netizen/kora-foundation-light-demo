@@ -284,6 +284,15 @@ export async function listContactMessages(params: ListContactMessagesParams): Pr
     throw new Error('[KORA] listContactMessages rejected: caller is not a party to this Assignment.');
   }
 
+  // Founder Decision H-A (WP-036 semantic gate, doc 73 §15: "no active
+  // Assignment, no access — this is the single access-granting condition").
+  // The Advisor's own operational access ends when the Assignment ends.
+  // The Company's own retained visibility is unaffected — Company history
+  // is canonical regardless of the Assignment's current status.
+  if (isAdvisorParty && assignment.status !== 'active') {
+    throw new Error('[KORA] listContactMessages rejected: Advisor Assignment has ended — operational access no longer applies.');
+  }
+
   const { data, error } = await db
     .schema('advisor')
     .from('advisor_contact_message')

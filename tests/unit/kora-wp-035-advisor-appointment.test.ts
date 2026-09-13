@@ -32,7 +32,7 @@ describe('KORA-WP-035 — status vocabulary (doc 73 §13, verbatim)', () => {
 // PART 2 — service: mocked Supabase + governance + validity evaluator
 // ═══════════════════════════════════════════════════════════════════════════
 
-interface AssignmentRow { id: string; advisor_id: string; company_id: string; }
+interface AssignmentRow { id: string; advisor_id: string; company_id: string; status: string; }
 interface AppointmentRow {
   id: string; assignment_id: string; starts_at: string; ends_at: string; subject: string;
   status: string; rescheduled_from_id: string | null; reason: string | null;
@@ -161,7 +161,10 @@ vi.mock('@/lib/advisor-assignment/advisor-assignment-service', () => ({
 }));
 
 function seedAssignment(overrides: Partial<AssignmentRow> = {}): AssignmentRow {
-  const row: AssignmentRow = { id: overrides.id ?? 'assign-1', advisor_id: overrides.advisor_id ?? 'adv-1', company_id: overrides.company_id ?? 'company-1' };
+  const row: AssignmentRow = {
+    id: overrides.id ?? 'assign-1', advisor_id: overrides.advisor_id ?? 'adv-1', company_id: overrides.company_id ?? 'company-1',
+    status: overrides.status ?? 'active',
+  };
   assignments.push(row);
   return row;
 }
@@ -372,6 +375,40 @@ describe('KORA-WP-035 — listAppointmentsForAssignment', () => {
     seedAssignment();
     const { listAppointmentsForAssignment } = await import('@/lib/advisor-portal/advisor-appointment-service');
     await expect(listAppointmentsForAssignment({ assignmentId: 'assign-1', callerTenantId: 'company-2' })).rejects.toThrow(/not a party/);
+  });
+
+  // Founder Decision H-A (WP-036 semantic gate, doc 73 §15): the Advisor's
+  // own operational read ends when the Assignment ends; the Company's own
+  // retained visibility is unaffected. Discovered as a genuine coverage gap
+  // during that gate — this describe block previously exercised only
+  // Company-caller reads.
+  it('Advisor reads while the Assignment is ACTIVE: PASS', async () => {
+    seedAssignment();
+    const { createAppointment, listAppointmentsForAssignment } = await import('@/lib/advisor-portal/advisor-appointment-service');
+    await createAppointment({ assignmentId: 'assign-1', startsAt: '2026-10-01T10:00:00Z', endsAt: '2026-10-01T11:00:00Z', subject: 'x', callerTenantId: 'company-1', actorId: 'u1' });
+    const list = await listAppointmentsForAssignment({ assignmentId: 'assign-1', callerAdvisorId: 'adv-1' });
+    expect(list.length).toBe(1);
+  });
+
+  it('Advisor is denied after the Assignment ends — Company retention is unaffected', async () => {
+    const a = seedAssignment();
+    const { createAppointment, listAppointmentsForAssignment } = await import('@/lib/advisor-portal/advisor-appointment-service');
+    await createAppointment({ assignmentId: 'assign-1', startsAt: '2026-10-01T10:00:00Z', endsAt: '2026-10-01T11:00:00Z', subject: 'x', callerTenantId: 'company-1', actorId: 'u1' });
+    a.status = 'ended';
+    await expect(listAppointmentsForAssignment({ assignmentId: 'assign-1', callerAdvisorId: 'adv-1' })).rejects.toThrow(/Assignment has ended/);
+    const stillForCompany = await listAppointmentsForAssignment({ assignmentId: 'assign-1', callerTenantId: 'company-1' });
+    expect(stillForCompany.length).toBe(1);
+  });
+
+  it('Advisor access returns once a new active Assignment exists (no permanent ban)', async () => {
+    const a = seedAssignment();
+    const { createAppointment, listAppointmentsForAssignment } = await import('@/lib/advisor-portal/advisor-appointment-service');
+    await createAppointment({ assignmentId: 'assign-1', startsAt: '2026-10-01T10:00:00Z', endsAt: '2026-10-01T11:00:00Z', subject: 'x', callerTenantId: 'company-1', actorId: 'u1' });
+    a.status = 'ended';
+    await expect(listAppointmentsForAssignment({ assignmentId: 'assign-1', callerAdvisorId: 'adv-1' })).rejects.toThrow(/Assignment has ended/);
+    a.status = 'active';
+    const list = await listAppointmentsForAssignment({ assignmentId: 'assign-1', callerAdvisorId: 'adv-1' });
+    expect(list.length).toBe(1);
   });
 });
 
