@@ -159,6 +159,60 @@ export async function getAdvisorIdentityByAuthUserId(authUserId: string): Promis
   return data ? toAdvisorIdentity(data as AdvisorIdentityDbRow) : null;
 }
 
+// ── updateAdvisorIdentityStatus — KORA-WP-041 narrow in-scope addition ──────
+//
+// Founder-mandated dry-run gate (WP-041's own review round) found that
+// 'inactive_offboarded' has existed in ADVISOR_IDENTITY_STATUSES and in
+// migration 056's own DB CHECK constraint since this WP first shipped, but
+// no function anywhere ever wrote it — Advisor offboarding could not be
+// dry-run against a real mechanism, only asserted in prose. This is a
+// narrow, additive fix: zero migration (the column/CHECK already exist),
+// mirrors updateAdvisorRoleQualificationStatus()'s own governed-write
+// pattern exactly. Does not touch advisor_role_qualification or
+// advisor_assignment rows — those remain endAdvisorAssignment() (advisor-
+// assignment-service.ts) and updateAdvisorRoleQualificationStatus()'s own
+// separate, already-existing responsibility; a full offboarding sequences
+// all three explicitly, never merges them into one call.
+
+export async function updateAdvisorIdentityStatus(
+  advisorId: string,
+  newStatus: AdvisorIdentityStatus,
+  actorRole: string,
+  actorId: string,
+): Promise<AdvisorIdentity> {
+  if (!ADVISOR_IDENTITY_STATUSES.includes(newStatus)) {
+    throw new Error(`[KORA] updateAdvisorIdentityStatus rejected: "${newStatus}" is not a canonical Advisor identity status (doc 76 §14).`);
+  }
+
+  const db = getSupabaseServiceClient();
+
+  const { data, error } = await db
+    .schema('advisor')
+    .from('advisor_identity')
+    .update({ status: newStatus })
+    .eq('id', advisorId)
+    .select()
+    .single();
+
+  if (error || !data) {
+    throw new Error(`[KORA] updateAdvisorIdentityStatus failed: ${error?.message ?? 'no data returned'}`);
+  }
+
+  const identity = toAdvisorIdentity(data as AdvisorIdentityDbRow);
+
+  await recordGovernanceEvent({
+    sourceModule: 'advisor-identity',
+    actorRole,
+    actorId,
+    eventType: 'advisor_identity.status_changed',
+    objectType: 'advisor_identity',
+    objectId: identity.id,
+    payload: { newStatus },
+  });
+
+  return identity;
+}
+
 // ── createAdvisorRoleQualification — service-role only, initial status ──────
 // Every qualification this function creates starts as 'CANDIDATE' (doc 76
 // §4's own first lifecycle state) — no caller may set an initial status.

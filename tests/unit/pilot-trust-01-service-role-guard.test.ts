@@ -63,6 +63,10 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // or authentication path; the only writer of analytics.company_memberships.
   { path: 'lib/company-membership/membership-service.ts', reason: 'documented server-only service — Company Membership creation/termination, KORA-WP-004' },
 
+  // KORA-WP-041: Worker Offboarding playbook's own narrow gap-closing
+  // service — server-only, mirrors membership-service.ts's own pattern.
+  { path: 'lib/worker-identity/worker-identity-service.ts', reason: 'documented server-only service — Worker identity Company-access shutdown (offboarding), KORA-WP-041' },
+
   // KORA-WP-005: shared governance event/provenance substrate — server-only,
   // insertion-only, no client route or authentication path ever calls it.
   { path: 'lib/audit/governance-event.ts', reason: 'documented server-only service — append-only governance event recording, KORA-WP-005' },
