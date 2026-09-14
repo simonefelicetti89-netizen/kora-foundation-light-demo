@@ -131,6 +131,12 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // is the sole read path over gov.workload_event, by design.
   { path: 'lib/operations/effort-capture-service.ts', reason: 'documented server-only service — ADMIN-020 effort capture + aggregate-only read, KORA-WP-008' },
 
+  // KORA-WP-015: Resource Allocation Ledger — server-only, matches the
+  // Pattern-A convention (Company sessions read via RLS policy only; every
+  // transition — declare/allocate/commit/spend/release/reallocate/refund —
+  // happens exclusively through this service, same as WP-014/WP-017).
+  { path: 'lib/resource-allocation/resource-allocation-service.ts', reason: 'documented server-only service — Resource Allocation Ledger transitions + balance read, KORA-WP-015' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
