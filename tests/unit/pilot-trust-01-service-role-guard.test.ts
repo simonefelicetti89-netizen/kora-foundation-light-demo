@@ -126,6 +126,11 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // the caller's role and (for Advisor) ownership before any write.
   { path: 'lib/operations/operational-case-service.ts', reason: 'documented server-only service — Operational Case create/list/status-transition, KORA-WP-007' },
 
+  // KORA-WP-008: ADMIN-020 Effort-Capture — server-only, zero RLS read
+  // policy at all (migration 063) — this module's own aggregate function
+  // is the sole read path over gov.workload_event, by design.
+  { path: 'lib/operations/effort-capture-service.ts', reason: 'documented server-only service — ADMIN-020 effort capture + aggregate-only read, KORA-WP-008' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called

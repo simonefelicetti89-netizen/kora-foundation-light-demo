@@ -32,11 +32,10 @@ describe('AUD-W2-ITEM-10b — worker_profile_private service_role GRANT, minimum
     expect(migrationSrc).not.toMatch(/TO PUBLIC/);
   });
 
-  it('is the only 062 migration, and no 063 exists (no gap, no renumbering, no unrelated bundling)', () => {
+  it('is the only 062 migration (no gap, no renumbering, no unrelated bundling) — a later, independent 063 (KORA-WP-008) does not retroactively change this', () => {
     const migrationsDir = join(process.cwd(), 'supabase/migrations');
     const files = readdirSync(migrationsDir);
     expect(files.filter((f) => f.startsWith('062_'))).toHaveLength(1);
-    expect(files.some((f) => f.startsWith('063_'))).toBe(false);
   });
 
   it('does not create or alter any table, column, or RLS policy', () => {
