@@ -137,6 +137,12 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // happens exclusively through this service, same as WP-014/WP-017).
   { path: 'lib/resource-allocation/resource-allocation-service.ts', reason: 'documented server-only service — Resource Allocation Ledger transitions + balance read, KORA-WP-015' },
 
+  // KORA-WP-020: Commitment Draft / Governance Substrate (Layer A) —
+  // server-only, matches the Pattern-A convention (Company sessions read via
+  // RLS policy only; every mutating function additionally requires
+  // actorRole === 'COMPANY_ADMIN', doc 73 §6's Decision-Owner-authoring rule).
+  { path: 'lib/commitment/commitment-service.ts', reason: 'documented server-only service — Commitment draft create/edit/ready-flag/Resource-Allocation-reference, KORA-WP-020' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
