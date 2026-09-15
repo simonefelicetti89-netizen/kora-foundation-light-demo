@@ -27,10 +27,19 @@ import { recordGovernanceEvent } from '@/lib/audit/governance-event';
 
 const DECISION_OWNER_ROLE = 'COMPANY_ADMIN';
 
+// Typed as a plain string, not a 'draft' literal: KORA-WP-022 released the
+// underlying column to allow 'committed' too (migration 067) — hardcoding
+// the literal here would silently misreport reality for a committed row,
+// the same class of latent bug KORA-WP-021 found and fixed for
+// evidencePlanId. toCommitment() below always reflects the real column
+// value; this module's own functions never write anything but 'draft'
+// (the commit transition itself lives in commit-activation-service.ts).
+export type CommitmentStatus = string;
+
 export interface Commitment {
   id: string;
   tenantId: string;
-  status: 'draft';
+  status: CommitmentStatus;
   readyForDecision: boolean;
   problemObjective: string;
   population: string | null;
@@ -87,7 +96,7 @@ function toCommitment(row: CommitmentDbRow): Commitment {
   return {
     id: row.id,
     tenantId: row.tenant_id,
-    status: 'draft',
+    status: row.status,
     readyForDecision: row.ready_for_decision,
     problemObjective: row.problem_objective,
     population: row.population,

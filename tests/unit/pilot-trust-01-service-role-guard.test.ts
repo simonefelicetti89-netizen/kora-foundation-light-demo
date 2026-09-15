@@ -149,6 +149,12 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // discipline as KORA-WP-020's own commitment-service.ts).
   { path: 'lib/evidence-plan/evidence-plan-service.ts', reason: 'documented server-only service — Evidence Plan primary/addendum lineage create/edit/reconstruct, KORA-WP-021' },
 
+  // KORA-WP-022: Commit Activation Transaction + MVB Manifest (Layer C) —
+  // server-only, delegates the atomic transaction to a single Postgres RPC
+  // (analytics.commit_commitment()); actorRole==='COMPANY_ADMIN' enforced
+  // before the RPC is ever called, same discipline as KORA-WP-020/021.
+  { path: 'lib/commitment/commit-activation-service.ts', reason: 'documented server-only service — Commit Activation Transaction (RPC) + MVB manifest read, KORA-WP-022' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
