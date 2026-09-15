@@ -181,4 +181,28 @@ describe('KORA-WP-022 — scope integrity', () => {
     expect(fnBody).not.toBeNull();
     expect(fnBody![0]).not.toMatch(/UPDATE analytics\.resource_allocation/);
   });
+
+  it('migration 067 itself never explicitly grants EXECUTE to PUBLIC/anon/authenticated (only the implicit Postgres default did — closed by migration 068)', () => {
+    expect(migrationSrc).not.toMatch(/GRANT EXECUTE.*ON FUNCTION analytics\.commit_commitment.*TO (PUBLIC|anon|authenticated)/i);
+  });
+});
+
+describe('KORA-WP-022 security remediation — PUBLIC EXECUTE revoked (migration 068)', () => {
+  const remediationSrc = readFileSync(join(process.cwd(), 'supabase/migrations/068_commit_commitment_revoke_public_execute.sql'), 'utf-8');
+
+  it('explicitly revokes EXECUTE on commit_commitment from PUBLIC', () => {
+    expect(remediationSrc).toMatch(/REVOKE EXECUTE ON FUNCTION analytics\.commit_commitment\(uuid, uuid, text, text\) FROM PUBLIC;/);
+  });
+
+  it('does not touch function business logic, WP-022 semantics, or any other object', () => {
+    expect(remediationSrc).not.toMatch(/CREATE OR REPLACE FUNCTION|ALTER TABLE|CREATE TABLE|DROP TABLE|CREATE TRIGGER/);
+  });
+
+  it('does not re-grant EXECUTE to service_role redundantly or to any broader role (the ROLLBACK section is a comment, excluded here)', () => {
+    const activeCode = remediationSrc
+      .split('\n')
+      .filter((l) => !l.trim().startsWith('--'))
+      .join('\n');
+    expect(activeCode).not.toMatch(/GRANT EXECUTE/);
+  });
 });
