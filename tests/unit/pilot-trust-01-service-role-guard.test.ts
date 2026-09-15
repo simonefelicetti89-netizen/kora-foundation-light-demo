@@ -155,6 +155,13 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // before the RPC is ever called, same discipline as KORA-WP-020/021.
   { path: 'lib/commitment/commit-activation-service.ts', reason: 'documented server-only service — Commit Activation Transaction (RPC) + MVB manifest read, KORA-WP-022' },
 
+  // KORA-WP-023: Core Decision Linkage — server-only, read-only query
+  // surface over a security-invoker view (migration 069) that projects
+  // already-existing KORA-WP-015/020/021/022 relationships; creates no new
+  // domain truth (doc 68 §8 — DECISION-008 IS the reference architecture
+  // itself, not a separate object).
+  { path: 'lib/decision-linkage/decision-linkage-service.ts', reason: 'documented server-only service — read-only Core Decision Linkage traceability query, KORA-WP-023' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
