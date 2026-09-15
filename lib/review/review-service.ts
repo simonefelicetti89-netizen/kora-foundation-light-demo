@@ -13,16 +13,31 @@
 // Commitment's frozen field set (migration 067) never released that state,
 // and this WP does not own doing so.
 //
-// Authorization mirrors every other Lane-B primitive in this schema:
-// actorRole must be 'COMPANY_ADMIN'. Doc 73 §6 records a real Advisor
-// SUPPORT-REVIEW capability (drafting the narrative, proposing a verdict)
-// that this module deliberately does not implement — it remains the
-// KORA-WP-033 convergence item, now finally due (see the implementation
-// report), not repaired here.
+// Authorization: concludeReview() keeps its original, untouched,
+// COMPANY_ADMIN-only check (assertDecisionOwner) — the true constitutive
+// action, per doc 73 §6 ("concluding/recording the event" is the one named
+// Advisor denial for Review), and per this file's own migration (070)
+// having already proactively revoked PUBLIC EXECUTE on conclude_review().
+// No code path in this module or in
+// lib/advisor-portal/advisor-decision-support-service.ts reaches it.
+//
+// openReview()/markReviewInProgress() were widened by the KORA-WP-033
+// convergence (assertSupportActor, below) to also accept ADVISOR: neither
+// function records any interpretation, verdict, or decision content — they
+// only create/advance the thin state scaffold a SUPPORT-REVIEW narrative
+// would eventually be drafted against, the same "administrative scaffolding
+// is support, not constitutive" reasoning already applied to Case creation
+// (KORA-WP-034). Doc 73 §6's own Review row names exactly one Advisor
+// capability (SUPPORT-REVIEW) and one denial (concluding) without
+// separately enumerating open/in-progress either way — a reasoned reading
+// of an underspecified point, disclosed as such in the convergence's own
+// implementation report, not a verbatim citation. Advisor calls must route
+// through lib/advisor-portal/advisor-decision-support-service.ts.
 
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 
 const DECISION_OWNER_ROLE = 'COMPANY_ADMIN';
+const SUPPORT_ACTOR_ROLES = ['COMPANY_ADMIN', 'ADVISOR'] as const;
 
 export const REVIEW_VERDICTS = ['KEEP', 'STOP', 'MODIFY', 'REALLOCATE', 'CREATE', 'INVESTIGATE'] as const;
 export type ReviewVerdict = (typeof REVIEW_VERDICTS)[number];
@@ -121,10 +136,22 @@ function toReviewEvent(row: ReviewEventDbRow): ReviewEvent {
   };
 }
 
+// Strict, unchanged since KORA-WP-024 — used ONLY by concludeReview() below.
+// The KORA-WP-033 convergence never widens this function.
 function assertDecisionOwner(actorRole: string): void {
   if (actorRole !== DECISION_OWNER_ROLE) {
     throw new Error(
-      `[KORA] review rejected: only ${DECISION_OWNER_ROLE} may act on a Review (doc 73 §6 — Advisor supports/drafts but concluding is Decision-Owner-only; this WP's own scope is Company-authoring only).`,
+      `[KORA] review rejected: only ${DECISION_OWNER_ROLE} may conclude a Review (doc 73 §6 — concluding/recording the event is Decision-Owner-only, never an Advisor act, under any circumstance).`,
+    );
+  }
+}
+
+// Widened by the KORA-WP-033 convergence — used ONLY by openReview()/
+// markReviewInProgress() (see this file's own header for the reasoning).
+function assertSupportActor(actorRole: string): void {
+  if (!(SUPPORT_ACTOR_ROLES as readonly string[]).includes(actorRole)) {
+    throw new Error(
+      `[KORA] review rejected: only ${DECISION_OWNER_ROLE} or an assignment-verified ADVISOR may perform this Review support action (doc 73 §6 — concluding remains Decision-Owner-only and is a separate, untouched check). Advisor calls must route through lib/advisor-portal/advisor-decision-support-service.ts.`,
     );
   }
 }
@@ -146,7 +173,7 @@ export interface OpenReviewParams {
 
 export async function openReview(params: OpenReviewParams): Promise<Review> {
   assertActor(params.actorRole, params.actorId);
-  assertDecisionOwner(params.actorRole);
+  assertSupportActor(params.actorRole);
 
   const db = getSupabaseServiceClient();
 
@@ -194,7 +221,7 @@ export interface MarkReviewInProgressParams {
 
 export async function markReviewInProgress(params: MarkReviewInProgressParams): Promise<Review> {
   assertActor(params.actorRole, params.actorId);
-  assertDecisionOwner(params.actorRole);
+  assertSupportActor(params.actorRole);
 
   const db = getSupabaseServiceClient();
 

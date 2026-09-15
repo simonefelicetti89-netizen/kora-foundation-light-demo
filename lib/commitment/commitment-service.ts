@@ -16,16 +16,32 @@
 // future migration relaxes it).
 //
 // Auth/RLS per this WP's own registry entry, verbatim: "Company-scoped,
-// Decision-Owner-authoring only." Every mutating function below requires
-// actorRole === 'COMPANY_ADMIN'. doc 73 §6 records a frozen Advisor
-// DRAFT/EDIT-DRAFT capability that this WP deliberately does not wire in —
-// a future WP's job, following the WP-007→WP-034 "thin Advisor layer over
-// the core domain service" pattern already established in this codebase.
+// Decision-Owner-authoring only." doc 73 §6 records a frozen Advisor
+// DRAFT/EDIT-DRAFT capability that this WP deliberately did not wire in at
+// build time — the KORA-WP-033 convergence remediation, following the
+// WP-007→WP-034 "thin Advisor layer over the core domain service" pattern
+// already established in this codebase.
+//
+// KORA-WP-033 CONVERGENCE: every function in this module is a non-
+// constitutive draft/support operation — none can ever move a row out of
+// `draft` (physically impossible: the underlying CHECK constraint pins it,
+// and the actual `committed` transition lives entirely in a separate file,
+// lib/commitment/commit-activation-service.ts, with its own untouched,
+// still-COMPANY_ADMIN-only check). assertAuthorizedDraftAuthor() below was
+// therefore widened to also accept ADVISOR — but actorRole alone is never
+// sufficient: every Advisor-origin call must route through
+// lib/advisor-portal/advisor-decision-support-service.ts, which
+// independently verifies a genuinely valid, assignment-scoped relationship
+// before ever reaching this module. `owner_role` (FT-019's own "Decision
+// Owner role" field, below) always remains DECISION_OWNER_ROLE regardless
+// of who authored the draft text — the Company is always the eventual
+// Decision Owner, even for an Advisor-drafted Commitment.
 
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { recordGovernanceEvent } from '@/lib/audit/governance-event';
 
 const DECISION_OWNER_ROLE = 'COMPANY_ADMIN';
+const DRAFT_AUTHOR_ROLES = ['COMPANY_ADMIN', 'ADVISOR'] as const;
 
 // Typed as a plain string, not a 'draft' literal: KORA-WP-022 released the
 // underlying column to allow 'committed' too (migration 067) — hardcoding
@@ -120,10 +136,14 @@ function toCommitment(row: CommitmentDbRow): Commitment {
   };
 }
 
-function assertDecisionOwner(actorRole: string): void {
-  if (actorRole !== DECISION_OWNER_ROLE) {
+// Widened by the KORA-WP-033 convergence (see this file's own header) from
+// its original COMPANY_ADMIN-only check to also accept ADVISOR — for
+// DRAFT/EDIT-DRAFT/ready-flag/resource-reference operations only, never for
+// the `committed` transition itself, which does not exist in this file.
+function assertAuthorizedDraftAuthor(actorRole: string): void {
+  if (!(DRAFT_AUTHOR_ROLES as readonly string[]).includes(actorRole)) {
     throw new Error(
-      `[KORA] commitment rejected: only ${DECISION_OWNER_ROLE} may author a Commitment draft (doc 73 §6 — "the committed transition itself — NO, NEVER" for any other role; this WP's own scope is Company-authoring only).`,
+      `[KORA] commitment rejected: only ${DECISION_OWNER_ROLE} or an assignment-verified ADVISOR may draft/edit a Commitment (doc 73 §6 — "the committed transition itself — NO, NEVER" remains Decision-Owner-only and lives entirely outside this module). Advisor calls must route through lib/advisor-portal/advisor-decision-support-service.ts.`,
     );
   }
 }
@@ -159,7 +179,7 @@ export interface CreateCommitmentDraftParams {
 
 export async function createCommitmentDraft(params: CreateCommitmentDraftParams): Promise<Commitment> {
   assertActor(params.actorRole, params.actorId);
-  assertDecisionOwner(params.actorRole);
+  assertAuthorizedDraftAuthor(params.actorRole);
   if (!params.problemObjective || !params.problemObjective.trim()) {
     throw new Error('[KORA] createCommitmentDraft rejected: problemObjective is required — a Commitment must always be describable.');
   }
@@ -235,7 +255,7 @@ export interface UpdateCommitmentDraftParams {
 
 export async function updateCommitmentDraft(params: UpdateCommitmentDraftParams): Promise<Commitment> {
   assertActor(params.actorRole, params.actorId);
-  assertDecisionOwner(params.actorRole);
+  assertAuthorizedDraftAuthor(params.actorRole);
 
   const db = getSupabaseServiceClient();
 
@@ -310,7 +330,7 @@ export interface MarkReadyForDecisionParams {
 
 export async function markCommitmentReadyForDecision(params: MarkReadyForDecisionParams): Promise<Commitment> {
   assertActor(params.actorRole, params.actorId);
-  assertDecisionOwner(params.actorRole);
+  assertAuthorizedDraftAuthor(params.actorRole);
 
   const db = getSupabaseServiceClient();
 
@@ -360,7 +380,7 @@ export interface LinkResourceAllocationEntryParams {
 
 export async function linkResourceAllocationEntry(params: LinkResourceAllocationEntryParams): Promise<void> {
   assertActor(params.actorRole, params.actorId);
-  assertDecisionOwner(params.actorRole);
+  assertAuthorizedDraftAuthor(params.actorRole);
 
   const db = getSupabaseServiceClient();
 
@@ -418,7 +438,7 @@ export interface UnlinkResourceAllocationEntryParams {
 
 export async function unlinkResourceAllocationEntry(params: UnlinkResourceAllocationEntryParams): Promise<void> {
   assertActor(params.actorRole, params.actorId);
-  assertDecisionOwner(params.actorRole);
+  assertAuthorizedDraftAuthor(params.actorRole);
 
   const db = getSupabaseServiceClient();
 

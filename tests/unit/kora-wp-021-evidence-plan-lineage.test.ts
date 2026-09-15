@@ -240,8 +240,17 @@ describe('KORA-WP-021 — createEvidencePlan()', () => {
     await expect(createEvidencePlan({ tenantId: TENANT, commitmentId: 'cm-own', ...OWNER })).rejects.toThrow(/already has a governing Evidence Plan lineage/);
   });
 
-  it('rejects a non-COMPANY_ADMIN actor', async () => {
-    await expect(createEvidencePlan({ tenantId: TENANT, commitmentId: 'cm-own', actorRole: 'ADVISOR', actorId: 'adv-1' })).rejects.toThrow(/only COMPANY_ADMIN may author/);
+  // Narrowed by the KORA-WP-033 convergence remediation: doc 73 §6's own
+  // Advisor drafting grant was wired in — ADVISOR is now a legitimate
+  // primary-Evidence-Plan author (see tests/unit/kora-wp-033-convergence.
+  // test.ts for the full Assignment-scoped behavior).
+  it('rejects an actor that is neither COMPANY_ADMIN nor ADVISOR', async () => {
+    await expect(createEvidencePlan({ tenantId: TENANT, commitmentId: 'cm-own', actorRole: 'KORA_ADMIN', actorId: 'admin-1' })).rejects.toThrow(/only COMPANY_ADMIN or an assignment-verified ADVISOR may draft/);
+  });
+
+  it('accepts ADVISOR as a draft author (KORA-WP-033 convergence — actorRole alone is accepted here; real Assignment-validity gating happens one layer up, in advisor-decision-support-service.ts)', async () => {
+    const plan = await createEvidencePlan({ tenantId: TENANT, commitmentId: 'cm-own', actorRole: 'ADVISOR', actorId: 'adv-1' });
+    expect(plan.actorRole).toBe('ADVISOR');
   });
 
   it('records an evidence_plan.primary_created governance event', async () => {
@@ -262,9 +271,9 @@ describe('KORA-WP-021 — updateEvidencePlan()', () => {
     expect(updated.criteria).toBe('orig');
   });
 
-  it('rejects a non-COMPANY_ADMIN actor', async () => {
+  it('rejects an actor that is neither COMPANY_ADMIN nor ADVISOR', async () => {
     const plan = await createEvidencePlan({ tenantId: TENANT, commitmentId: 'cm-own', ...OWNER });
-    await expect(updateEvidencePlan({ evidencePlanId: plan.id, tenantId: TENANT, criteria: 'x', actorRole: 'ADVISOR', actorId: 'adv-1' })).rejects.toThrow(/only COMPANY_ADMIN may author/);
+    await expect(updateEvidencePlan({ evidencePlanId: plan.id, tenantId: TENANT, criteria: 'x', actorRole: 'KORA_ADMIN', actorId: 'admin-1' })).rejects.toThrow(/only COMPANY_ADMIN or an assignment-verified ADVISOR may draft/);
   });
 
   it('rejects a cross-tenant update', async () => {
@@ -309,10 +318,10 @@ describe('KORA-WP-021 — createEvidencePlanAddendum() — requires a non-draft 
     await expect(createEvidencePlanAddendum({ evidencePlanId: plan.id, tenantId: TENANT, effectiveFrom: '2027-01-01', scope: '', ...OWNER })).rejects.toThrow(/scope is required/);
   });
 
-  it('rejects a non-COMPANY_ADMIN actor', async () => {
+  it('rejects an actor that is neither COMPANY_ADMIN nor ADVISOR', async () => {
     const plan = await createEvidencePlan({ tenantId: TENANT, commitmentId: 'cm-own', ...OWNER });
     plans[0].status = 'frozen-at-commit';
-    await expect(createEvidencePlanAddendum({ evidencePlanId: plan.id, tenantId: TENANT, effectiveFrom: '2027-01-01', scope: 'x', actorRole: 'ADVISOR', actorId: 'adv-1' })).rejects.toThrow(/only COMPANY_ADMIN may author/);
+    await expect(createEvidencePlanAddendum({ evidencePlanId: plan.id, tenantId: TENANT, effectiveFrom: '2027-01-01', scope: 'x', actorRole: 'KORA_ADMIN', actorId: 'admin-1' })).rejects.toThrow(/only COMPANY_ADMIN or an assignment-verified ADVISOR may draft/);
   });
 });
 
@@ -412,12 +421,16 @@ describe('KORA-WP-021 — scope integrity', () => {
     expect(migrationSrc).toMatch(/BEFORE UPDATE OR DELETE ON analytics\.evidence_plan_addendum/);
   });
 
-  it('every mutating function requires actorRole === COMPANY_ADMIN', () => {
+  // Renamed by the KORA-WP-033 convergence (assertDecisionOwner ->
+  // assertAuthorizedDraftAuthor) — the check itself is still unconditional
+  // on every mutator below, now widened to COMPANY_ADMIN or ADVISOR;
+  // freezing has no function in this file to gate in the first place.
+  it('every mutating function requires an authorized draft author (COMPANY_ADMIN or ADVISOR)', () => {
     const mutators = ['createEvidencePlan', 'updateEvidencePlan', 'createEvidencePlanAddendum'];
     for (const fn of mutators) {
       const match = src.match(new RegExp(`export async function ${fn}[\\s\\S]*?\\n\\}`));
       expect(match, `${fn} not found`).not.toBeNull();
-      expect(match![0]).toMatch(/assertDecisionOwner/);
+      expect(match![0]).toMatch(/assertAuthorizedDraftAuthor/);
     }
   });
 });

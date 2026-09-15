@@ -170,8 +170,19 @@ describe('KORA-WP-024 — openReview()', () => {
     await expect(openReview({ commitmentId: 'cm-other-tenant', tenantId: TENANT, ...OWNER })).rejects.toThrow(/cross-tenant references are never allowed/);
   });
 
-  it('rejects a non-COMPANY_ADMIN actor (Advisor may support, never open constitutively in this WP\'s own scope)', async () => {
-    await expect(openReview({ commitmentId: 'cm-committed', tenantId: TENANT, actorRole: 'ADVISOR', actorId: 'adv-1' })).rejects.toThrow(/only COMPANY_ADMIN may act/);
+  // Narrowed by the KORA-WP-033 convergence remediation: openReview()'s own
+  // check was widened (assertSupportActor) to also accept ADVISOR —
+  // opening/progressing a Review is reasoned, disclosed scaffolding-level
+  // support (see lib/review/review-service.ts's own updated header and
+  // tests/unit/kora-wp-033-convergence.test.ts), never the constitutive
+  // conclusion, which concludeReview() below still, unconditionally, denies.
+  it('rejects an actor that is neither COMPANY_ADMIN nor ADVISOR', async () => {
+    await expect(openReview({ commitmentId: 'cm-committed', tenantId: TENANT, actorRole: 'KORA_ADMIN', actorId: 'admin-1' })).rejects.toThrow(/only COMPANY_ADMIN or an assignment-verified ADVISOR/);
+  });
+
+  it('accepts ADVISOR as a support actor (KORA-WP-033 convergence — actorRole alone is accepted here; real Assignment-validity gating happens one layer up, in advisor-decision-support-service.ts)', async () => {
+    const review = await openReview({ commitmentId: 'cm-committed', tenantId: TENANT, actorRole: 'ADVISOR', actorId: 'adv-1' });
+    expect(review.actorRole).toBe('ADVISOR');
   });
 });
 
@@ -188,9 +199,9 @@ describe('KORA-WP-024 — markReviewInProgress()', () => {
     await expect(markReviewInProgress({ reviewId: review.id, tenantId: TENANT, ...OWNER })).rejects.toThrow(/not open/);
   });
 
-  it('rejects a non-COMPANY_ADMIN actor', async () => {
+  it('rejects an actor that is neither COMPANY_ADMIN nor ADVISOR', async () => {
     const review = await openReview({ commitmentId: 'cm-committed', tenantId: TENANT, ...OWNER });
-    await expect(markReviewInProgress({ reviewId: review.id, tenantId: TENANT, actorRole: 'ADVISOR', actorId: 'adv-1' })).rejects.toThrow(/only COMPANY_ADMIN may act/);
+    await expect(markReviewInProgress({ reviewId: review.id, tenantId: TENANT, actorRole: 'KORA_ADMIN', actorId: 'admin-1' })).rejects.toThrow(/only COMPANY_ADMIN or an assignment-verified ADVISOR/);
   });
 });
 
@@ -203,11 +214,15 @@ describe('KORA-WP-024 — concludeReview() — authorization gate + RPC shape', 
     expect(rpcMock).not.toHaveBeenCalled();
   });
 
+  // Message text only was reworded by the KORA-WP-033 convergence
+  // (assertDecisionOwner's own error message, still unconditionally
+  // COMPANY_ADMIN-only, still the exact same function, still used only
+  // here) — ADVISOR remains fully, unconditionally rejected for conclusion.
   it('rejects an ADVISOR actor before ever calling the RPC (doc 73 §6 — conclusion is Decision-Owner-only)', async () => {
     await expect(concludeReview({
       reviewId: 'rv-1', tenantId: TENANT, actorRole: 'ADVISOR', actorId: 'adv-1',
       actualDecision: 'x', effectiveDate: '2027-01-01', verdict: 'KEEP',
-    })).rejects.toThrow(/only COMPANY_ADMIN may act/);
+    })).rejects.toThrow(/only COMPANY_ADMIN may conclude a Review/);
     expect(rpcMock).not.toHaveBeenCalled();
   });
 
@@ -316,12 +331,24 @@ describe('KORA-WP-024 — scope integrity', () => {
     expect(migrationSrc).not.toMatch(/CREATE POLICY.*commitment_decision_trace/);
   });
 
-  it('every mutating function requires actorRole === COMPANY_ADMIN', () => {
-    const mutators = ['openReview', 'markReviewInProgress', 'concludeReview'];
-    for (const fn of mutators) {
+  // Split by the KORA-WP-033 convergence: openReview/markReviewInProgress
+  // now call the widened assertSupportActor (COMPANY_ADMIN or ADVISOR);
+  // concludeReview alone still calls the original, untouched, strict
+  // assertDecisionOwner (COMPANY_ADMIN-only) — the true constitutive
+  // action. Both checks are unconditional in every mutator below; neither
+  // is ever skipped.
+  it('openReview/markReviewInProgress require an authorized support actor (COMPANY_ADMIN or ADVISOR)', () => {
+    for (const fn of ['openReview', 'markReviewInProgress']) {
       const match = src.match(new RegExp(`export async function ${fn}[\\s\\S]*?\\n\\}`));
       expect(match, `${fn} not found`).not.toBeNull();
-      expect(match![0]).toMatch(/assertDecisionOwner/);
+      expect(match![0]).toMatch(/assertSupportActor/);
     }
+  });
+
+  it('concludeReview alone requires strict, unwidened COMPANY_ADMIN (assertDecisionOwner, unchanged)', () => {
+    const match = src.match(/export async function concludeReview[\s\S]*?\n\}/);
+    expect(match, 'concludeReview not found').not.toBeNull();
+    expect(match![0]).toMatch(/assertDecisionOwner/);
+    expect(match![0]).not.toMatch(/assertSupportActor/);
   });
 });

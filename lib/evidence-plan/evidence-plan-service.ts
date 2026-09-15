@@ -28,17 +28,24 @@
 // Commitment that does not exist yet.
 //
 // Auth/RLS per this WP's own registry entry, verbatim: "Company/Advisor-
-// visible, Company-authoring." This module builds the Company-authoring
-// path only — every mutating function requires actorRole === 'COMPANY_ADMIN'
-// (same discipline as lib/commitment/commitment-service.ts, KORA-WP-020).
-// "Advisor-visible" is real, frozen domain truth (doc 73 §6) whose wiring
-// belongs to the same KORA-WP-033 convergence item already tracked for
-// Commitment — no Advisor-facing function exists in this module.
+// visible, Company-authoring." This module originally built the
+// Company-authoring path only. "Advisor-visible" is real, frozen domain
+// truth (doc 73 §6) — the KORA-WP-033 convergence remediation widened
+// assertAuthorizedDraftAuthor() below to also accept ADVISOR (same pattern,
+// same rationale, as lib/commitment/commitment-service.ts): every function
+// here is pre-freeze/non-constitutive (freezing itself has no function at
+// all — it happens automatically inside KORA-WP-022's own
+// commit_commitment() transaction, untouched by this convergence). Advisor
+// calls must route through
+// lib/advisor-portal/advisor-decision-support-service.ts, which
+// independently verifies a genuinely valid, assignment-scoped relationship
+// before ever reaching this module — actorRole alone is never sufficient.
 
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { recordGovernanceEvent } from '@/lib/audit/governance-event';
 
 const DECISION_OWNER_ROLE = 'COMPANY_ADMIN';
+const DRAFT_AUTHOR_ROLES = ['COMPANY_ADMIN', 'ADVISOR'] as const;
 
 // Typed as a plain string, not a 'draft' literal: this WP's own migration
 // CHECK-pins every row it can ever create to 'draft', but hardcoding the
@@ -138,10 +145,13 @@ function toAddendum(row: EvidencePlanAddendumDbRow): EvidencePlanAddendum {
   };
 }
 
-function assertDecisionOwner(actorRole: string): void {
-  if (actorRole !== DECISION_OWNER_ROLE) {
+// Widened by the KORA-WP-033 convergence (see this file's own header) from
+// its original COMPANY_ADMIN-only check to also accept ADVISOR — freezing
+// itself has no function in this module to gate in the first place.
+function assertAuthorizedDraftAuthor(actorRole: string): void {
+  if (!(DRAFT_AUTHOR_ROLES as readonly string[]).includes(actorRole)) {
     throw new Error(
-      `[KORA] evidence-plan rejected: only ${DECISION_OWNER_ROLE} may author an Evidence Plan (doc 73 §6 — freezing/finalizing is Decision-Owner-only, and this WP's own scope is Company-authoring only).`,
+      `[KORA] evidence-plan rejected: only ${DECISION_OWNER_ROLE} or an assignment-verified ADVISOR may draft an Evidence Plan (doc 73 §6 — freezing/finalizing remains Decision-Owner-only and happens automatically inside KORA-WP-022's own commit transaction, never in this module). Advisor calls must route through lib/advisor-portal/advisor-decision-support-service.ts.`,
     );
   }
 }
@@ -174,7 +184,7 @@ export interface CreateEvidencePlanParams {
 
 export async function createEvidencePlan(params: CreateEvidencePlanParams): Promise<EvidencePlan> {
   assertActor(params.actorRole, params.actorId);
-  assertDecisionOwner(params.actorRole);
+  assertAuthorizedDraftAuthor(params.actorRole);
 
   const db = getSupabaseServiceClient();
 
@@ -265,7 +275,7 @@ export interface UpdateEvidencePlanParams {
 
 export async function updateEvidencePlan(params: UpdateEvidencePlanParams): Promise<EvidencePlan> {
   assertActor(params.actorRole, params.actorId);
-  assertDecisionOwner(params.actorRole);
+  assertAuthorizedDraftAuthor(params.actorRole);
 
   const db = getSupabaseServiceClient();
 
@@ -337,7 +347,7 @@ export interface CreateEvidencePlanAddendumParams {
 
 export async function createEvidencePlanAddendum(params: CreateEvidencePlanAddendumParams): Promise<EvidencePlanAddendum> {
   assertActor(params.actorRole, params.actorId);
-  assertDecisionOwner(params.actorRole);
+  assertAuthorizedDraftAuthor(params.actorRole);
   if (!params.scope || !params.scope.trim()) {
     throw new Error('[KORA] createEvidencePlanAddendum rejected: scope is required — an addendum must state its own scope (doc 72 §6).');
   }

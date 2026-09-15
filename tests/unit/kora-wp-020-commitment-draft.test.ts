@@ -241,9 +241,20 @@ describe('KORA-WP-020 — createCommitmentDraft()', () => {
     await expect(createCommitmentDraft({ tenantId: TENANT, problemObjective: 'x', actorRole: '', actorId: '' })).rejects.toThrow(/actorRole and actorId are required/);
   });
 
-  it('rejects a non-COMPANY_ADMIN actor (doc 73 §6 — never Advisor)', async () => {
-    await expect(createCommitmentDraft({ tenantId: TENANT, problemObjective: 'x', actorRole: 'ADVISOR', actorId: 'adv-1' })).rejects.toThrow(/only COMPANY_ADMIN may author/);
-    await expect(createCommitmentDraft({ tenantId: TENANT, problemObjective: 'x', actorRole: 'KORA_ADMIN', actorId: 'admin-1' })).rejects.toThrow(/only COMPANY_ADMIN may author/);
+  // Narrowed by the KORA-WP-033 convergence remediation: doc 73 §6's own
+  // Advisor DRAFT/EDIT-DRAFT grant was wired in — ADVISOR is now a
+  // legitimate draft author here (see tests/unit/kora-wp-033-convergence.
+  // test.ts for the full Assignment-scoped behavior). KORA_ADMIN remains
+  // correctly rejected — never a legitimate Commitment-draft author.
+  it('rejects an actor that is neither COMPANY_ADMIN nor ADVISOR', async () => {
+    await expect(createCommitmentDraft({ tenantId: TENANT, problemObjective: 'x', actorRole: 'KORA_ADMIN', actorId: 'admin-1' })).rejects.toThrow(/only COMPANY_ADMIN or an assignment-verified ADVISOR may draft\/edit/);
+    await expect(createCommitmentDraft({ tenantId: TENANT, problemObjective: 'x', actorRole: 'WORKER', actorId: 'w-1' })).rejects.toThrow(/only COMPANY_ADMIN or an assignment-verified ADVISOR may draft\/edit/);
+  });
+
+  it('accepts ADVISOR as a draft author (KORA-WP-033 convergence — actorRole alone is accepted here; real Assignment-validity gating happens one layer up, in advisor-decision-support-service.ts)', async () => {
+    const c = await createCommitmentDraft({ tenantId: TENANT, problemObjective: 'x', actorRole: 'ADVISOR', actorId: 'adv-1' });
+    expect(c.actorRole).toBe('ADVISOR');
+    expect(c.ownerRole).toBe('COMPANY_ADMIN'); // Decision Owner remains the Company regardless of who drafted
   });
 
   it('records a commitment.draft_created governance event', async () => {
@@ -272,9 +283,11 @@ describe('KORA-WP-020 — updateCommitmentDraft()', () => {
     await expect(updateCommitmentDraft({ commitmentId: c.id, tenantId: TENANT, problemObjective: '', ...OWNER })).rejects.toThrow(/cannot be cleared/);
   });
 
-  it('rejects a non-COMPANY_ADMIN actor', async () => {
+  // Narrowed by the KORA-WP-033 convergence — see createCommitmentDraft()'s
+  // own equivalent test above for the full rationale.
+  it('rejects an actor that is neither COMPANY_ADMIN nor ADVISOR', async () => {
     const c = await createCommitmentDraft({ tenantId: TENANT, problemObjective: 'orig', ...OWNER });
-    await expect(updateCommitmentDraft({ commitmentId: c.id, tenantId: TENANT, amount: 10, actorRole: 'ADVISOR', actorId: 'adv-1' })).rejects.toThrow(/only COMPANY_ADMIN may author/);
+    await expect(updateCommitmentDraft({ commitmentId: c.id, tenantId: TENANT, amount: 10, actorRole: 'KORA_ADMIN', actorId: 'admin-1' })).rejects.toThrow(/only COMPANY_ADMIN or an assignment-verified ADVISOR may draft\/edit/);
   });
 
   it('rejects editing a commitment belonging to a different tenant', async () => {
@@ -304,9 +317,11 @@ describe('KORA-WP-020 — markCommitmentReadyForDecision() — soft flag, doc 73
     expect(unmarked.readyForDecision).toBe(false);
   });
 
-  it('rejects a non-COMPANY_ADMIN actor', async () => {
+  // Narrowed by the KORA-WP-033 convergence — doc 73 §6 explicitly grants
+  // Advisor this exact soft flag ("may mark a draft 'ready for decision'").
+  it('rejects an actor that is neither COMPANY_ADMIN nor ADVISOR', async () => {
     const c = await createCommitmentDraft({ tenantId: TENANT, problemObjective: 'x', ...OWNER });
-    await expect(markCommitmentReadyForDecision({ commitmentId: c.id, tenantId: TENANT, ready: true, actorRole: 'ADVISOR', actorId: 'adv-1' })).rejects.toThrow(/only COMPANY_ADMIN may author/);
+    await expect(markCommitmentReadyForDecision({ commitmentId: c.id, tenantId: TENANT, ready: true, actorRole: 'KORA_ADMIN', actorId: 'admin-1' })).rejects.toThrow(/only COMPANY_ADMIN or an assignment-verified ADVISOR may draft\/edit/);
   });
 });
 
@@ -405,12 +420,16 @@ describe('KORA-WP-020 — scope integrity', () => {
     expect(migrationSrc).toMatch(/CREATE POLICY "company_own_commitment_read"/);
   });
 
-  it('every mutating function requires actorRole === COMPANY_ADMIN', () => {
+  // Renamed by the KORA-WP-033 convergence (assertDecisionOwner ->
+  // assertAuthorizedDraftAuthor) — the check itself is still unconditional
+  // on every mutator below, now widened to COMPANY_ADMIN or ADVISOR; no
+  // function in this file was ever, or is now, a constitutive transition.
+  it('every mutating function requires an authorized draft author (COMPANY_ADMIN or ADVISOR)', () => {
     const mutators = ['createCommitmentDraft', 'updateCommitmentDraft', 'markCommitmentReadyForDecision', 'linkResourceAllocationEntry', 'unlinkResourceAllocationEntry'];
     for (const fn of mutators) {
       const match = src.match(new RegExp(`export async function ${fn}[\\s\\S]*?\\n\\}`));
       expect(match, `${fn} not found`).not.toBeNull();
-      expect(match![0]).toMatch(/assertDecisionOwner/);
+      expect(match![0]).toMatch(/assertAuthorizedDraftAuthor/);
     }
   });
 });

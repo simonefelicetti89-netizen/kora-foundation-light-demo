@@ -169,6 +169,13 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // delegates to a single atomic Postgres RPC (analytics.conclude_review()).
   { path: 'lib/review/review-service.ts', reason: 'documented server-only service — Review open/in-progress/conclude (RPC) + read paths, KORA-WP-024' },
 
+  // KORA-WP-033 CONVERGENCE: Advisor Decision-Spine Support — server-only,
+  // same rationale as every other Advisor-domain service. Thin, doubly
+  // Assignment-verified layer over KORA-WP-020/021/023/024's own services;
+  // never calls commit_commitment()/concludeReview() — those remain
+  // COMPANY_ADMIN-only and untouched.
+  { path: 'lib/advisor-portal/advisor-decision-support-service.ts', reason: 'documented server-only service — Advisor-facing Assignment-scoped Commitment/Evidence-Plan/Review draft-support, KORA-WP-033 convergence remediation' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
