@@ -169,6 +169,13 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // delegates to a single atomic Postgres RPC (analytics.conclude_review()).
   { path: 'lib/review/review-service.ts', reason: 'documented server-only service — Review open/in-progress/conclude (RPC) + read paths, KORA-WP-024' },
 
+  // KORA-WP-033 CONVERGENCE (final remediation): Review Advisor Proposal —
+  // server-only, same rationale as every other Lane-B primitive in this
+  // schema. Every mutating function requires actorRole === 'ADVISOR'
+  // (structurally singular author, unlike its siblings); no path reaches
+  // concludeReview() or any constitutive function.
+  { path: 'lib/review/review-advisor-proposal-service.ts', reason: 'documented server-only service — Advisor Review Proposal create/read (upsert, one-per-Review), KORA-WP-033 convergence final remediation' },
+
   // KORA-WP-033 CONVERGENCE: Advisor Decision-Spine Support — server-only,
   // same rationale as every other Advisor-domain service. Thin, doubly
   // Assignment-verified layer over KORA-WP-020/021/023/024's own services;

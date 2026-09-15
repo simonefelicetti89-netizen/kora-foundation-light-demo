@@ -48,21 +48,18 @@
 //      commit_commitment() RPC wrapper is not imported here at all — no
 //      code path in this file can reach it, directly or indirectly.
 //
-// NOT IMPLEMENTED — DESIGN DECISION REQUIRED (this convergence's own single
-// open gap, per the Founder's explicit STOP-before-inventing-schema
-// instruction): an Advisor's SUPPORT-REVIEW narrative/verdict
-// RECOMMENDATION has no canonical storage shape anywhere in the frozen
-// sources (doc 73 §6 describes the product capability, not a data model;
-// doc 67 §8 / doc 68 §1.5/§2's own Review Event shape is exclusively the
-// FINAL, Decision-Owner-authored event — KORA-WP-024's own schema, correctly,
-// has no field for a provisional, non-final proposal). Inventing that shape
-// here would mean guessing, unresolved, at: whether it is Company-canonical
-// or Advisor-private content; whether it survives Assignment termination;
-// whether Company Admin can edit/accept/reject it; whether it lives on
-// `review` itself, a new table, or elsewhere. This module deliberately stops
-// short of that one piece — every function it DOES export is independently
-// complete and coherent (open/progress a Review, draft/edit a Commitment or
-// Evidence Plan) — never a half-defined public API for the unresolved part.
+// REVIEW PROPOSAL — CLOSED (final remediation, this task): an Advisor's
+// SUPPORT-REVIEW narrative/verdict recommendation now has a canonical
+// storage shape — analytics.review_advisor_proposal (migration 071),
+// owned by lib/review/review-advisor-proposal-service.ts. Founder design
+// decision: REVIEW -> ADVISOR REVIEW PROPOSAL -> FINAL REVIEW EVENT are
+// three distinct concepts; the proposal is consultative, persistent,
+// Company-contextual, Advisor-authored, non-constitutive, one-current-
+// per-Review, editable only while the Review is not yet concluded, then
+// permanent Company historical material. This module's own functions
+// below never import concludeReview() or commit-activation-service.ts —
+// structurally cannot reach either constitutive path, exactly as every
+// other function in this file already does not.
 
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { evaluateAdvisorAssignmentValidity } from '@/lib/advisor-assignment/advisor-assignment-service';
@@ -80,8 +77,12 @@ import {
 } from '@/lib/evidence-plan/evidence-plan-service';
 import {
   openReview, markReviewInProgress, getReview, getReviewForCommitment,
-  type Review,
+  type Review, type ReviewVerdict,
 } from '@/lib/review/review-service';
+import {
+  upsertReviewAdvisorProposal, getReviewAdvisorProposalForReview,
+  type ReviewAdvisorProposal,
+} from '@/lib/review/review-advisor-proposal-service';
 import { getDecisionTrace, type DecisionTrace } from '@/lib/decision-linkage/decision-linkage-service';
 
 const ADVISOR_ACTOR_ROLE = 'ADVISOR';
@@ -262,21 +263,33 @@ export async function createEvidencePlanAddendumAsAdvisor(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// REVIEW — VIEW / open / move to in-progress (doc 73 §6 SUPPORT-REVIEW
-// scaffolding only — see this file's own header for what is NOT included)
+// REVIEW — VIEW / open / move to in-progress / SUPPORT-REVIEW proposal
+// (doc 73 §6 — full closure, this task)
 // ═══════════════════════════════════════════════════════════════════════════
 //
-// Classified as Advisor-eligible support, not constitutive: neither
-// function records any interpretation, verdict, or decision content — they
-// only create/advance the thin state scaffold a SUPPORT-REVIEW narrative
-// would eventually be drafted against (symmetric with Case creation already
-// being Advisor-eligible, KORA-WP-034). Doc 73 §6's own Review row names
-// exactly one Advisor capability (SUPPORT-REVIEW) and exactly one denial
-// (concluding/recording the event) without separately enumerating
-// open/in-progress either way — this is a reasoned reading of an
-// underspecified point, not a verbatim citation, and is disclosed as such
-// in the implementation report. concludeReview is never called from this
-// module, directly or indirectly.
+// open/in-progress: classified as Advisor-eligible support, not
+// constitutive — neither function records any interpretation, verdict, or
+// decision content, they only create/advance the thin state scaffold the
+// SUPPORT-REVIEW narrative is drafted against (symmetric with Case
+// creation already being Advisor-eligible, KORA-WP-034). Doc 73 §6's own
+// Review row names exactly one Advisor capability (SUPPORT-REVIEW) and
+// exactly one denial (concluding/recording the event) without separately
+// enumerating open/in-progress either way — a reasoned reading of an
+// underspecified point, not a verbatim citation, disclosed as such in the
+// original convergence's own implementation report.
+//
+// The proposal itself (this task's own completion): upsertReviewAdvisorProposal/
+// getReviewAdvisorProposalForReview below are the SUPPORT-REVIEW narrative
+// + verdict-recommendation capability doc 73 §6 actually describes. Real
+// Assignment-validity gating happens here, exactly like every other write
+// in this module; the underlying object's own author-role restriction
+// (ADVISOR only, migration 071's own CHECK) and editable-window rule
+// (blocked once the Review is concluded) are enforced independently, in
+// lib/review/review-advisor-proposal-service.ts itself and, beneath that,
+// in the database.
+//
+// concludeReview is never called from this module, directly or
+// indirectly — no function below, old or new, can reach it.
 
 export async function getReviewForAdvisor(
   assignmentId: string, callerAdvisorId: string, reviewId: string,
@@ -304,6 +317,38 @@ export async function markReviewInProgressAsAdvisor(
 ): Promise<Review> {
   const companyId = await assertValidAdvisorAssignmentAndGetCompanyId(assignmentId, callerAdvisorId);
   return markReviewInProgress({ reviewId, tenantId: companyId, actorRole: ADVISOR_ACTOR_ROLE, actorId: callerAdvisorId });
+}
+
+// ── the Review Proposal itself — doc 73 §6 SUPPORT-REVIEW, closed ──────────
+// One current proposal per Review (create === update, upsert semantics).
+// Editable only while the linked Review is not yet concluded — enforced in
+// review-advisor-proposal-service.ts and, independently, by migration
+// 071's own trigger; never re-implemented here. Never reaches
+// concludeReview() or any constitutive path, directly or indirectly.
+
+export interface UpsertReviewAdvisorProposalAsAdvisorParams {
+  assignmentId: string;
+  callerAdvisorId: string;
+  reviewId: string;
+  proposalNarrative?: string | null;
+  proposedVerdict?: ReviewVerdict | null;
+}
+
+export async function upsertReviewAdvisorProposalAsAdvisor(
+  params: UpsertReviewAdvisorProposalAsAdvisorParams,
+): Promise<ReviewAdvisorProposal> {
+  const companyId = await assertValidAdvisorAssignmentAndGetCompanyId(params.assignmentId, params.callerAdvisorId);
+  return upsertReviewAdvisorProposal({
+    reviewId: params.reviewId, tenantId: companyId, actorRole: ADVISOR_ACTOR_ROLE, actorId: params.callerAdvisorId,
+    proposalNarrative: params.proposalNarrative, proposedVerdict: params.proposedVerdict,
+  });
+}
+
+export async function getReviewAdvisorProposalForReviewAsAdvisor(
+  assignmentId: string, callerAdvisorId: string, reviewId: string,
+): Promise<ReviewAdvisorProposal | null> {
+  const companyId = await assertValidAdvisorAssignmentAndGetCompanyId(assignmentId, callerAdvisorId);
+  return getReviewAdvisorProposalForReview(reviewId, companyId);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
