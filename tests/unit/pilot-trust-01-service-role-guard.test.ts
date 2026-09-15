@@ -143,6 +143,12 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // actorRole === 'COMPANY_ADMIN', doc 73 §6's Decision-Owner-authoring rule).
   { path: 'lib/commitment/commitment-service.ts', reason: 'documented server-only service — Commitment draft create/edit/ready-flag/Resource-Allocation-reference, KORA-WP-020' },
 
+  // KORA-WP-021: Evidence Plan Lineage (Layer B) — server-only, matches the
+  // Pattern-A convention (Company sessions read via RLS policy only; every
+  // mutating function requires actorRole === 'COMPANY_ADMIN', same
+  // discipline as KORA-WP-020's own commitment-service.ts).
+  { path: 'lib/evidence-plan/evidence-plan-service.ts', reason: 'documented server-only service — Evidence Plan primary/addendum lineage create/edit/reconstruct, KORA-WP-021' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called

@@ -44,7 +44,11 @@ export interface Commitment {
   horizon: string | null;
   reviewDate: string | null;
   ownerRole: string;
-  evidencePlanId: null;
+  // KORA-WP-021 released this column from its own permanent NULL pin
+  // (migration 066) — reflects the real value, unlike opportunityId/
+  // programId below, which remain genuinely CHECK-pinned NULL until
+  // KORA-WP-019/026 respectively relax them.
+  evidencePlanId: string | null;
   opportunityId: null;
   programId: null;
   actorRole: string;
@@ -97,7 +101,7 @@ function toCommitment(row: CommitmentDbRow): Commitment {
     horizon: row.horizon,
     reviewDate: row.review_date,
     ownerRole: row.owner_role,
-    evidencePlanId: null,
+    evidencePlanId: row.evidence_plan_id,
     opportunityId: null,
     programId: null,
     actorRole: row.actor_role,
