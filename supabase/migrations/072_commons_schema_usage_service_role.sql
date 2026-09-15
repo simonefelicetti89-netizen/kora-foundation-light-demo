@@ -1,0 +1,90 @@
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- KORA — Migration 072: commons schema — missing USAGE grant for service_role
+-- Migration:   072_commons_schema_usage_service_role
+-- Created:     2026-09-15
+-- Block:       COMMONS POSTGREST SCHEMA-USAGE REMEDIATION (scoped remediation,
+--              not a numbered WP advancement)
+-- Gate:        Gate 2 CLOSED WITH CONDITIONS (staging authorized) — written and
+--              validated LOCAL/disposable-DB only by this task. NOT applied to
+--              staging or production by this migration file.
+-- ───────────────────────────────────────────────────────────────────────────────
+-- SCOPO
+-- ─────
+-- Closes a real, staging-verified grant gap: once `commons` was exposed
+-- through PostgREST (Founder Dashboard change, prior task), a real
+-- service_role-mediated Commons runtime call failed with
+-- `permission denied for schema commons` (Postgres 42501). Confirmed
+-- empirically on staging AND reproduced on local disposable Postgres,
+-- migrations 001-071 applied, before this migration:
+--   has_schema_privilege('service_role', 'commons', 'USAGE') = false
+-- Every other schema this repository's Commons/Gov/Audit remediation work
+-- has touched (advisor, analytics, audit, gov, network, personal) already
+-- grants service_role USAGE — commons alone did not. commons.post /
+-- commons.booking / commons.contribution_event were, by construction
+-- (migrations 013, 025), never intended to be service_role-authored
+-- day-to-day — but two real, already-shipped runtime paths DO legitimately
+-- reach commons as service_role, proven by direct inspection, not assumed:
+--
+--   1. app/admin/commons/page.tsx (KORA_ADMIN-only workspace page, an
+--      allowed getSupabaseServiceClient() use per lib/supabase/server.ts's
+--      own documented allowlist) -> CommonsService.getPublishedInitiativesAdmin()
+--      -> SELECT commons.post.
+--   2. app/api/admin/commons/bookings/[id]/route.ts's markAttended path
+--      (KORA_ADMIN-only) -> BookingService.markAttended()'s own `serviceDb`
+--      parameter (service-role, "bypassa RLS per il hook di attribuzione,
+--      pattern B164" per that file's own header) -> fetchPostForBooking()
+--      (SELECT commons.post) and, via lib/commons/cross-company-attribution.ts,
+--      the PIB + Contribution attribution hook (INSERT/SELECT
+--      commons.contribution_event).
+--
+-- Every other real Commons consumer (worker/company self-service pages,
+-- the initiatives/posts/booking API routes, KoraContributionService's own
+-- reads, and BookingService's own moderate()/createBooking()/listMyBookings()/
+-- cancelBooking() paths) already runs as `authenticated` via
+-- getSupabaseServerClient() — RLS-respecting, session-scoped — which
+-- already has schema USAGE (migration 046) and is UNCHANGED by this
+-- migration. No table-level grant, RLS policy, FORCE flag, or function is
+-- touched here — table-level grants are proven, separately, to be a
+-- DISTINCT and ALSO-missing gap for service_role on commons.post and
+-- commons.contribution_event (service_role currently holds zero table-level
+-- grants on any commons table — confirmed via information_schema.role_table_grants
+-- on local disposable Postgres). That gap is explicitly OUT OF SCOPE for
+-- this migration (this task's own governing scope forbids changing table
+-- grants) and is reported, not silently absorbed or fixed here: after this
+-- migration, the two service_role runtime paths above will fail one layer
+-- deeper, with `permission denied for table commons.post` /
+-- `commons.contribution_event`, not `for schema commons` — proof that
+-- schema-level USAGE alone grants no table access (the same security
+-- property migration 046 already relies on), and a precise pointer to the
+-- follow-on remediation still required before those two paths are fully
+-- functional. See the accompanying task report for the full analysis.
+--
+-- NOT GRANTED, deliberately, proven unnecessary by direct inspection of
+-- every real Commons runtime consumer (services/commons/*, lib/commons/*,
+-- app/api/commons/**, app/admin|company|worker/commons/**):
+--   - authenticated: already has USAGE (migration 046) — unchanged here.
+--   - anon: no anon-role Commons consumer exists anywhere in the
+--     repository (grep across every Commons route/page/service found none).
+--   - PUBLIC: no PUBLIC grant exists on any KORA schema; would defeat the
+--     entire per-role privilege model this repository's migrations
+--     otherwise maintain everywhere else.
+--   - CREATE on SCHEMA commons: no migration, application code, or runtime
+--     path ever needs an application role to create objects in this
+--     schema; DDL is owner (postgres)-only, same as every other schema.
+--
+-- IDEMPOTENTE: GRANT is naturally idempotent in Postgres (no error if
+-- already granted) — same discipline as migration 046.
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+GRANT USAGE ON SCHEMA commons TO service_role;
+
+-- ── Reload schema PostgREST ───────────────────────────────────────────────────
+
+NOTIFY pgrst, 'reload schema';
+
+-- ── ROLLBACK ─────────────────────────────────────────────────────────────────
+-- REVOKE USAGE ON SCHEMA commons FROM service_role;
+-- NOTIFY pgrst, 'reload schema';
+-- Rollback is safe at any time — this migration adds nothing beyond the
+-- single schema-level privilege; no object, policy, trigger, or function
+-- depends on it existing.
