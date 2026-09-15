@@ -26,7 +26,12 @@ interface TraceRow {
   evidence_plan_status: string | null;
   resource_allocation_entry_ids: string[] | null;
   mvb_manifest_id: string | null;
+  // KORA-WP-024 (migration 070) replaced the view's own NULL::uuid
+  // placeholder with a real join — this mock's own fixture data still has
+  // no Review for any row (this file exercises WP-023's own read layer,
+  // not Review itself), so both fields legitimately stay null here.
   review_id: null;
+  review_status: null;
 }
 
 let traceRows: TraceRow[] = [];
@@ -75,17 +80,17 @@ beforeEach(async () => {
     {
       commitment_id: 'cm-1', tenant_id: TENANT, commitment_status: 'committed',
       evidence_plan_id: 'ep-1', evidence_plan_status: 'frozen-at-commit',
-      resource_allocation_entry_ids: ['ra-1', 'ra-2'], mvb_manifest_id: 'mvb-1', review_id: null,
+      resource_allocation_entry_ids: ['ra-1', 'ra-2'], mvb_manifest_id: 'mvb-1', review_id: null, review_status: null,
     },
     {
       commitment_id: 'cm-2', tenant_id: TENANT, commitment_status: 'draft',
       evidence_plan_id: null, evidence_plan_status: null,
-      resource_allocation_entry_ids: [], mvb_manifest_id: null, review_id: null,
+      resource_allocation_entry_ids: [], mvb_manifest_id: null, review_id: null, review_status: null,
     },
     {
       commitment_id: 'cm-3', tenant_id: OTHER_TENANT, commitment_status: 'committed',
       evidence_plan_id: 'ep-3', evidence_plan_status: 'frozen-at-commit',
-      resource_allocation_entry_ids: ['ra-3'], mvb_manifest_id: 'mvb-3', review_id: null,
+      resource_allocation_entry_ids: ['ra-3'], mvb_manifest_id: 'mvb-3', review_id: null, review_status: null,
     },
   ];
   ({
@@ -100,7 +105,7 @@ describe('KORA-WP-023 — getDecisionTrace()', () => {
     expect(trace).toEqual({
       commitmentId: 'cm-1', tenantId: TENANT, commitmentStatus: 'committed',
       evidencePlanId: 'ep-1', evidencePlanStatus: 'frozen-at-commit',
-      resourceAllocationEntryIds: ['ra-1', 'ra-2'], mvbManifestId: 'mvb-1', reviewId: null,
+      resourceAllocationEntryIds: ['ra-1', 'ra-2'], mvbManifestId: 'mvb-1', reviewId: null, reviewStatus: null,
     });
   });
 
@@ -111,9 +116,10 @@ describe('KORA-WP-023 — getDecisionTrace()', () => {
     expect(trace!.mvbManifestId).toBeNull();
   });
 
-  it('reviewId is always null — KORA-WP-024 does not exist yet', async () => {
+  it('reviewId reflects the view exactly — null here because this fixture has no Review row (KORA-WP-024\'s own real join is proven in its own test file and real-DB validation)', async () => {
     const trace = await getDecisionTrace('cm-1', TENANT);
     expect(trace!.reviewId).toBeNull();
+    expect(trace!.reviewStatus).toBeNull();
   });
 
   it('returns null for a commitment under the wrong tenant (cross-tenant denial)', async () => {
@@ -162,8 +168,14 @@ describe('KORA-WP-023 — scope integrity', () => {
     expect(codeOnly).not.toMatch(/program_id|program_definition|opportunity|need_hypothesis|kora.?index|confidence.?score|\bIU\b|kpi|\bbti\b/i);
   });
 
-  it('no Review row/status/verdict fabricated — reviewId is a hardcoded null in code, not derived from a fake table', () => {
-    expect(codeOnly).not.toMatch(/review.?(status|verdict|conclude|event)/i);
+  it('no Review verdict/conclusion/event logic fabricated — reviewStatus (KORA-WP-024, migration 070) is a plain pass-through field, never computed business logic', () => {
+    // Narrowed after KORA-WP-024 legitimately added a real `reviewStatus`
+    // pass-through field to this same read-only projection (migration 070
+    // replaced the view's own NULL::uuid placeholder with a real join) —
+    // the original, broader regex also matched that plain field name.
+    // What this test actually guards — verdict/conclude/event fabrication —
+    // is unchanged and still checked.
+    expect(codeOnly).not.toMatch(/review.?(verdict|conclude|event)/i);
   });
 
   it('no Worker-level reference anywhere', () => {

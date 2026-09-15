@@ -10,10 +10,11 @@
 // relationships (KORA-WP-015/020/021/022's own real FKs), never a second,
 // drift-prone copy of them.
 //
-// `review_id` is always null today — KORA-WP-024 (Review) does not exist
-// yet, and this module never fabricates it; the shape is stable and
-// Review-ready by design, exactly the same "structurally present, honestly
-// null until the owning WP exists" discipline used throughout this schema.
+// `review_id`/`reviewStatus` are real joins as of KORA-WP-024's own
+// migration 070, which is the only legitimate place this view was ever
+// meant to be replaced (per this file's own original header) — the view
+// itself, its security_invoker setting, its RLS-inheritance, and its
+// read-only/no-duplicated-truth shape are all otherwise unchanged.
 
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 
@@ -25,7 +26,8 @@ export interface DecisionTrace {
   evidencePlanStatus: string | null;
   resourceAllocationEntryIds: string[];
   mvbManifestId: string | null;
-  reviewId: null;
+  reviewId: string | null;
+  reviewStatus: string | null;
 }
 
 interface DecisionTraceDbRow {
@@ -36,7 +38,8 @@ interface DecisionTraceDbRow {
   evidence_plan_status: string | null;
   resource_allocation_entry_ids: string[] | null;
   mvb_manifest_id: string | null;
-  review_id: null;
+  review_id: string | null;
+  review_status: string | null;
 }
 
 function toDecisionTrace(row: DecisionTraceDbRow): DecisionTrace {
@@ -48,7 +51,8 @@ function toDecisionTrace(row: DecisionTraceDbRow): DecisionTrace {
     evidencePlanStatus: row.evidence_plan_status,
     resourceAllocationEntryIds: row.resource_allocation_entry_ids ?? [],
     mvbManifestId: row.mvb_manifest_id,
-    reviewId: null,
+    reviewId: row.review_id,
+    reviewStatus: row.review_status,
   };
 }
 

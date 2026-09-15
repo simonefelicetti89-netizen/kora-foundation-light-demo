@@ -162,6 +162,13 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // itself, not a separate object).
   { path: 'lib/decision-linkage/decision-linkage-service.ts', reason: 'documented server-only service — read-only Core Decision Linkage traceability query, KORA-WP-023' },
 
+  // KORA-WP-024: Review — Thin State + Event — server-only, matches the
+  // Pattern-A convention (Company sessions read via RLS policy only; every
+  // mutating function requires actorRole === 'COMPANY_ADMIN', same
+  // discipline as every other Lane-B primitive in this schema). Conclusion
+  // delegates to a single atomic Postgres RPC (analytics.conclude_review()).
+  { path: 'lib/review/review-service.ts', reason: 'documented server-only service — Review open/in-progress/conclude (RPC) + read paths, KORA-WP-024' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
