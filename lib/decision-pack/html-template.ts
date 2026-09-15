@@ -165,7 +165,7 @@ function buildExecutiveBriefPage(data: PdfData): string {
 export function buildDecisionPackHtml(data: PdfData): string {
   const logoWhite = getLogoBase64('white');
   const logoDark  = getLogoBase64('dark');
-  const { meta, koraIndex, pillarDistribution, bti, iuSummary, pibAggregation, enrichment, reportingAlignment, reportingReadiness, normativeMappingLight, components, macroblocks, contributionSummary } = data;
+  const { meta, koraIndex, pillarDistribution, bti, iuSummary, pibAggregation, enrichment, reportingAlignment, reportingReadiness, normativeMappingLight, components, macroblocks, contributionSummary, decisionSpine } = data;
 
   const sf       = koraIndex.safeguardStatus;
   const kiVal    = Math.round(koraIndex.value * 10) / 10;
@@ -695,6 +695,47 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .ra-caveat{
       padding:8pt 12pt; background:#f8f8fc; border:1px solid #eaebf4;
       border-radius:4pt; font-size:7pt; color:#9899b3; line-height:1.5;
+    }
+
+    /* ── DECISION SPINE (KORA-WP-025) ──────────────────────────────────── */
+    .ds-entry{
+      padding:10pt 13pt; border:1px solid #eaebf4; border-radius:4pt;
+      background:#fafafa; margin-bottom:8pt; break-inside:avoid;
+    }
+    .ds-entry-head{ display:flex; align-items:flex-start; gap:8pt; margin-bottom:5pt; }
+    .ds-entry-title{ font-size:8.5pt; font-weight:700; color:#06032B; flex:1; line-height:1.4; }
+    .ds-badge{
+      font-size:5.5pt; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      padding:2pt 5pt; border-radius:2pt; flex-shrink:0; background:#ede9ff; color:#6156F5;
+    }
+    .ds-meta{ font-size:7pt; color:#9899b3; margin-bottom:6pt; }
+    .ds-rationale{ font-size:7.5pt; color:#555670; line-height:1.5; margin-bottom:6pt; }
+    .ds-block{
+      padding:7pt 10pt; border:1px solid #eaebf4; border-radius:3pt;
+      background:#fff; margin-top:6pt;
+    }
+    .ds-block-label{
+      font-size:6pt; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+      color:#9899b3; margin-bottom:3pt;
+    }
+    .ds-block-body{ font-size:7.5pt; color:#3d3a6a; line-height:1.5; }
+    .ds-verdict{
+      font-size:6.5pt; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      padding:2pt 6pt; border-radius:2pt; background:#dcfce7; color:#166534;
+    }
+    .ds-verdict-pending{ background:#f3f4f6; color:#6b7280; }
+    .ds-advisor{
+      padding:7pt 10pt; border:1px dashed #c7c4f8; border-radius:3pt;
+      background:#f9f8ff; margin-top:6pt;
+    }
+    .ds-advisor-label{
+      font-size:6pt; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+      color:#6156F5; margin-bottom:3pt;
+    }
+    .ds-advisor-note{ font-size:6.5pt; color:#9899b3; font-style:italic; margin-bottom:3pt; }
+    .ds-stub{
+      padding:12pt; text-align:center; color:#9899b3; font-size:9pt;
+      border:1px dashed #eaebf4; border-radius:4pt; margin-bottom:8pt;
     }
 
     /* ── NORMATIVE MAPPING LIGHT ───────────────────────────────────────── */
@@ -2166,6 +2207,69 @@ ${buildExecutiveBriefPage(data)}
       Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
       I campi chiave sono tracciati con provenance di origine: file sorgente, mappatura colonne, completamento manuale, merge multi-file o derivazione da regola.
     </div>
+
+    <!-- KORA-WP-025 — Decision Spine (Commitment / Evidence Plan / Review) ── -->
+    <div class="ra-section">
+      <div class="ra-header">Decision Spine — Commitment, Evidence Plan &amp; Review</div>
+
+      ${decisionSpine && decisionSpine.length > 0 ? `
+      <p style="font-size:8.5pt;color:#555670;margin-bottom:10pt;">
+        <strong>${decisionSpine.length}</strong> Commitment${decisionSpine.length !== 1 ? 's' : ''} on record for this Company —
+        what was decided, on what evidence plan, and what the Review concluded.
+      </p>
+
+      ${decisionSpine.map(entry => {
+        const verdictHtml = entry.review
+          ? (entry.review.finalVerdict
+              ? `<span class="ds-verdict">${esc(entry.review.finalVerdict)}</span>`
+              : `<span class="ds-verdict ds-verdict-pending">${esc(entry.review.status)}</span>`)
+          : '';
+        return `
+      <div class="ds-entry">
+        <div class="ds-entry-head">
+          <div class="ds-entry-title">${esc(entry.problemObjective)}</div>
+          <span class="ds-badge">${esc(entry.commitmentStatus)}</span>
+        </div>
+        <div class="ds-meta">
+          ${entry.ownerRole ? `Owner: ${esc(entry.ownerRole)}` : ''}${entry.amount != null ? ` · Amount: ${fmtEur(entry.amount)}` : ''}${entry.horizon ? ` · Horizon: ${esc(entry.horizon)}` : ''} · ${fmtDate(entry.createdAt)}
+        </div>
+        ${entry.proposedChoice ? `<div class="ds-rationale"><strong>Decision:</strong> ${esc(entry.proposedChoice)}</div>` : ''}
+        ${entry.rationale ? `<div class="ds-rationale"><strong>Rationale:</strong> ${esc(entry.rationale)}</div>` : ''}
+        <div class="ds-meta">
+          Resource Allocation: ${entry.resourceAllocationEntryCount} linked entr${entry.resourceAllocationEntryCount === 1 ? 'y' : 'ies'}
+          ${entry.mvbManifestPresent ? ' · Minimum Viable Baseline recorded' : ''}
+        </div>
+
+        ${entry.evidencePlan ? `
+        <div class="ds-block">
+          <div class="ds-block-label">Evidence Plan — ${esc(entry.evidencePlan.status)}</div>
+          <div class="ds-block-body">
+            ${entry.evidencePlan.criteria ? `<div><strong>Criteria:</strong> ${esc(entry.evidencePlan.criteria)}</div>` : ''}
+            ${entry.evidencePlan.evidenceExpectations ? `<div><strong>Expected evidence:</strong> ${esc(entry.evidencePlan.evidenceExpectations)}</div>` : ''}
+            ${entry.evidencePlan.knownMissingAtDecision ? `<div><strong>Known missing at decision:</strong> ${esc(entry.evidencePlan.knownMissingAtDecision)}</div>` : ''}
+          </div>
+        </div>` : ''}
+
+        ${entry.review ? `
+        <div class="ds-block">
+          <div class="ds-block-label" style="display:flex;align-items:center;gap:6pt;">Review — opened ${fmtDate(entry.review.openedAt)}${entry.review.concludedAt ? `, concluded ${fmtDate(entry.review.concludedAt)}` : ''} ${verdictHtml}</div>
+          ${!entry.review.finalVerdict ? `<div class="ds-block-body" style="color:#9899b3;">Review in progress — the final Review Event verdict is the only constitutive outcome and has not been recorded yet.</div>` : ''}
+          ${entry.review.advisorProposal ? `
+          <div class="ds-advisor">
+            <div class="ds-advisor-label">Advisor Proposal${entry.review.advisorProposal.proposedVerdict ? ` — proposes ${esc(entry.review.advisorProposal.proposedVerdict)}` : ''}</div>
+            <div class="ds-advisor-note">Consultative only — does not decide or finalize the Company's Review. The Review Event above (Decision Owner) is authoritative.</div>
+            ${entry.review.advisorProposal.proposalNarrative ? `<div class="ds-block-body">${esc(entry.review.advisorProposal.proposalNarrative)}</div>` : ''}
+          </div>` : ''}
+        </div>` : ''}
+      </div>`;
+      }).join('')}
+      ` : `
+      <div class="ds-stub">
+        No Commitments on record yet for this Company. This section will populate once a Commitment is drafted and moved through the Decision Spine (Commitment → Evidence Plan → Review).
+      </div>
+      `}
+    </div>
+    <!-- ─────────────────────────────────────────────────────────────────── -->
 
     <!-- B18 — Reporting Alignment / ESRS Readiness ─────────────────────── -->
     <div class="ra-section">
