@@ -326,7 +326,8 @@ describe('Tenant Isolation — copertura routes', () => {
     // P1 sprint added: /api/company/data-submissions/history, /api/company/initiatives/explainability
     // CC-018/B-TRUTH added: /api/company/pillar-adoption (seed group #1)
     // KORA-WP-018 added: /api/company/needs
-    expect(COMPANY_ROUTES.length).toBe(23);
+    // KORA-WP-028 added: /api/company/data-ingest (Ingestion Hardening — new, additive Company-scoped route)
+    expect(COMPANY_ROUTES.length).toBe(24);
   });
 
   it('copre tutte le admin routes (baseline: ≥45)', () => {

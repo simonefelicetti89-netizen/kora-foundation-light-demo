@@ -201,6 +201,15 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // gate used throughout this engagement's server-side services.
   { path: 'lib/flow-a-billing/flow-a-billing-service.ts', reason: 'documented server-only service — Company-scoped Flow A billing/entitlement read + KORA_ADMIN-only Fee/Charge event + Commercial Entitlement write, KORA-WP-062' },
 
+  // KORA-WP-028: generic Postgres-backed IdempotencyStore (KORA-WP-011's own
+  // interface) — tenant-scoped claim/complete/fail, no direct caller-facing
+  // read path of its own (a caller observes outcomes via executeIdempotent()'s
+  // typed return, never by querying this table).
+  { path: 'lib/async-contract/postgres-idempotency-store.ts', reason: 'documented server-only service — Postgres-backed IdempotencyStore implementation of the KORA-WP-011 contract, KORA-WP-028' },
+  // KORA-WP-028: Company-scoped ingestion write (requireCompanyUser-gated at
+  // the route layer, tenant taken from the verified session only).
+  { path: 'lib/ingestion-hardening/company-ingest-service.ts', reason: 'documented server-only service — Company-scoped synchronous ingestion write, idempotent per KORA-WP-011, KORA-WP-028' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called

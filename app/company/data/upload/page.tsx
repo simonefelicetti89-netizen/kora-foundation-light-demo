@@ -24,6 +24,7 @@ import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { mapPillarBatch } from '@/lib/kora-engine/pillar-mapping';
 import { assessBudgetEvidenceBatch } from '@/lib/kora-engine/budget-evidence';
 import { cn } from '@/lib/utils';
+import ConfirmIngestPanel from './_components/ConfirmIngestPanel';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -496,6 +497,11 @@ export default function UploadPage() {
   const [parseResult, setParseResult] = useState<ParsedUploadResult | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  // KORA-WP-028: the raw File, kept alongside parseResult so the "Conferma
+  // e Salva" panel can send it to the real server-side ingestion endpoint
+  // (a genuine re-parse server-side — the client's own parsed preview is
+  // never trusted as the write's own basis).
+  const [rawFile, setRawFile] = useState<File | null>(null);
   const [activeTemplate, setActiveTemplate] = useState<string>(ALL_TEMPLATES[0].id);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -562,6 +568,7 @@ export default function UploadPage() {
     try {
       const result = await parseUploadedFile(file);
       setParseResult(result);
+      setRawFile(file);
       setStatus('parsed');
     } catch (err) {
       setParseError(err instanceof Error ? err.message : 'Errore di parsing sconosciuto.');
@@ -592,6 +599,7 @@ export default function UploadPage() {
     setStatus('idle');
     setParseResult(null);
     setParseError(null);
+    setRawFile(null);
     setKoraStatus('idle');
     setKoraResult(null);
     setKoraError(null);
@@ -1029,6 +1037,13 @@ export default function UploadPage() {
         {/* ── Sections 4-10: Only shown after parsing ───────────────────────── */}
         {status === 'parsed' && parseResult && (
           <>
+            {/* ── KORA-WP-028: Confirm & Save — real, idempotent server-side ingestion ── */}
+            {/* key forces a fresh instance (fresh Idempotency-Key) per distinct file; a retry of the SAME file keeps the SAME component instance and key. */}
+            <ConfirmIngestPanel
+              key={rawFile ? `${rawFile.name}-${rawFile.size}-${rawFile.lastModified}` : 'none'}
+              file={rawFile}
+            />
+
             {/* ── Section 4: Data preview ──────────────────────────────────── */}
             <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
               <button

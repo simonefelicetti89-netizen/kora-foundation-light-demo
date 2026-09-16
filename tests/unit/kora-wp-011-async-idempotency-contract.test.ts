@@ -197,14 +197,29 @@ describe('J: no PIB / sensitive payload leakage', () => {
 });
 
 describe('K: existing domain semantics remain unchanged', () => {
-  it('this module has no importer anywhere else in the repository yet (pure new infrastructure, zero lateral rewrite)', async () => {
+  // Updated by KORA-WP-028 (disclosed, same class of collateral staleness
+  // fix as WP-013's own toBe(74)->toBeGreaterThanOrEqual(74) precedent):
+  // at KORA-WP-011's own completion time this contract genuinely had zero
+  // importers ("pure new infrastructure, zero lateral rewrite" — Code Truth
+  // ABSENT for any real server-side write). KORA-WP-028 is explicitly the
+  // package registry 142 names as the contract's first real consumer —
+  // its own two files below are the ONLY legitimate importers; anything
+  // else appearing here would still be a genuine, unauthorized lateral
+  // rewrite and must still fail this test.
+  const KNOWN_LEGITIMATE_IMPORTERS = [
+    'lib/async-contract/postgres-idempotency-store.ts', // KORA-WP-028 — real Postgres-backed IdempotencyStore
+    'lib/ingestion-hardening/company-ingest-service.ts', // KORA-WP-028 — the first real server-side write it protects
+  ];
+
+  it('this module has no importer beyond KORA-WP-028\'s own known, documented consumers (no unauthorized lateral rewrite)', async () => {
     const { execSync } = await import('node:child_process');
     const out = execSync(
       `grep -rl "async-contract/idempotency-contract" --include="*.ts" --include="*.tsx" lib services app 2>/dev/null || true`,
       { cwd: process.cwd(), encoding: 'utf-8' },
     );
     const importers = out.split('\n').filter(Boolean).filter((f) => !f.includes('async-contract/idempotency-contract.ts'));
-    expect(importers).toEqual([]);
+    const unexpected = importers.filter((f) => !KNOWN_LEGITIMATE_IMPORTERS.includes(f));
+    expect(unexpected).toEqual([]);
   });
 
   it('none of the repository\'s existing DB-level UNIQUE-constraint idempotency comments were modified (spot-check office-attribution.ts and BookingService.ts still document their own guarantee unchanged)', () => {
