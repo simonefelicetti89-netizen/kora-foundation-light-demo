@@ -191,6 +191,16 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // service.
   { path: 'lib/policy-config/policy-config-service.ts', reason: 'documented server-only service — KORA_ADMIN-only versioned Policy/Config read/write (RPC-mediated write), KORA-WP-013' },
 
+  // KORA-WP-062: Flow A billing (Company↔KORA platform fee), structurally
+  // separate from Program Funds. Writes (recordFeeChargeEvent,
+  // setFlowACommercialEntitlement) are KORA_ADMIN-only; reads
+  // (getFlowACommercialEntitlement/getFeeChargeEventHistory/
+  // listCurrentFeeCharges/getCompanyBillingStatus) are Company-scoped
+  // (own tenant, or KORA_ADMIN) — enforced in this file via
+  // assertCompanyScopedRead(), the same application-layer belt-and-suspenders
+  // gate used throughout this engagement's server-side services.
+  { path: 'lib/flow-a-billing/flow-a-billing-service.ts', reason: 'documented server-only service — Company-scoped Flow A billing/entitlement read + KORA_ADMIN-only Fee/Charge event + Commercial Entitlement write, KORA-WP-062' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
