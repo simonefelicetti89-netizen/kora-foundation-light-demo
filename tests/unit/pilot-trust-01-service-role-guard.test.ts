@@ -183,6 +183,14 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // COMPANY_ADMIN-only and untouched.
   { path: 'lib/advisor-portal/advisor-decision-support-service.ts', reason: 'documented server-only service — Advisor-facing Assignment-scoped Commitment/Evidence-Plan/Review draft-support, KORA-WP-033 convergence remediation' },
 
+  // KORA-WP-013: Policy/Config Four-Tier Store — server-only, KORA_ADMIN-only
+  // (doc 78 §24: Governance Policy/Commercial/Implementation Configuration
+  // are all Admin-governed; Constitutional tier is structurally unreachable
+  // through this or any service). No Company-facing read/write path exists
+  // — this is a KORA-internal Control Plane primitive, not a tenant-scoped
+  // service.
+  { path: 'lib/policy-config/policy-config-service.ts', reason: 'documented server-only service — KORA_ADMIN-only versioned Policy/Config read/write (RPC-mediated write), KORA-WP-013' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called

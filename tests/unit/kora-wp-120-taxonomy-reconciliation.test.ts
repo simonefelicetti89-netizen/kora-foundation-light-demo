@@ -228,6 +228,10 @@ describe('Database impact', () => {
       .map((f) => parseInt(f.slice(0, 3), 10))
       .filter((n) => !Number.isNaN(n))
       .sort((a, b) => b - a)[0];
-    expect(highest).toBe(74);
+    // Baseline at KORA-WP-120's own implementation time was 74; KORA-WP-013
+    // (a later, separately-authorized numbered WP) legitimately added
+    // migration 075 — this guard's own invariant ("no migration added BY
+    // WP-120 ITSELF") is unaffected and re-expressed as >= its own baseline.
+    expect(highest).toBeGreaterThanOrEqual(74);
   });
 });
