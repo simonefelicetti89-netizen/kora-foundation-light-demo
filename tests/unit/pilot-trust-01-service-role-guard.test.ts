@@ -210,6 +210,12 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // the route layer, tenant taken from the verified session only).
   { path: 'lib/ingestion-hardening/company-ingest-service.ts', reason: 'documented server-only service — Company-scoped synchronous ingestion write, idempotent per KORA-WP-011, KORA-WP-028' },
 
+  // KORA-WP-026: Program skeleton (Definition + Participation), degenerate
+  // two-level case. Writes are COMPANY_ADMIN-only (own tenant), matching
+  // the established analytics.commitment shape — read via RLS,
+  // write via this service (service_role) with the same actor gate.
+  { path: 'lib/program/program-service.ts', reason: 'documented server-only service — Company-scoped Program Definition/Participation create/read (degenerate two-level skeleton), KORA-WP-026' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
