@@ -95,6 +95,27 @@ const CASE_STATUS_LABEL: Record<CaseStatus, string> = {
   open: 'Aperto', 'in-progress': 'In corso', blocked: 'Bloccato', resolved: 'Risolto', escalated: 'Escalato',
 };
 
+// KORA-WP-037 — Advisor Review Assessment Issuance. Doc 76 §10's own exact
+// fields only — no verdict/status field exists here (a recommendation, if
+// any, lives inside the narrative itself, never a second verdict enum;
+// "Assessment ≠ Review verdict" is structural, not merely a UI label
+// choice). No Review browser is built — the Advisor enters the Review ID
+// they are assessing directly, since no canonical Review-listing UI exists
+// anywhere yet (a separate, still-unbuilt gap this WP does not own).
+// Conflict/recusal state is internal eligibility/governance metadata
+// (KORA-WP-010's own harness convention, extended by this WP) — never
+// serialized to a client response, exactly like auth_user_id and
+// prerequisiteEligibility are already withheld from every other Advisor
+// object this portal page renders. Only qualification status (informative
+// to the Advisor about their own issuance context) is exposed.
+interface ReviewAdvisorAssessmentItem {
+  id: string;
+  reviewId: string;
+  assessmentNarrative: string;
+  qualificationStatusAtIssuance: string;
+  issuedAt: string;
+}
+
 export default function AdvisorCompaniesPage() {
   const [companies, setCompanies] = useState<AssignedCompany[]>([]);
   const [state, setState] = useState<'loading' | 'loaded' | 'error'>('loading');
@@ -116,6 +137,14 @@ export default function AdvisorCompaniesPage() {
   const [cases, setCases] = useState<OperationalCaseItem[]>([]);
   const [newCaseSubject, setNewCaseSubject] = useState('');
   const [savingCase, setSavingCase] = useState(false);
+
+  const [expandedAssessments, setExpandedAssessments] = useState<string | null>(null);
+  const [assessmentReviewId, setAssessmentReviewId] = useState('');
+  const [assessments, setAssessments] = useState<ReviewAdvisorAssessmentItem[]>([]);
+  const [loadingAssessments, setLoadingAssessments] = useState(false);
+  const [newAssessmentNarrative, setNewAssessmentNarrative] = useState('');
+  const [savingAssessment, setSavingAssessment] = useState(false);
+  const [assessmentError, setAssessmentError] = useState('');
 
   async function load() {
     try {
@@ -337,6 +366,64 @@ export default function AdvisorCompaniesPage() {
     }
   }
 
+  function toggleAssessments(assignmentId: string) {
+    if (expandedAssessments === assignmentId) {
+      setExpandedAssessments(null);
+      return;
+    }
+    setExpandedAssessments(assignmentId);
+    setAssessments([]);
+    setAssessmentReviewId('');
+    setAssessmentError('');
+  }
+
+  async function loadAssessments(assignmentId: string) {
+    if (!assessmentReviewId.trim()) return;
+    setLoadingAssessments(true);
+    setAssessmentError('');
+    try {
+      const r = await fetch(
+        `/api/advisor/companies/${assignmentId}/review-assessments?reviewId=${encodeURIComponent(assessmentReviewId.trim())}`,
+        { credentials: 'include' },
+      );
+      const d = await r.json();
+      if (d.ok) {
+        setAssessments(d.assessments ?? []);
+      } else {
+        setAssessments([]);
+        setAssessmentError(d.error ?? 'Impossibile recuperare le valutazioni.');
+      }
+    } catch {
+      setAssessments([]);
+      setAssessmentError('Errore di rete.');
+    } finally {
+      setLoadingAssessments(false);
+    }
+  }
+
+  async function saveAssessment(assignmentId: string) {
+    if (!assessmentReviewId.trim() || !newAssessmentNarrative.trim()) return;
+    setSavingAssessment(true);
+    setAssessmentError('');
+    try {
+      const r = await fetch(`/api/advisor/companies/${assignmentId}/review-assessments`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewId: assessmentReviewId.trim(), assessmentNarrative: newAssessmentNarrative }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        setNewAssessmentNarrative('');
+        await loadAssessments(assignmentId);
+      } else {
+        setAssessmentError(d.error ?? 'Registrazione non riuscita.');
+      }
+    } catch {
+      setAssessmentError('Errore di rete.');
+    } finally {
+      setSavingAssessment(false);
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
@@ -416,6 +503,12 @@ export default function AdvisorCompaniesPage() {
                 >
                   {expandedCases === c.assignmentId ? 'Chiudi Case' : 'Case'}
                 </button>
+                <button
+                  onClick={() => toggleAssessments(c.assignmentId)}
+                  style={{ fontSize: '11px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  {expandedAssessments === c.assignmentId ? 'Chiudi valutazioni' : 'Valutazioni Review'}
+                </button>
               </div>
 
               {expandedCases === c.assignmentId && (
@@ -471,6 +564,69 @@ export default function AdvisorCompaniesPage() {
                       }}
                     >
                       {savingCase ? 'Creazione…' : 'Crea'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {expandedAssessments === c.assignmentId && (
+                <div style={{ marginTop: 12 }}>
+                  <p style={{ fontSize: '11px', color: TOKENS.inkHint, lineHeight: 1.5, marginBottom: 10 }}>
+                    Una valutazione informa la Review — non la conclude mai. La decisione finale resta sempre della Company.
+                  </p>
+                  <div className="flex gap-2" style={{ marginBottom: 10 }}>
+                    <input
+                      type="text" value={assessmentReviewId} onChange={(e) => setAssessmentReviewId(e.target.value)} placeholder="ID della Review…"
+                      style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }}
+                    />
+                    <button
+                      onClick={() => loadAssessments(c.assignmentId)}
+                      disabled={loadingAssessments || !assessmentReviewId.trim()}
+                      style={{
+                        fontSize: '11px', fontWeight: 700, color: TOKENS.accent, background: 'none',
+                        border: `1px solid ${TOKENS.inkBorderStrong}`, borderRadius: '8px', padding: '8px 16px', cursor: 'pointer',
+                        opacity: loadingAssessments || !assessmentReviewId.trim() ? 0.6 : 1,
+                      }}
+                    >
+                      {loadingAssessments ? 'Ricerca…' : 'Cerca'}
+                    </button>
+                  </div>
+
+                  {assessmentError && (
+                    <p style={{ fontSize: '11px', color: TOKENS.critical, marginBottom: 10 }}>⚠ {assessmentError}</p>
+                  )}
+
+                  {assessments.length > 0 && (
+                    <ul className="space-y-2" style={{ marginBottom: 12 }}>
+                      {assessments.map((a) => (
+                        <li key={a.id} style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
+                          <span style={{ fontSize: '10px', fontWeight: 700, color: TOKENS.inkHint }}>
+                            {new Date(a.issuedAt).toLocaleString('it-IT')} · Qualifica: {a.qualificationStatusAtIssuance}
+                          </span>
+                          <br />
+                          {a.assessmentNarrative}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <div className="space-y-2">
+                    <textarea
+                      value={newAssessmentNarrative}
+                      onChange={(e) => setNewAssessmentNarrative(e.target.value)}
+                      placeholder="Osservazioni sulla sufficienza delle evidenze, eventuali lacune, raccomandazione…"
+                      style={{ width: '100%', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink, minHeight: 70 }}
+                    />
+                    <button
+                      onClick={() => saveAssessment(c.assignmentId)}
+                      disabled={savingAssessment || !assessmentReviewId.trim() || !newAssessmentNarrative.trim()}
+                      style={{
+                        fontSize: '11px', fontWeight: 700, color: '#FFFFFF', background: TOKENS.accent,
+                        border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer',
+                        opacity: savingAssessment || !assessmentReviewId.trim() || !newAssessmentNarrative.trim() ? 0.6 : 1,
+                      }}
+                    >
+                      {savingAssessment ? 'Registrazione…' : 'Registra valutazione'}
                     </button>
                   </div>
                 </div>
