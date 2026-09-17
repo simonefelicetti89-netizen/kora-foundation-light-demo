@@ -12,6 +12,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 import { cancelAppointment, rescheduleAppointment } from '@/lib/advisor-portal/advisor-appointment-service';
 
 function safeErrorResponse(err: unknown, fallback: string) {
@@ -31,6 +32,12 @@ export async function POST(
 
   const auth = await requireCompanyUser(request);
   if (isKoraAuthError(auth)) return auth;
+
+  // KORA-WP-044: same single_provisioning category as the sibling booking
+  // route — covers both discriminated actions (cancel/reschedule) under
+  // one guard, matching this route's own single-entry-point shape.
+  const rateLimitGuard = await assertRateLimit('single_provisioning', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: { action?: string; reason?: string; startsAt?: string; endsAt?: string; subject?: string };
   try {

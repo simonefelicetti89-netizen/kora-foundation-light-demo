@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 import { createOperationalCase, listOperationalCases, CASE_ORGANISATION_TYPES, CASE_LINKED_OBJECT_TYPES, type CaseOrganisationType, type CaseLinkedObjectType } from '@/lib/operations/operational-case-service';
 
 function safeErrorResponse(err: unknown, fallback: string) {
@@ -37,6 +38,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
+
+  // KORA-WP-044: Case creation as an authenticated KORA_ADMIN actor —
+  // costly_admin_operation matches every other admin-side create/mutate
+  // route already protected under this category.
+  const rateLimitGuard = await assertRateLimit('costly_admin_operation', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: { organisationType?: string; organisationId?: string; linkedObjectType?: string; linkedObjectId?: string; subject?: string; priority?: string; dueDate?: string };
   try {

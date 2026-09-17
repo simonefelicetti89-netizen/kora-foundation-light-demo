@@ -12,6 +12,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 import { getCompanyAssignedAdvisor, getCompanyAssignmentForHistoricalRead, sendContactMessage, listContactMessages } from '@/lib/advisor-portal/advisor-portal-service';
 
 export async function GET(request: NextRequest) {
@@ -43,6 +44,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = await requireCompanyUser(request);
   if (isKoraAuthError(auth)) return auth;
+
+  // KORA-WP-044: self-service Company-scoped message send — same
+  // single_provisioning category as its Advisor-side counterpart.
+  const rateLimitGuard = await assertRateLimit('single_provisioning', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: { body?: string };
   try {

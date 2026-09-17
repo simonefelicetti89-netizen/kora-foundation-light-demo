@@ -13,6 +13,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdvisorUser, isKoraAuthError } from '@/lib/auth/kora-session';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 import { getAdvisorIdentityByAuthUserId } from '@/lib/advisor-identity/advisor-identity-service';
 import { createAdvisorContent, listContentForAdvisor, CONTENT_CLASSES, type ContentClass } from '@/lib/advisor-portal/advisor-content-service';
 
@@ -56,6 +57,11 @@ export async function POST(
 
   const auth = await requireAdvisorUser(request);
   if (isKoraAuthError(auth)) return auth;
+
+  // KORA-WP-044: same single_provisioning category as every other
+  // Advisor-scoped create route.
+  const rateLimitGuard = await assertRateLimit('single_provisioning', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: { class?: string; body?: string; shared?: boolean; purpose?: string };
   try {

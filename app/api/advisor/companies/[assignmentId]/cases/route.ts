@@ -12,6 +12,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdvisorUser, isKoraAuthError } from '@/lib/auth/kora-session';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 import { getAdvisorIdentityByAuthUserId } from '@/lib/advisor-identity/advisor-identity-service';
 import { listAdvisorCases, createAdvisorCase } from '@/lib/advisor-portal/advisor-case-service';
 
@@ -55,6 +56,12 @@ export async function POST(
 
   const auth = await requireAdvisorUser(request);
   if (isKoraAuthError(auth)) return auth;
+
+  // KORA-WP-044: self-service, Advisor-scoped Case creation — same
+  // single_provisioning category as every other authenticated-actor
+  // create/submit route protected under this category.
+  const rateLimitGuard = await assertRateLimit('single_provisioning', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: { subject?: string; priority?: string; dueDate?: string };
   try {

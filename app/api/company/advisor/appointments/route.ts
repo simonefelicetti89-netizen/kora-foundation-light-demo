@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 import { getCompanyAssignedAdvisor, getCompanyAssignmentForHistoricalRead } from '@/lib/advisor-portal/advisor-portal-service';
 import { createAppointment, listAppointmentsForAssignment } from '@/lib/advisor-portal/advisor-appointment-service';
 
@@ -45,6 +46,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = await requireCompanyUser(request);
   if (isKoraAuthError(auth)) return auth;
+
+  // KORA-WP-044: self-service Company-initiated booking — same
+  // single_provisioning category as every other authenticated-actor
+  // create route.
+  const rateLimitGuard = await assertRateLimit('single_provisioning', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: { startsAt?: string; endsAt?: string; subject?: string };
   try {

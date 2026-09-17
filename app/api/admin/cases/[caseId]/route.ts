@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 import { transitionOperationalCaseStatus, CASE_STATUSES, type CaseStatus } from '@/lib/operations/operational-case-service';
 
 function safeErrorResponse(err: unknown, fallback: string) {
@@ -26,6 +27,13 @@ export async function POST(
 
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
+
+  // KORA-WP-044: same costly_admin_operation category as the sibling Case
+  // creation route (app/api/admin/cases/route.ts) — a status transition
+  // (including reassignment) is the same authenticated-admin-actor risk
+  // shape.
+  const rateLimitGuard = await assertRateLimit('costly_admin_operation', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: { status?: string; resolutionNote?: string; newOwningAdvisorId?: string };
   try {

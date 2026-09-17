@@ -15,6 +15,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 import { overrideReadiness, revokeReadiness, ReadinessAuthorizationError } from '@/lib/company-readiness/company-readiness-service';
 import { getOrCreateCorrelationId, logInfo, captureError } from '@/lib/observability/observability';
 
@@ -28,6 +29,12 @@ export async function POST(request: NextRequest) {
 
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
+
+  // KORA-WP-044: an admin governance override/revoke action — same
+  // costly_admin_operation category as the other admin-side mutating
+  // routes protected under this category.
+  const rateLimitGuard = await assertRateLimit('costly_admin_operation', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: Record<string, unknown>;
   try {

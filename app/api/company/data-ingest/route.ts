@@ -19,6 +19,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 import {
   ingestCompanyDataFile, CompanyIngestValidationError, ALLOWED_INGEST_EXTENSIONS, MAX_INGEST_BYTES,
 } from '@/lib/ingestion-hardening/company-ingest-service';
@@ -43,6 +44,12 @@ export async function POST(request: NextRequest) {
 
   const auth = await requireCompanyUser(request);
   if (isKoraAuthError(auth)) return auth;
+
+  // KORA-WP-044: a real file-upload/ingestion write — the same risk shape
+  // (storage/compute cost, bulk-misuse potential) heavy_provisioning
+  // already exists to cover, not a new category invented for this route.
+  const rateLimitGuard = await assertRateLimit('heavy_provisioning', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let formData: FormData;
   try {

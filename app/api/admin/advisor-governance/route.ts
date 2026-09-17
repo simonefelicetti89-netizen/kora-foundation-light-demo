@@ -18,6 +18,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 import {
   listAllAdvisorIdentities,
   listRoleQualificationsForAdvisor,
@@ -54,6 +55,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
+
+  // KORA-WP-044: a governed qualification grant/renew decision — same risk
+  // shape (an authenticated KORA_ADMIN actor triggering a costly/side-
+  // effecting write too often) as every other costly_admin_operation route.
+  const rateLimitGuard = await assertRateLimit('costly_admin_operation', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: { qualificationId?: string };
   try {
