@@ -206,7 +206,7 @@ jobs:
       # (must not corrupt the other tenants' averages) and cross-tenant
       # non-mixing. Same mandatory no-skip treatment. See
       # tests/integration/rls-20-admin-cross-company-analytics.test.ts.
-      - name: Run RLS integration suites (RLS-03/05/06/07/08/09/10/11/12/13/14/15/16/17/18/19/20 — mandatory, no skip)
+      - name: Run RLS integration suites (RLS-03/05/06/07/08/09/10/11/12/13/14/15/16/17/18/19/20/21/22 — mandatory, no skip)
         env:
           RLS03_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           RLS03_ALLOW_RUN: 'true'
@@ -242,6 +242,10 @@ jobs:
           RLS19_ALLOW_RUN: 'true'
           RLS20_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           RLS20_ALLOW_RUN: 'true'
+          RLS21_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS21_ALLOW_RUN: 'true'
+          RLS22_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS22_ALLOW_RUN: 'true'
         run: |
           npx vitest run \
             tests/integration/rls-two-tenant-negative.test.ts \
@@ -261,6 +265,8 @@ jobs:
             tests/integration/rls-18-data-intake-status-view.test.ts \
             tests/integration/rls-19-decision-pack-status-view.test.ts \
             tests/integration/rls-20-admin-cross-company-analytics.test.ts \
+            tests/integration/rls-21-decision-spine-cross-tenant.test.ts \
+            tests/integration/rls-22-advisor-scope-follows-assignment.test.ts \
             --reporter=json --outputFile=rls-integration-report.json
 
       # F-04: machine-readable assertion — fails the job if any RLS test
