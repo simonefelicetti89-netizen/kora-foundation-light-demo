@@ -128,7 +128,11 @@ describe('KORA-WP-038 — C/D. reuses ADMIN-020, never duplicates it', () => {
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(79); // unchanged since KORA-WP-027
+    // 79 was correct at this WP's own completion time (unchanged since
+    // KORA-WP-027); KORA-WP-037 legitimately raised the ceiling to 080
+    // later — never equality, same disclosed pattern already fixed for
+    // WP-011/WP-120/WP-013/WP-046.
+    expect(Math.max(...numbers)).toBeGreaterThanOrEqual(79);
   });
 
   it('always uses the canonical advisor_preparation category — never a free-form string', async () => {

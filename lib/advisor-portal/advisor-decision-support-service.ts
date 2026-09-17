@@ -62,7 +62,9 @@
 // other function in this file already does not.
 
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
-import { evaluateAdvisorAssignmentValidity } from '@/lib/advisor-assignment/advisor-assignment-service';
+import { recordGovernanceEvent } from '@/lib/audit/governance-event';
+import { evaluateAdvisorAssignmentValidity, getAdvisorAssignmentById } from '@/lib/advisor-assignment/advisor-assignment-service';
+import { listRoleQualificationsForAdvisor } from '@/lib/advisor-identity/advisor-identity-service';
 import {
   createCommitmentDraft, updateCommitmentDraft, markCommitmentReadyForDecision,
   linkResourceAllocationEntry, unlinkResourceAllocationEntry, listLinkedResourceAllocationEntryIds,
@@ -83,6 +85,10 @@ import {
   upsertReviewAdvisorProposal, getReviewAdvisorProposalForReview,
   type ReviewAdvisorProposal,
 } from '@/lib/review/review-advisor-proposal-service';
+import {
+  issueReviewAdvisorAssessment, listReviewAdvisorAssessmentsForReview,
+  type ReviewAdvisorAssessment,
+} from '@/lib/review/review-advisor-assessment-service';
 import { getDecisionTrace, type DecisionTrace } from '@/lib/decision-linkage/decision-linkage-service';
 
 const ADVISOR_ACTOR_ROLE = 'ADVISOR';
@@ -349,6 +355,78 @@ export async function getReviewAdvisorProposalForReviewAsAdvisor(
 ): Promise<ReviewAdvisorProposal | null> {
   const companyId = await assertValidAdvisorAssignmentAndGetCompanyId(assignmentId, callerAdvisorId);
   return getReviewAdvisorProposalForReview(reviewId, companyId);
+}
+
+// ── the Review Assessment — doc 76 §10, "sufficiently independent review" ──
+// KORA-WP-037. A distinct object from the Review Proposal above (see
+// migration 080's own header for the full "why a new table" analysis):
+// the Proposal is doc 73 §6's evolving narrative+verdict recommendation;
+// the Assessment is doc 76 §10's own, additional concept — a point-in-
+// time issuance event that also snapshots the issuing Advisor's own
+// qualification/conflict-recusal status at that exact moment. Append-only
+// — no update function exists here or in review-advisor-assessment-
+// service.ts; a correction is always a new issuance. Reuses the identical
+// gate every function in this module already uses
+// (assertValidAdvisorAssignmentAndGetCompanyId, doc 76 §10's own
+// "relevant active Role Qualification, and no conflict/recusal" —
+// this gate's full five-condition validity check already covers exactly
+// that) — never a second, Assessment-specific authorization path.
+
+export interface IssueReviewAdvisorAssessmentAsAdvisorParams {
+  assignmentId: string;
+  callerAdvisorId: string;
+  reviewId: string;
+  assessmentNarrative: string;
+}
+
+export async function issueReviewAdvisorAssessmentAsAdvisor(
+  params: IssueReviewAdvisorAssessmentAsAdvisorParams,
+): Promise<ReviewAdvisorAssessment> {
+  const companyId = await assertValidAdvisorAssignmentAndGetCompanyId(params.assignmentId, params.callerAdvisorId);
+
+  // Snapshot fields (doc 76 §10, verbatim: "the author's qualification/
+  // eligibility status at time of issuance, conflict/recusal status") —
+  // resolved here, once, at the moment of issuance; never re-derived
+  // later, and never trusted from the caller.
+  const assignment = await getAdvisorAssignmentById(params.assignmentId);
+  if (!assignment) {
+    throw new Error('[KORA] issueReviewAdvisorAssessmentAsAdvisor rejected: assignment not found.');
+  }
+  const qualifications = await listRoleQualificationsForAdvisor(params.callerAdvisorId);
+  const matchingQualification = qualifications.find((q) => q.role === assignment.role);
+  if (!matchingQualification) {
+    throw new Error('[KORA] issueReviewAdvisorAssessmentAsAdvisor rejected: no Role Qualification found matching this Assignment\'s role.');
+  }
+
+  const record = await issueReviewAdvisorAssessment({
+    reviewId: params.reviewId,
+    tenantId: companyId,
+    assignmentId: params.assignmentId,
+    actorId: params.callerAdvisorId,
+    assessmentNarrative: params.assessmentNarrative,
+    qualificationStatusAtIssuance: matchingQualification.status,
+    conflictFlagAtIssuance: assignment.conflictFlag,
+  });
+
+  // "Audit: issuance events" (registry 142, verbatim) — unlike Review/
+  // ReviewAdvisorProposal (neither emits a governance event of its own),
+  // this is a WP-037-specific requirement; reuses the existing generic
+  // governance substrate (KORA-WP-006), never a new logging mechanism.
+  await recordGovernanceEvent({
+    sourceModule: 'review-advisor-assessment', actorRole: ADVISOR_ACTOR_ROLE, actorId: params.callerAdvisorId,
+    eventType: 'review_advisor_assessment.issued', objectType: 'review_advisor_assessment', objectId: record.id,
+    tenantId: companyId,
+    payload: { reviewId: params.reviewId, assignmentId: params.assignmentId },
+  });
+
+  return record;
+}
+
+export async function listReviewAdvisorAssessmentsForReviewAsAdvisor(
+  assignmentId: string, callerAdvisorId: string, reviewId: string,
+): Promise<ReviewAdvisorAssessment[]> {
+  const companyId = await assertValidAdvisorAssignmentAndGetCompanyId(assignmentId, callerAdvisorId);
+  return listReviewAdvisorAssessmentsForReview(reviewId, companyId);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

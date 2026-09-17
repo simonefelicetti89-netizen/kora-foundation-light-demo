@@ -175,6 +175,7 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // (structurally singular author, unlike its siblings); no path reaches
   // concludeReview() or any constitutive function.
   { path: 'lib/review/review-advisor-proposal-service.ts', reason: 'documented server-only service — Advisor Review Proposal create/read (upsert, one-per-Review), KORA-WP-033 convergence final remediation' },
+  { path: 'lib/review/review-advisor-assessment-service.ts', reason: 'documented server-only service — Advisor Review Assessment issuance/read (append-only, multiple per Review), KORA-WP-037' },
 
   // KORA-WP-033 CONVERGENCE: Advisor Decision-Spine Support — server-only,
   // same rationale as every other Advisor-domain service. Thin, doubly
