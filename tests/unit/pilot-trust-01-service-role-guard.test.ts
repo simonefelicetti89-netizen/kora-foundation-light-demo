@@ -216,6 +216,13 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // write via this service (service_role) with the same actor gate.
   { path: 'lib/program/program-service.ts', reason: 'documented server-only service — Company-scoped Program Definition/Participation create/read (degenerate two-level skeleton), KORA-WP-026' },
 
+  // KORA-WP-027: KORA Ready Attainment (append-only) + Current Readiness
+  // Health (mutable, one row per tenant) — automated evaluation read/write
+  // is Company-scoped (own tenant, via requireCompanyUser/requireKoraAdmin
+  // at the route layer); override/revoke are capability-gated
+  // (hasAdminCapability, COMPANY_OPERATIONS:OVERRIDE, KORA-WP-009 reuse).
+  { path: 'lib/company-readiness/company-readiness-service.ts', reason: 'documented server-only service — Company-scoped readiness evaluation + capability-gated override/revoke, KORA-WP-027' },
+
   // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
   // called @supabase/supabase-js's createClient() directly, invisible to this
   // guard. Pre-existing status, not newly introduced by KORA-WP-003: called

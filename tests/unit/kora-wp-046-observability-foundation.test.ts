@@ -179,7 +179,11 @@ describe('KORA-WP-046 — no DB migration (registry: Data/Migration Impact = NON
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    // 078 (KORA-WP-026) remains the highest migration — WP-046 adds none.
-    expect(Math.max(...numbers)).toBe(78);
+    // 078 (KORA-WP-026) was the highest migration at WP-046's own
+    // completion time — WP-046 itself adds none (still true, verified by
+    // this WP's own git diff). A later WP (e.g. KORA-WP-027, migration 079)
+    // legitimately raises the ceiling further — never equality, per the
+    // same disclosed staleness pattern already hit by WP-011/WP-120/WP-013.
+    expect(Math.max(...numbers)).toBeGreaterThanOrEqual(78);
   });
 });

@@ -121,8 +121,13 @@ describe('B133 Step 1.5 — locked shell pages have honest copy', () => {
     expect(src).not.toContain('getCurrentDemoUser');
   });
 
-  it('onboarding: dichiara che è gestito da KORA Admin', () => {
-    expect(readCompany('onboarding/page.tsx')).toContain('gestito da KORA Admin');
+  it('onboarding: KORA-WP-027 — non più un locked shell, ora valutazione live via /api/company/readiness', () => {
+    // Fino a KORA-WP-027 questa pagina era un locked shell (copy: "gestito
+    // da KORA Admin"). KORA-WP-027 l'ha resa reale: KORA Ready Attainment /
+    // Current Readiness Health, valutazione automatica, nessun dato statico.
+    const src = readCompany('onboarding/page.tsx');
+    expect(src).toContain("fetch('/api/company/readiness')");
+    expect(src).not.toContain('gestito da KORA Admin');
   });
 
   it('contribution: nota metodologica — KORA Contribution non è componente KORA Index™', () => {
