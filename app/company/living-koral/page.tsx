@@ -24,26 +24,12 @@
 // auth gate.
 
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { requireCompanyUser, getCurrentKoraUser, isKoraAuthError } from '@/lib/auth/kora-session';
+import { resolveCompanyTenantId } from '@/lib/auth/resolve-company-tenant-id';
 import { getLivingKoralCompanyView } from '@/lib/living-koral-company-view/company-view-service';
 import { LivingKoralOverview } from '@/components/company/living-koral/LivingKoralOverview';
 
-async function resolveTenantId(): Promise<string | null> {
-  const auth = await requireCompanyUser();
-  if (!isKoraAuthError(auth)) return auth.tenantId;
-
-  const admin = await getCurrentKoraUser();
-  if (admin?.koraRole === 'KORA_ADMIN') {
-    const cookieStore = await cookies();
-    const serviceTenantId = cookieStore.get('kora-service-tenant-id')?.value ?? null;
-    if (serviceTenantId) return serviceTenantId;
-  }
-  return null;
-}
-
 export default async function LivingKoralPage() {
-  const tenantId = await resolveTenantId();
+  const tenantId = await resolveCompanyTenantId();
 
   // Defense in depth only — app/company/layout.tsx already redirects any
   // session without a resolvable tenant before this page renders.

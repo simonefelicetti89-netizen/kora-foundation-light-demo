@@ -24,6 +24,7 @@ import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { LivingKoralNav } from './LivingKoralNav';
 import type { LivingKoralCompanyView } from '@/lib/living-koral-company-view/types';
 
 function formatItalianDate(iso: string): string {
@@ -72,6 +73,8 @@ export function LivingKoralOverview({ view }: Props) {
         title="La tua Living KORAL"
         subline="L'identità organizzativa della tua azienda su KORA, costruita esclusivamente da trasformazioni organizzative reali e riconosciute."
       />
+
+      <LivingKoralNav />
 
       {view.status === 'no_state_yet' && (
         <EmptyState

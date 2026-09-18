@@ -166,11 +166,11 @@ describe('KORA-WP-113 — no duplicate Intelligence engine, no Prime-specific KO
 });
 
 describe('KORA-WP-113 — no migration beyond 082 was introduced BY THIS WP (a later WP may legitimately raise the ceiling further)', () => {
-  it('supabase/migrations/ ceiling is at least 082 (WP-113\'s own migration exists) — bumped to 083, then 084, by KORA-WP-114 (084 its own object-level-provenance remediation), a later, unrelated WP; this assertion\'s own intent is unaffected', async () => {
+  it('supabase/migrations/ ceiling is at least 082 (WP-113\'s own migration exists) — bumped to 083/084 by KORA-WP-114, then to 085 by KORA-WP-115, later, unrelated WPs; this assertion\'s own intent is unaffected', async () => {
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(84);
+    expect(Math.max(...numbers)).toBe(85);
     expect(numbers).toContain(82);
   });
 });

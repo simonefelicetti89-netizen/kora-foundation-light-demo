@@ -209,6 +209,7 @@ describe('K: existing domain semantics remain unchanged', () => {
   const KNOWN_LEGITIMATE_IMPORTERS = [
     'lib/async-contract/postgres-idempotency-store.ts', // KORA-WP-028 — real Postgres-backed IdempotencyStore
     'lib/ingestion-hardening/company-ingest-service.ts', // KORA-WP-028 — the first real server-side write it protects
+    'lib/living-koral-edition/edition-service.ts', // KORA-WP-115 — reuses this contract for Edition-creation retry-safety, per that WP's own explicit "do not create a new generic idempotency framework" instruction; a legitimate, later, disclosed consumer, not a lateral rewrite of this module itself
   ];
 
   it('this module has no importer beyond KORA-WP-028\'s own known, documented consumers (no unauthorized lateral rewrite)', async () => {

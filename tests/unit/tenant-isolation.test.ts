@@ -328,7 +328,11 @@ describe('Tenant Isolation — copertura routes', () => {
     // KORA-WP-018 added: /api/company/needs
     // KORA-WP-028 added: /api/company/data-ingest (Ingestion Hardening — new, additive Company-scoped route)
     // KORA-WP-027 added: /api/company/readiness (KORA Ready automated evaluation)
-    expect(COMPANY_ROUTES.length).toBe(25);
+    // KORA-WP-115 added: /api/company/living-koral/editions (KORAL Edition
+    // archive/create) — already scanned and passing every dynamic
+    // tenant-isolation check above (tenantId derived from
+    // requireCompanyUser() only, never searchParams or request body).
+    expect(COMPANY_ROUTES.length).toBe(26);
   });
 
   it('copre tutte le admin routes (baseline: ≥45)', () => {

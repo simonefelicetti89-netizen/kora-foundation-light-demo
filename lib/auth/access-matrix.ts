@@ -35,7 +35,8 @@ export type AccessResource =
   | 'worker_individual_uef'        // analytics.uef_record — UEF per singolo worker
   | 'personal_pseudonym_map'       // personal.worker_pseudonym_map — tabella più sensibile
   | 'hq_operator_console'          // Pannello operativo KORA
-  | 'company_living_koral';        // KORA-WP-114 — Living KORAL Company Hub (read-only, own tenant)
+  | 'company_living_koral'         // KORA-WP-114 — Living KORAL Company Hub (read-only, own tenant)
+  | 'company_living_koral_edition'; // KORA-WP-115 — KORAL Edition archive (own-tenant read; COMPANY_ADMIN create via validated function)
 
 // Variante banner per accesso privilegiato admin su risorse company.
 export type BannerVariant = 'amber' | 'navy' | 'blueprint';
@@ -151,6 +152,23 @@ const MATRIX: Record<AccessResource, Partial<Record<KoraRole, RoleDecision>>> = 
     PARTNER:       { allowed: false, requiresAudit: false, denyReason: 'Living KORAL Company Hub not accessible to PARTNER role' },
     ADVISOR:       { allowed: false, requiresAudit: false, denyReason: 'Living KORAL Company Hub Advisor read is a later, separate WP-116 concern (Assignment-scoped) — not part of KORA-WP-114' },
   },
+
+  // KORA-WP-115 — KORAL Edition archive (/company/living-koral/editions).
+  // Read: own tenant only (migration 085's own RLS is the real gate,
+  // mirrors company_living_koral exactly). Create: COMPANY_ADMIN own
+  // tenant ONLY, exclusively through migration 085's SECURITY DEFINER
+  // function — KORA_ADMIN has NO create authority here (pre-check 174 §6:
+  // "KORA_ADMIN cannot create an Edition" — a deliberate, constitutive-
+  // authority boundary, not an oversight). KORA_ADMIN: inspection via the
+  // existing company-impersonation path, audited, banner-shown — no new
+  // Admin UI (pre-check 174 §19).
+  company_living_koral_edition: {
+    KORA_ADMIN:    { allowed: true,  requiresAudit: true  },
+    COMPANY_ADMIN: { allowed: true,  requiresAudit: false },
+    WORKER:        { allowed: false, requiresAudit: false, denyReason: 'KORAL Edition archive not accessible to WORKER role' },
+    PARTNER:       { allowed: false, requiresAudit: false, denyReason: 'KORAL Edition archive not accessible to PARTNER role' },
+    ADVISOR:       { allowed: false, requiresAudit: false, denyReason: 'KORAL Edition archive Advisor access is not part of KORA-WP-115 — no canonical source grants it' },
+  },
 };
 
 // Banner variant per accesso admin su risorse company — dipende dall'ambiente.
@@ -166,6 +184,7 @@ const COMPANY_RESOURCES_REQUIRING_BANNER = new Set<AccessResource>([
   'company_config_source_batch',
   'company_submissions_approval',
   'company_living_koral',
+  'company_living_koral_edition',
 ]);
 
 // ── canAccess — funzione pura ────────────────────────────────────────────────
