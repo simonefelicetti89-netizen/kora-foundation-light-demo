@@ -1,0 +1,146 @@
+{
+  "version": "1.0",
+  "sources": [
+    "128_KORA_LIVING_KORAL_STRATEGIC_PRODUCT_ARCHITECTURE_AUDIT.md",
+    "129_KORA_LIVING_KORAL_STAGE_0_MATERIAL_CHANGE_CHANGE_PROTOCOL_DESIGN.md",
+    "132_KORA_LIVING_KORAL_MASTER_PLAN_INSERTION_DESIGN.md"
+  ],
+  "constitution": [
+    { "id": 1, "principle": "Time alone never changes a KORAL." },
+    { "id": 2, "principle": "Data arrival alone never changes a KORAL." },
+    { "id": 3, "principle": "Evidence-confidence change is not organizational change." },
+    { "id": 4, "principle": "A Material Change requires a canonical organizational-state transition." },
+    { "id": 5, "principle": "Change does not mean improvement." },
+    { "id": 6, "principle": "More/larger/complex morphology never means better." },
+    { "id": 7, "principle": "Simplification/consolidation are neutral, valid transformations." },
+    { "id": 8, "principle": "Reversal creates history; it does not erase it." },
+    { "id": 9, "principle": "Local change preserves global identity." },
+    { "id": 10, "principle": "Advisor interprets/confirms only where allowed; never draws KORAL." },
+    { "id": 11, "principle": "Company preserves/uses states; never manipulates morphology." },
+    { "id": 12, "principle": "Provenance must remain recoverable." },
+    { "id": 13, "principle": "Worker-level/private data never enters outward morphology." },
+    { "id": 14, "principle": "Historical Editions must remain reproducible." },
+    { "id": 15, "principle": "Under-recognition is safer than false visual change." },
+    { "id": 16, "principle": "Decision Pack alone can never create RECOGNIZED Material Change." },
+    { "id": 17, "principle": "Expression Mode is mandatory before outward/Worker-facing distribution." },
+    { "id": 18, "principle": "Persistent/public/physical artifacts derive from an authorized Edition state unless a future explicit exception is justified." }
+  ],
+  "materialChangeTaxonomy": [
+    {
+      "category": "Emergence",
+      "organizationalPhenomenon": "A new organizational element appears (a new initiative area, a new Need recognized)",
+      "justifyingEvidence": "Initiative created + published; Need Hypothesis created",
+      "insufficientEvidence": "A single mention in Advisor free text alone",
+      "reversible": "yes",
+      "scope": "local",
+      "morphologyOrConfidenceOnly": "morphology",
+      "notes": null
+    },
+    {
+      "category": "Disappearance",
+      "organizationalPhenomenon": "An organizational element ends (initiative closes, Assignment ends, a Need is no longer pursued)",
+      "justifyingEvidence": "Initiative status='closed'; Assignment status='ended'",
+      "insufficientEvidence": "A gap in activity with no closing event",
+      "reversible": "yes",
+      "scope": "local",
+      "morphologyOrConfidenceOnly": "morphology",
+      "notes": null
+    },
+    {
+      "category": "Strengthening",
+      "organizationalPhenomenon": "An area gains more organizational weight (Need moves Hypothesis→Emerging→Supported)",
+      "justifyingEvidence": "Classification transition with new supporting evidence",
+      "insufficientEvidence": "Increased volume of the same evidence (see organizationChangedVsKoraLearned type B, Evidence update)",
+      "reversible": "yes",
+      "scope": "local",
+      "morphologyOrConfidenceOnly": "morphology",
+      "notes": "Morphology ONLY if classification actually transitions — never on repeated confirmation of an already-reached classification."
+    },
+    {
+      "category": "Weakening",
+      "organizationalPhenomenon": "An area loses organizational weight without fully disappearing (activity continues but a Need reclassifies toward Insufficient-Evidence-Unknown)",
+      "justifyingEvidence": "Reclassification",
+      "insufficientEvidence": "Silence (absence of new evidence is not evidence of weakening)",
+      "reversible": "yes",
+      "scope": "local",
+      "morphologyOrConfidenceOnly": "morphology",
+      "notes": null
+    },
+    {
+      "category": "Consolidation",
+      "organizationalPhenomenon": "Multiple smaller elements resolve into fewer, clearer ones (several related initiatives close in favor of one broader one; several ambiguous Needs resolve into one Supported Need)",
+      "justifyingEvidence": "Coordinated closures + one clear emergence",
+      "insufficientEvidence": "An unrelated cluster of closures with no coordinating evidence",
+      "reversible": "yes",
+      "scope": "local-or-distributed",
+      "morphologyOrConfidenceOnly": "morphology",
+      "notes": "Explicitly non-negative — consolidation is a neutral, valid transformation (constitution principle 7), never treated as decline."
+    },
+    {
+      "category": "Reorientation",
+      "organizationalPhenomenon": "Direction changes without simple growth/shrinkage (a Need's statement/domain shifts, an initiative's scope changes)",
+      "justifyingEvidence": "Initiative scope change (if tracked); new Decision Pack superseding a prior one's direction",
+      "insufficientEvidence": "A single Advisor comment about \"direction\"",
+      "reversible": "yes",
+      "scope": "local",
+      "morphologyOrConfidenceOnly": "morphology",
+      "notes": null
+    },
+    {
+      "category": "Stabilization",
+      "organizationalPhenomenon": "An area that was uncertain settles into a confirmed, unchanging state",
+      "justifyingEvidence": "Sustained Supported classification across multiple periods, no new contradicting evidence",
+      "insufficientEvidence": "One single confirming data point",
+      "reversible": "n/a",
+      "scope": "local",
+      "morphologyOrConfidenceOnly": "morphology-and-confidence",
+      "notes": "Reversibility is not applicable — stabilization IS the stable state itself. Represented as a 'settled' region marker plus a confidence dimension."
+    }
+  ],
+  "materialChangeTaxonomyNote": "Retained set for Change Protocol v1: exactly these seven categories, all directly attestable by real KORA objects today or in the near-term roadmap. Fragmentation, Differentiation, Convergence, Structural discontinuity, and Uncertainty revision were considered and explicitly excluded from this taxonomy (doc 129 Part 2) — not because they are meaningless, but because no supporting canonical KORA object currently expresses them (Fragmentation/Differentiation/Convergence), or because they belong to a different, later mechanism (Structural discontinuity → Continuity Contract, KORA-WP-113; Uncertainty revision → confidence-only, never morphology, never a Material Change Event on its own).",
+  "organizationChangedVsKoraLearned": [
+    {
+      "type": "A",
+      "name": "Real organizational transformation",
+      "definition": "The org's actual practice/structure changed",
+      "koraExample": "An initiative is formally closed; an Advisor Assignment ends; a Decision Pack is published enacting a new direction",
+      "justifiesMaterialChange": true
+    },
+    {
+      "type": "B",
+      "name": "Evidence update",
+      "definition": "New evidence arrives about something already believed",
+      "koraExample": "A second, independent Advisor observation supports an already-Supported Need — same conclusion, more proof",
+      "justifiesMaterialChange": false
+    },
+    {
+      "type": "C",
+      "name": "Interpretation update",
+      "definition": "The same evidence is read differently (by KORA logic or Advisor) without new facts",
+      "koraExample": "An Advisor revises their read of an existing Case's significance",
+      "justifiesMaterialChange": false
+    },
+    {
+      "type": "D",
+      "name": "Data correction",
+      "definition": "A prior record was simply wrong and is fixed",
+      "koraExample": "A tenant_code typo corrected; a misattributed initiative pillar fixed",
+      "justifiesMaterialChange": false
+    },
+    {
+      "type": "E",
+      "name": "Confidence update",
+      "definition": "The Confidence Score / calibration shifts due to broader data completeness, unrelated to any one fact",
+      "koraExample": "Overall tenant confidence_score rises because more UEF records were approved this period",
+      "justifiesMaterialChange": false
+    },
+    {
+      "type": "F",
+      "name": "No material change",
+      "definition": "Nothing meets any of the above at a level worth recording",
+      "koraExample": "Routine appointment scheduling; a Case opened and resolved with no new organizational fact",
+      "justifiesMaterialChange": false
+    }
+  ],
+  "organizationChangedVsKoraLearnedNote": "Only type A ever justifies a Material Change Event (doc 129 Part 3, verbatim: 'Only A ever justifies a Material Change Event. B, D, and E must never touch morphology — they are Evidence/Trust Layer concerns exclusively.'). Type C is explicitly named as the most dangerous category — it can feel like organizational change without any underlying fact changing; the Change Protocol must require a canonical object transition, never merely a changed interpretation, before recognizing anything from category C."
+}
