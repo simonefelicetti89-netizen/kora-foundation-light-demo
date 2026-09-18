@@ -114,11 +114,27 @@ describe('KORA-WP-113 — WP-114+ boundary (scoped to this WP\'s own files, not 
     });
   }
 
-  it('no route, page, or component file was introduced by this WP (DB/domain-service only, no UI — this task\'s own §9/§10)', async () => {
+  it('no route, page, or component file is among THIS WP\'s own files (DB/domain-service only, no UI — this task\'s own §9/§10) — WP113_FILES itself never includes an app/ or components/ path', () => {
+    for (const file of WP113_FILES) {
+      expect(file.startsWith('app/')).toBe(false);
+      expect(file.startsWith('components/')).toBe(false);
+    }
+  });
+
+  // KORA-WP-114 (a later, separate, Founder-authorized WP) has since
+  // legitimately created app/company/living-koral/page.tsx and
+  // components/company/living-koral/ — this is expected and correct, not
+  // a regression of this boundary. The original form of this test
+  // asserted these paths did not exist AT ALL, which was a (correct, at
+  // the time) proxy for "WP-113 itself built no UI" — updated here (not
+  // left stale) the same way this file's own migration-ceiling guard
+  // above was updated for KORA-WP-114's migration 083, and the same way
+  // KORA-WP-112's own guard was previously updated by this WP for
+  // migration 082. WP-113's own real boundary (no UI in WP113_FILES
+  // itself) is unaffected and re-asserted above.
+  it('app/api/admin/living-koral still does not exist — no admin route was ever assigned to WP-113/114 (still unassigned, pre-check 172 §15)', async () => {
     const { existsSync } = await import('node:fs');
     expect(existsSync('app/api/admin/living-koral')).toBe(false);
-    expect(existsSync('app/company/living-koral')).toBe(false);
-    expect(existsSync('components/living-koral')).toBe(false);
   });
 });
 
@@ -149,12 +165,13 @@ describe('KORA-WP-113 — no duplicate Intelligence engine, no Prime-specific KO
   }
 });
 
-describe('KORA-WP-113 — migration ceiling is exactly 082', () => {
-  it('supabase/migrations/ ceiling is exactly 082', async () => {
+describe('KORA-WP-113 — no migration beyond 082 was introduced BY THIS WP (a later WP may legitimately raise the ceiling further)', () => {
+  it('supabase/migrations/ ceiling is at least 082 (WP-113\'s own migration exists) — bumped to 083, then 084, by KORA-WP-114 (084 its own object-level-provenance remediation), a later, unrelated WP; this assertion\'s own intent is unaffected', async () => {
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(82);
+    expect(Math.max(...numbers)).toBe(84);
+    expect(numbers).toContain(82);
   });
 });
 

@@ -34,7 +34,8 @@ export type AccessResource =
   | 'worker_individual_pib'        // personal.worker_pib — PIB per singolo worker
   | 'worker_individual_uef'        // analytics.uef_record — UEF per singolo worker
   | 'personal_pseudonym_map'       // personal.worker_pseudonym_map — tabella più sensibile
-  | 'hq_operator_console';         // Pannello operativo KORA
+  | 'hq_operator_console'          // Pannello operativo KORA
+  | 'company_living_koral';        // KORA-WP-114 — Living KORAL Company Hub (read-only, own tenant)
 
 // Variante banner per accesso privilegiato admin su risorse company.
 export type BannerVariant = 'amber' | 'navy' | 'blueprint';
@@ -136,6 +137,20 @@ const MATRIX: Record<AccessResource, Partial<Record<KoraRole, RoleDecision>>> = 
     PARTNER:       { allowed: false, requiresAudit: false, denyReason: 'HQ Operator Console not accessible to PARTNER role' },
     ADVISOR:       { allowed: false, requiresAudit: false, denyReason: ADVISOR_NOT_YET_ENFORCED },
   },
+
+  // KORA-WP-114 — Living KORAL Company Hub. Read-only, own tenant only
+  // (migration 083's own RLS is the real, structural gate — this row is
+  // the app-level mirror, matching company_kpi_kora_index's exact shape).
+  // KORA_ADMIN: inspection via the existing company-impersonation path
+  // (app/company/layout.tsx's own service-access branch), audited,
+  // banner-shown — no new Admin UI (pre-check 172 §15, this WP's own §9).
+  company_living_koral: {
+    KORA_ADMIN:    { allowed: true,  requiresAudit: true  },
+    COMPANY_ADMIN: { allowed: true,  requiresAudit: false },
+    WORKER:        { allowed: false, requiresAudit: false, denyReason: 'Living KORAL Company Hub not accessible to WORKER role' },
+    PARTNER:       { allowed: false, requiresAudit: false, denyReason: 'Living KORAL Company Hub not accessible to PARTNER role' },
+    ADVISOR:       { allowed: false, requiresAudit: false, denyReason: 'Living KORAL Company Hub Advisor read is a later, separate WP-116 concern (Assignment-scoped) — not part of KORA-WP-114' },
+  },
 };
 
 // Banner variant per accesso admin su risorse company — dipende dall'ambiente.
@@ -150,6 +165,7 @@ const COMPANY_RESOURCES_REQUIRING_BANNER = new Set<AccessResource>([
   'company_kpi_kora_index',
   'company_config_source_batch',
   'company_submissions_approval',
+  'company_living_koral',
 ]);
 
 // ── canAccess — funzione pura ────────────────────────────────────────────────

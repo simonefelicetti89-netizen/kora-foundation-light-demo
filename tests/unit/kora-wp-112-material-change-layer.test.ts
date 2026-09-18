@@ -123,11 +123,11 @@ describe('KORA-WP-112 — reuses the existing governance_event substrate, never 
 });
 
 describe('KORA-WP-112 — no migration beyond 081 was introduced BY THIS WP (a later WP may legitimately raise the ceiling further)', () => {
-  it('supabase/migrations/ ceiling is at least 081 (WP-112\'s own migration exists) — bumped to 082 by KORA-WP-113, a later, unrelated WP; this assertion\'s own intent is unaffected', async () => {
+  it('supabase/migrations/ ceiling is at least 081 (WP-112\'s own migration exists) — bumped to 082 by KORA-WP-113, then to 083 and 084 by KORA-WP-114 (084 its own object-level-provenance remediation), all later, unrelated WPs/increments; this assertion\'s own intent is unaffected', async () => {
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(82);
+    expect(Math.max(...numbers)).toBe(84);
     expect(numbers).toContain(81);
   });
 });

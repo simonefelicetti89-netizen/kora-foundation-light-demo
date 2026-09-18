@@ -131,7 +131,7 @@ describe('KORA-WP-042 — E. Decision Spine independence preserved (no mutation 
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(82); // unchanged since KORA-WP-037 until KORA-WP-112/113
+    expect(Math.max(...numbers)).toBe(84); // unchanged since KORA-WP-037 until KORA-WP-112/113/114 (114's own object-level-provenance remediation, migration 084)
   });
 
   it('this WP adds no lib/services file of its own — verification artifact only', () => {

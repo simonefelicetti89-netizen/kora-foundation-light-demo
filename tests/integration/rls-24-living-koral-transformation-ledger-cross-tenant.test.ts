@@ -18,11 +18,14 @@
  *   - KORA_ADMIN CAN read both tables, cross-tenant, no tenant predicate
  *     (positive control, the Founder's carried-forward Admin Living KORAL
  *     oversight requirement).
- *   - COMPANY_ADMIN CANNOT read even its OWN tenant's rows on either
- *     table — no Company read policy exists yet on either (a stronger
- *     negative than ordinary cross-tenant denial), matching WP-112's own
- *     precedent exactly, and Registry 142's own explicit deferral to
- *     KORA-WP-114.
+ *   - COMPANY_ADMIN's own-tenant read was denied at the time this file
+ *     was originally written (deferred to KORA-WP-114, Registry 142's own
+ *     explicit text) — KORA-WP-114 (migration 083) has since legitimately
+ *     added that policy; the two assertions below are updated (not left
+ *     stale) to match, and the full positive/negative matrix is re-proven
+ *     in tests/integration/rls-25-living-koral-company-read-cross-
+ *     tenant.test.ts. Cross-tenant denial (a DIFFERENT tenant's rows)
+ *     remains proven here unchanged, and again in RLS-25.
  *   - WORKER CANNOT read either table — no Worker policy exists.
  *   - No `authenticated`-role write grant on either table.
  *   - APPEND-ONLY: a DELETE or UPDATE against the ledger is rejected even
@@ -211,9 +214,9 @@ describe.skipIf(!ready)('RLS-24 — Living KORAL Transformation Ledger + current
     expect(rows).toHaveLength(1);
   });
 
-  it('COMPANY_ADMIN (Tenant A, its own tenant) CANNOT read the Ledger — no Company read policy exists yet (deferred to KORA-WP-114)', async () => {
+  it('COMPANY_ADMIN (Tenant A, its own tenant) CAN now read the Ledger — KORA-WP-114 (migration 083) legitimately added this policy; full positive/negative matrix re-proven in RLS-25, this assertion updated (not left stale) to match the new real behavior, matching the exact precedent this WP\'s own migration 082 set when it updated KORA-WP-112\'s guard', async () => {
     const rows = await queryLedgerAs('COMPANY_ADMIN', tenantAId, ledgerAId);
-    expect(rows).toHaveLength(0);
+    expect(rows).toHaveLength(1);
   });
 
   it('COMPANY_ADMIN (Tenant B) CANNOT read Tenant A\'s Ledger row (ordinary cross-tenant denial too)', async () => {
@@ -232,9 +235,9 @@ describe.skipIf(!ready)('RLS-24 — Living KORAL Transformation Ledger + current
     expect(rows[0].revision).toBe(1);
   });
 
-  it('COMPANY_ADMIN (own tenant) CANNOT read current-state — no Company read policy exists yet (deferred to KORA-WP-114)', async () => {
+  it('COMPANY_ADMIN (own tenant) CAN now read current-state — KORA-WP-114 (migration 083) legitimately added this policy; full positive/negative matrix re-proven in RLS-25, see this file\'s own Ledger equivalent above for the same disclosed update', async () => {
     const rows = await queryStateAs('COMPANY_ADMIN', tenantAId, tenantAId);
-    expect(rows).toHaveLength(0);
+    expect(rows).toHaveLength(1);
   });
 
   it('WORKER CANNOT read current-state', async () => {

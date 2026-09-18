@@ -250,6 +250,10 @@ jobs:
           RLS23_ALLOW_RUN: 'true'
           RLS24_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           RLS24_ALLOW_RUN: 'true'
+          RLS25_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS25_ALLOW_RUN: 'true'
+          RLS26_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS26_ALLOW_RUN: 'true'
         run: |
           npx vitest run \
             tests/integration/rls-two-tenant-negative.test.ts \
@@ -273,6 +277,8 @@ jobs:
             tests/integration/rls-22-advisor-scope-follows-assignment.test.ts \
             tests/integration/rls-23-living-koral-material-change-cross-tenant.test.ts \
             tests/integration/rls-24-living-koral-transformation-ledger-cross-tenant.test.ts \
+            tests/integration/rls-25-living-koral-company-read-cross-tenant.test.ts \
+            tests/integration/rls-26-living-koral-company-source-initiative.test.ts \
             --reporter=json --outputFile=rls-integration-report.json
 
       # F-04: machine-readable assertion — fails the job if any RLS test

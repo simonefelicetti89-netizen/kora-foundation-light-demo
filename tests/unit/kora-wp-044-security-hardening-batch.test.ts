@@ -142,7 +142,7 @@ describe('KORA-WP-044 — nessuna migrazione, nessun nuovo modulo di sicurezza g
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(82);
+    expect(Math.max(...numbers)).toBe(84);
   });
 
   it('lib/security/rate-limit.ts (il meccanismo esistente riusato) non è stato duplicato con un secondo modulo', () => {
