@@ -124,14 +124,14 @@ describe('KORA-WP-042 — F/G. fee_charge_event schema itself never references a
 
 describe('KORA-WP-042 — E. Decision Spine independence preserved (no mutation introduced by this WP)', () => {
   it('no new migration exists for this WP (registry: Data/Migration Impact = NONE)', async () => {
-    // Ceiling bumped 80→81 by KORA-WP-112 (migration 081), a later,
-    // unrelated WP — this assertion's own intent ("WP-042 itself adds no
+    // Ceiling bumped 80→81→82 by KORA-WP-112 and KORA-WP-113, both later,
+    // unrelated WPs — this assertion's own intent ("WP-042 itself adds no
     // migration") is unaffected; only the global ceiling this test pins to
     // has moved.
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(81); // unchanged since KORA-WP-037 until KORA-WP-112
+    expect(Math.max(...numbers)).toBe(82); // unchanged since KORA-WP-037 until KORA-WP-112/113
   });
 
   it('this WP adds no lib/services file of its own — verification artifact only', () => {

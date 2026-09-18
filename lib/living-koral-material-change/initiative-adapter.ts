@@ -19,6 +19,7 @@
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { getOrganizationChangedVsKoraLearnedFramework } from '@/lib/living-koral-config/v1';
 import { createMaterialChangeCandidate, assessMaterialChangeCandidate } from './material-change-service';
+import { recordLivingKoralTransformation } from '@/lib/living-koral-transformation-ledger/transformation-ledger-service';
 import type { ObserveInitiativeTransitionParams, ObserveInitiativeTransitionResult } from './types';
 import type { MaterialChangeTaxonomyEntry } from '@/lib/living-koral-config/types';
 
@@ -106,6 +107,21 @@ export async function observeInitiativeTransition(params: ObserveInitiativeTrans
       return false;
     },
   });
+
+  // KORA-WP-113 — additive, synchronous chaining (pre-check 170 §20.1,
+  // this task's own §11: narrowest mechanism, no new infra). Only
+  // RECOGNIZED rows may drive Morphogenesis (this task's own §2) — this
+  // call is a safe no-op (idempotent) whether `recognized` was just newly
+  // promoted by the assessment above or was already RECOGNIZED from an
+  // earlier call; the RPC's own UNIQUE(material_change_id) is the real
+  // exactly-once gate either way, never assumed correct by this caller's
+  // own bookkeeping alone. A CANDIDATE (assessment did not promote) is
+  // correctly skipped here without any special-case branch, since only a
+  // RECOGNIZED record carries an id this WP-113 call would ever be
+  // reached for.
+  if (recognized && recognized.status === 'RECOGNIZED') {
+    await recordLivingKoralTransformation({ materialChangeId: recognized.id, tenantId: params.tenantId });
+  }
 
   return recognized;
 }

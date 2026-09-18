@@ -247,6 +247,13 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // the already-allowlisted app/api/admin/ route, never client-facing.
   { path: 'lib/living-koral-material-change/initiative-adapter.ts', reason: 'documented server-only service — initiative status-transition-to-candidate mapping + source re-verification, KORA-WP-112' },
 
+  // KORA-WP-113: Transformation Ledger + Morphogenesis Engine v1 — server-
+  // only, same Pattern-A rationale as WP-112 immediately above. The sole
+  // write path is gov.record_living_koral_transformation() (an atomic RPC
+  // called via service_role); this module itself never inserts/updates the
+  // two tables directly (structurally enforced by this WP's own test).
+  { path: 'lib/living-koral-transformation-ledger/transformation-ledger-service.ts', reason: 'documented server-only service — Transformation Ledger record + current-state read, atomic RPC delegate, KORA-WP-113' },
+
   // ── Documented pre-existing exceptions (NOT part of this sprint's 6-page
   // scope) — real, tracked, not silently endorsed ─────────────────────────
   {
