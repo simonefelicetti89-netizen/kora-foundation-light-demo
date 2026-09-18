@@ -236,6 +236,17 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // architectural question from "consolidate the duplicated factory").
   { path: 'lib/decision-pack/pdf-data.ts', reason: 'consolidated in KORA-WP-003 (previously an inline createClient() call); reads a tenant\'s persisted Decision Pack data for both admin and company-self routes — see comment for the company-self caveat, a pre-existing status this WP made visible, not newly created' },
 
+  // KORA-WP-112: Material Change Layer core — server-only, same Pattern-A
+  // rationale as WP-026/027/030/031 above. Candidate creation/assessment are
+  // system-authored (kora-automatic), never a direct user write path; the
+  // sole KORA_ADMIN read is a documented in-scope grant, no route yet.
+  { path: 'lib/living-koral-material-change/material-change-service.ts', reason: 'documented server-only service — Material Change candidate create/assess/list (CANDIDATE-only, WP-111-config-driven), KORA-WP-112' },
+  // KORA-WP-112: initiative domain adapter — server-only, re-reads the real
+  // personal.worker_initiative source record for the mandatory automated
+  // re-verification (Founder Correction 4, registry 142); called only from
+  // the already-allowlisted app/api/admin/ route, never client-facing.
+  { path: 'lib/living-koral-material-change/initiative-adapter.ts', reason: 'documented server-only service — initiative status-transition-to-candidate mapping + source re-verification, KORA-WP-112' },
+
   // ── Documented pre-existing exceptions (NOT part of this sprint's 6-page
   // scope) — real, tracked, not silently endorsed ─────────────────────────
   {
