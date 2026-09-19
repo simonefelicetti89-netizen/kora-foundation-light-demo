@@ -26,15 +26,16 @@ export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { hashShareToken, isShareExpired } from '@/lib/worker-cv/share-token';
+import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
 const PILLAR_META: Record<string, { color: string; bg: string }> = {
-  LIFE:       { color: '#2F7D55', bg: 'rgba(47,125,85,0.08)'   },
-  GROWTH:     { color: '#3B6EBA', bg: 'rgba(59,110,186,0.08)'  },
-  CONNECTION: { color: '#7C3D8F', bg: 'rgba(124,61,143,0.08)'  },
-  IMPACT:     { color: '#C07D2A', bg: 'rgba(192,125,42,0.08)'  },
-  LEGACY:     { color: '#5A4A3F', bg: 'rgba(90,74,63,0.08)'    },
+  LIFE:       { color: PILLAR_SURFACE.LIFE.color, bg: PILLAR_SURFACE.LIFE.bg },
+  GROWTH:     { color: PILLAR_SURFACE.GROWTH.color, bg: PILLAR_SURFACE.GROWTH.bg },
+  CONNECTION: { color: PILLAR_SURFACE.CONNECTION.color, bg: PILLAR_SURFACE.CONNECTION.bg },
+  IMPACT:     { color: PILLAR_SURFACE.IMPACT.color, bg: PILLAR_SURFACE.IMPACT.bg },
+  LEGACY:     { color: PILLAR_SURFACE.LEGACY.color, bg: PILLAR_SURFACE.LEGACY.bg },
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -222,7 +223,7 @@ export default async function CVSharePage({
         </p>
         <div
           data-testid="cv-share-pillar-profile"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}
         >
           {ALL_PILLARS.map(p => {
             const meta  = PILLAR_META[p];

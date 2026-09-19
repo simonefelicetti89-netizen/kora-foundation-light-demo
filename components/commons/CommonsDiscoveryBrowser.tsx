@@ -14,23 +14,24 @@ import {
   OPENING_GRADE_LABELS,
   OPENING_GRADE_COLORS,
 } from '@/lib/commons/types';
+import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
 // ── Pillar styling ────────────────────────────────────────────────────────────
 
 const PILLAR_ACCENT: Record<string, string> = {
-  LIFE:       '#C76F3D',
-  GROWTH:     '#2F7D55',
-  CONNECTION: '#D99767',
-  IMPACT:     '#4A7FE0',
-  LEGACY:     '#8A7562',
+  LIFE:       PILLAR_COLORS.LIFE,
+  GROWTH:     PILLAR_COLORS.GROWTH,
+  CONNECTION: PILLAR_COLORS.CONNECTION,
+  IMPACT:     PILLAR_COLORS.IMPACT,
+  LEGACY:     PILLAR_COLORS.LEGACY,
 };
 
 const PILLAR_BG: Record<string, string> = {
-  LIFE:       'rgba(199,111,61,0.10)',
-  GROWTH:     'rgba(47,125,85,0.10)',
-  CONNECTION: 'rgba(217,151,103,0.12)',
-  IMPACT:     'rgba(74,127,224,0.10)',
-  LEGACY:     'rgba(138,117,98,0.10)',
+  LIFE:       PILLAR_COLORS.LIFE,
+  GROWTH:     PILLAR_COLORS.GROWTH,
+  CONNECTION: PILLAR_COLORS.CONNECTION,
+  IMPACT:     PILLAR_COLORS.IMPACT,
+  LEGACY:     PILLAR_COLORS.LEGACY,
 };
 
 const STATUS_COLORS: Record<CommonsDiscoveryStatus, string> = {

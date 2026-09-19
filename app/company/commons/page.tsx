@@ -17,6 +17,7 @@ import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { CommonsCreateForm } from '@/components/commons/CommonsCreateForm';
+import { PILLAR_COLORS, type PillarColorKey } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'KORA Space · Company' };
 
@@ -39,13 +40,6 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string; bo
   rejected:       { label: 'Rifiutato',   color: '#9E3B2F',           bg: 'rgba(158,59,47,0.08)', border: 'rgba(158,59,47,0.22)' },
 };
 
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE:       '#2F7D55',
-  GROWTH:     '#3B6EBA',
-  CONNECTION: '#7C3D8F',
-  IMPACT:     '#C07D2A',
-  LEGACY:     '#5A4A3F',
-};
 
 export default async function CompanyCommonsPage() {
   const auth = await requireCompanyUser();
@@ -180,7 +174,7 @@ export default async function CompanyCommonsPage() {
       </div>
 
       {/* Stats row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 32 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 32 }}>
         {[
           { label: 'In revisione', value: pending.length,   color: '#8A5A00', bg: 'rgba(192,125,42,0.08)' },
           { label: 'Pubblicati',   value: published.length, color: '#2F7D55', bg: 'rgba(47,125,85,0.08)'  },
@@ -215,7 +209,7 @@ export default async function CompanyCommonsPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {allPosts.map((post) => {
               const sm = STATUS_META[post.status] ?? STATUS_META.draft;
-              const pillarColor = post.pillar ? PILLAR_COLORS[post.pillar] : undefined;
+              const pillarColor = post.pillar ? PILLAR_COLORS[post.pillar as PillarColorKey] : undefined;
               return (
                 <div
                   key={post.id}

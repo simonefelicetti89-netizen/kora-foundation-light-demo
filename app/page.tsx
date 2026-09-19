@@ -64,13 +64,14 @@ const CANONICAL = {
   ],
 };
 
-// ── NOTA PILLAR COLOR DISCREPANCY ────────────────────────────────────────────
-// L'HTML di riferimento usa: LIFE=#4A7FE0 (blu), GROWTH=#C76F3D (terra),
-// CONNECTION=#6156F5 (viola), IMPACT=#D99A2B (gold), LEGACY=#8A7562.
-// PILLAR_COLORS nei token usa: LIFE=#C76F3D, GROWTH=#2F7D55, CONNECTION=#D99767,
-// IMPACT=#D99A2B, LEGACY=#8A7562.
-// → Si usa PILLAR_COLORS dai token come single source of truth (regola 6).
-//   La discrepanza va discussa con il founder prima di sincronizzare.
+// ── NOTA PILLAR COLOR — RISOLTA (KORA-WP-088) ────────────────────────────────
+// Discrepanza storica: l'HTML di riferimento usava LIFE=#4A7FE0 (blu),
+// GROWTH=#C76F3D, CONNECTION=#6156F5 (viola), IMPACT=#D99A2B, LEGACY=#8A7562,
+// mentre PILLAR_COLORS nei token usa LIFE=#C76F3D, GROWTH=#2F7D55,
+// CONNECTION=#D99767, IMPACT=#D99A2B, LEGACY=#8A7562.
+// → CHIUSA dalla Founder colour adjudication (KORA-WP-088): PILLAR_COLORS è
+//   canonico. Non resta nulla da discutere o sincronizzare: i valori
+//   dell'HTML di riferimento non sono canonici.
 
 const f = (s: TemplateStringsArray, ...v: unknown[]) => String.raw({ raw: s }, ...v);
 void f; // silence unused

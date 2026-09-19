@@ -16,15 +16,16 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { DynamicCVResponse, CVPillarEntry } from '@/app/api/worker/dynamic-cv/route';
 import type { SharesResponse, ShareLinkItem } from '@/app/api/worker/dynamic-cv/shares/route';
+import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
 const PILLAR_META: Record<string, { color: string; bg: string; border: string }> = {
-  LIFE:       { color: '#2F7D55', bg: 'rgba(47,125,85,0.07)',   border: 'rgba(47,125,85,0.20)'   },
-  GROWTH:     { color: '#3B6EBA', bg: 'rgba(59,110,186,0.07)',  border: 'rgba(59,110,186,0.20)'  },
-  CONNECTION: { color: '#7C3D8F', bg: 'rgba(124,61,143,0.07)', border: 'rgba(124,61,143,0.20)'  },
-  IMPACT:     { color: '#C07D2A', bg: 'rgba(192,125,42,0.07)', border: 'rgba(192,125,42,0.20)'  },
-  LEGACY:     { color: '#5A4A3F', bg: 'rgba(90,74,63,0.07)',   border: 'rgba(90,74,63,0.20)'    },
+  LIFE:       { color: PILLAR_SURFACE.LIFE.color, bg: PILLAR_SURFACE.LIFE.bg, border: PILLAR_SURFACE.LIFE.border },
+  GROWTH:     { color: PILLAR_SURFACE.GROWTH.color, bg: PILLAR_SURFACE.GROWTH.bg, border: PILLAR_SURFACE.GROWTH.border },
+  CONNECTION: { color: PILLAR_SURFACE.CONNECTION.color, bg: PILLAR_SURFACE.CONNECTION.bg, border: PILLAR_SURFACE.CONNECTION.border },
+  IMPACT:     { color: PILLAR_SURFACE.IMPACT.color, bg: PILLAR_SURFACE.IMPACT.bg, border: PILLAR_SURFACE.IMPACT.border },
+  LEGACY:     { color: PILLAR_SURFACE.LEGACY.color, bg: PILLAR_SURFACE.LEGACY.bg, border: PILLAR_SURFACE.LEGACY.border },
 };
 
 const STATUS_STYLE: Record<string, { color: string; bg: string }> = {
@@ -225,7 +226,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
         data-testid="dynamic-cv-summary"
         style={{
           display:       'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
           gap:           12,
           marginBottom:  20,
         }}
@@ -261,7 +262,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
         </p>
         <div
           data-testid="dynamic-cv-pillar-profile"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}
         >
           {pillars.map((p: CVPillarEntry) => {
             const meta = PILLAR_META[p.pillar];

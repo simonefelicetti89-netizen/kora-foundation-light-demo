@@ -22,7 +22,7 @@
 // itself performs no fetch and has no synthetic dependency.
 
 import { useEffect, useState } from 'react';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { workerSpaceCapabilityService } from '@/services/worker-space/WorkerSpaceCapabilityService';
 import type { CanonicalWorkerProvisioningStatus } from '@/lib/live/worker-provisioning-status-view';
@@ -31,13 +31,6 @@ import type { PillarAdoptionResult } from '@/services/worker-pillar-adoption/Wor
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 const MONO = 'ui-monospace, monospace';
 
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE:       '#2F7D55',
-  GROWTH:     '#2B5CE6',
-  CONNECTION: '#C76F3D',
-  IMPACT:     '#6156F5',
-  LEGACY:     '#8A5A00',
-};
 
 const PILLAR_LABELS: Record<string, string> = {
   LIFE:       'LIFE',

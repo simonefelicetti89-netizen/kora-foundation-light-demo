@@ -113,7 +113,7 @@ export default async function AdminCommonsPage() {
       {/* Stats row */}
       <div
         data-testid="admin-commons-pending-queue"
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 32 }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 32 }}
       >
         {[
           { label: 'In revisione', value: pending.length,   color: '#8A5A00', bg: 'rgba(192,125,42,0.10)', urgent: pending.length > 0 },

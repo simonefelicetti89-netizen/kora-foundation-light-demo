@@ -78,7 +78,7 @@ export default function WorkerDiagnosticsClient() {
       )}
 
       {tenants.length > 0 && (
-        <div style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10, overflow: 'hidden' }}>
+        <div style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10, overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ background: 'rgba(6,3,43,0.03)' }}>

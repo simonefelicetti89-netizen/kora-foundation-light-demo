@@ -10,15 +10,16 @@
 //   - Nessun fallback sintetico: empty state onesto se dati non disponibili
 
 import { useEffect, useRef, useState } from 'react';
+import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
 const PILLAR_META: Record<string, { label: string; color: string; bg: string }> = {
-  LIFE:       { label: 'LIFE',       color: '#2F7D55', bg: 'rgba(47,125,85,0.08)'  },
-  GROWTH:     { label: 'GROWTH',     color: '#3B6EBA', bg: 'rgba(59,110,186,0.08)' },
-  CONNECTION: { label: 'CONNECTION', color: '#7C3D8F', bg: 'rgba(124,61,143,0.08)' },
-  IMPACT:     { label: 'IMPACT',     color: '#C07D2A', bg: 'rgba(192,125,42,0.08)' },
-  LEGACY:     { label: 'LEGACY',     color: '#5A4A3F', bg: 'rgba(90,74,63,0.08)'   },
+  LIFE:       { label: 'LIFE', color: PILLAR_SURFACE.LIFE.color, bg: PILLAR_SURFACE.LIFE.bg },
+  GROWTH:     { label: 'GROWTH', color: PILLAR_SURFACE.GROWTH.color, bg: PILLAR_SURFACE.GROWTH.bg },
+  CONNECTION: { label: 'CONNECTION', color: PILLAR_SURFACE.CONNECTION.color, bg: PILLAR_SURFACE.CONNECTION.bg },
+  IMPACT:     { label: 'IMPACT', color: PILLAR_SURFACE.IMPACT.color, bg: PILLAR_SURFACE.IMPACT.bg },
+  LEGACY:     { label: 'LEGACY', color: PILLAR_SURFACE.LEGACY.color, bg: PILLAR_SURFACE.LEGACY.bg },
 };
 
 const PILLAR_ORDER = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
@@ -432,7 +433,7 @@ export function WallboardClient({ userEmail, userRole }: WallboardClientProps) {
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: '0 0 12px' }}>
               4 Macroblocchi KORA Index
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
               {MACROBLOCK_ORDER.map(code => {
                 const meta   = MACROBLOCK_META[code];
                 const mbRow  = ki.macroblocks?.find(m => m.code === code);
@@ -488,7 +489,7 @@ export function WallboardClient({ userEmail, userRole }: WallboardClientProps) {
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: '0 0 12px' }}>
               5 Pillar — Attivazione Aggregata
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
               {PILLAR_ORDER.map(pillarCode => {
                 const meta    = PILLAR_META[pillarCode];
                 const pillarRow = pillars.find(p => p.pillar === pillarCode);

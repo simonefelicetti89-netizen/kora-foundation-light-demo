@@ -126,7 +126,7 @@ export default async function AdminPreviewWorkerDynamicCVPage() {
       </div>
 
       {/* Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 16 }}>
         {[
           { label: 'Attività tracciate',    value: f.summary.total        },
           { label: 'Pillar attivi',          value: f.summary.activePillars },
@@ -144,7 +144,7 @@ export default async function AdminPreviewWorkerDynamicCVPage() {
         <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: '0 0 10px' }}>
           Profilo pillar (sintetico)
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
           {f.pillars.map(p => (
             <div key={p.code} style={{ border: `1px solid ${p.color}30`, borderRadius: 10, padding: '10px 12px', background: `${p.color}08`, opacity: p.count > 0 ? 1 : 0.4 }}>
               <p style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: p.color, margin: '0 0 4px' }}>{p.code}</p>

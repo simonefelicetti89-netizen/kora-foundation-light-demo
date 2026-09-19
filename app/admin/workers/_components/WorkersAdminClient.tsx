@@ -207,6 +207,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
         )}
 
         {workers.length > 0 ? (
+          <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ background: 'rgba(6,3,43,0.03)' }}>
@@ -231,6 +232,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
               ))}
             </tbody>
           </table>
+          </div>
         ) : (
           <div style={{ padding: '32px', textAlign: 'center', color: 'rgba(6,3,43,0.35)', fontSize: 12 }}>
             Nessun worker trovato — inserisci un Tenant Code e clicca Carica.

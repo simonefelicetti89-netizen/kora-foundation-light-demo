@@ -239,7 +239,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
         </div>
 
         {/* Evidence table */}
-        <div className="overflow-hidden rounded border border-[rgba(6,3,43,0.08)]">
+        <div className="overflow-x-auto rounded border border-[rgba(6,3,43,0.08)]">
           <table className="w-full text-[10.5px]">
             <thead>
               <tr className="border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">

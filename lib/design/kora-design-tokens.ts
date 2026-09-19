@@ -7,6 +7,29 @@
  *
  * Visual doctrine: executive intelligence platform / institutional premium
  * Reference: Financial Times, McKinsey reports, premium annual reports
+ *
+ * ── FOUNDER COLOUR ADJUDICATION (KORA-WP-088) ───────────────────────────────
+ * The Founder has ratified THIS FILE as the canonical KORA colour system:
+ *
+ *   • the warm KORA token direction is canonical;
+ *   • the current pillar colour direction (PILLAR_COLORS below) is canonical;
+ *   • terracotta (#C76F3D) remains an allowed KORA primary/accent role;
+ *   • warm pillar colours remain allowed;
+ *   • docs/30 §6.1/§6.2/§22's former requirement that pillars remain
+ *     exclusively within a cool blue-violet family is SUPERSEDED by that
+ *     explicit adjudication — docs/30 remains governing for typography,
+ *     accessibility (§21) and its non-colour sections;
+ *   • no external designer/Figma palette is required to proceed;
+ *   • #06032B (Cosmic Blue) and #6156F5 (Violet) remain valid official brand
+ *     colours in their existing roles — both are present in the official
+ *     brandmark assets under docs/Documenti grafici KORA/;
+ *   • violet is NOT promoted into the mandatory pillar family.
+ *
+ * Consequence for implementation: this file is the starting truth. New tokens
+ * are added only where a concrete violation requires one, no existing
+ * canonical token carries the right semantic role, and the value is
+ * mechanically justified from the ratified system — never invented for
+ * aesthetic uniformity. Full record: .kora-audit/output/201 and /202.
  */
 
 // ── Core brand palette ───────────────────────────────────────────────────────
@@ -139,6 +162,11 @@ export const CHART_COLORS = {
 } as const;
 
 // ── Pillar colors — earth-tone coherent palette ──────────────────────────────
+// RATIFIED CANONICAL (Founder colour adjudication, KORA-WP-088 — see file
+// header). These five values ARE the canonical pillar identity. Any earlier
+// docs/30 §6.1/§6.2/§22.2 direction toward a cool blue-violet pillar family,
+// and its "current value is wrong" annotations, are superseded. Every pillar
+// usage in the application must route through this token, never a literal.
 
 export const PILLAR_COLORS = {
   LIFE:       '#C76F3D',  // terracotta
@@ -192,6 +220,30 @@ export const BADGE_TOKENS = {
 
 export type PillarColorKey = keyof typeof PILLAR_COLORS;
 export type KoraColorKey = keyof typeof KORA_COLORS;
+
+// ── Pillar surface tints (KORA-WP-088) ──────────────────────────────────────
+// WHY THIS EXISTS: ~20 screens had each defined their own local pillar→colour
+// map, several of them literally shadowing the `PILLAR_COLORS` identifier with
+// *different* values — so the same pillar rendered green on one screen,
+// terracotta on another and blue on a third. That is the core
+// KORA-GAP-DESIGN-001 divergence. These are not new brand colours: each value
+// is the RATIFIED pillar colour above, expressed at the alpha levels this
+// token file already uses for soft/border treatments (cf. `accentSoft` 0.12
+// and `cardBorderHover` 0.45). Nothing is invented.
+
+function hexToRgbTriplet(hex: string): string {
+  const h = hex.replace('#', '');
+  return `${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)}`;
+}
+
+/** Canonical per-pillar surface set: the ratified pillar colour + its soft background and border tints. */
+export const PILLAR_SURFACE: Record<PillarColorKey, { color: string; bg: string; border: string }> =
+  Object.fromEntries(
+    (Object.keys(PILLAR_COLORS) as PillarColorKey[]).map((k) => {
+      const rgb = hexToRgbTriplet(PILLAR_COLORS[k]);
+      return [k, { color: PILLAR_COLORS[k], bg: `rgba(${rgb},0.08)`, border: `rgba(${rgb},0.22)` }];
+    }),
+  ) as Record<PillarColorKey, { color: string; bg: string; border: string }>;
 
 // ── Activation Signature tokens — B140-C ─────────────────────────────────────
 // Dedicated token group for KORA Activation Signature and KORA Link card.

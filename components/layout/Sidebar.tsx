@@ -13,6 +13,7 @@ import { KoraLogo } from '@/components/brand/KoraLogo';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { ADMIN_NAV_GROUPS } from '@/lib/navigation/admin-nav-groups';
+import { useSidebarDrawer, SIDEBAR_DRAWER_ID } from '@/components/layout/SidebarDrawerContext';
 
 const ENV_LABEL: Record<string, string> = {
   demo:   'DEMO',
@@ -366,12 +367,50 @@ export function Sidebar() {
     setExpandedGroups((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
+  // ── WP-088 responsive drawer (presentation only) ──────────────────────────
+  // Below `md` the sidebar is an off-canvas drawer: the 264px column would
+  // otherwise consume ~70% of a 375px viewport, leaving every authenticated
+  // screen unusable. At `md`+ the original static column is unchanged.
+  // Navigation structure, ordering, labels and route architecture are
+  // untouched (frozen by KORA-WP-073).
+  const drawer = useSidebarDrawer();
+  const closeDrawer = drawer.close;
+  const drawerOpen = drawer.open;
+
+  // Close the drawer on navigation — otherwise it stays over the new page.
+  useEffect(() => { closeDrawer(); }, [pathname, closeDrawer]);
+
+  // Escape closes the drawer (standard dismissal for an overlay surface).
+  useEffect(() => {
+    if (!drawerOpen) return;
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') closeDrawer(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [drawerOpen, closeDrawer]);
+
   return (
+    <>
+    {/* Backdrop — mobile only, dismisses the drawer on tap. Decorative: the
+        drawer itself is reachable and dismissable via keyboard (Escape). */}
+    {drawer.open && (
+      <div
+        aria-hidden="true"
+        onClick={drawer.close}
+        className="fixed inset-0 z-40 bg-black/40 md:hidden"
+      />
+    )}
     <aside
-      className="flex flex-col bg-kora-sidebar"
+      id={SIDEBAR_DRAWER_ID}
+      className={[
+        'flex flex-col bg-kora-sidebar',
+        'w-[264px] min-w-[264px] shrink-0',
+        // mobile: fixed off-canvas drawer
+        'fixed inset-y-0 left-0 z-50 overflow-y-auto transition-transform duration-200',
+        drawer.open ? 'translate-x-0' : '-translate-x-full',
+        // md+: original static column, always visible
+        'md:static md:z-auto md:translate-x-0 md:overflow-visible md:transition-none',
+      ].join(' ')}
       style={{
-        width:       '264px',
-        minWidth:    '264px',
         borderRight: '1px solid rgba(255,255,255,0.06)',
       }}
     >
@@ -674,5 +713,6 @@ export function Sidebar() {
         )}
       </div>
     </aside>
+    </>
   );
 }

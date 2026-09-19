@@ -522,7 +522,7 @@ export default async function TrialControlCenterPage() {
         data-testid="partner-catalog-status"
         style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 12, padding: '16px 20px', background: '#fff', marginBottom: 24 }}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14 }}>
           {[
             { label: 'Totali',     value: partners.length },
             { label: 'Pubblicati', value: partnerPublished },

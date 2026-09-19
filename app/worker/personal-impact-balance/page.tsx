@@ -78,7 +78,7 @@ export default async function WorkerPersonalImpactBalancePage() {
             </p>
           ) : (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 }}>
                 <Stat label="Impact Units" value={pib.period_iu_total} />
                 <Stat label="Pillar attivi" value={pib.active_pillars} />
                 <Stat label="Eventi" value={pib.total_events} />

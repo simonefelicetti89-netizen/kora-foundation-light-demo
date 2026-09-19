@@ -16,6 +16,7 @@
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = {
   title: 'Worker Opportunities — Admin Preview · KORA',
@@ -33,11 +34,11 @@ type PartnerItem = {
 };
 
 const PILLAR_COLOR: Record<string, string> = {
-  LIFE:       '#2F7D55',
-  GROWTH:     '#3B6EBA',
-  CONNECTION: '#7C3D8F',
-  IMPACT:     '#C07D2A',
-  LEGACY:     '#5A4A3F',
+  LIFE:       PILLAR_COLORS.LIFE,
+  GROWTH:     PILLAR_COLORS.GROWTH,
+  CONNECTION: PILLAR_COLORS.CONNECTION,
+  IMPACT:     PILLAR_COLORS.IMPACT,
+  LEGACY:     PILLAR_COLORS.LEGACY,
 };
 
 const DELIVERY_LABEL: Record<string, string> = {

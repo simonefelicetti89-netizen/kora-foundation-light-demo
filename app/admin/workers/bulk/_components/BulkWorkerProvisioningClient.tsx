@@ -167,6 +167,7 @@ export function BulkWorkerProvisioningClient({
           )}
 
           {rows.length > 0 && (
+            <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-left text-[10px] uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
@@ -199,6 +200,7 @@ export function BulkWorkerProvisioningClient({
                 ))}
               </tbody>
             </table>
+            </div>
           )}
 
           <div className="px-4 py-3 border-t border-[rgba(6,3,43,0.06)]">

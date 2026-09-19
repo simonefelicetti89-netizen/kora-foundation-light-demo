@@ -5,14 +5,8 @@
 // NEVER shows rankings, percentiles, or comparisons with other workers.
 
 import type { WorkerActivationProfile, PillarDistributionEntry } from '@/app/api/worker/activation-profile/route';
+import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE:       '#16a34a',
-  GROWTH:     '#2563eb',
-  CONNECTION: '#9333ea',
-  IMPACT:     '#dc2626',
-  LEGACY:     '#ca8a04',
-};
 
 const PILLAR_LABELS: Record<string, string> = {
   LIFE:       'Life',
@@ -143,7 +137,7 @@ export function ActivationProfileSection({ profile }: { profile: WorkerActivatio
         borderRadius: 10, padding: '18px 20px',
       }}>
         <h3 style={subheadingStyle}>Riepilogo attività</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
           <StatCell label="Interessi" value={activitySummary.total_interested} />
           <StatCell label="Iscrizioni" value={activitySummary.total_registered} />
           <StatCell label="Presenze" value={activitySummary.total_attended} />

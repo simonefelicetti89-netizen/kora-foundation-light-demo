@@ -17,17 +17,18 @@ import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PrintButton } from './_print-button';
+import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Stampa Dynamic Impact CV · KORA' };
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
 const PILLAR_META: Record<string, { color: string }> = {
-  LIFE:       { color: '#2F7D55' },
-  GROWTH:     { color: '#3B6EBA' },
-  CONNECTION: { color: '#7C3D8F' },
-  IMPACT:     { color: '#C07D2A' },
-  LEGACY:     { color: '#5A4A3F' },
+  LIFE:       { color: PILLAR_SURFACE.LIFE.color },
+  GROWTH:     { color: PILLAR_SURFACE.GROWTH.color },
+  CONNECTION: { color: PILLAR_SURFACE.CONNECTION.color },
+  IMPACT:     { color: PILLAR_SURFACE.IMPACT.color },
+  LEGACY:     { color: PILLAR_SURFACE.LEGACY.color },
 };
 
 const STATUS_LABELS: Record<string, string> = {

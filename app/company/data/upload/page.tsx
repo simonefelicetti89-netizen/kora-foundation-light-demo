@@ -25,6 +25,7 @@ import { mapPillarBatch } from '@/lib/kora-engine/pillar-mapping';
 import { assessBudgetEvidenceBatch } from '@/lib/kora-engine/budget-evidence';
 import { cn } from '@/lib/utils';
 import ConfirmIngestPanel from './_components/ConfirmIngestPanel';
+import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -131,11 +132,11 @@ function barW(value: number, max: number = 100): string {
 }
 
 const PILLAR_CONFIG: Record<string, { label: string; color: string; barColor: string }> = {
-  LIFE:       { label: 'LIFE',       color: 'text-blue-700',   barColor: 'bg-blue-500' },
-  GROWTH:     { label: 'GROWTH',     color: 'text-[#2F7D55]', barColor: 'bg-[rgba(47,125,85,0.08)]0' },
-  CONNECTION: { label: 'CONNECTION', color: 'text-purple-700', barColor: 'bg-purple-500' },
-  IMPACT:     { label: 'IMPACT',     color: 'text-[#8A5A00]', barColor: 'bg-[rgba(217,154,43,0.08)]0' },
-  LEGACY:     { label: 'LEGACY',     color: 'text-[rgba(6,3,43,0.62)]',  barColor: 'bg-[rgba(6,3,43,0.35)]' },
+  LIFE:       { label: 'LIFE', color: PILLAR_SURFACE.LIFE.color, barColor: PILLAR_SURFACE.LIFE.color },
+  GROWTH:     { label: 'GROWTH', color: PILLAR_SURFACE.GROWTH.color, barColor: PILLAR_SURFACE.GROWTH.color },
+  CONNECTION: { label: 'CONNECTION', color: PILLAR_SURFACE.CONNECTION.color, barColor: PILLAR_SURFACE.CONNECTION.color },
+  IMPACT:     { label: 'IMPACT', color: PILLAR_SURFACE.IMPACT.color, barColor: PILLAR_SURFACE.IMPACT.color },
+  LEGACY:     { label: 'LEGACY', color: PILLAR_SURFACE.LEGACY.color, barColor: PILLAR_SURFACE.LEGACY.color },
 };
 
 // ── Sprint 15: Eligibility & Evidence Review helpers ──────────────────────────

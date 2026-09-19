@@ -23,6 +23,7 @@ import { OPENING_GRADE_LABELS, OPENING_GRADE_COLORS } from '@/lib/commons/types'
 import { InitiativesMapClient } from '@/components/commons/InitiativesMapClient';
 import { WorkerBookingButton } from '@/components/commons/WorkerBookingButton';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'KORA Space · Worker' };
 
@@ -38,11 +39,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const PILLAR_COLORS: Record<string, { text: string; bg: string }> = {
-  LIFE:       { text: '#2F7D55', bg: 'rgba(47,125,85,0.08)'   },
-  GROWTH:     { text: '#3B6EBA', bg: 'rgba(59,110,186,0.08)'  },
-  CONNECTION: { text: '#7C3D8F', bg: 'rgba(124,61,143,0.08)'  },
-  IMPACT:     { text: '#C07D2A', bg: 'rgba(192,125,42,0.08)'  },
-  LEGACY:     { text: '#5A4A3F', bg: 'rgba(90,74,63,0.08)'    },
+  LIFE:       { text: PILLAR_SURFACE.LIFE.color, bg: PILLAR_SURFACE.LIFE.bg },
+  GROWTH:     { text: PILLAR_SURFACE.GROWTH.color, bg: PILLAR_SURFACE.GROWTH.bg },
+  CONNECTION: { text: PILLAR_SURFACE.CONNECTION.color, bg: PILLAR_SURFACE.CONNECTION.bg },
+  IMPACT:     { text: PILLAR_SURFACE.IMPACT.color, bg: PILLAR_SURFACE.IMPACT.bg },
+  LEGACY:     { text: PILLAR_SURFACE.LEGACY.color, bg: PILLAR_SURFACE.LEGACY.bg },
 };
 
 const INITIATIVE_SELECT = [

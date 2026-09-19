@@ -1,6 +1,6 @@
 'use client';
 
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 import type { EligibilityGateSummary } from '@/lib/types';
 
 interface EligibilityGatePanelProps {
@@ -21,11 +21,11 @@ const ACTIVATION_CORE_EXAMPLES = [
 ];
 
 const PILLAR_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  LIFE:       { bg: 'rgba(81,133,238,0.10)',  text: '#1B3A8A', border: 'rgba(81,133,238,0.30)'  },
-  GROWTH:     { bg: 'rgba(123,97,245,0.10)',  text: '#4A3595', border: 'rgba(123,97,245,0.30)'  },
-  CONNECTION: { bg: 'rgba(149,116,234,0.10)', text: '#50368C', border: 'rgba(149,116,234,0.30)' },
-  IMPACT:     { bg: 'rgba(200,255,71,0.12)',  text: '#3B6D11', border: 'rgba(200,255,71,0.40)'  },
-  LEGACY:     { bg: 'rgba(63,58,143,0.10)',   text: '#2D2866', border: 'rgba(63,58,143,0.30)'   },
+  LIFE:       { bg: PILLAR_SURFACE.LIFE.bg, text: PILLAR_SURFACE.LIFE.color, border: PILLAR_SURFACE.LIFE.border },
+  GROWTH:     { bg: PILLAR_SURFACE.GROWTH.bg, text: PILLAR_SURFACE.GROWTH.color, border: PILLAR_SURFACE.GROWTH.border },
+  CONNECTION: { bg: PILLAR_SURFACE.CONNECTION.bg, text: PILLAR_SURFACE.CONNECTION.color, border: PILLAR_SURFACE.CONNECTION.border },
+  IMPACT:     { bg: PILLAR_SURFACE.IMPACT.bg, text: PILLAR_SURFACE.IMPACT.color, border: PILLAR_SURFACE.IMPACT.border },
+  LEGACY:     { bg: PILLAR_SURFACE.LEGACY.bg, text: PILLAR_SURFACE.LEGACY.color, border: PILLAR_SURFACE.LEGACY.border },
 };
 
 export function EligibilityGatePanel({ summary }: EligibilityGatePanelProps) {

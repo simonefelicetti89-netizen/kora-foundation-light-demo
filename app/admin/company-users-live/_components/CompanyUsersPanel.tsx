@@ -100,6 +100,7 @@ export function CompanyUsersPanel({ tenantId }: { tenantId: string }) {
             Nessun utente ancora associato a questo tenant.
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="text-left text-[10px] uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
@@ -122,6 +123,7 @@ export function CompanyUsersPanel({ tenantId }: { tenantId: string }) {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

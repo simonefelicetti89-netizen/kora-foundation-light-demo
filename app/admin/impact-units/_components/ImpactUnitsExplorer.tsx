@@ -229,7 +229,7 @@ export function ImpactUnitsExplorer({ userEmail }: { userEmail: string }) {
 
           {/* Pillar breakdown */}
           <SectionHeading>Distribuzione per Pillar</SectionHeading>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem', marginBottom: '1.5rem' }}>
             {PILLAR_ORDER.map((p) => {
               const iu  = data.summary!.pillarTotals[p];
               const pct = data.summary!.totalIU > 0 ? (iu / data.summary!.totalIU * 100).toFixed(1) : '0.0';

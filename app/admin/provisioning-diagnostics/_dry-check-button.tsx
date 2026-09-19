@@ -83,6 +83,7 @@ export function DryCheckButton() {
             B99 Readiness: {result.verdict}
           </span>
 
+          <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr>
@@ -105,6 +106,7 @@ export function DryCheckButton() {
               ))}
             </tbody>
           </table>
+          </div>
 
           <p className="text-xs text-gray-400">
             Eseguito: {new Date(result.timestamp).toLocaleString('it-IT')}
