@@ -91,14 +91,19 @@ describe('KORA-WP-116 — eligibility-set/taxonomy partition integrity, cross-ch
     expect(isEligibleForAdvisorConfirmation('Strengthening')).toBe(true);
   });
 
-  it('isCurrentlyConfirmable() cross-checks live KORA-WP-113 Morphogenesis support, not merely canon-eligibility — today all four eligible categories are dormant (no live mapping)', async () => {
+  it('isCurrentlyConfirmable() cross-checks live KORA-WP-113 Morphogenesis support, not merely canon-eligibility — KORAL Morphology Package A (2026-09-19) gave all four eligible categories a live mapping, with ZERO code change in this file or review-service.ts (exactly as this function\'s own header promised: "structurally extensible without redesign")', async () => {
     const { isCurrentlyConfirmable } = await import('@/lib/living-koral-review/types');
     const { getMorphogenesisOperationMappings } = await import('@/lib/living-koral-morphogenesis-config/v1');
     for (const cat of ['Strengthening', 'Weakening', 'Reorientation', 'Stabilization'] as const) {
       const mapping = getMorphogenesisOperationMappings().find((m) => m.category === cat);
-      expect(mapping?.operation).toBeNull(); // structurally extensible: this test documents TODAY's state, not a hardcoded assumption — the moment a mapping appears this line (and isCurrentlyConfirmable) both flip automatically
-      expect(isCurrentlyConfirmable(cat)).toBe(false);
+      expect(mapping?.operation).not.toBeNull(); // documents TODAY's state (Package A) — a future category could in principle go dormant again only by a deliberate config edit, never silently
+      expect(isCurrentlyConfirmable(cat)).toBe(true);
     }
+    // Consolidation remains the one canon-eligible-in-principle... no,
+    // Consolidation is canon-INELIGIBLE (excluded set, doc 129 Part 12) —
+    // isEligibleForAdvisorConfirmation('Consolidation') is false, so
+    // isCurrentlyConfirmable is false regardless of any future mapping.
+    expect(isCurrentlyConfirmable('Consolidation')).toBe(false);
     // A discrete category (Emergence) DOES have live support but is never
     // canon-eligible — isCurrentlyConfirmable requires both.
     expect(isCurrentlyConfirmable('Emergence')).toBe(false);
@@ -174,9 +179,9 @@ describe.skipIf(!ready)('KORA-WP-116 — real service-layer proof (local Supabas
   let tenantId: string;
   let assignmentId: string;
   let advisorIdentityId: string;
-  let dormantEligibleCandidateId: string; // Strengthening — canon-eligible, but no live Morphogenesis mapping today
+  let eligibleCandidateId: string; // Strengthening — canon-eligible AND (Package A, 2026-09-19) now has a live Morphogenesis mapping
   let excludedCandidateId: string; // Emergence — never eligible
-  let consolidationCandidateId: string; // Consolidation — corrected: never eligible (was wrongly eligible pre-remediation)
+  let consolidationCandidateId: string; // Consolidation — never eligible (canon-excluded, doc 129 Part 12) regardless of any future mapping
   let recognizedId: string; // Weakening, already RECOGNIZED — Mode A target
 
   it('setup: tenant + advisor identity + active Assignment + Material Change fixtures', async () => {
@@ -221,7 +226,7 @@ describe.skipIf(!ready)('KORA-WP-116 — real service-layer proof (local Supabas
       [qualification.rows[0].id],
     );
 
-    dormantEligibleCandidateId = await insertMaterialChange('Strengthening', 'CANDIDATE');
+    eligibleCandidateId = await insertMaterialChange('Strengthening', 'CANDIDATE');
     excludedCandidateId = await insertMaterialChange('Emergence', 'CANDIDATE');
     consolidationCandidateId = await insertMaterialChange('Consolidation', 'CANDIDATE');
     recognizedId = await insertMaterialChange('Weakening', 'RECOGNIZED');
@@ -250,14 +255,14 @@ describe.skipIf(!ready)('KORA-WP-116 — real service-layer proof (local Supabas
   // structurally extensible (isCurrentlyConfirmable's own composition,
   // already proven in the structural section above). ─────────────────────
 
-  it('listKoralReviewSubjects: eligibleForConfirmation is EMPTY today (all eligible categories are currently dormant) — recognizedForInterpretation still offers the RECOGNIZED change', async () => {
+  it('listKoralReviewSubjects: eligibleForConfirmation now INCLUDES a live-eligible category (Strengthening, Package A) — Emergence/Consolidation remain correctly excluded (canon-ineligible, never a live-mapping question) — recognizedForInterpretation still offers the RECOGNIZED change', async () => {
     const { listKoralReviewSubjects } = await import('@/lib/living-koral-review/review-service');
     const subjects = await listKoralReviewSubjects(assignmentId, advisorIdentityId);
 
-    expect(subjects.eligibleForConfirmation.map((m) => m.id)).not.toContain(dormantEligibleCandidateId);
-    expect(subjects.eligibleForConfirmation.map((m) => m.id)).not.toContain(excludedCandidateId);
-    expect(subjects.eligibleForConfirmation.map((m) => m.id)).not.toContain(consolidationCandidateId);
-    expect(subjects.eligibleForConfirmation).toHaveLength(0); // no live Advisor confirmation action to present — the UI (unchanged) will correctly show its empty state
+    expect(subjects.eligibleForConfirmation.map((m) => m.id)).toContain(eligibleCandidateId); // Package A — a real live Advisor confirmation action now exists for this CANDIDATE
+    expect(subjects.eligibleForConfirmation.map((m) => m.id)).not.toContain(excludedCandidateId); // Emergence — never canon-eligible, unaffected by any mapping
+    expect(subjects.eligibleForConfirmation.map((m) => m.id)).not.toContain(consolidationCandidateId); // Consolidation — never canon-eligible, unaffected by any mapping
+    expect(subjects.eligibleForConfirmation).toHaveLength(1); // exactly the one genuinely eligible+live CANDIDATE fixture — supported morphology is not the same as every CANDIDATE becoming confirmable
     expect(subjects.recognizedForInterpretation.map((m) => m.id)).toContain(recognizedId);
   });
 
@@ -288,7 +293,7 @@ describe.skipIf(!ready)('KORA-WP-116 — real service-layer proof (local Supabas
   it('interpretRecognizedChange (Mode A) rejects a still-CANDIDATE Material Change — Mode A applies only to RECOGNIZED changes', async () => {
     const { interpretRecognizedChange } = await import('@/lib/living-koral-review/review-service');
     await expect(
-      interpretRecognizedChange({ assignmentId, callerAdvisorId: advisorIdentityId, materialChangeId: dormantEligibleCandidateId, interpretation: 'x', actorId: ACTOR_ID }),
+      interpretRecognizedChange({ assignmentId, callerAdvisorId: advisorIdentityId, materialChangeId: eligibleCandidateId, interpretation: 'x', actorId: ACTOR_ID }),
     ).rejects.toThrow(/still CANDIDATE/);
   });
 
@@ -312,33 +317,46 @@ describe.skipIf(!ready)('KORA-WP-116 — real service-layer proof (local Supabas
     expect(row.rows[0].status).toBe('CANDIDATE');
   });
 
-  // ── Required permanent test #1/#2: a genuinely canon-eligible category
-  // (Strengthening) still cannot become RECOGNIZED while KORA-WP-113 has
-  // no live operation mapping for it — the fail-closed gate applies
-  // equally to the real eligible set, not only to the always-excluded
-  // categories above. ──────────────────────────────────────────────────
+  // ── KORAL Morphology Package A (2026-09-19) — the fail-closed gate's own
+  // POSITIVE case, now directly exercisable: a genuinely canon-eligible
+  // category (Strengthening) that DOES now have a live KORA-WP-113
+  // Morphogenesis mapping succeeds end-to-end through the full 10-step
+  // Mode B sequence — RECOGNIZED, a real Transformation Ledger row
+  // (increase_extent), both governance events, all in one call. This
+  // replaces the pre-Package-A negative test of the same shape (which
+  // proved the fail-closed gate's REJECTION path; that path itself is
+  // still proven, unchanged, immediately below by the Consolidation/
+  // Emergence tests above). No fabricated domain producer is introduced
+  // anywhere by this test — eligibleCandidateId is a synthetic CANDIDATE
+  // fixture inserted directly by SQL (identical to every other fixture in
+  // this file), exercising the CONFIRMATION MACHINERY only, never a real
+  // production candidate-creation path (report 183's own explicit "NO
+  // FAKE LIVE PRODUCERS" boundary — no domain adapter for this category
+  // exists anywhere in the codebase, unchanged). ─────────────────────────
 
-  it('confirmAmbiguousCandidate (Mode B) rejects a canon-eligible but currently-dormant category (Strengthening — no live KORA-WP-113 Morphogenesis mapping) — no partial RECOGNIZED-without-transform state, no state touched at all', async () => {
+  it('confirmAmbiguousCandidate (Mode B) SUCCEEDS for a canon-eligible category that now has a live KORA-WP-113 Morphogenesis mapping (Strengthening, Package A) — promotes to RECOGNIZED, chains into a real increase_extent Transformation Ledger row, records both governance events', async () => {
     const { confirmAmbiguousCandidate } = await import('@/lib/living-koral-review/review-service');
 
-    const govBefore = await pgClient.query(`SELECT count(*)::int AS n FROM audit.governance_event WHERE object_id = $1 AND event_type = 'koral_review.candidate_confirmed'`, [dormantEligibleCandidateId]);
+    const govBefore = await pgClient.query(`SELECT count(*)::int AS n FROM audit.governance_event WHERE object_id = $1 AND event_type = 'koral_review.candidate_confirmed'`, [eligibleCandidateId]);
 
-    await expect(
-      confirmAmbiguousCandidate({ assignmentId, callerAdvisorId: advisorIdentityId, materialChangeId: dormantEligibleCandidateId, actorId: ACTOR_ID }),
-    ).rejects.toThrow(/not currently confirmable/);
+    const result = await confirmAmbiguousCandidate({ assignmentId, callerAdvisorId: advisorIdentityId, materialChangeId: eligibleCandidateId, actorId: ACTOR_ID });
+    expect(result.recognized).toBe(true);
+    expect(result.materialChange.status).toBe('RECOGNIZED');
+    expect(result.materialChange.recognitionSource).toBe('advisor-confirmed');
 
-    const row = await pgClient.query(`SELECT status, recognition_source FROM gov.living_koral_material_change WHERE id = $1`, [dormantEligibleCandidateId]);
-    expect(row.rows[0].status).toBe('CANDIDATE'); // never promoted
-    expect(row.rows[0].recognition_source).toBeNull();
+    const row = await pgClient.query(`SELECT status, recognition_source FROM gov.living_koral_material_change WHERE id = $1`, [eligibleCandidateId]);
+    expect(row.rows[0].status).toBe('RECOGNIZED');
+    expect(row.rows[0].recognition_source).toBe('advisor-confirmed');
 
-    const ledger = await pgClient.query(`SELECT count(*)::int AS n FROM gov.living_koral_transformation_ledger WHERE material_change_id = $1`, [dormantEligibleCandidateId]);
-    expect(ledger.rows[0].n).toBe(0); // no partial transformation either
+    const ledger = await pgClient.query(`SELECT operation FROM gov.living_koral_transformation_ledger WHERE material_change_id = $1`, [eligibleCandidateId]);
+    expect(ledger.rows).toHaveLength(1); // exactly one real transformation, chained through step 10
+    expect(ledger.rows[0].operation).toBe('increase_extent');
 
-    const govAfter = await pgClient.query(`SELECT count(*)::int AS n FROM audit.governance_event WHERE object_id = $1 AND event_type = 'koral_review.candidate_confirmed'`, [dormantEligibleCandidateId]);
-    expect(govAfter.rows[0].n).toBe(govBefore.rows[0].n); // no domain provenance event either — nothing happened at all
+    const govAfter = await pgClient.query(`SELECT count(*)::int AS n FROM audit.governance_event WHERE object_id = $1 AND event_type = 'koral_review.candidate_confirmed'`, [eligibleCandidateId]);
+    expect(govAfter.rows[0].n).toBe(govBefore.rows[0].n + 1); // step 9's own domain provenance event
   });
 
-  it('CONCURRENCY — two genuinely concurrent confirmAmbiguousCandidate() calls on the SAME dormant-but-eligible CANDIDATE both reject cleanly, with zero state mutation from either (no race-induced partial state)', async () => {
+  it('CONCURRENCY — two genuinely concurrent confirmAmbiguousCandidate() calls on the SAME now-live-eligible CANDIDATE (Weakening, Package A) resolve to exactly ONE winner, ONE RECOGNIZED promotion, ONE decrease_extent ledger row — no lost update, no duplicate transformation (mirrors the CAS-race pattern the CORROBORATING test below already proved for Disappearance)', async () => {
     const { confirmAmbiguousCandidate } = await import('@/lib/living-koral-review/review-service');
     const raceCandidateId = await insertMaterialChange('Weakening', 'CANDIDATE');
 
@@ -347,23 +365,35 @@ describe.skipIf(!ready)('KORA-WP-116 — real service-layer proof (local Supabas
       confirmAmbiguousCandidate({ assignmentId, callerAdvisorId: advisorIdentityId, materialChangeId: raceCandidateId, actorId: ACTOR_ID }),
     ]);
 
-    expect(results.every((r) => r.status === 'rejected')).toBe(true);
+    // confirmAmbiguousCandidate's own graceful-race wrapper (review-service.ts,
+    // unchanged by Package A) means BOTH calls typically resolve successfully
+    // — the loser is handed the winner's own already-RECOGNIZED result
+    // rather than an error (see that function's own header) — so this
+    // asserts on FINAL STATE (exactly-once), not on which promise settled
+    // how.
+    const settled = results.filter((r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof confirmAmbiguousCandidate>>> => r.status === 'fulfilled');
+    expect(settled.length).toBeGreaterThanOrEqual(1);
+    expect(settled.every((r) => r.value.recognized === true)).toBe(true);
 
     const row = await pgClient.query(`SELECT status FROM gov.living_koral_material_change WHERE id = $1`, [raceCandidateId]);
-    expect(row.rows[0].status).toBe('CANDIDATE');
-    const ledger = await pgClient.query(`SELECT count(*)::int AS n FROM gov.living_koral_transformation_ledger WHERE material_change_id = $1`, [raceCandidateId]);
-    expect(ledger.rows[0].n).toBe(0);
+    expect(row.rows[0].status).toBe('RECOGNIZED');
+    const ledger = await pgClient.query(`SELECT operation FROM gov.living_koral_transformation_ledger WHERE material_change_id = $1`, [raceCandidateId]);
+    expect(ledger.rows).toHaveLength(1); // exactly one — no duplicate transformation from the race
+    expect(ledger.rows[0].operation).toBe('decrease_extent');
   });
 
-  // ── Corroborating proof (not a claim of live WP-116 Advisor reachability
-  // for these categories — Disappearance is never Advisor-eligible; this
-  // proves the SHARED underlying primitive confirmAmbiguousCandidate's own
-  // graceful-race wrapper depends on, which activates automatically,
-  // unchanged, the day KORA-WP-113 gains a mapping for an eligible
-  // category) — required permanent test #7/#8: exactly-once recognition +
-  // exactly-once transformation under genuine concurrency, no
-  // fabrication: Disappearance already has real, live, KORA-WP-113
-  // support today. ─────────────────────────────────────────────────────
+  // ── Corroborating proof (Disappearance is never Advisor-eligible, so
+  // this is not itself a Mode B reachability claim) — required permanent
+  // test #7/#8: exactly-once recognition + exactly-once transformation
+  // under genuine concurrency, proven directly against the underlying
+  // KORA-WP-112/113 primitives confirmAmbiguousCandidate's own
+  // graceful-race wrapper reuses unchanged. "The day KORA-WP-113 gains a
+  // mapping for an eligible category" (this test's own original framing)
+  // has now arrived — KORAL Morphology Package A, 2026-09-19 — and the
+  // DIRECT Mode B proof for that case now exists above (the Strengthening
+  // success test and the Weakening concurrency test); this test remains a
+  // useful, independent corroboration of the same shared CAS mechanism
+  // against an always-live category. ──────────────────────────────────
 
   it('CORROBORATING — the underlying KORA-WP-112 recognition CAS + KORA-WP-113 chaining (which confirmAmbiguousCandidate reuses unchanged) is exactly-once under real concurrency, proven directly against a currently-supported category (Disappearance) — no Morphogenesis mapping fabricated', async () => {
     const { assessMaterialChangeCandidate, getMaterialChangeCandidate } = await import('@/lib/living-koral-material-change/material-change-service');

@@ -16,12 +16,20 @@
 import type { MaterialChangeTaxonomyEntry } from '@/lib/living-koral-config/types';
 
 /**
- * The only two deterministic operations Morphogenesis Engine v1 can ever
- * produce — matching the only two live domain-producible categories
- * (pre-check 170 §9). Never extended silently; a new operation requires a
- * new engine version and a new migration widening the DB CHECK constraint.
+ * The deterministic operations Morphogenesis Engine v1 can produce.
+ * add_element/remove_element (Emergence/Disappearance) are the original
+ * two live operations (pre-check 170 §9). Widened by KORAL Morphology
+ * Package A (migration 087, report 183) with increase_extent/
+ * decrease_extent (Strengthening/Weakening) and reorient (Reorientation)
+ * and stabilize (Stabilization) — each still deterministic and
+ * single-lineage, per
+ * .kora-audit/output/182_KORA_MORPHOLOGY_V1_FINAL_FOUNDER_DECISIONS_AND_IMPLEMENTATION_SPLIT.md.
+ * Consolidation's own future `fuse` operation is NOT here (Package B,
+ * later, a separate migration — multi-source, not single-lineage, report
+ * 182 §10). Never extended silently; a new operation requires a new
+ * migration widening the DB CHECK constraint.
  */
-export type LivingKoralMorphogenesisOperation = 'add_element' | 'remove_element';
+export type LivingKoralMorphogenesisOperation = 'add_element' | 'remove_element' | 'increase_extent' | 'decrease_extent' | 'reorient' | 'stabilize';
 
 /**
  * One taxonomy category's mapping to a deterministic operation —

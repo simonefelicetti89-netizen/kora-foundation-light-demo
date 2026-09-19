@@ -262,6 +262,17 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // advisor-case-service.ts), never a direct RLS-mediated user write path.
   { path: 'lib/living-koral-review/review-service.ts', reason: 'documented server-only service — KORAL Review Mode A (interpret)/Mode B (confirm), Assignment-gated, KORA-WP-116' },
 
+  // KORA-WP-117: Edition-bounded ledger/material-change replay (Level A
+  // lineage reconstruction) — server-only, Pattern-A. Deliberately does
+  // NOT read analytics.living_koral_edition itself (that table grants
+  // `authenticated` SELECT only, never service_role — resolved instead
+  // via the existing RLS-respecting getLivingKoralEditionById(), see
+  // mark-service.ts's own header); this file only ever reads
+  // gov.living_koral_transformation_ledger / gov.living_koral_material_change,
+  // both KORA_ADMIN-only under RLS and structurally unreachable by a
+  // Company session any other way.
+  { path: 'lib/living-koral-mark/edition-lineage-service.ts', reason: 'documented server-only service — Edition-bounded ledger/material-change lineage replay (Level A continuity), KORA-WP-117' },
+
   // ── Documented pre-existing exceptions (NOT part of this sprint's 6-page
   // scope) — real, tracked, not silently endorsed ─────────────────────────
   {

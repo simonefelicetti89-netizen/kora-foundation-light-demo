@@ -50,18 +50,29 @@ describe('KORA-WP-113 — consumes KORA-WP-111\'s own config, never redefines th
   });
 });
 
-describe('KORA-WP-113 — Morphogenesis Engine v1 config: only two live operations, five dormant categories legal-but-unmapped', () => {
+describe('KORA-WP-113 — Morphogenesis Engine v1 config: KORAL Morphology Package A (2026-09-19) widened live operations from 2 to 6 — Consolidation remains the sole dormant category', () => {
   it('getMorphogenesisOperationForCategory returns the correct live mapping for Emergence/Disappearance', async () => {
     const { getMorphogenesisOperationForCategory } = await import('@/lib/living-koral-morphogenesis-config/v1');
     expect(getMorphogenesisOperationForCategory('Emergence')).toBe('add_element');
     expect(getMorphogenesisOperationForCategory('Disappearance')).toBe('remove_element');
   });
 
-  it('getMorphogenesisOperationForCategory throws for every dormant category (this task\'s own §13 — keeps unsupported live production impossible)', async () => {
+  it('getMorphogenesisOperationForCategory returns the correct live Package-A mapping for Strengthening/Weakening/Reorientation/Stabilization (report 182 §3/§4/§5, report 183)', async () => {
     const { getMorphogenesisOperationForCategory } = await import('@/lib/living-koral-morphogenesis-config/v1');
-    for (const dormant of ['Strengthening', 'Weakening', 'Consolidation', 'Reorientation', 'Stabilization'] as const) {
-      expect(() => getMorphogenesisOperationForCategory(dormant)).toThrow(/no live Morphogenesis Engine v1 operation mapping/);
-    }
+    expect(getMorphogenesisOperationForCategory('Strengthening')).toBe('increase_extent');
+    expect(getMorphogenesisOperationForCategory('Weakening')).toBe('decrease_extent');
+    expect(getMorphogenesisOperationForCategory('Reorientation')).toBe('reorient');
+    expect(getMorphogenesisOperationForCategory('Stabilization')).toBe('stabilize');
+  });
+
+  it('getMorphogenesisOperationForCategory throws for the one remaining dormant category, Consolidation (Package B, later, still no live producer or mapping)', async () => {
+    const { getMorphogenesisOperationForCategory } = await import('@/lib/living-koral-morphogenesis-config/v1');
+    expect(() => getMorphogenesisOperationForCategory('Consolidation')).toThrow(/no live Morphogenesis Engine v1 operation mapping/);
+  });
+
+  it('engineVersion was bumped to morphogenesis-v1.1 — a real capability change (four categories dormant->live), not a fake pre-commit version bump', async () => {
+    const { getMorphogenesisEngineVersion } = await import('@/lib/living-koral-morphogenesis-config/v1');
+    expect(getMorphogenesisEngineVersion()).toBe('morphogenesis-v1.1');
   });
 
   it('the config carries all seven taxonomy categories (legal semantic input) — none silently dropped', async () => {
@@ -166,11 +177,11 @@ describe('KORA-WP-113 — no duplicate Intelligence engine, no Prime-specific KO
 });
 
 describe('KORA-WP-113 — no migration beyond 082 was introduced BY THIS WP (a later WP may legitimately raise the ceiling further)', () => {
-  it('supabase/migrations/ ceiling is at least 082 (WP-113\'s own migration exists) — bumped to 083/084 by KORA-WP-114, to 085 by KORA-WP-115, then to 086 by KORA-WP-116, later, unrelated WPs; this assertion\'s own intent is unaffected', async () => {
+  it('supabase/migrations/ ceiling is at least 082 (WP-113\'s own migration exists) — bumped to 083/084 by KORA-WP-114, to 085 by KORA-WP-115, to 086 by KORA-WP-116, to 087 by KORAL Morphology Package A (2026-09-19, narrow additive widening of THIS WP\'s own operation CHECK/RPC — not a new table), to 088 by the same Package A\'s own cardinality remediation (gov.living_koral_material_change, WP-112\'s own table, not this WP\'s own), later, unrelated migrations; this assertion\'s own intent is unaffected', async () => {
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(86);
+    expect(Math.max(...numbers)).toBe(88);
     expect(numbers).toContain(82);
   });
 });
@@ -211,6 +222,20 @@ describe('KORA-WP-113 — replayLivingKoralStateFromLedger(): determinism, local
     ]);
     expect(result.regions.initiative.elementCount).toBe(0);
     expect(result.revision).toBe(3); // all three events counted, even the floored one — never silently dropped
+  });
+
+  it('KORAL Morphology Package A — increase_extent/decrease_extent/reorient/stabilize are ZERO-DELTA to regions/elementCount (they change extent/direction/stability, never presence/count) but still counted toward revision (report 183 §4 — this is the exact fix for the delta bug this task also found and corrected)', async () => {
+    const { replayLivingKoralStateFromLedger } = await import('@/lib/living-koral-transformation-ledger/transformation-ledger-service');
+    const base = { tenantId: 't1', affectedDomain: 'initiative' as const, taxonomyConfigVersion: '1.0', morphogenesisEngineVersion: 'morphogenesis-v1.1', resultingStateRevision: 1, occurredAt: '2026-01-01T00:00:00Z', actorRole: 'SYSTEM' as const, actorId: 'x', createdAt: '2026-01-01T00:00:00Z' };
+    const result = replayLivingKoralStateFromLedger([
+      { ...base, id: 'a', materialChangeId: 'mc1', category: 'Emergence', operation: 'add_element', recognizedAt: '2026-01-01T00:00:00Z' },
+      { ...base, id: 'b', materialChangeId: 'mc2', category: 'Strengthening', operation: 'increase_extent', recognizedAt: '2026-01-02T00:00:00Z' },
+      { ...base, id: 'c', materialChangeId: 'mc3', category: 'Weakening', operation: 'decrease_extent', recognizedAt: '2026-01-03T00:00:00Z' },
+      { ...base, id: 'd', materialChangeId: 'mc4', category: 'Reorientation', operation: 'reorient', recognizedAt: '2026-01-04T00:00:00Z' },
+      { ...base, id: 'e', materialChangeId: 'mc5', category: 'Stabilization', operation: 'stabilize', recognizedAt: '2026-01-05T00:00:00Z' },
+    ]);
+    expect(result.regions.initiative.elementCount).toBe(1); // only the add_element affected the count — the four Package-A ops did not touch it at all
+    expect(result.revision).toBe(5); // every event still counted toward revision — none silently dropped
   });
 
   it('REPLAY ORDER — folds in recognized_at order regardless of input array order (Company-local canonical order, pre-check 170 §7)', async () => {
@@ -367,16 +392,60 @@ describe.skipIf(!ready)('KORA-WP-113 — real service-layer proof (local Supabas
     expect(stateAfterConcurrency?.revision).toBe(4);
     expect(stateAfterConcurrency?.regions.initiative.elementCount).toBe(2); // both adds landed
 
-    // 9. NEGATIVE — a dormant category has no live producer, so no
-    //    RECOGNIZED row of that category can even exist to test the RPC
-    //    against in a realistic way; the config-level rejection is already
-    //    proven above without a DB. Confirmed here that the RPC's own
-    //    independent CHECK constraint agrees (defense in depth): a direct
-    //    SQL call bypassing the TS config layer is still rejected.
-    const dormantMc = await insertRecognizedMaterialChange('Strengthening');
+    // 9. NEGATIVE — Consolidation is now the ONE remaining dormant category
+    //    (KORAL Morphology Package A, 2026-09-19, widened Strengthening/
+    //    Weakening/Reorientation/Stabilization to live) — no live producer
+    //    exists for it, so no RECOGNIZED row of that category can even
+    //    exist to test the RPC against in a realistic way; the
+    //    config-level rejection is already proven above without a DB.
+    //    Confirmed here that the RPC's own independent CHECK constraint
+    //    agrees (defense in depth): a direct SQL call with an arbitrary,
+    //    never-configured operation string is still rejected, regardless
+    //    of category.
+    const dormantMc = await insertRecognizedMaterialChange('Consolidation');
     await expect(
-      pgClient.query(`SELECT * FROM gov.record_living_koral_transformation($1, 'strengthen_a_lot', 'morphogenesis-v1.0')`, [dormantMc]),
+      pgClient.query(`SELECT * FROM gov.record_living_koral_transformation($1, 'fuse_a_lot', 'morphogenesis-v1.1')`, [dormantMc]),
     ).rejects.toThrow(/kora\/invalid-operation/);
+
+    // 10. KORAL MORPHOLOGY PACKAGE A — POSITIVE proof: migration 087's own
+    //     widened RPC accepts all four new operations, advances revision
+    //     each time, and leaves `regions`/elementCount COMPLETELY
+    //     unchanged (report 183 §4/§6 — these operations change extent/
+    //     direction/stability, never presence/count).
+    const stateBeforePackageA = await getCurrentLivingKoralState(tenantId);
+    const revisionBeforePackageA = stateBeforePackageA!.revision;
+    const countBeforePackageA = stateBeforePackageA!.regions.initiative.elementCount;
+
+    const strengtheningMc = await insertRecognizedMaterialChange('Strengthening');
+    const rStrengthen = await recordLivingKoralTransformation({ materialChangeId: strengtheningMc, tenantId });
+    expect(rStrengthen.created).toBe(true);
+    expect(rStrengthen.resultingStateRevision).toBe(revisionBeforePackageA + 1);
+
+    const weakeningMc = await insertRecognizedMaterialChange('Weakening');
+    const rWeaken = await recordLivingKoralTransformation({ materialChangeId: weakeningMc, tenantId });
+    expect(rWeaken.created).toBe(true);
+    expect(rWeaken.resultingStateRevision).toBe(revisionBeforePackageA + 2);
+
+    const reorientationMc = await insertRecognizedMaterialChange('Reorientation');
+    const rReorient = await recordLivingKoralTransformation({ materialChangeId: reorientationMc, tenantId });
+    expect(rReorient.created).toBe(true);
+    expect(rReorient.resultingStateRevision).toBe(revisionBeforePackageA + 3);
+
+    const stabilizationMc = await insertRecognizedMaterialChange('Stabilization');
+    const rStabilize = await recordLivingKoralTransformation({ materialChangeId: stabilizationMc, tenantId });
+    expect(rStabilize.created).toBe(true);
+    expect(rStabilize.resultingStateRevision).toBe(revisionBeforePackageA + 4);
+
+    const stateAfterPackageA = await getCurrentLivingKoralState(tenantId);
+    expect(stateAfterPackageA?.revision).toBe(revisionBeforePackageA + 4); // revision advanced for every one of the four
+    expect(stateAfterPackageA?.regions.initiative.elementCount).toBe(countBeforePackageA); // element_count completely untouched by any of the four
+
+    // 11. RETRY of a Package-A operation remains exactly-once, identically
+    //     to add_element/remove_element (this task's own §requirement:
+    //     "same Material Change affects state exactly once").
+    const rStrengthenRetry = await recordLivingKoralTransformation({ materialChangeId: strengtheningMc, tenantId });
+    expect(rStrengthenRetry.created).toBe(false);
+    expect(rStrengthenRetry.resultingStateRevision).toBe(rStrengthen.resultingStateRevision);
 
     await pgClient.end();
   }, 30_000);

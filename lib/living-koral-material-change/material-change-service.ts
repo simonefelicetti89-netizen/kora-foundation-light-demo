@@ -60,13 +60,54 @@ export interface CreateMaterialChangeCandidateParams {
   provenance: string;
   actorRole: string;
   actorId: string;
+  /**
+   * KORAL Morphology Package A cardinality remediation (migration 088,
+   * 2026-09-19). OPTIONAL. Only pass this when the caller has independent,
+   * real knowledge that this observation is a genuinely NEW transition —
+   * not a retry — even though the most recent existing Material Change
+   * for this source entity is of the SAME category (the only scenario
+   * this parameter exists for; see the function's own header for why this
+   * one case is not auto-detectable). Always the id of a real,
+   * already-persisted, immutable Material Change row for this exact
+   * source entity — never an arbitrary/user-supplied key, never a
+   * timestamp, never a fingerprint invented by this service. Omit it for
+   * every ordinary call (including every category-change and every
+   * first-ever occurrence) — the default auto-computed predecessor
+   * already handles those correctly and safely.
+   */
+  previousStateReference?: string;
 }
 
 /**
- * Creates a CANDIDATE row. Idempotent: re-observing the same
- * (tenant, sourceEntityType, sourceEntityId, category) transition is a
- * safe no-op, enforced by the migration's own unique index — never a
- * duplicate row (pre-check 168 §M).
+ * Creates a CANDIDATE row. Idempotent: re-observing the same real
+ * transition is a safe no-op, enforced by the migration's own unique
+ * index (pre-check 168 §M; widened by migration 088, KORAL Morphology
+ * Package A) — never a duplicate row.
+ *
+ * CANONICAL EVENT IDENTITY (migration 088 addendum, report 183's own
+ * follow-up remediation): (tenant, source, category) ALONE is too coarse
+ * — doc 129 Part 2 defines Strengthening/Weakening/Reorientation as
+ * canonically RECURRENT (a Need may move Hypothesis->Emerging, and LATER,
+ * separately, Emerging->Supported — two distinct Strengthening events for
+ * the SAME source entity). `previous_state_reference` (already a real,
+ * doc-129-named column, previously unpopulated) is now part of the
+ * identity: the id of the most recently created Material Change row (any
+ * status, any category) for this source entity, auto-computed here by
+ * default. This correctly:
+ *   - keeps a genuine retry of the immediately preceding call idempotent
+ *     (recomputing the same predecessor finds the same existing row);
+ *   - correctly chains a NEW category following a DIFFERENT-category
+ *     predecessor (e.g. Disappearance after Emergence);
+ *   - but CANNOT, by itself, distinguish "a retry of the most recent row"
+ *     from "a genuinely new second occurrence of THAT SAME category with
+ *     nothing else having happened in between" — no live domain adapter
+ *     exists today (for Strengthening/Weakening/Reorientation) that could
+ *     supply a real target-state value to disambiguate the two, and this
+ *     service does not invent one. For that one specific, disclosed case,
+ *     the SAFE default is to treat it as idempotent (return the existing
+ *     row, create nothing new) — a caller with genuine, independent
+ *     knowledge that it IS a new occurrence must say so explicitly via
+ *     `previousStateReference` (see that param's own doc comment).
  *
  * Only category types whose framework classification justifies a
  * Material Change may ever be passed here — enforced structurally by
@@ -90,14 +131,45 @@ export async function createMaterialChangeCandidate(params: CreateMaterialChange
   const db = getSupabaseServiceClient();
   const taxonomyConfigVersion = getLivingKoralConfigVersion();
 
-  // Idempotent lookup-or-create: the unique index on
-  // (tenant_id, source_entity_type, source_entity_id, category) is the
-  // real enforcement; this SELECT-first avoids a noisy conflict error on
-  // the expected, common re-observation case.
-  const { data: existing } = await db
-    .schema('gov').from('living_koral_material_change')
-    .select().eq('tenant_id', params.tenantId).eq('source_entity_type', params.sourceEntityType)
-    .eq('source_entity_id', params.sourceEntityId).eq('category', params.category).maybeSingle();
+  let previousStateReference: string | null;
+  if (params.previousStateReference !== undefined) {
+    previousStateReference = params.previousStateReference;
+  } else {
+    const { data: tip } = await db
+      .schema('gov').from('living_koral_material_change')
+      .select('id, category').eq('tenant_id', params.tenantId).eq('source_entity_type', params.sourceEntityType)
+      .eq('source_entity_id', params.sourceEntityId)
+      .order('created_at', { ascending: false }).order('id', { ascending: false })
+      .limit(1).maybeSingle();
+    const tipRow = tip as { id: string; category: string } | null;
+    if (tipRow && tipRow.category === params.category) {
+      // The most recent row for this source is ALREADY of this exact
+      // category — indistinguishable, without caller-supplied evidence,
+      // from a retry of that SAME row (this function's own header). Safe
+      // default: treat as the same transition, return it directly —
+      // never create a second row here.
+      const { data: refetched } = await db
+        .schema('gov').from('living_koral_material_change').select().eq('id', tipRow.id).single();
+      return toRecord(refetched as Record<string, unknown>);
+    }
+    previousStateReference = tipRow?.id ?? null;
+  }
+
+  function byTransitionIdentity<T extends { eq: (col: string, val: unknown) => T; is: (col: string, val: null) => T }>(query: T): T {
+    return previousStateReference ? query.eq('previous_state_reference', previousStateReference) : query.is('previous_state_reference', null);
+  }
+
+  // Idempotent lookup-or-create: the unique index on (tenant_id,
+  // source_entity_type, source_entity_id, category,
+  // previous_state_reference) — migration 088, widened from migration
+  // 081's own coarser (tenant, source, category) grain — is the real
+  // enforcement; this SELECT-first avoids a noisy conflict error on the
+  // expected, common re-observation case.
+  const { data: existing } = await byTransitionIdentity(
+    db.schema('gov').from('living_koral_material_change')
+      .select().eq('tenant_id', params.tenantId).eq('source_entity_type', params.sourceEntityType)
+      .eq('source_entity_id', params.sourceEntityId).eq('category', params.category),
+  ).maybeSingle();
   if (existing) return toRecord(existing as Record<string, unknown>);
 
   const { data, error } = await db
@@ -112,6 +184,7 @@ export async function createMaterialChangeCandidate(params: CreateMaterialChange
       occurred_at: params.occurredAt,
       provenance: params.provenance,
       taxonomy_config_version: taxonomyConfigVersion,
+      previous_state_reference: previousStateReference,
       actor_role: params.actorRole,
       actor_id: params.actorId,
     })
@@ -121,10 +194,11 @@ export async function createMaterialChangeCandidate(params: CreateMaterialChange
     // A concurrent insert may have won the unique-index race between our
     // SELECT and our INSERT — re-select rather than surface a spurious
     // conflict error, preserving the same idempotent-no-op contract.
-    const { data: raced } = await db
-      .schema('gov').from('living_koral_material_change')
-      .select().eq('tenant_id', params.tenantId).eq('source_entity_type', params.sourceEntityType)
-      .eq('source_entity_id', params.sourceEntityId).eq('category', params.category).maybeSingle();
+    const { data: raced } = await byTransitionIdentity(
+      db.schema('gov').from('living_koral_material_change')
+        .select().eq('tenant_id', params.tenantId).eq('source_entity_type', params.sourceEntityType)
+        .eq('source_entity_id', params.sourceEntityId).eq('category', params.category),
+    ).maybeSingle();
     if (raced) return toRecord(raced as Record<string, unknown>);
     throw new Error(`[KORA] createMaterialChangeCandidate failed: ${error?.message ?? 'no data returned'}`);
   }

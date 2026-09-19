@@ -88,6 +88,29 @@ export async function listLivingKoralEditionsForTenant(tenantId: string): Promis
   return (data ?? []).map((row) => toRecord(row as unknown as EditionRow, tenantId));
 }
 
+/**
+ * KORA-WP-117 addition — one-Edition lookup, same RLS-respecting
+ * discipline as listLivingKoralEditionsForTenant() above (this table
+ * grants `authenticated` SELECT only, migration 085 — never
+ * service_role, so this is deliberately NOT read via
+ * getSupabaseServiceClient() elsewhere in the Living KORAL Mark feature;
+ * see lib/living-koral-mark/mark-service.ts's own header). Returns null
+ * for a foreign-tenant or nonexistent editionId, identically — RLS
+ * itself is what makes "foreign" and "nonexistent" indistinguishable
+ * here, never a code-level branch that could leak which case occurred.
+ */
+export async function getLivingKoralEditionById(tenantId: string, editionId: string): Promise<LivingKoralEditionRecord | null> {
+  const db = await getSupabaseServerClient();
+
+  const { data, error } = await db
+    .schema('analytics').from('living_koral_edition')
+    .select('id, name, ledger_id, category, affected_domain, taxonomy_config_version, morphogenesis_engine_version, resulting_state_revision, occurred_at, recognized_at, source_label, actor_id, created_at')
+    .eq('tenant_id', tenantId).eq('id', editionId).maybeSingle();
+
+  if (error) throw new Error(`[KORA] getLivingKoralEditionById failed: ${error.message}`);
+  return data ? toRecord(data as unknown as EditionRow, tenantId) : null;
+}
+
 function classifyRpcError(message: string): 'no_recognized_transformation' | 'invalid_name' | null {
   if (message.includes('kora/no-recognized-transformation')) return 'no_recognized_transformation';
   if (message.includes('kora/invalid-name')) return 'invalid_name';

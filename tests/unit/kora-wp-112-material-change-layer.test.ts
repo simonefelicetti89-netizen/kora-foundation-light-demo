@@ -123,11 +123,11 @@ describe('KORA-WP-112 — reuses the existing governance_event substrate, never 
 });
 
 describe('KORA-WP-112 — no migration beyond 081 was introduced BY THIS WP (a later WP may legitimately raise the ceiling further)', () => {
-  it('supabase/migrations/ ceiling is at least 081 (WP-112\'s own migration exists) — bumped to 082 by KORA-WP-113, to 083/084 by KORA-WP-114, to 085 by KORA-WP-115, then to 086 by KORA-WP-116, all later, unrelated WPs/increments; this assertion\'s own intent is unaffected', async () => {
+  it('supabase/migrations/ ceiling is at least 081 (WP-112\'s own migration exists) — bumped to 082 by KORA-WP-113, to 083/084 by KORA-WP-114, to 085 by KORA-WP-115, to 086 by KORA-WP-116, to 087 by KORAL Morphology Package A (2026-09-19), to 088 by the same Package A\'s own cardinality remediation (gov.living_koral_material_change\'s own uniqueness widened — this IS this WP\'s own table, see the dedicated Package-A-cardinality describe block below for the full behavioral proof), all later, unrelated WPs/increments; this assertion\'s own intent (WP-112 itself introduced no migration beyond 081) is unaffected', async () => {
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(86);
+    expect(Math.max(...numbers)).toBe(88);
     expect(numbers).toContain(81);
   });
 });
@@ -274,6 +274,191 @@ describe.skipIf(!ready)('KORA-WP-112 — real service-layer proof (local Supabas
       reverifyAgainstSource: async () => false, // the real record never actually confirms it
     });
     expect(staleResult?.status).toBe('CANDIDATE'); // never promoted, never a REJECTED state
+
+    await pgClient.end();
+  }, 30_000);
+});
+
+// ── KORAL Morphology Package A — Canonical Cardinality Remediation
+// (migration 088, 2026-09-19). Self-contained real-DB proof, its own
+// tenant/pgClient — see report 183's own addendum for the full canonical
+// rationale (why migration 081's own (tenant, source, category) index was
+// too coarse for Strengthening/Weakening/Reorientation's own canonical
+// recurrence, doc 129 Part 2). Synthetic test fixtures created directly
+// through createMaterialChangeCandidate() (the real, approved TS service),
+// never a fabricated domain adapter — the "NO FAKE LIVE PRODUCERS"
+// boundary is unaffected: no adapter anywhere creates real CANDIDATEs for
+// these categories. ─────────────────────────────────────────────────────
+
+describe.skipIf(!ready)('KORAL Morphology Package A — Canonical Cardinality Remediation (migration 088, real DB)', () => {
+  let pgClient: InstanceType<typeof Client>;
+  let tenantId: string;
+
+  it('setup + full cardinality remediation proof', async () => {
+    if (!pgUrl || !supabaseUrl || !serviceRoleKey) throw new Error('unreachable: only runs when ready');
+    process.env.NEXT_PUBLIC_SUPABASE_URL = supabaseUrl;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = serviceRoleKey;
+
+    pgClient = new Client({ connectionString: pgUrl });
+    await pgClient.connect();
+
+    const tenant = await pgClient.query<{ id: string }>(
+      `INSERT INTO analytics.tenant (tenant_code, company_name, tenant_kind) VALUES ($1, $2, 'TEST') RETURNING id`,
+      [`WP112-CARDINALITY-${RUN_SUFFIX_HEX}`, 'WP-112 Cardinality Fixture Tenant'],
+    );
+    tenantId = tenant.rows[0].id;
+
+    const { createMaterialChangeCandidate } = await import('@/lib/living-koral-material-change/material-change-service');
+
+    const sourceEntityId = (await pgClient.query<{ id: string }>('SELECT gen_random_uuid() AS id')).rows[0].id;
+    const actorRole = 'KORA_ADMIN';
+    const actorId = `wp112-cardinality-actor-${RUN_SUFFIX_HEX}`;
+
+    async function recognize(category: string, id: string) {
+      await pgClient.query(`UPDATE gov.living_koral_material_change SET status='RECOGNIZED', recognized_at=now(), recognition_source='kora-automatic' WHERE id=$1`, [id]);
+      void category;
+    }
+
+    // A. Emergence — the source entity's first-ever Material Change (previous_state_reference auto-computed as NULL).
+    const emergence = await createMaterialChangeCandidate({
+      tenantId, category: 'Emergence', affectedDomain: 'initiative', sourceEntityType: 'initiative', sourceEntityId,
+      occurredAt: new Date().toISOString(), provenance: 'cardinality fixture — emergence', actorRole, actorId,
+    });
+    await recognize('Emergence', emergence.id);
+    expect(emergence.previousStateReference).toBeNull();
+
+    // A. IDEMPOTENCY — the SAME exact event, replayed twice, is ONE Material Change (no explicit previousStateReference override — auto-default correctly detects the retry, since the most recent row for this source IS already Emergence).
+    const emergenceRetry = await createMaterialChangeCandidate({
+      tenantId, category: 'Emergence', affectedDomain: 'initiative', sourceEntityType: 'initiative', sourceEntityId,
+      occurredAt: new Date().toISOString(), provenance: 'cardinality fixture — emergence retried', actorRole, actorId,
+    });
+    expect(emergenceRetry.id).toBe(emergence.id);
+    const countAfterRetry = await pgClient.query(`SELECT count(*)::int AS n FROM gov.living_koral_material_change WHERE source_entity_id = $1`, [sourceEntityId]);
+    expect(countAfterRetry.rows[0].n).toBe(1);
+
+    // B. Two GENUINELY DISTINCT Strengthening events for the SAME source —
+    // each caller explicitly asserts its own real predecessor (the id of
+    // the immediately preceding real event it independently knows about —
+    // report 183 addendum's own documented, disclosed mechanism, never an
+    // auto-detected fingerprint).
+    const strengthen1 = await createMaterialChangeCandidate({
+      tenantId, category: 'Strengthening', affectedDomain: 'initiative', sourceEntityType: 'initiative', sourceEntityId,
+      occurredAt: new Date().toISOString(), provenance: 'cardinality fixture — strengthening 1 (Hypothesis->Emerging)', actorRole, actorId,
+      previousStateReference: emergence.id,
+    });
+    await recognize('Strengthening', strengthen1.id);
+    expect(strengthen1.id).not.toBe(emergence.id);
+    expect(strengthen1.previousStateReference).toBe(emergence.id);
+
+    const strengthen2 = await createMaterialChangeCandidate({
+      tenantId, category: 'Strengthening', affectedDomain: 'initiative', sourceEntityType: 'initiative', sourceEntityId,
+      occurredAt: new Date().toISOString(), provenance: 'cardinality fixture — strengthening 2 (Emerging->Supported)', actorRole, actorId,
+      previousStateReference: strengthen1.id,
+    });
+    await recognize('Strengthening', strengthen2.id);
+    expect(strengthen2.id).not.toBe(strengthen1.id);
+    expect(strengthen2.previousStateReference).toBe(strengthen1.id);
+
+    const strengtheningRows = await pgClient.query(`SELECT count(*)::int AS n FROM gov.living_koral_material_change WHERE source_entity_id = $1 AND category = 'Strengthening'`, [sourceEntityId]);
+    expect(strengtheningRows.rows[0].n).toBe(2); // TWO distinct, independently provenance-recoverable rows
+
+    // C. Two genuinely distinct Weakening events — cumulative, same mechanism.
+    const weaken1 = await createMaterialChangeCandidate({
+      tenantId, category: 'Weakening', affectedDomain: 'initiative', sourceEntityType: 'initiative', sourceEntityId,
+      occurredAt: new Date().toISOString(), provenance: 'cardinality fixture — weakening 1', actorRole, actorId,
+      previousStateReference: strengthen2.id,
+    });
+    await recognize('Weakening', weaken1.id);
+    const weaken2 = await createMaterialChangeCandidate({
+      tenantId, category: 'Weakening', affectedDomain: 'initiative', sourceEntityType: 'initiative', sourceEntityId,
+      occurredAt: new Date().toISOString(), provenance: 'cardinality fixture — weakening 2', actorRole, actorId,
+      previousStateReference: weaken1.id,
+    });
+    await recognize('Weakening', weaken2.id);
+    const weakeningRows = await pgClient.query(`SELECT count(*)::int AS n FROM gov.living_koral_material_change WHERE source_entity_id = $1 AND category = 'Weakening'`, [sourceEntityId]);
+    expect(weakeningRows.rows[0].n).toBe(2);
+
+    // D. Full mixed sequence replayed through the Transformation Ledger —
+    // proves the correct SIGNED cumulative state: 0 -> +1 -> +2 -> +1 -> 0
+    // (Emergence contributes nothing to extentStep; two Strengthening then
+    // two Weakening).
+    const { recordLivingKoralTransformation } = await import('@/lib/living-koral-transformation-ledger/transformation-ledger-service');
+    const { reconstructEditionLineage } = await import('@/lib/living-koral-mark/edition-lineage-service');
+
+    await recordLivingKoralTransformation({ materialChangeId: emergence.id, tenantId });
+    await recordLivingKoralTransformation({ materialChangeId: strengthen1.id, tenantId });
+    await recordLivingKoralTransformation({ materialChangeId: strengthen2.id, tenantId });
+    await recordLivingKoralTransformation({ materialChangeId: weaken1.id, tenantId });
+    const lastResult = await recordLivingKoralTransformation({ materialChangeId: weaken2.id, tenantId });
+
+    const lineage = await reconstructEditionLineage(tenantId, 'n/a', lastResult.resultingStateRevision);
+    const element = lineage.elements.find((e) => e.present)!;
+    expect(element.extentStep).toBe(0); // +1 +1 -1 -1 = 0 — correct signed cumulative state, no floor, no clamp at the canonical layer
+
+    // E. Repeated REORIENTATION — canon permits recurrence (doc 129 Part 2:
+    // "a new Decision Pack superseding A PRIOR ONE's direction"), same
+    // explicit-predecessor mechanism.
+    const reorient1 = await createMaterialChangeCandidate({
+      tenantId, category: 'Reorientation', affectedDomain: 'initiative', sourceEntityType: 'initiative', sourceEntityId,
+      occurredAt: new Date().toISOString(), provenance: 'cardinality fixture — reorientation 1', actorRole, actorId,
+      previousStateReference: weaken2.id,
+    });
+    await recognize('Reorientation', reorient1.id);
+    const reorient2 = await createMaterialChangeCandidate({
+      tenantId, category: 'Reorientation', affectedDomain: 'initiative', sourceEntityType: 'initiative', sourceEntityId,
+      occurredAt: new Date().toISOString(), provenance: 'cardinality fixture — reorientation 2', actorRole, actorId,
+      previousStateReference: reorient1.id,
+    });
+    await recognize('Reorientation', reorient2.id);
+    expect(reorient2.id).not.toBe(reorient1.id);
+    const reorientRows = await pgClient.query(`SELECT count(*)::int AS n FROM gov.living_koral_material_change WHERE source_entity_id = $1 AND category = 'Reorientation'`, [sourceEntityId]);
+    expect(reorientRows.rows[0].n).toBe(2);
+
+    await recordLivingKoralTransformation({ materialChangeId: reorient1.id, tenantId });
+    const afterReorient2 = await recordLivingKoralTransformation({ materialChangeId: reorient2.id, tenantId });
+    const lineageAfterReorient = await reconstructEditionLineage(tenantId, 'n/a', afterReorient2.resultingStateRevision);
+    expect(lineageAfterReorient.elements.find((e) => e.present)!.directionOrdinal).toBe(2); // two genuine advances
+
+    // F. Repeated STABILIZATION — canon is one-way (reversible: N/A) — a
+    // SECOND attempt WITHOUT an explicit previousStateReference override
+    // is correctly treated as the SAME transition by the auto-default
+    // (the most recent row for this source IS already Stabilization) —
+    // "no second semantic transition" emerges naturally from the same
+    // idempotency mechanism, no special-case code required.
+    const stabilize1 = await createMaterialChangeCandidate({
+      tenantId, category: 'Stabilization', affectedDomain: 'initiative', sourceEntityType: 'initiative', sourceEntityId,
+      occurredAt: new Date().toISOString(), provenance: 'cardinality fixture — stabilization', actorRole, actorId,
+      previousStateReference: reorient2.id,
+    });
+    await recognize('Stabilization', stabilize1.id);
+    const stabilizeRetry = await createMaterialChangeCandidate({
+      tenantId, category: 'Stabilization', affectedDomain: 'initiative', sourceEntityType: 'initiative', sourceEntityId,
+      occurredAt: new Date().toISOString(), provenance: 'cardinality fixture — stabilization retried, no override', actorRole, actorId,
+    });
+    expect(stabilizeRetry.id).toBe(stabilize1.id); // no new row
+    const stabilizationRows = await pgClient.query(`SELECT count(*)::int AS n FROM gov.living_koral_material_change WHERE source_entity_id = $1 AND category = 'Stabilization'`, [sourceEntityId]);
+    expect(stabilizationRows.rows[0].n).toBe(1);
+
+    // H. TENANT ISOLATION — the exact same (category, previousStateReference-free)
+    // scenario for a DIFFERENT tenant's own, unrelated source entity does
+    // not collide with tenantId's own rows (the widened unique index is
+    // still tenant-scoped, migration 088 unchanged in that respect).
+    const otherTenant = await pgClient.query<{ id: string }>(
+      `INSERT INTO analytics.tenant (tenant_code, company_name, tenant_kind) VALUES ($1, $2, 'TEST') RETURNING id`,
+      [`WP112-CARDINALITY-OTHER-${RUN_SUFFIX_HEX}`, 'WP-112 Cardinality Fixture Tenant B'],
+    );
+    const otherTenantId = otherTenant.rows[0].id;
+    const otherSourceEntityId = (await pgClient.query<{ id: string }>('SELECT gen_random_uuid() AS id')).rows[0].id;
+    const otherEmergence = await createMaterialChangeCandidate({
+      tenantId: otherTenantId, category: 'Emergence', affectedDomain: 'initiative', sourceEntityType: 'initiative', sourceEntityId: otherSourceEntityId,
+      occurredAt: new Date().toISOString(), provenance: 'cardinality fixture — other tenant emergence', actorRole, actorId,
+    });
+    expect(otherEmergence.tenantId).toBe(otherTenantId);
+    expect(otherEmergence.id).not.toBe(emergence.id);
+    const tenantACount = await pgClient.query(`SELECT count(*)::int AS n FROM gov.living_koral_material_change WHERE tenant_id = $1`, [tenantId]);
+    const tenantBCount = await pgClient.query(`SELECT count(*)::int AS n FROM gov.living_koral_material_change WHERE tenant_id = $1`, [otherTenantId]);
+    expect(tenantACount.rows[0].n).toBe(8); // emergence, 2x strengthening, 2x weakening, 2x reorientation, 1x stabilization
+    expect(tenantBCount.rows[0].n).toBe(1);
 
     await pgClient.end();
   }, 30_000);

@@ -185,7 +185,15 @@ export function replayLivingKoralStateFromLedger(
   const regions: Record<string, LivingKoralStateRegion> = {};
   for (const entry of ordered) {
     const current = regions[entry.affectedDomain]?.elementCount ?? 0;
-    const delta = entry.operation === 'add_element' ? 1 : -1;
+    // Widened for KORAL Morphology Package A (report 183 §4) — this was
+    // previously a binary `? 1 : -1`, which silently treated ANY
+    // non-add_element operation as a removal. The four Package-A
+    // operations (increase_extent/decrease_extent/reorient/stabilize)
+    // change extent/direction/stability, never the abstract per-domain
+    // element count — delta = 0 for them, matching the same fix applied
+    // to gov.record_living_koral_transformation()'s own v_delta in
+    // migration 087.
+    const delta = entry.operation === 'add_element' ? 1 : entry.operation === 'remove_element' ? -1 : 0;
     regions[entry.affectedDomain] = { elementCount: Math.max(0, current + delta) };
   }
 
