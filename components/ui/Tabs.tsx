@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, BUTTON_TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface Tab {
   id:       string;
@@ -21,12 +21,21 @@ interface TabsProps {
 export function Tabs({ tabs, defaultTab, variant = 'line' }: TabsProps) {
   const [active, setActive] = useState(defaultTab ?? tabs[0]?.id);
   const current = tabs.find((t) => t.id === active);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
+  // Roving tabindex per the WAI-ARIA Tabs pattern: arrow-key navigation must
+  // move DOM focus along with the selection, not just update aria-selected —
+  // otherwise keyboard focus visually stalls on a tab that has just become
+  // tabIndex=-1.
   function handleKeyDown(e: React.KeyboardEvent, idx: number) {
     if (e.key === 'ArrowRight' && idx < tabs.length - 1) {
-      setActive(tabs[idx + 1].id);
+      const next = idx + 1;
+      setActive(tabs[next].id);
+      tabRefs.current[next]?.focus();
     } else if (e.key === 'ArrowLeft' && idx > 0) {
-      setActive(tabs[idx - 1].id);
+      const prev = idx - 1;
+      setActive(tabs[prev].id);
+      tabRefs.current[prev]?.focus();
     }
   }
 
@@ -48,7 +57,7 @@ export function Tabs({ tabs, defaultTab, variant = 'line' }: TabsProps) {
           const isActive = tab.id === active;
           const pillStyle: React.CSSProperties = variant === 'pill' ? {
             background:  isActive ? TOKENS.accent : TOKENS.inkBorder,
-            color:       isActive ? '#FFFFFF' : TOKENS.inkSecondary,
+            color:       isActive ? BUTTON_TOKENS.primary.color : TOKENS.inkSecondary,
             borderRadius: 999,
             padding:     '6px 14px',
             border:      'none',
@@ -64,6 +73,7 @@ export function Tabs({ tabs, defaultTab, variant = 'line' }: TabsProps) {
           return (
             <button
               key={tab.id}
+              ref={(el) => { tabRefs.current[i] = el; }}
               role="tab"
               aria-selected={isActive}
               aria-controls={`panel-${tab.id}`}
@@ -91,7 +101,7 @@ export function Tabs({ tabs, defaultTab, variant = 'line' }: TabsProps) {
                   fontSize:    10,
                   fontWeight:  700,
                   background:  isActive ? 'rgba(255,255,255,0.25)' : TOKENS.accentSoft,
-                  color:       isActive ? '#FFFFFF' : TOKENS.accent,
+                  color:       isActive ? BUTTON_TOKENS.primary.color : TOKENS.accent,
                   borderRadius: 999,
                   padding:     '1px 7px',
                 }}>

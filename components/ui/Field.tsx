@@ -1,5 +1,6 @@
 'use client';
 
+import { useId } from 'react';
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, ReactNode } from 'react';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 
@@ -48,20 +49,23 @@ interface FieldInputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export function FieldInput({ label, error, id, required, darkBg = false, ...props }: FieldInputProps) {
-  const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  const errorId = `${inputId}-error`;
   const dark: React.CSSProperties = darkBg ? {
-    color:      '#EFEBE2',
+    color:      TOKENS.canvas,
     background: 'rgba(247,245,239,0.05)',
     border:     '1px solid rgba(247,245,239,0.12)',
   } : {};
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {label && <FieldLabel htmlFor={inputId!} required={required}>{label}</FieldLabel>}
+      {label && <FieldLabel htmlFor={inputId} required={required}>{label}</FieldLabel>}
       <input
         id={inputId}
         aria-required={required}
         aria-invalid={!!error}
+        aria-describedby={error ? errorId : undefined}
         style={{
           ...BASE_INPUT,
           ...dark,
@@ -70,7 +74,7 @@ export function FieldInput({ label, error, id, required, darkBg = false, ...prop
         {...props}
       />
       {error && (
-        <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: 11.5, color: TOKENS.critical, marginTop: 3 }}>
+        <p id={errorId} role="alert" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: 11.5, color: TOKENS.critical, marginTop: 3 }}>
           {error}
         </p>
       )}
@@ -89,27 +93,30 @@ interface FieldSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export function FieldSelect({ label, error, id, required, darkBg = false, children, ...props }: FieldSelectProps) {
-  const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  const errorId = `${inputId}-error`;
   const dark: React.CSSProperties = darkBg ? {
-    color:      '#EFEBE2',
+    color:      TOKENS.canvas,
     background: 'rgba(247,245,239,0.05)',
     border:     '1px solid rgba(247,245,239,0.12)',
   } : {};
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {label && <FieldLabel htmlFor={inputId!} required={required}>{label}</FieldLabel>}
+      {label && <FieldLabel htmlFor={inputId} required={required}>{label}</FieldLabel>}
       <select
         id={inputId}
         aria-required={required}
         aria-invalid={!!error}
+        aria-describedby={error ? errorId : undefined}
         style={{ ...BASE_INPUT, ...dark, appearance: 'auto' }}
         {...props}
       >
         {children}
       </select>
       {error && (
-        <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: 11.5, color: TOKENS.critical, marginTop: 3 }}>
+        <p id={errorId} role="alert" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: 11.5, color: TOKENS.critical, marginTop: 3 }}>
           {error}
         </p>
       )}
@@ -127,20 +134,23 @@ interface FieldTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement>
 }
 
 export function FieldTextarea({ label, error, id, required, darkBg = false, ...props }: FieldTextareaProps) {
-  const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  const errorId = `${inputId}-error`;
   const dark: React.CSSProperties = darkBg ? {
-    color:      '#EFEBE2',
+    color:      TOKENS.canvas,
     background: 'rgba(247,245,239,0.05)',
     border:     '1px solid rgba(247,245,239,0.12)',
   } : {};
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {label && <FieldLabel htmlFor={inputId!} required={required}>{label}</FieldLabel>}
+      {label && <FieldLabel htmlFor={inputId} required={required}>{label}</FieldLabel>}
       <textarea
         id={inputId}
         aria-required={required}
         aria-invalid={!!error}
+        aria-describedby={error ? errorId : undefined}
         style={{
           ...BASE_INPUT,
           ...dark,
@@ -151,7 +161,7 @@ export function FieldTextarea({ label, error, id, required, darkBg = false, ...p
         {...props}
       />
       {error && (
-        <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: 11.5, color: TOKENS.critical, marginTop: 3 }}>
+        <p id={errorId} role="alert" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: 11.5, color: TOKENS.critical, marginTop: 3 }}>
           {error}
         </p>
       )}

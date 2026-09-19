@@ -34,7 +34,7 @@ const VARIANTS: Record<Variant, React.CSSProperties> = {
   },
   ink: {
     background:  TOKENS.ink,
-    color:       '#FFFFFF',
+    color:       BUTTON_TOKENS.primary.color, // white text on dark background — same token as the primary variant, never a raw literal
     border:      'none',
     boxShadow:   '0 4px 14px rgba(6,3,43,0.20)',
   },

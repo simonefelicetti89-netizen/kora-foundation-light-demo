@@ -57,12 +57,19 @@ export function DataBar({
           )}
         </div>
       )}
-      <div style={{
-        height:       height,
-        borderRadius: 999,
-        background:   TOKENS.inkBorder,
-        overflow:     'hidden',
-      }}>
+      <div
+        role="progressbar"
+        aria-valuenow={Math.round(value)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={label ?? 'Valore'}
+        style={{
+          height:       height,
+          borderRadius: 999,
+          background:   TOKENS.inkBorder,
+          overflow:     'hidden',
+        }}
+      >
         <div
           className="blk-fill"
           data-w={String(Math.round(value))}
