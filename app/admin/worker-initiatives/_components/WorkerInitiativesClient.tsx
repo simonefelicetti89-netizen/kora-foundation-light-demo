@@ -3,7 +3,7 @@
 // B109: Client component for KORA_ADMIN worker initiatives management.
 // Handles tenant selection, initiative list, and create/update forms.
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useId, isValidElement, cloneElement } from 'react';
 import type { WorkerInitiativeRow } from '@/lib/supabase/types';
 
 type Tenant = { id: string; company_name: string; tenant_code: string };
@@ -316,13 +316,18 @@ const inputStyle: React.CSSProperties = {
   boxSizing: 'border-box',
 };
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+// WP-073: the visible <label> was never programmatically associated with its
+// own input/select (no htmlFor, no id) — fixed via useId(), same minimal
+// pattern as components/ui/Field.tsx (WP-047).
+function Field({ label, children }: { label: string; children: React.ReactElement<{ id?: string }> }) {
+  const fieldId = useId();
+  const child = isValidElement(children) ? cloneElement(children, { id: children.props.id ?? fieldId }) : children;
   return (
     <div>
-      <label style={{ display: 'block', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(6,3,43,0.45)', marginBottom: 4 }}>
+      <label htmlFor={fieldId} style={{ display: 'block', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(6,3,43,0.45)', marginBottom: 4 }}>
         {label}
       </label>
-      {children}
+      {child}
     </div>
   );
 }

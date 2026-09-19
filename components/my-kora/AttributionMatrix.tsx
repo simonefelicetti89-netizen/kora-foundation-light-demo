@@ -58,16 +58,16 @@ export function AttributionMatrix() {
         <table className="w-full text-xs">
           <thead>
             <tr className="bg-[rgba(6,3,43,0.02)] border-b border-[rgba(6,3,43,0.05)]">
-              <th className="px-3 py-2 text-left text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide whitespace-nowrap">
+              <th scope="col" className="px-3 py-2 text-left text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide whitespace-nowrap">
                 Classe
               </th>
-              <th className="px-3 py-2 text-left text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide">
+              <th scope="col" className="px-3 py-2 text-left text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide">
                 Descrizione
               </th>
-              <th className="px-3 py-2 text-center text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide whitespace-nowrap">
+              <th scope="col" className="px-3 py-2 text-center text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide whitespace-nowrap">
                 PIB
               </th>
-              <th className="px-3 py-2 text-center text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide whitespace-nowrap">
+              <th scope="col" className="px-3 py-2 text-center text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide whitespace-nowrap">
                 Dynamic CV
               </th>
             </tr>

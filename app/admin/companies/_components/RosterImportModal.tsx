@@ -268,7 +268,7 @@ function StepPreview({
               <thead>
                 <tr className="border-b border-[rgba(6,3,43,0.07)] bg-[rgba(6,3,43,0.03)]">
                   {presentCanonical.map((c) => (
-                    <th key={c} className="px-3 py-2 text-left font-semibold text-[rgba(6,3,43,0.40)] text-[9px] uppercase tracking-wide whitespace-nowrap">
+                    <th scope="col" key={c} className="px-3 py-2 text-left font-semibold text-[rgba(6,3,43,0.40)] text-[9px] uppercase tracking-wide whitespace-nowrap">
                       {c}
                     </th>
                   ))}

@@ -364,6 +364,7 @@ function Step5Profilo({
           <input
             type="text"
             placeholder="Es. Mario R."
+            aria-label="Nome visualizzato (opzionale)"
             maxLength={80}
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
@@ -381,13 +382,14 @@ function Step5Profilo({
           <label style={{ display: 'block', fontFamily: FONT, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)', marginBottom: 6 }}>
             Lingua preferita
           </label>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div role="group" aria-label="Lingua preferita" style={{ display: 'flex', gap: 8 }}>
             {(['it', 'en'] as const).map((l) => (
               <button
                 key={l}
                 type="button"
                 onClick={() => setLang(l)}
                 disabled={loading}
+                aria-pressed={lang === l}
                 style={{
                   fontFamily: FONT, fontSize: 12, fontWeight: 600,
                   padding: '8px 18px', borderRadius: 8, cursor: 'pointer',

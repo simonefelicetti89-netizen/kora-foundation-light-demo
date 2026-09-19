@@ -4,7 +4,7 @@
 // Create partners, toggle status draft/published/archived.
 // No marketplace, no booking, no partner ranking, no per-worker interaction data.
 
-import { useState } from 'react';
+import { useState, useId, isValidElement, cloneElement } from 'react';
 
 const PILLARS   = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 const MODES     = ['online', 'onsite', 'hybrid'] as const;
@@ -367,13 +367,18 @@ function Stat({ label, value, highlight, muted }: { label: string; value: number
   );
 }
 
-function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+// WP-073: the visible <label> was never programmatically associated with its
+// own input/select (no htmlFor, no id) — fixed via useId(), same minimal
+// pattern as components/ui/Field.tsx (WP-047).
+function FormField({ label, children }: { label: string; children: React.ReactElement<{ id?: string }> }) {
+  const fieldId = useId();
+  const child = isValidElement(children) ? cloneElement(children, { id: children.props.id ?? fieldId }) : children;
   return (
     <div>
-      <label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(6,3,43,0.55)', display: 'block', marginBottom: 5 }}>
+      <label htmlFor={fieldId} style={{ fontSize: 11, fontWeight: 600, color: 'rgba(6,3,43,0.55)', display: 'block', marginBottom: 5 }}>
         {label}
       </label>
-      {children}
+      {child}
     </div>
   );
 }

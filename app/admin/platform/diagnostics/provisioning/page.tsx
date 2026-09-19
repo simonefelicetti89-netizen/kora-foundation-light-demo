@@ -323,10 +323,10 @@ export default async function ProvisioningDiagnosticsPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 text-xs text-gray-400 uppercase">
-              <th className="text-left pb-2 font-medium pr-4">Variabile</th>
-              <th className="text-left pb-2 font-medium pr-4">Stato</th>
-              <th className="text-left pb-2 font-medium pr-4">Valore</th>
-              <th className="text-left pb-2 font-medium">Note</th>
+              <th scope="col" className="text-left pb-2 font-medium pr-4">Variabile</th>
+              <th scope="col" className="text-left pb-2 font-medium pr-4">Stato</th>
+              <th scope="col" className="text-left pb-2 font-medium pr-4">Valore</th>
+              <th scope="col" className="text-left pb-2 font-medium">Note</th>
             </tr>
           </thead>
           <tbody>
@@ -399,7 +399,7 @@ export default async function ProvisioningDiagnosticsPage() {
               <thead>
                 <tr className="border-b border-gray-200 text-gray-400 uppercase">
                   {['Codice', 'Azienda', 'Attivo', 'Stato', 'Metodologia', 'Creato'].map((h) => (
-                    <th key={h} className="text-left pb-2 pr-4 font-medium">{h}</th>
+                    <th scope="col" key={h} className="text-left pb-2 pr-4 font-medium">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -437,7 +437,7 @@ export default async function ProvisioningDiagnosticsPage() {
               <thead>
                 <tr className="border-b border-gray-200 text-gray-400 uppercase">
                   {['Email', 'Ruolo', 'kora_tenant_id', 'Stato', 'Invitato', 'Confermato', 'Ultimo accesso'].map((h) => (
-                    <th key={h} className="text-left pb-2 pr-3 font-medium">{h}</th>
+                    <th scope="col" key={h} className="text-left pb-2 pr-3 font-medium">{h}</th>
                   ))}
                 </tr>
               </thead>

@@ -272,7 +272,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
         <div>
           <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Reporting Period</p>
           <input value={period} onChange={e => setPeriod(e.target.value)}
-            placeholder="2026-Q1"
+            placeholder="2026-Q1" aria-label="Reporting Period"
             className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D] w-28" />
         </div>
         <button onClick={loadWorkspace} disabled={!tenantCode || loading}
@@ -373,7 +373,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
                       required
                       value={baselineWorkers}
                       onChange={(e) => { setBaselineWorkers(e.target.value); setBaselineSuccess(false); setBaselineError(null); }}
-                      placeholder="Es. 120"
+                      placeholder="Es. 120" aria-label="Lavoratori totali (≥ 10)"
                       className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-[#D99A2B] w-28"
                     />
                   </div>
@@ -384,6 +384,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
                       value={baselinePeriod}
                       onChange={(e) => setBaselinePeriod(e.target.value)}
                       placeholder={period}
+                      aria-label="Reporting Period baseline"
                       className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-[#D99A2B] w-28"
                     />
                   </div>

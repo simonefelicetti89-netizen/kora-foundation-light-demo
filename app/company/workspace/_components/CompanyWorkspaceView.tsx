@@ -391,11 +391,11 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                 <table className="w-full text-[10.5px]">
                   <thead>
                     <tr className="text-left border-b border-[rgba(6,3,43,0.07)]">
-                      <th className="pb-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">Periodo</th>
-                      <th className="pb-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">KORA Index</th>
-                      <th className="pb-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">Δ vs precedente</th>
-                      <th className="pb-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">Safeguard</th>
-                      <th className="pb-1.5 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">CS</th>
+                      <th scope="col" className="pb-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">Periodo</th>
+                      <th scope="col" className="pb-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">KORA Index</th>
+                      <th scope="col" className="pb-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">Δ vs precedente</th>
+                      <th scope="col" className="pb-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">Safeguard</th>
+                      <th scope="col" className="pb-1.5 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">CS</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -549,7 +549,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                   <thead>
                     <tr className="border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
                       {['Iniziativa', 'Pilastro', 'Evidenza', 'Stato'].map(h => (
-                        <th key={h} className="px-3 py-2 text-left font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide text-[9px]">{h}</th>
+                        <th scope="col" key={h} className="px-3 py-2 text-left font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide text-[9px]">{h}</th>
                       ))}
                     </tr>
                   </thead>

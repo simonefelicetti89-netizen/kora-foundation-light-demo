@@ -234,6 +234,7 @@ export function AttachmentLifecycleActions({
                 value={reason}
                 onChange={e => setReason(e.target.value.slice(0, 200))}
                 placeholder="es. Documento duplicato"
+                aria-label="Motivazione (opzionale, max 200 caratteri)"
                 className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1 text-[10px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-slate-400"
               />
             </div>
@@ -250,6 +251,7 @@ export function AttachmentLifecycleActions({
                 value={typedConfirm}
                 onChange={e => setTypedConfirm(e.target.value)}
                 placeholder={cfg.confirmToken}
+                aria-label={`Digita ${cfg.confirmToken} per confermare`}
                 autoFocus
                 className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1 text-[10px] font-mono text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#9E3B2F]"
               />

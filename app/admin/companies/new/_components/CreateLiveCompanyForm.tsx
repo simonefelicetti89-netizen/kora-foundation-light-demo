@@ -4,7 +4,7 @@
 // B38 — Unified create live company + provision first Company Admin form.
 // KORA_ADMIN only. No demo data. No fake credentials.
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId, isValidElement, cloneElement, Children } from 'react';
 import Link from 'next/link';
 import { PilotOnboardingChecklist } from '@/components/admin/PilotOnboardingChecklist';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
@@ -458,14 +458,28 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
 }
 
 // ── Field helper ──────────────────────────────────────────────────────────────
+// WP-073: the visible <label> was never programmatically associated with its
+// own input/select (no htmlFor, no id) — a real accessible-name defect, not a
+// styling one. Fixed via useId(), the same minimal pattern WP-047 already
+// established for components/ui/Field.tsx.
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  const fieldId = useId();
+  const array = Children.toArray(children);
+  const firstElementIndex = array.findIndex(isValidElement);
+  const content = array.map((c, i) => {
+    if (i === firstElementIndex && isValidElement(c)) {
+      const el = c as React.ReactElement<{ id?: string }>;
+      return cloneElement(el, { key: el.key ?? i, id: el.props.id ?? fieldId });
+    }
+    return c;
+  });
   return (
     <div>
-      <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
+      <label htmlFor={fieldId} className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
         {label}
       </label>
-      {children}
+      {content}
       {hint && <p className="text-[9px] text-[rgba(6,3,43,0.40)] mt-0.5">{hint}</p>}
     </div>
   );

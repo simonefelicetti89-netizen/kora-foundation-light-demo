@@ -325,7 +325,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
                         required
                         value={baselineForm.reportingPeriod}
                         onChange={(e) => setBaselineForm((f) => ({ ...f, reportingPeriod: e.target.value }))}
-                        placeholder="2026-Q1"
+                        placeholder="2026-Q1" aria-label="Periodo"
                         className="w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
                       />
                     </div>
@@ -335,7 +335,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
                         required type="number" min={10}
                         value={baselineForm.totalWorkers}
                         onChange={(e) => setBaselineForm((f) => ({ ...f, totalWorkers: e.target.value }))}
-                        placeholder="50"
+                        placeholder="50" aria-label="Lavoratori (almeno 10)"
                         className="w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs tabular-nums text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
                       />
                     </div>

@@ -66,10 +66,10 @@ export function BudgetToHumanImpactPanel({ s1, s2 }: BudgetToHumanImpactPanelPro
         <table className="w-full">
           <thead>
             <tr style={{ borderBottom: `2px solid ${TOKENS.ink}` }}>
-              <th className="pb-2 pr-4 text-left text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>Indicatore</th>
-              <th className="pb-2 pr-4 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>S1</th>
-              <th className="pb-2 pr-4 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.ink }}>S2</th>
-              <th className="pb-2 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>Δ</th>
+              <th scope="col" className="pb-2 pr-4 text-left text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>Indicatore</th>
+              <th scope="col" className="pb-2 pr-4 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>S1</th>
+              <th scope="col" className="pb-2 pr-4 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.ink }}>S2</th>
+              <th scope="col" className="pb-2 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>Δ</th>
             </tr>
           </thead>
           <tbody>

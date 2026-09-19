@@ -195,7 +195,7 @@ export default async function DynamicCVPrintPage() {
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(6,3,43,0.12)' }}>
                     {['Pillar', 'Titolo', 'Stato', 'Data'].map(h => (
-                      <th key={h} style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.35)', textAlign: 'left', padding: '0 8px 6px 0' }}>
+                      <th scope="col" key={h} style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.35)', textAlign: 'left', padding: '0 8px 6px 0' }}>
                         {h}
                       </th>
                     ))}

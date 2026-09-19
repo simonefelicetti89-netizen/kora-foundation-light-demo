@@ -84,6 +84,13 @@ export function DryCheckButton() {
           </span>
 
           <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr>
+                <th scope="col" className="py-1 pr-2 w-5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide text-left">Stato</th>
+                <th scope="col" className="py-1 pr-4 text-[10px] font-semibold text-gray-400 uppercase tracking-wide text-left">Controllo</th>
+                <th scope="col" className="py-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wide text-left">Dettaglio</th>
+              </tr>
+            </thead>
             <tbody>
               {result.checks.map((c) => (
                 <tr key={c.id} className="border-b border-gray-100 last:border-0">

@@ -338,7 +338,7 @@ export default function FounderValidationPage() {
             <thead>
               <tr style={{ borderBottom: `1px solid ${C.inkBdr}`, background: C.surface }}>
                 {['Azienda', 'Settore', 'Dimensione', 'Ruolo', 'Stage', 'Interesse', 'Pilot', 'Prossima azione'].map((h) => (
-                  <th key={h} style={{ padding: '8px 14px', textAlign: 'left' as const, fontSize: 9, fontWeight: 700, color: C.inkHint, textTransform: 'uppercase' as const, letterSpacing: '0.07em', whiteSpace: 'nowrap' as const }}>
+                  <th scope="col" key={h} style={{ padding: '8px 14px', textAlign: 'left' as const, fontSize: 9, fontWeight: 700, color: C.inkHint, textTransform: 'uppercase' as const, letterSpacing: '0.07em', whiteSpace: 'nowrap' as const }}>
                     {h}
                   </th>
                 ))}

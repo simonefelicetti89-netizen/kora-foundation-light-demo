@@ -271,7 +271,7 @@ export function CompanyConsolePanel({ userEmail }: Props) {
           {/* ── Filters ────────────────────────────────────────────────────── */}
           <div className="flex flex-wrap gap-2 items-center">
             <input
-              type="text" placeholder="Cerca azienda o codice…"
+              type="text" placeholder="Cerca azienda o codice…" aria-label="Cerca azienda o codice"
               value={search} onChange={e => setSearch(e.target.value)}
               className="rounded border border-[rgba(6,3,43,0.14)] px-3 py-1.5 text-xs text-[rgba(6,3,43,0.90)] w-48 focus:outline-none focus:ring-1 focus:ring-slate-400"
             />
@@ -361,7 +361,7 @@ export function CompanyConsolePanel({ userEmail }: Props) {
                   <thead>
                     <tr className="border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
                       {['Azienda', 'Lifecycle', 'Utenti', 'Workforce', 'KORA Index', 'Submission', 'Decision Pack', 'Azioni'].map(h => (
-                        <th key={h} className="px-4 py-3 text-left text-[9px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-widest whitespace-nowrap">
+                        <th scope="col" key={h} className="px-4 py-3 text-left text-[9px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-widest whitespace-nowrap">
                           {h}
                         </th>
                       ))}

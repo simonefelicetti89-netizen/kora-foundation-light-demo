@@ -225,7 +225,7 @@ export default function ActivationSignalPipelinePage() {
             <thead>
               <tr>
                 {['Tipo di segnale', 'Aggregazione', 'Categoria fiscale', 'Pilastro', 'Componente KORA Index (anteprima)', 'Metrica (anteprima)', 'Soglia privacy', 'Eleggibilità'].map((h) => (
-                  <th key={h} style={{ textAlign: 'left', padding: '6px 10px', color: TOKENS.inkHint, fontWeight: 700, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{h}</th>
+                  <th scope="col" key={h} style={{ textAlign: 'left', padding: '6px 10px', color: TOKENS.inkHint, fontWeight: 700, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>

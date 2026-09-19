@@ -755,6 +755,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               type="file"
               accept=".csv,.xlsx"
               multiple
+              aria-label="Aggiungi file budget, LMS, provider o policy"
               onChange={e => {
                 const files = Array.from(e.target.files ?? []);
                 setAdditionalFiles(files);
@@ -980,7 +981,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <thead>
                   <tr className="border-b border-[rgba(6,3,43,0.08)]">
                     {['Colonna file', 'Campo canonico KORA', 'Conf.', 'Pillar hint'].map(h => (
-                      <th key={h} className="text-left py-1.5 px-2 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{h}</th>
+                      <th scope="col" key={h} className="text-left py-1.5 px-2 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -1098,7 +1099,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Fonte default</label>
                 <input value={manualSource} onChange={e => setManualSource(e.target.value)}
-                  placeholder="es. provider_export, hr_declaration"
+                  placeholder="es. provider_export, hr_declaration" aria-label="Fonte default"
                   className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
               </div>
               <div>
@@ -1125,7 +1126,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Provider default</label>
                 <input value={manualProvider} onChange={e => setManualProvider(e.target.value)}
-                  placeholder="es. Welfare Provider S.p.A."
+                  placeholder="es. Welfare Provider S.p.A." aria-label="Provider default"
                   className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
               </div>
               <div>
@@ -1584,7 +1585,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <thead>
                 <tr className="border-b border-[rgba(6,3,43,0.08)]">
                   {['#','Iniziativa','Categoria','Tipo','Partecipanti','Eligibility'].map(h => (
-                    <th key={h} className="text-left py-2 px-3 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)] whitespace-nowrap">{h}</th>
+                    <th scope="col" key={h} className="text-left py-2 px-3 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)] whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -1664,7 +1665,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <thead>
                 <tr className="border-b border-[rgba(6,3,43,0.08)]">
                   {['Iniziativa','Categoria','Event Nature','Eligibility','Impact Treatment','Conf.','Scoring'].map(h => (
-                    <th key={h} className="text-left py-2 px-2.5 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)] whitespace-nowrap">{h}</th>
+                    <th scope="col" key={h} className="text-left py-2 px-2.5 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)] whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>

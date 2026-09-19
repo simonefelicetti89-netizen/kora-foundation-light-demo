@@ -322,6 +322,7 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
                 {(booking.status === 'pending' || booking.status === 'approved') && (
                   <input
                     placeholder="Note di moderazione (opzionale)…"
+                    aria-label="Note di moderazione"
                     value={notes[booking.id] ?? ''}
                     onChange={(e) => setNotes((n) => ({ ...n, [booking.id]: e.target.value }))}
                     style={{

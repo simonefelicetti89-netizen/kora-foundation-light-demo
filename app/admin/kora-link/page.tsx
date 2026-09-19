@@ -132,9 +132,9 @@ export default function KoraLinkControlTowerPage() {
           <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 11.5 }}>
             <thead>
               <tr>
-                <th style={{ textAlign: 'left', padding: '6px 10px', color: TOKENS.inkHint, fontWeight: 700, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Capability</th>
+                <th scope="col" style={{ textAlign: 'left', padding: '6px 10px', color: TOKENS.inkHint, fontWeight: 700, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Capability</th>
                 {KORA_LINK_ROLES.map((role) => (
-                  <th key={role} style={{ textAlign: 'center', padding: '6px 8px', color: TOKENS.inkHint, fontWeight: 700, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <th scope="col" key={role} style={{ textAlign: 'center', padding: '6px 8px', color: TOKENS.inkHint, fontWeight: 700, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     {KORA_LINK_ROLE_LABEL[role]}
                   </th>
                 ))}

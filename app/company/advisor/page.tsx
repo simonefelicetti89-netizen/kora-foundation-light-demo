@@ -311,6 +311,7 @@ export default function CompanyAdvisorPage() {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="Scrivi un messaggio…"
+                  aria-label="Scrivi un messaggio"
                   style={{
                     flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px',
                     border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink,
@@ -365,11 +366,12 @@ export default function CompanyAdvisorPage() {
                 <div className="space-y-2">
                   <input
                     type="text" value={newSubject} onChange={(e) => setNewSubject(e.target.value)} placeholder="Oggetto (es. Q2 Review)"
+                    aria-label="Oggetto appuntamento"
                     style={{ width: '100%', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }}
                   />
                   <div className="flex gap-2">
-                    <input type="datetime-local" value={newStartsAt} onChange={(e) => setNewStartsAt(e.target.value)} style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }} />
-                    <input type="datetime-local" value={newEndsAt} onChange={(e) => setNewEndsAt(e.target.value)} style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }} />
+                    <input type="datetime-local" value={newStartsAt} onChange={(e) => setNewStartsAt(e.target.value)} aria-label="Data e ora inizio appuntamento" style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }} />
+                    <input type="datetime-local" value={newEndsAt} onChange={(e) => setNewEndsAt(e.target.value)} aria-label="Data e ora fine appuntamento" style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }} />
                     <button
                       onClick={bookAppointment}
                       disabled={booking || !newSubject.trim() || !newStartsAt || !newEndsAt}

@@ -735,6 +735,7 @@ export default function AdvisorCompaniesPage() {
                   <div className="flex gap-2">
                     <input
                       type="text" value={newCaseSubject} onChange={(e) => setNewCaseSubject(e.target.value)} placeholder="Oggetto del nuovo Case…"
+                      aria-label="Oggetto del nuovo Case"
                       style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }}
                     />
                     <button
@@ -760,6 +761,7 @@ export default function AdvisorCompaniesPage() {
                   <div className="flex gap-2" style={{ marginBottom: 10 }}>
                     <input
                       type="text" value={assessmentReviewId} onChange={(e) => setAssessmentReviewId(e.target.value)} placeholder="ID della Review…"
+                      aria-label="ID della Review"
                       style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }}
                     />
                     <button
@@ -928,6 +930,7 @@ export default function AdvisorCompaniesPage() {
                       value={draft}
                       onChange={(e) => setDraft(e.target.value)}
                       placeholder="Scrivi un messaggio…"
+                      aria-label="Scrivi un messaggio"
                       style={{ flex: 1, fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }}
                     />
                     <button

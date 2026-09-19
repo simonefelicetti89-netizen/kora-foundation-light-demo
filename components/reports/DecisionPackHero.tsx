@@ -139,12 +139,12 @@ export function DecisionPackHero({
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-[rgba(6,3,43,0.05)]">
-                <th className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)] w-40">Macroblock</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Peso</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Score S1</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Score S2</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
-                <th className="py-2 text-left pl-4 text-xs font-semibold text-[rgba(6,3,43,0.40)]">Componenti</th>
+                <th scope="col" className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)] w-40">Macroblock</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Peso</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Score S1</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Score S2</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
+                <th scope="col" className="py-2 text-left pl-4 text-xs font-semibold text-[rgba(6,3,43,0.40)]">Componenti</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">

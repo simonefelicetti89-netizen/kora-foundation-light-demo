@@ -83,7 +83,7 @@ export default function WorkerDiagnosticsClient() {
             <thead>
               <tr style={{ background: 'rgba(6,3,43,0.03)' }}>
                 {['Azienda', 'Tenant Code', 'Totale', 'Invitati', 'Attivi', 'In attesa', 'Disabilitati', 'Copertura', 'Status'].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)', whiteSpace: 'nowrap' }}>
+                  <th scope="col" key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)', whiteSpace: 'nowrap' }}>
                     {h}
                   </th>
                 ))}

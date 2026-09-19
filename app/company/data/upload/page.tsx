@@ -801,6 +801,7 @@ export default function UploadPage() {
                   type="file"
                   accept={ACCEPTED_TYPES}
                   onChange={handleFileInput}
+                  aria-label="Carica file ricevuto dal cliente (CSV, XLSX, XLS)"
                   className="sr-only"
                 />
               </div>
@@ -1076,7 +1077,7 @@ export default function UploadPage() {
                   <thead>
                     <tr className="border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
                       {parseResult.headers.map((h) => (
-                        <th
+                        <th scope="col"
                           key={h}
                           className={`px-3 py-2.5 text-left font-medium whitespace-nowrap ${
                             sensitiveColNames.has(h)
@@ -1143,10 +1144,10 @@ export default function UploadPage() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
-                      <th className="px-4 py-2.5 text-left font-medium text-[rgba(6,3,43,0.62)]">Colonna nel file</th>
-                      <th className="px-4 py-2.5 text-left font-medium text-[rgba(6,3,43,0.62)]">Campo UEF</th>
-                      <th className="px-4 py-2.5 text-left font-medium text-[rgba(6,3,43,0.62)]">Confidenza</th>
-                      <th className="px-4 py-2.5 text-left font-medium text-[rgba(6,3,43,0.62)]">Motivo</th>
+                      <th scope="col" className="px-4 py-2.5 text-left font-medium text-[rgba(6,3,43,0.62)]">Colonna nel file</th>
+                      <th scope="col" className="px-4 py-2.5 text-left font-medium text-[rgba(6,3,43,0.62)]">Campo UEF</th>
+                      <th scope="col" className="px-4 py-2.5 text-left font-medium text-[rgba(6,3,43,0.62)]">Confidenza</th>
+                      <th scope="col" className="px-4 py-2.5 text-left font-medium text-[rgba(6,3,43,0.62)]">Motivo</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2373,15 +2374,15 @@ function EligibilityReviewSection({
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-left border-b border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]/60">
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[160px]">Iniziativa</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[100px]">Records / Part.</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[80px]">Lavoratori</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[120px]">Eligibility</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[70px]">Pillar</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[130px]">Budget Evidence</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[130px]">BTI Treatment</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[70px]">Review</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[180px]">Azione consigliata</th>
+                  <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[160px]">Iniziativa</th>
+                  <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[100px]">Records / Part.</th>
+                  <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[80px]">Lavoratori</th>
+                  <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[120px]">Eligibility</th>
+                  <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[70px]">Pillar</th>
+                  <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[130px]">Budget Evidence</th>
+                  <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[130px]">BTI Treatment</th>
+                  <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[70px]">Review</th>
+                  <th scope="col" className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[180px]">Azione consigliata</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[rgba(6,3,43,0.05)]">
@@ -2878,9 +2879,9 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
             <table className="w-full text-[11px] border-collapse">
               <thead>
                 <tr className="border-b-2 border-[#06032B]">
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Indicatore</th>
-                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Conteggio</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Nota</th>
+                  <th scope="col" className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Indicatore</th>
+                  <th scope="col" className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Conteggio</th>
+                  <th scope="col" className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Nota</th>
                 </tr>
               </thead>
               <tbody>
@@ -2954,14 +2955,14 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
             <table className="w-full text-[10px] border-collapse">
               <thead>
                 <tr className="border-b-2 border-[#06032B]">
-                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Iniziativa</th>
-                  <th className="py-1.5 pr-2 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Rec.</th>
-                  <th className="py-1.5 pr-2 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Lav. unici</th>
-                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Eligibility</th>
-                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Pillar</th>
-                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Evidenza</th>
-                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">BTI</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Azione</th>
+                  <th scope="col" className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Iniziativa</th>
+                  <th scope="col" className="py-1.5 pr-2 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Rec.</th>
+                  <th scope="col" className="py-1.5 pr-2 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Lav. unici</th>
+                  <th scope="col" className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Eligibility</th>
+                  <th scope="col" className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Pillar</th>
+                  <th scope="col" className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Evidenza</th>
+                  <th scope="col" className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">BTI</th>
+                  <th scope="col" className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Azione</th>
                 </tr>
               </thead>
               <tbody>
@@ -3028,10 +3029,10 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
             <table className="w-full text-[11px] border-collapse">
               <thead>
                 <tr className="border-b-2 border-[#06032B]">
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Categoria</th>
-                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Importo</th>
-                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Share</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Trattamento BTI</th>
+                  <th scope="col" className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Categoria</th>
+                  <th scope="col" className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Importo</th>
+                  <th scope="col" className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Share</th>
+                  <th scope="col" className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Trattamento BTI</th>
                 </tr>
               </thead>
               <tbody>
@@ -3155,9 +3156,9 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
             <table className="w-full text-[11px] border-collapse">
               <thead>
                 <tr className="border-b-2 border-[#06032B]">
-                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold w-16">Prior.</th>
-                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Azione</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Razionale</th>
+                  <th scope="col" className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold w-16">Prior.</th>
+                  <th scope="col" className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Azione</th>
+                  <th scope="col" className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Razionale</th>
                 </tr>
               </thead>
               <tbody>
@@ -3190,8 +3191,8 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
             <table className="w-full text-[11px] border-collapse">
               <thead>
                 <tr className="border-b-2 border-[#06032B]">
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold w-48">Elemento</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Nota</th>
+                  <th scope="col" className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold w-48">Elemento</th>
+                  <th scope="col" className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Nota</th>
                 </tr>
               </thead>
               <tbody>

@@ -244,7 +244,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
             <thead>
               <tr className="border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
                 {['Iniziativa', 'Pilastro', 'Eligibilità', 'Evidenza', 'Stato'].map((h) => (
-                  <th key={h} className="px-3 py-2 text-left text-[9px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-widest">{h}</th>
+                  <th scope="col" key={h} className="px-3 py-2 text-left text-[9px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-widest">{h}</th>
                 ))}
               </tr>
             </thead>

@@ -262,11 +262,11 @@ export function DataLineagePreview({
           <table className="w-full text-[9px]">
             <thead>
               <tr className="border-b border-[rgba(6,3,43,0.05)]">
-                <th className="px-2 py-1.5 text-left font-semibold text-[rgba(6,3,43,0.40)] w-[180px]">
+                <th scope="col" className="px-2 py-1.5 text-left font-semibold text-[rgba(6,3,43,0.40)] w-[180px]">
                   Categoria iniziativa
                 </th>
                 {STEPS.map((s) => (
-                  <th key={s.num} className="px-2 py-1.5 text-center font-semibold text-[rgba(6,3,43,0.40)] whitespace-nowrap">
+                  <th scope="col" key={s.num} className="px-2 py-1.5 text-center font-semibold text-[rgba(6,3,43,0.40)] whitespace-nowrap">
                     <span className="font-mono">{String(s.num).padStart(2, '0')}</span>
                     <span className="hidden sm:block text-[8px] font-normal text-[rgba(6,3,43,0.28)] mt-0.5">{s.label.split(' ')[0]}</span>
                   </th>

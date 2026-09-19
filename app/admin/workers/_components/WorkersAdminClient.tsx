@@ -117,6 +117,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
                 value={tenantCode}
                 onChange={e => setTenantCode(e.target.value.toUpperCase())}
                 placeholder="es. KORA-TEST-COMPANY-1"
+                aria-label="Tenant Code"
                 required
                 style={{ width: '100%', padding: '8px 12px', border: '1px solid rgba(6,3,43,0.15)', borderRadius: 6, fontSize: 13, background: '#fff', boxSizing: 'border-box' }}
               />
@@ -130,6 +131,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="worker@azienda.it"
+                aria-label="Email worker"
                 required
                 style={{ width: '100%', padding: '8px 12px', border: '1px solid rgba(6,3,43,0.15)', borderRadius: 6, fontSize: 13, background: '#fff', boxSizing: 'border-box' }}
               />
@@ -142,6 +144,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
                 value={workerRef}
                 onChange={e => setWorkerRef(e.target.value)}
                 placeholder="es. WRK-001 (generato auto se vuoto)"
+                aria-label="Worker Ref (opzionale, pseudonimo interno)"
                 style={{ width: '100%', padding: '8px 12px', border: '1px solid rgba(6,3,43,0.15)', borderRadius: 6, fontSize: 13, background: '#fff', boxSizing: 'border-box' }}
               />
               <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', marginTop: 4 }}>
@@ -207,9 +210,9 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ background: 'rgba(6,3,43,0.03)' }}>
-                <th style={{ padding: '8px 16px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)' }}>Worker Ref</th>
-                <th style={{ padding: '8px 16px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)' }}>Status</th>
-                <th style={{ padding: '8px 16px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)' }}>Creato</th>
+                <th scope="col" style={{ padding: '8px 16px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)' }}>Worker Ref</th>
+                <th scope="col" style={{ padding: '8px 16px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)' }}>Status</th>
+                <th scope="col" style={{ padding: '8px 16px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)' }}>Creato</th>
               </tr>
             </thead>
             <tbody>

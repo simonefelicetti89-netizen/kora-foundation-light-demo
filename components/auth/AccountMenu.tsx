@@ -33,6 +33,7 @@ export function AccountMenu() {
   const [email, setEmail]       = useState<string>('');
   const [open, setOpen]         = useState(false);
   const containerRef            = useRef<HTMLDivElement>(null);
+  const triggerRef              = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -55,8 +56,23 @@ export function AccountMenu() {
         setOpen(false);
       }
     }
-    if (open) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    // WP-073: keyboard users must be able to dismiss the open menu without a
+    // mouse click outside it — Escape is the standard dismissal key for any
+    // disclosure/popup pattern.
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
   }, [open]);
 
   // Only render for authenticated real sessions
@@ -73,8 +89,10 @@ export function AccountMenu() {
     >
       {/* Trigger button */}
       <button
+        ref={triggerRef}
         data-testid="account-menu-trigger"
         aria-label="Menu account"
+        aria-haspopup="true"
         aria-expanded={open}
         onClick={() => setOpen(v => !v)}
         style={{

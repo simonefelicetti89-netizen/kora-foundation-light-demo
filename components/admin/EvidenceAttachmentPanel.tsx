@@ -171,14 +171,14 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Documento</label>
-          <input type="file" accept=".pdf,.xlsx,.csv"
+          <input type="file" accept=".pdf,.xlsx,.csv" aria-label="Documento"
             onChange={e => { setFile(e.target.files?.[0] ?? null); setPreview(null); setRegisterResult(null); setConfirmed(false); }}
             className="text-xs text-[rgba(6,3,43,0.62)] file:mr-2 file:py-1 file:px-2 file:rounded file:border file:border-[rgba(6,3,43,0.08)] file:bg-[#F8F6F1] file:text-xs file:cursor-pointer" />
           <p className="text-[9px] text-[rgba(6,3,43,0.40)] mt-0.5">PDF / XLSX / CSV · Max 20MB</p>
         </div>
         <div>
           <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Tipo documento</label>
-          <select value={attachType} onChange={e => setAttachType(e.target.value as AttachmentType)}
+          <select value={attachType} onChange={e => setAttachType(e.target.value as AttachmentType)} aria-label="Tipo documento"
             className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
             {Object.entries(ATTACHMENT_TYPE_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
@@ -190,12 +190,12 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Iniziativa (opzionale)</label>
-          <input value={linkedInit} onChange={e => setLinkedInit(e.target.value)} placeholder="es. Formazione Digitale"
+          <input value={linkedInit} onChange={e => setLinkedInit(e.target.value)} placeholder="es. Formazione Digitale" aria-label="Iniziativa (opzionale)"
             className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
         </div>
         <div>
           <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Campo canonico (opzionale)</label>
-          <input value={linkedField} onChange={e => setLinkedField(e.target.value)} placeholder="es. amount, participants, hours"
+          <input value={linkedField} onChange={e => setLinkedField(e.target.value)} placeholder="es. amount, participants, hours" aria-label="Campo canonico (opzionale)"
             className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
         </div>
       </div>

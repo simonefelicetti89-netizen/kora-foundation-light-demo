@@ -244,7 +244,7 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
                   <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Permanently deletes uploaded_record + uef_record. Type DELETE_BATCH to confirm.</p>
                   <div className="flex gap-2 flex-wrap">
                     <input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
-                      placeholder="DELETE_BATCH"
+                      placeholder="DELETE_BATCH" aria-label="Conferma eliminazione: digitare DELETE_BATCH"
                       className="rounded border border-[rgba(158,59,47,0.25)] px-2.5 py-1.5 text-xs font-mono text-[#9E3B2F] w-36 focus:outline-none focus:ring-1 focus:ring-[#9E3B2F]"
                     />
                     <button onClick={handleDelete}

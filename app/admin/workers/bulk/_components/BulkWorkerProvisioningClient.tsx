@@ -170,10 +170,10 @@ export function BulkWorkerProvisioningClient({
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-left text-[10px] uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
-                  <th className="px-4 py-2 font-semibold">Riga</th>
-                  <th className="px-4 py-2 font-semibold">Nome</th>
-                  <th className="px-4 py-2 font-semibold">Email</th>
-                  <th className="px-4 py-2 font-semibold">Stato parsing</th>
+                  <th scope="col" className="px-4 py-2 font-semibold">Riga</th>
+                  <th scope="col" className="px-4 py-2 font-semibold">Nome</th>
+                  <th scope="col" className="px-4 py-2 font-semibold">Email</th>
+                  <th scope="col" className="px-4 py-2 font-semibold">Stato parsing</th>
                 </tr>
               </thead>
               <tbody>
@@ -228,9 +228,9 @@ export function BulkWorkerProvisioningClient({
           <table className="w-full text-xs">
             <thead>
               <tr className="text-left text-[10px] uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
-                <th className="px-4 py-2 font-semibold">Email</th>
-                <th className="px-4 py-2 font-semibold">Esito</th>
-                <th className="px-4 py-2 font-semibold">Dettaglio</th>
+                <th scope="col" className="px-4 py-2 font-semibold">Email</th>
+                <th scope="col" className="px-4 py-2 font-semibold">Esito</th>
+                <th scope="col" className="px-4 py-2 font-semibold">Dettaglio</th>
               </tr>
             </thead>
             <tbody>

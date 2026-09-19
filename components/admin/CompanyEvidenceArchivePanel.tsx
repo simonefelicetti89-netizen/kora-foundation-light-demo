@@ -315,13 +315,13 @@ export function CompanyEvidenceArchivePanel({ initialTenantCode }: Props = {}) {
             </select>
           ) : (
             <input value={TENANT} onChange={e => setTENANT(e.target.value.toUpperCase())}
-              placeholder="Codice azienda"
+              placeholder="Codice azienda" aria-label="Codice azienda"
               className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none w-36" />
           )}
         </div>
         <div>
           <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Reporting Period</p>
-          <input value={PERIOD} onChange={e => setPERIOD(e.target.value)} placeholder="2026-Q1"
+          <input value={PERIOD} onChange={e => setPERIOD(e.target.value)} placeholder="2026-Q1" aria-label="Reporting Period"
             className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none w-28" />
         </div>
         <button onClick={loadArchive} disabled={!TENANT || loading}
@@ -531,7 +531,7 @@ export function CompanyEvidenceArchivePanel({ initialTenantCode }: Props = {}) {
               <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.52)]">{filteredInitiatives.length}/{data.initiatives.length}</span>
             </div>
             <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Cerca iniziativa…"
+              placeholder="Cerca iniziativa…" aria-label="Cerca iniziativa"
               className="rounded border border-[rgba(6,3,43,0.08)] px-2 py-1 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D] w-40" />
           </div>
 
@@ -551,7 +551,7 @@ export function CompanyEvidenceArchivePanel({ initialTenantCode }: Props = {}) {
               <thead>
                 <tr className="border-b border-[rgba(6,3,43,0.08)]">
                   {['Iniziativa', 'Pillar', 'Eligibility', 'Budget Class', 'Evidenza', 'Readiness', 'Contributo', ''].map(h => (
-                    <th key={h} className="text-left py-1.5 px-2 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)] whitespace-nowrap">{h}</th>
+                    <th scope="col" key={h} className="text-left py-1.5 px-2 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)] whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>

@@ -391,7 +391,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 function Th({ children, align }: { children?: React.ReactNode; align: 'left' | 'right' | 'center' }) {
   return (
-    <th style={{ padding: '0.5rem', textAlign: align, fontWeight: 600, fontSize: '0.7rem' }}>{children}</th>
+    <th scope="col" style={{ padding: '0.5rem', textAlign: align, fontWeight: 600, fontSize: '0.7rem' }}>{children}</th>
   );
 }
 

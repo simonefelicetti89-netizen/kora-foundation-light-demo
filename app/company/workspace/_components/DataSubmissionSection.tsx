@@ -258,14 +258,14 @@ function UploadForm({ submissionId, onFileDone, label }: {
       <div className="flex gap-2 flex-wrap items-end mt-1">
         <div>
           <label className="block text-[9px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-0.5">Scopo</label>
-          <select value={purpose} onChange={e => setPurpose(e.target.value)}
+          <select value={purpose} onChange={e => setPurpose(e.target.value)} aria-label="Scopo"
             className="rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none">
             {FILE_PURPOSES.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
         <div className="flex-1 min-w-0">
           <label className="block text-[9px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-0.5">File (CSV, XLSX, PDF)</label>
-          <input type="file" accept=".csv,.xlsx,.pdf"
+          <input type="file" accept=".csv,.xlsx,.pdf" aria-label="File (CSV, XLSX, PDF)"
             onChange={e => setFile(e.target.files?.[0] ?? null)}
             className="text-xs text-[rgba(6,3,43,0.78)] w-full" />
         </div>
@@ -360,6 +360,7 @@ function ClarificationPanel({ sub, onResolved }: {
           onChange={(e) => setNote(e.target.value.slice(0, 300))}
           rows={2}
           placeholder="Descrivi le modifiche o le informazioni aggiuntive fornite…"
+          aria-label="Nota di risposta (facoltativa, max 300 caratteri)"
           className="w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none resize-none"
           data-testid="clarification-note"
         />
@@ -501,6 +502,7 @@ function SubmissionWizard({ onDone }: WizardProps) {
               <select
                 value={subType}
                 onChange={(e) => setSubType(e.target.value)}
+                aria-label="Tipo submission"
                 className="w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none"
               >
                 {SUBMISSION_TYPES.map((t) => (
@@ -514,6 +516,7 @@ function SubmissionWizard({ onDone }: WizardProps) {
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
                 placeholder="2026-Q1"
+                aria-label="Periodo"
                 className="w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.78)] focus:outline-none"
               />
             </div>

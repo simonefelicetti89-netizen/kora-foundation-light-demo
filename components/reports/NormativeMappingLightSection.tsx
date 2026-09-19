@@ -100,7 +100,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
           <thead>
             <tr style={{ borderBottom: `2px solid #e0dff8` }}>
               {['Framework', 'Aree', 'Pillar principali', 'Forza prevalente', 'Uso indicativo'].map(h => (
-                <th key={h} style={{
+                <th scope="col" key={h} style={{
                   padding: '6px 10px', textAlign: 'left',
                   fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '10px',
                   letterSpacing: '0.06em', textTransform: 'uppercase',

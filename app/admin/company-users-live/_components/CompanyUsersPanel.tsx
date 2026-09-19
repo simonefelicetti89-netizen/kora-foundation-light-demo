@@ -103,11 +103,11 @@ export function CompanyUsersPanel({ tenantId }: { tenantId: string }) {
           <table className="w-full text-xs">
             <thead>
               <tr className="text-left text-[10px] uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
-                <th className="px-4 py-2 font-semibold">Email</th>
-                <th className="px-4 py-2 font-semibold">Ruolo</th>
-                <th className="px-4 py-2 font-semibold">Stato</th>
-                <th className="px-4 py-2 font-semibold">Ultimo accesso</th>
-                <th className="px-4 py-2 font-semibold">Creato</th>
+                <th scope="col" className="px-4 py-2 font-semibold">Email</th>
+                <th scope="col" className="px-4 py-2 font-semibold">Ruolo</th>
+                <th scope="col" className="px-4 py-2 font-semibold">Stato</th>
+                <th scope="col" className="px-4 py-2 font-semibold">Ultimo accesso</th>
+                <th scope="col" className="px-4 py-2 font-semibold">Creato</th>
               </tr>
             </thead>
             <tbody>

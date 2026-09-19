@@ -448,10 +448,10 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-[rgba(6,3,43,0.05)]">
-                <th className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)] w-64">Metrica</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S1</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S2</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
+                <th scope="col" className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)] w-64">Metrica</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S1</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S2</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(6,3,43,0.05)]50">
@@ -517,12 +517,12 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-[rgba(6,3,43,0.05)]">
-                <th className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)]">Macroblock</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Peso</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S1</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S2</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
-                <th className="py-2 text-left pl-4 text-xs font-semibold text-[rgba(6,3,43,0.40)]">Driver / Segnale</th>
+                <th scope="col" className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)]">Macroblock</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Peso</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S1</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S2</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
+                <th scope="col" className="py-2 text-left pl-4 text-xs font-semibold text-[rgba(6,3,43,0.40)]">Driver / Segnale</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(6,3,43,0.05)]50">
