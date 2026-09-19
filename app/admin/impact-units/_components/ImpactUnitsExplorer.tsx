@@ -5,6 +5,7 @@
 
 import { Fragment, useState, useEffect, useCallback } from 'react';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
 // ── Types mirroring the API response ─────────────────────────────────────────
 
@@ -72,7 +73,8 @@ interface ExplorerData {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const PILLAR_COLOR: Record<string, string> = {
-  LIFE: '#10b981', GROWTH: '#3b82f6', CONNECTION: '#f59e0b', IMPACT: '#8b5cf6', LEGACY: '#ef4444',
+  LIFE: PILLAR_COLORS.LIFE, GROWTH: PILLAR_COLORS.GROWTH, CONNECTION: PILLAR_COLORS.CONNECTION,
+  IMPACT: PILLAR_COLORS.IMPACT, LEGACY: PILLAR_COLORS.LEGACY,
 };
 
 const PILLAR_ORDER = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;

@@ -6,14 +6,10 @@
 
 import { useState } from 'react';
 import type { PartnerItem } from '../page';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS, type PillarColorKey } from '@/lib/design/kora-design-tokens';
 
 const PILLARS   = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE: '#16a34a', GROWTH: '#2563eb', CONNECTION: '#9333ea',
-  IMPACT: '#dc2626', LEGACY: '#ca8a04',
-};
 
 const PILLAR_LABELS: Record<string, string> = {
   LIFE: 'Life', GROWTH: 'Growth', CONNECTION: 'Connection',
@@ -96,7 +92,7 @@ export function PartnerCatalogClient({ partners }: { partners: PartnerItem[] }) 
 }
 
 function PartnerCard({ partner }: { partner: PartnerItem }) {
-  const pillarColor = PILLAR_COLORS[partner.pillar] ?? '#555';
+  const pillarColor = PILLAR_COLORS[partner.pillar as PillarColorKey] ?? TOKENS.inkHint;
 
   return (
     <div

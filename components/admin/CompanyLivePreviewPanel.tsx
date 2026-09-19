@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -51,10 +51,6 @@ interface LivePreviewData {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE: '#4A90D9', GROWTH: TOKENS.accent, CONNECTION: '#8B72E0',
-  IMPACT: '#059669', LEGACY: '#1E3A5F',
-};
 const PILLAR_LABELS: Record<string, string> = {
   LIFE: 'LIFE — Salute & Benessere', GROWTH: 'GROWTH — Crescita',
   CONNECTION: 'CONNECTION — Comunità', IMPACT: 'IMPACT — Territorio',

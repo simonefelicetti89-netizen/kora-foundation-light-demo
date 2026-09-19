@@ -13,7 +13,7 @@ import { InitiativeCardsClient } from './_components/InitiativeCardsClient';
 import type { InitiativeItem } from './_components/InitiativeCardsClient';
 import { ActivationProfileSection } from './_components/ActivationProfileSection';
 import type { WorkerActivationProfile, PillarDistributionEntry } from '@/app/api/worker/activation-profile/route';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -690,10 +690,6 @@ const sectionHeadingStyle: React.CSSProperties = {
   letterSpacing: '0.07em', color: 'rgba(6,3,43,0.45)', marginBottom: 14, marginTop: 0,
 };
 
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE: '#16a34a', GROWTH: '#2563eb', CONNECTION: '#9333ea',
-  IMPACT: '#dc2626', LEGACY: '#ca8a04',
-};
 
 const PARTICIPATION_LABELS: Record<string, string> = {
   interested: 'Interessato',
@@ -737,8 +733,8 @@ function HistoryRow({ item }: { item: HistoryItem }) {
 }
 
 const PILLAR_COLORS_MAP: Record<string, string> = {
-  LIFE: '#16a34a', GROWTH: '#2563eb', CONNECTION: '#9333ea',
-  IMPACT: '#dc2626', LEGACY: '#ca8a04',
+  LIFE: PILLAR_COLORS.LIFE, GROWTH: PILLAR_COLORS.GROWTH, CONNECTION: PILLAR_COLORS.CONNECTION,
+  IMPACT: PILLAR_COLORS.IMPACT, LEGACY: PILLAR_COLORS.LEGACY,
 };
 const DELIVERY_SHORT: Record<string, string> = {
   online: 'Online', onsite: 'In presenza', hybrid: 'Ibrido',

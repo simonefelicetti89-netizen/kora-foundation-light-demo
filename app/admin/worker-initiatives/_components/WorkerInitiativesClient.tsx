@@ -5,16 +5,12 @@
 
 import { useState, useEffect, useCallback, useId, isValidElement, cloneElement } from 'react';
 import type { WorkerInitiativeRow } from '@/lib/supabase/types';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
 type Tenant = { id: string; company_name: string; tenant_code: string };
 type Initiative = WorkerInitiativeRow;
 
 const PILLARS: WorkerInitiativeRow['pillar'][] = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'];
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE: '#16a34a', GROWTH: '#2563eb', CONNECTION: '#9333ea',
-  IMPACT: '#dc2626', LEGACY: '#ca8a04',
-};
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   draft:     { bg: '#f3f4f6', text: '#6b7280' },
   published: { bg: '#dcfce7', text: '#15803d' },

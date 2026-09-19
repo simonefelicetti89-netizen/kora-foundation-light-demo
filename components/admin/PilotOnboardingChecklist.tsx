@@ -26,6 +26,7 @@ interface PilotOnboardingChecklistProps {
   compact?: boolean;
 }
 
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 export function PilotOnboardingChecklist({ currentStep, compact = false }: PilotOnboardingChecklistProps) {
   if (compact) {
     return (
@@ -77,7 +78,7 @@ export function PilotOnboardingChecklist({ currentStep, compact = false }: Pilot
   return (
     <div
       style={{
-        background:   '#F8F6F1',
+        background:   TOKENS.surface,
         border:       '1px solid rgba(6,3,43,0.08)',
         borderRadius: 12,
         padding:      '16px 20px',

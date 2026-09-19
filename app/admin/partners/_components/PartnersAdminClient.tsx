@@ -5,7 +5,7 @@
 // No marketplace, no booking, no partner ranking, no per-worker interaction data.
 
 import { useState, useId, isValidElement, cloneElement } from 'react';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
 const PILLARS   = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 const MODES     = ['online', 'onsite', 'hybrid'] as const;
@@ -15,10 +15,6 @@ type Pillar   = typeof PILLARS[number];
 type Mode     = typeof MODES[number];
 type Status   = typeof STATUSES[number];
 
-const PILLAR_COLORS: Record<Pillar, string> = {
-  LIFE: '#16a34a', GROWTH: '#2563eb', CONNECTION: '#9333ea',
-  IMPACT: '#dc2626', LEGACY: '#ca8a04',
-};
 
 const STATUS_STYLES: Record<Status, { bg: string; text: string; label: string }> = {
   draft:     { bg: '#fef9c3', text: '#854d0e', label: 'Bozza' },

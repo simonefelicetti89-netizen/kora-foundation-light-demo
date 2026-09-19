@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase/types';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
 export type InitiativeItem = {
   id: string;
@@ -22,10 +22,6 @@ export type InitiativeItem = {
   participation_status: WorkerParticipationRow['status'] | null;
 };
 
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE: '#16a34a', GROWTH: '#2563eb', CONNECTION: '#9333ea',
-  IMPACT: '#dc2626', LEGACY: '#ca8a04',
-};
 
 const PILLAR_LABELS: Record<string, string> = {
   LIFE: 'Life', GROWTH: 'Growth', CONNECTION: 'Connection',

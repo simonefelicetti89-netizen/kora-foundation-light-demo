@@ -5,6 +5,7 @@
 
 export const dynamic = 'force-dynamic';
 
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 import {
   getKoraLinkDemoLabRuntimeStatus,
   generateKoraLinkDemoLabLink,
@@ -21,8 +22,8 @@ const C = {
   inkSec:  'rgba(6,3,43,0.55)',
   inkHint: 'rgba(6,3,43,0.38)',
   inkBdr:  'rgba(6,3,43,0.08)',
-  surface: '#F8F6F1',
-  green:   '#2F7D55',
+  surface: TOKENS.surface,
+  green:   TOKENS.success,
   red:     '#B3261E',
 };
 
