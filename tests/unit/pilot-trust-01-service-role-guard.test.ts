@@ -254,6 +254,14 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // two tables directly (structurally enforced by this WP's own test).
   { path: 'lib/living-koral-transformation-ledger/transformation-ledger-service.ts', reason: 'documented server-only service — Transformation Ledger record + current-state read, atomic RPC delegate, KORA-WP-113' },
 
+  // KORA-WP-116: KORAL Review — server-only, same Pattern-A rationale as
+  // the Advisor-portal services above (advisor-case-service.ts,
+  // advisor-content-service.ts, operational-case-service.ts): every write
+  // is Assignment-gated at the service layer itself
+  // (assertActiveAssignmentAndGetCompanyId, reused from
+  // advisor-case-service.ts), never a direct RLS-mediated user write path.
+  { path: 'lib/living-koral-review/review-service.ts', reason: 'documented server-only service — KORAL Review Mode A (interpret)/Mode B (confirm), Assignment-gated, KORA-WP-116' },
+
   // ── Documented pre-existing exceptions (NOT part of this sprint's 6-page
   // scope) — real, tracked, not silently endorsed ─────────────────────────
   {

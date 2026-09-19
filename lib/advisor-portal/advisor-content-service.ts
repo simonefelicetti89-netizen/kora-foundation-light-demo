@@ -42,6 +42,14 @@ const ADVISOR_CREATABLE_CLASSES: readonly ContentClass[] = [
   'ORGANISATION_SHAREABLE_NOTE', 'ADVISOR_INTERNAL_NOTE', 'CONFIDENTIAL_REFERENCE', 'COMMUNICATION_FOLLOWUP',
 ];
 
+// KORA-WP-116 addition (migration 086, Founder Adjudication #3's
+// due-diligence resolution): the one linkable object type today. NULL/NULL
+// on every pre-existing (pre-WP-116) content record — see migration 086's
+// own header for the full reasoning on why this is a narrow widening of
+// THIS table, not a second content system.
+export const CONTENT_LINKED_OBJECT_TYPES = ['material_change'] as const;
+export type ContentLinkedObjectType = (typeof CONTENT_LINKED_OBJECT_TYPES)[number];
+
 export interface AdvisorContentRecord {
   id: string;
   assignmentId: string;
@@ -50,12 +58,15 @@ export interface AdvisorContentRecord {
   shared: boolean | null;
   purpose: string | null;
   createdByRole: 'ADVISOR' | 'KORA_ADMIN';
+  linkedObjectType: ContentLinkedObjectType | null;
+  linkedObjectId: string | null;
   createdAt: string;
 }
 
 interface ContentDbRow {
   id: string; assignment_id: string; class: string; body: string;
-  shared: boolean | null; purpose: string | null; created_by_role: string; created_at: string;
+  shared: boolean | null; purpose: string | null; created_by_role: string;
+  linked_object_type: string | null; linked_object_id: string | null; created_at: string;
 }
 
 function toContentRecord(row: ContentDbRow): AdvisorContentRecord {
@@ -67,6 +78,8 @@ function toContentRecord(row: ContentDbRow): AdvisorContentRecord {
     shared: row.shared,
     purpose: row.purpose,
     createdByRole: row.created_by_role as AdvisorContentRecord['createdByRole'],
+    linkedObjectType: row.linked_object_type as ContentLinkedObjectType | null,
+    linkedObjectId: row.linked_object_id,
     createdAt: row.created_at,
   };
 }
@@ -103,6 +116,15 @@ export interface CreateAdvisorContentParams {
   body: string;
   shared?: boolean; // required when class === 'COMMUNICATION_FOLLOWUP', ignored otherwise
   purpose?: string;  // required when class === 'CONFIDENTIAL_REFERENCE', ignored otherwise
+  /**
+   * KORA-WP-116 addition. Optional; both fields must be provided together
+   * or omitted together. Used by lib/living-koral-review/review-service.ts
+   * to link a KORAL Review interpretation note to the one specific
+   * Material Change it concerns — see migration 086's own header. No
+   * other caller in the repository sets these.
+   */
+  linkedObjectType?: ContentLinkedObjectType;
+  linkedObjectId?: string;
   callerAdvisorId: string;
   actorId: string;
 }
@@ -119,6 +141,12 @@ export async function createAdvisorContent(params: CreateAdvisorContentParams): 
   }
   if (params.class === 'CONFIDENTIAL_REFERENCE' && (!params.purpose || !params.purpose.trim())) {
     throw new Error('[KORA] createAdvisorContent rejected: purpose is required for a confidential reference.');
+  }
+  if ((params.linkedObjectType == null) !== (params.linkedObjectId == null)) {
+    throw new Error('[KORA] createAdvisorContent rejected: linkedObjectType and linkedObjectId must be provided together.');
+  }
+  if (params.linkedObjectType && !CONTENT_LINKED_OBJECT_TYPES.includes(params.linkedObjectType)) {
+    throw new Error('[KORA] createAdvisorContent rejected: unknown linkedObjectType.');
   }
 
   const db = getSupabaseServiceClient();
@@ -140,6 +168,8 @@ export async function createAdvisorContent(params: CreateAdvisorContentParams): 
       shared: params.class === 'COMMUNICATION_FOLLOWUP' ? params.shared : null,
       purpose: params.class === 'CONFIDENTIAL_REFERENCE' ? params.purpose : null,
       created_by_role: 'ADVISOR',
+      linked_object_type: params.linkedObjectType ?? null,
+      linked_object_id: params.linkedObjectId ?? null,
     })
     .select()
     .single();
@@ -289,4 +319,37 @@ export async function listContentForAdvisor(callerAdvisorId: string, assignmentI
   return ((data ?? []) as ContentDbRow[])
     .map(toContentRecord)
     .filter((r) => r.class !== 'AUDIT_PROVENANCE_RECORD');
+}
+
+// ── listContentLinkedToMaterialChange — KORA-WP-116 addition ────────────────
+// The Advisor-facing read of KORAL Review interpretation for one specific
+// Material Change — reuses this same Assignment-party/active-status gate,
+// never a new one.
+
+export async function listContentLinkedToMaterialChange(
+  callerAdvisorId: string,
+  assignmentId: string,
+  materialChangeId: string,
+): Promise<AdvisorContentRecord[]> {
+  const db = getSupabaseServiceClient();
+
+  const { status } = await assertAdvisorIsParty(db, assignmentId, callerAdvisorId);
+  if (status !== 'active') {
+    throw new Error('[KORA] listContentLinkedToMaterialChange rejected: Advisor Assignment has ended — operational access no longer applies.');
+  }
+
+  const { data, error } = await db
+    .schema('advisor')
+    .from('advisor_content_record')
+    .select()
+    .eq('assignment_id', assignmentId)
+    .eq('linked_object_type', 'material_change')
+    .eq('linked_object_id', materialChangeId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    throw new Error(`[KORA] listContentLinkedToMaterialChange failed: ${error.message}`);
+  }
+
+  return ((data ?? []) as ContentDbRow[]).map(toContentRecord);
 }

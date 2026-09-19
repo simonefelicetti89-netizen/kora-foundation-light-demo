@@ -123,11 +123,11 @@ describe('KORA-WP-112 — reuses the existing governance_event substrate, never 
 });
 
 describe('KORA-WP-112 — no migration beyond 081 was introduced BY THIS WP (a later WP may legitimately raise the ceiling further)', () => {
-  it('supabase/migrations/ ceiling is at least 081 (WP-112\'s own migration exists) — bumped to 082 by KORA-WP-113, then to 083/084 by KORA-WP-114, then to 085 by KORA-WP-115, all later, unrelated WPs/increments; this assertion\'s own intent is unaffected', async () => {
+  it('supabase/migrations/ ceiling is at least 081 (WP-112\'s own migration exists) — bumped to 082 by KORA-WP-113, to 083/084 by KORA-WP-114, to 085 by KORA-WP-115, then to 086 by KORA-WP-116, all later, unrelated WPs/increments; this assertion\'s own intent is unaffected', async () => {
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(85);
+    expect(Math.max(...numbers)).toBe(86);
     expect(numbers).toContain(81);
   });
 });
@@ -267,6 +267,10 @@ describe.skipIf(!ready)('KORA-WP-112 — real service-layer proof (local Supabas
     });
     const staleResult = await assessMaterialChangeCandidate({
       candidateId: staleCandidate.id, tenantId, actorRole: 'KORA_ADMIN', actorId: INITIATIVE_AUTH_UID,
+      // KORA-WP-116: recognitionSource is now a required, explicit param
+      // (previously hardcoded 'kora-automatic' inside the function itself).
+      // This fixture simulates the automatic path, unaffected in substance.
+      recognitionSource: 'kora-automatic',
       reverifyAgainstSource: async () => false, // the real record never actually confirms it
     });
     expect(staleResult?.status).toBe('CANDIDATE'); // never promoted, never a REJECTED state

@@ -23,6 +23,7 @@ import { recordGovernanceEvent } from '@/lib/audit/governance-event';
 import { getMaterialChangeTaxonomy, getLivingKoralConfigVersion } from '@/lib/living-koral-config/v1';
 import type {
   LivingKoralMaterialChangeRecord, LivingKoralMaterialChangeAffectedDomain, LivingKoralMaterialChangeSourceEntityType,
+  LivingKoralMaterialChangeRecognitionSource,
 } from './types';
 import type { MaterialChangeTaxonomyEntry } from '@/lib/living-koral-config/types';
 
@@ -143,6 +144,18 @@ export interface AssessMaterialChangeCandidateParams {
    * domain-specific table directly.
    */
   reverifyAgainstSource: () => Promise<boolean>;
+  /**
+   * KORA-WP-116 addition. Required, explicit — never defaulted — per that
+   * WP's own Founder Adjudication #2: "Do NOT add a loose optional
+   * 'advisor id' parameter to generic recognition APIs if doing so weakens
+   * the existing WP-112 authority boundary." This substrate stays
+   * domain-agnostic (it takes only the already-typed recognition-source
+   * enum, never an Advisor identity or Assignment reference); the KORAL
+   * Review wrapper service (lib/living-koral-review/review-service.ts)
+   * owns Assignment/identity/eligibility validation and passes
+   * 'advisor-confirmed' only after all of it has passed.
+   */
+  recognitionSource: LivingKoralMaterialChangeRecognitionSource;
   actorRole: string;
   actorId: string;
 }
@@ -171,7 +184,7 @@ export async function assessMaterialChangeCandidate(params: AssessMaterialChange
 
   const { data: updated, error } = await db
     .schema('gov').from('living_koral_material_change')
-    .update({ status: 'RECOGNIZED', recognized_at: new Date().toISOString(), recognition_source: 'kora-automatic' })
+    .update({ status: 'RECOGNIZED', recognized_at: new Date().toISOString(), recognition_source: params.recognitionSource })
     .eq('id', params.candidateId).eq('tenant_id', params.tenantId).eq('status', 'CANDIDATE')
     .select().single();
 

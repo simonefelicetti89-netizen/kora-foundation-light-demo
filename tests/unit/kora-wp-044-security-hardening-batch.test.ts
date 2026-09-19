@@ -135,14 +135,13 @@ describe('KORA-WP-044 — PLATFORM-012/013 (validazione input / gestione errori)
 
 describe('KORA-WP-044 — nessuna migrazione, nessun nuovo modulo di sicurezza generico introdotto', () => {
   it('supabase/migrations/ resta invariato alla ceiling 080 (Data/Migration Impact: NONE, registry 142)', async () => {
-    // Ceiling bumped 80→81→82 by KORA-WP-112 and KORA-WP-113, both later,
-    // unrelated WPs — this assertion's own intent ("WP-044 itself adds no
-    // migration") is unaffected; only the global ceiling this test pins to
-    // has moved.
+    // Ceiling bumped 80→...→86 by later, unrelated WPs — this assertion's
+    // own intent ("WP-044 itself adds no migration") is unaffected; only
+    // the global ceiling this test pins to has moved.
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(85);
+    expect(Math.max(...numbers)).toBe(86);
   });
 
   it('lib/security/rate-limit.ts (il meccanismo esistente riusato) non è stato duplicato con un secondo modulo', () => {

@@ -30,7 +30,11 @@ export type CaseOrganisationType = (typeof CASE_ORGANISATION_TYPES)[number];
 export const CASE_STATUSES = ['open', 'in-progress', 'blocked', 'resolved', 'escalated'] as const;
 export type CaseStatus = (typeof CASE_STATUSES)[number];
 
-export const CASE_LINKED_OBJECT_TYPES = ['commitment', 'program', 'review', 'certification', 'capability_validation'] as const;
+// KORA-WP-116 addition: 'material_change' (migration 086) — a KORAL
+// Review Case links to a gov.living_koral_material_change row. See that
+// migration's own header for why the pre-existing 'review' value
+// (KORA-WP-024, a fully distinct object graph) is not reused.
+export const CASE_LINKED_OBJECT_TYPES = ['commitment', 'program', 'review', 'certification', 'capability_validation', 'material_change'] as const;
 export type CaseLinkedObjectType = (typeof CASE_LINKED_OBJECT_TYPES)[number];
 
 export interface OperationalCase {

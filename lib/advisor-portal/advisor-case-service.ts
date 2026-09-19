@@ -35,7 +35,14 @@ import {
   type CaseStatus,
 } from '@/lib/operations/operational-case-service';
 
-async function assertActiveAssignmentAndGetCompanyId(
+// Exported for reuse by lib/living-koral-review/review-service.ts
+// (KORA-WP-116, Founder Adjudication #2: reuse the existing
+// Assignment-gate authority boundary rather than re-deriving a third
+// copy of it — operational-case-service.ts's own assertAdvisorTiedToCompany
+// is a deliberately lighter, different check (any-status existence, not
+// active-status), so it is not the right function to reuse here; this one
+// is).
+export async function assertActiveAssignmentAndGetCompanyId(
   db: ReturnType<typeof getSupabaseServiceClient>,
   assignmentId: string,
   callerAdvisorId: string,

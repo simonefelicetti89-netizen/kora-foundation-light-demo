@@ -9,6 +9,15 @@
 // added — the Advisor may create the four Advisor-authored classes; the
 // governance-authored Class 3 audit/provenance record has no UI in this
 // pilot slice, KORA_ADMIN/service-only, per this WP's own Out of Scope).
+// KORA-WP-116 — KORAL Review (Review toggle added — reuses the existing
+// KORA-WP-007 Case primitive and KORA-WP-036 content taxonomy; no new
+// route, no new dashboard, no Company picker. Two distinct actions, never
+// merged into one generic "Approve" button: "Aggiungi interpretazione"
+// (Review Mode A — interpret an already-RECOGNIZED transformation, zero
+// mutation) and "Conferma trasformazione" (Review Mode B — confirm an
+// eligible, still-ambiguous CANDIDATE; the only Advisor action that can
+// ever promote one to RECOGNIZED). No score/grade/pass-fail/certification/
+// approval/rejection language anywhere in this toggle's own copy.
 // KORA-WP-034 — Advisor Tasks & Cases (Case toggle added — reuses the
 // shared KORA-WP-007 Operational Case primitive; "Tasks" in the WP title
 // names no separate persisted entity — see
@@ -116,6 +125,21 @@ interface ReviewAdvisorAssessmentItem {
   issuedAt: string;
 }
 
+// KORA-WP-116 — KORAL Review. category is one of KORA-WP-111's own seven
+// taxonomy categories (lib/living-koral-config/v1.ts); this UI never lets
+// the Advisor pick or override it — it is read-only, canon-derived.
+interface MaterialChangeItem {
+  id: string;
+  category: string;
+  status: 'CANDIDATE' | 'RECOGNIZED' | 'SUPERSEDED';
+  occurredAt: string;
+}
+
+interface KoralReviewSubjects {
+  recognizedForInterpretation: MaterialChangeItem[];
+  eligibleForConfirmation: MaterialChangeItem[];
+}
+
 export default function AdvisorCompaniesPage() {
   const [companies, setCompanies] = useState<AssignedCompany[]>([]);
   const [state, setState] = useState<'loading' | 'loaded' | 'error'>('loading');
@@ -145,6 +169,13 @@ export default function AdvisorCompaniesPage() {
   const [newAssessmentNarrative, setNewAssessmentNarrative] = useState('');
   const [savingAssessment, setSavingAssessment] = useState(false);
   const [assessmentError, setAssessmentError] = useState('');
+
+  const [expandedReview, setExpandedReview] = useState<string | null>(null);
+  const [reviewSubjects, setReviewSubjects] = useState<KoralReviewSubjects>({ recognizedForInterpretation: [], eligibleForConfirmation: [] });
+  const [selectedReviewTargetId, setSelectedReviewTargetId] = useState('');
+  const [newInterpretation, setNewInterpretation] = useState('');
+  const [savingReview, setSavingReview] = useState(false);
+  const [reviewError, setReviewError] = useState('');
 
   async function load() {
     try {
@@ -424,6 +455,80 @@ export default function AdvisorCompaniesPage() {
     }
   }
 
+  async function loadReview(assignmentId: string) {
+    try {
+      const r = await fetch(`/api/advisor/companies/${assignmentId}/koral-review`, { credentials: 'include' });
+      const d = await r.json();
+      if (d.ok) {
+        setReviewSubjects({
+          recognizedForInterpretation: d.subjects?.recognizedForInterpretation ?? [],
+          eligibleForConfirmation: d.subjects?.eligibleForConfirmation ?? [],
+        });
+      } else {
+        setReviewSubjects({ recognizedForInterpretation: [], eligibleForConfirmation: [] });
+        setReviewError(d.error ?? 'Impossibile recuperare le trasformazioni.');
+      }
+    } catch {
+      setReviewSubjects({ recognizedForInterpretation: [], eligibleForConfirmation: [] });
+      setReviewError('Errore di rete.');
+    }
+  }
+
+  async function toggleReview(assignmentId: string) {
+    if (expandedReview === assignmentId) {
+      setExpandedReview(null);
+      return;
+    }
+    setExpandedReview(assignmentId);
+    setReviewError('');
+    setSelectedReviewTargetId('');
+    await loadReview(assignmentId);
+  }
+
+  async function saveInterpretation(assignmentId: string) {
+    if (!selectedReviewTargetId || !newInterpretation.trim()) return;
+    setSavingReview(true);
+    setReviewError('');
+    try {
+      const r = await fetch(`/api/advisor/companies/${assignmentId}/koral-review`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ materialChangeId: selectedReviewTargetId, interpretation: newInterpretation }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        setNewInterpretation('');
+        await loadReview(assignmentId);
+      } else {
+        setReviewError(d.error ?? 'Salvataggio non riuscito.');
+      }
+    } catch {
+      setReviewError('Errore di rete.');
+    } finally {
+      setSavingReview(false);
+    }
+  }
+
+  async function confirmCandidate(assignmentId: string, materialChangeId: string) {
+    setSavingReview(true);
+    setReviewError('');
+    try {
+      const r = await fetch(`/api/advisor/companies/${assignmentId}/koral-review/confirm`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ materialChangeId }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        await loadReview(assignmentId);
+      } else {
+        setReviewError(d.error ?? 'Conferma non riuscita.');
+      }
+    } catch {
+      setReviewError('Errore di rete.');
+    } finally {
+      setSavingReview(false);
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
@@ -509,7 +614,85 @@ export default function AdvisorCompaniesPage() {
                 >
                   {expandedAssessments === c.assignmentId ? 'Chiudi valutazioni' : 'Valutazioni Review'}
                 </button>
+                <button
+                  onClick={() => toggleReview(c.assignmentId)}
+                  style={{ fontSize: '11px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  {expandedReview === c.assignmentId ? 'Chiudi KORAL Review' : 'KORAL Review'}
+                </button>
               </div>
+
+              {expandedReview === c.assignmentId && (
+                <div style={{ marginTop: 12 }}>
+                  <p style={{ fontSize: '11px', color: TOKENS.inkHint, lineHeight: 1.5, marginBottom: 10 }}>
+                    Puoi interpretare una trasformazione già riconosciuta, o confermare una trasformazione
+                    ambigua ancora candidata. Non puoi mai scegliere o forzare tu la trasformazione.
+                  </p>
+
+                  {reviewError && (
+                    <p style={{ fontSize: '11px', color: TOKENS.critical, marginBottom: 10 }}>⚠ {reviewError}</p>
+                  )}
+
+                  <p style={{ fontSize: '10px', fontWeight: 700, color: TOKENS.inkHint, textTransform: 'uppercase', marginBottom: 6 }}>
+                    Da confermare (ambigue)
+                  </p>
+                  {reviewSubjects.eligibleForConfirmation.length === 0 && (
+                    <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 10 }}>Nessuna trasformazione ambigua da confermare al momento.</p>
+                  )}
+                  <ul className="space-y-2" style={{ marginBottom: 12 }}>
+                    {reviewSubjects.eligibleForConfirmation.map((m) => (
+                      <li key={m.id} className="flex items-center justify-between gap-3" style={{ fontSize: '12px', color: TOKENS.inkSecondary }}>
+                        <span><strong style={{ color: TOKENS.ink }}>{m.category}</strong> — {new Date(m.occurredAt).toLocaleDateString('it-IT')}</span>
+                        <button
+                          onClick={() => confirmCandidate(c.assignmentId, m.id)}
+                          disabled={savingReview}
+                          style={{ fontSize: '10px', color: TOKENS.accent, background: 'none', border: 'none', cursor: 'pointer', opacity: savingReview ? 0.6 : 1 }}
+                        >
+                          Conferma trasformazione
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <p style={{ fontSize: '10px', fontWeight: 700, color: TOKENS.inkHint, textTransform: 'uppercase', marginBottom: 6 }}>
+                    Riconosciute — aggiungi interpretazione
+                  </p>
+                  {reviewSubjects.recognizedForInterpretation.length === 0 && (
+                    <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 10 }}>Nessuna trasformazione riconosciuta ancora.</p>
+                  )}
+                  {reviewSubjects.recognizedForInterpretation.length > 0 && (
+                    <div className="space-y-2">
+                      <select
+                        value={selectedReviewTargetId}
+                        onChange={(e) => setSelectedReviewTargetId(e.target.value)}
+                        style={{ width: '100%', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink }}
+                      >
+                        <option value="">Seleziona una trasformazione riconosciuta…</option>
+                        {reviewSubjects.recognizedForInterpretation.map((m) => (
+                          <option key={m.id} value={m.id}>{m.category} — {new Date(m.occurredAt).toLocaleDateString('it-IT')}</option>
+                        ))}
+                      </select>
+                      <textarea
+                        value={newInterpretation}
+                        onChange={(e) => setNewInterpretation(e.target.value)}
+                        placeholder="Interpretazione, contesto, cosa osservare…"
+                        style={{ width: '100%', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', border: `1px solid ${TOKENS.inkBorderStrong}`, color: TOKENS.ink, minHeight: 60 }}
+                      />
+                      <button
+                        onClick={() => saveInterpretation(c.assignmentId)}
+                        disabled={savingReview || !selectedReviewTargetId || !newInterpretation.trim()}
+                        style={{
+                          fontSize: '11px', fontWeight: 700, color: '#FFFFFF', background: TOKENS.accent,
+                          border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer',
+                          opacity: savingReview || !selectedReviewTargetId || !newInterpretation.trim() ? 0.6 : 1,
+                        }}
+                      >
+                        {savingReview ? 'Salvataggio…' : 'Aggiungi interpretazione'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {expandedCases === c.assignmentId && (
                 <div style={{ marginTop: 12 }}>

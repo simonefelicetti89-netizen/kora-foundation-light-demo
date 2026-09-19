@@ -67,6 +67,10 @@ const DECISION_SPINE_AND_ADVISOR_EVIDENCE_MODULES = [
   'lib/review/review-advisor-proposal-service.ts',
   'lib/review/review-advisor-assessment-service.ts',
   'lib/advisor-portal/advisor-decision-support-service.ts',
+  // KORA-WP-116 (Founder Adjudication #5): the KORAL Review domain
+  // extends this same early guard, narrowly — never a fee-computation
+  // input, exactly like the Decision Spine's own Review verdict.
+  'lib/living-koral-review/review-service.ts',
 ];
 
 describe('KORA-WP-042 — H. no fee-computation function exists yet (the "by absence" premise)', () => {
@@ -124,19 +128,38 @@ describe('KORA-WP-042 — F/G. fee_charge_event schema itself never references a
 
 describe('KORA-WP-042 — E. Decision Spine independence preserved (no mutation introduced by this WP)', () => {
   it('no new migration exists for this WP (registry: Data/Migration Impact = NONE)', async () => {
-    // Ceiling bumped 80→81→82 by KORA-WP-112 and KORA-WP-113, both later,
-    // unrelated WPs — this assertion's own intent ("WP-042 itself adds no
-    // migration") is unaffected; only the global ceiling this test pins to
-    // has moved.
+    // Ceiling bumped 80→81→82→...→86 by later, unrelated WPs — this
+    // assertion's own intent ("WP-042 itself adds no migration") is
+    // unaffected; only the global ceiling this test pins to has moved.
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(85); // unchanged since KORA-WP-037 until KORA-WP-112/113/114/115 (114's own object-level-provenance remediation, migration 084; 115's own KORAL Edition, migration 085)
+    expect(Math.max(...numbers)).toBe(86); // 114's own migration 084; 115's own migration 085; 116's own migration 086 (gov.operational_case.linked_object_type + advisor_content_record widenings — no new table)
   });
 
   it('this WP adds no lib/services file of its own — verification artifact only', () => {
     expect(existsSync('lib/fee-independence')).toBe(false);
     expect(existsSync('services/fee-independence')).toBe(false);
+  });
+});
+
+describe('KORA-WP-116 — fee-independence extension: KORAL Review never becomes a fee-computation input (Founder Adjudication #5)', () => {
+  const REVIEW_PATH = 'lib/living-koral-review/review-service.ts';
+
+  it('lib/living-koral-review/review-service.ts exists and never imports flow-a-billing, fee_charge_event, or Commercial Entitlement', () => {
+    expect(existsSync(REVIEW_PATH)).toBe(true);
+    const lines = codeLines(REVIEW_PATH).filter((l) => /^\s*import\b/.test(l));
+    expect(lines.some((l) => /flow-a-billing|fee_charge_event|CommercialEntitlement|commercial-entitlement/i.test(l))).toBe(false);
+  });
+
+  it('flow-a-billing-service.ts never imports living-koral-review or any KORAL Review type/field', () => {
+    const lines = codeLines(BILLING_PATH).filter((l) => /^\s*import\b/.test(l));
+    expect(lines.some((l) => /living-koral-review|KoralReview/i.test(l))).toBe(false);
+  });
+
+  it('no interpretation/confirmation/recognition-source field in the Review module feeds an amount (no `amount * ` / `* rate` arithmetic anywhere in it)', () => {
+    const src = codeLines(REVIEW_PATH).join('\n');
+    expect(src).not.toMatch(/amount\s*[*/]\s*\w|\w+\s*[*/]\s*rate/i);
   });
 });
 

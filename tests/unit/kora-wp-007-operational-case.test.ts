@@ -30,8 +30,8 @@ describe('KORA-WP-007 — vocabulary', () => {
     expect(CASE_STATUSES).toEqual(['open', 'in-progress', 'blocked', 'resolved', 'escalated']);
   });
 
-  it('exposes exactly the five canonical linked-object types, doc 73 §12', () => {
-    expect(CASE_LINKED_OBJECT_TYPES).toEqual(['commitment', 'program', 'review', 'certification', 'capability_validation']);
+  it('exposes exactly the five canonical linked-object types, doc 73 §12, plus KORA-WP-116\'s own additive "material_change" (migration 086 — a KORAL Review Case links to a gov.living_koral_material_change row)', () => {
+    expect(CASE_LINKED_OBJECT_TYPES).toEqual(['commitment', 'program', 'review', 'certification', 'capability_validation', 'material_change']);
   });
 });
 

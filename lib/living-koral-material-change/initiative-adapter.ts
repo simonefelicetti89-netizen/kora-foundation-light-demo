@@ -92,6 +92,13 @@ export async function observeInitiativeTransition(params: ObserveInitiativeTrans
     tenantId: params.tenantId,
     actorRole: params.actorRole,
     actorId: params.actorId,
+    // KORA-WP-116: recognitionSource is now a required, explicit
+    // parameter of assessMaterialChangeCandidate() (previously hardcoded
+    // 'kora-automatic' inside that function). This adapter's own
+    // categories (Emergence/Disappearance) are discrete/self-evidencing —
+    // no Advisor confirmation ever applies to them (doc 129 Part 12, this
+    // file's own header) — so this call site is always 'kora-automatic'.
+    recognitionSource: 'kora-automatic',
     reverifyAgainstSource: async () => {
       // Re-reads the REAL, current initiative record — the "evidence/
       // persistence assessment" itself, never trusting this function's
