@@ -17,7 +17,7 @@ import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { CommonsCreateForm } from '@/components/commons/CommonsCreateForm';
-import { PILLAR_COLORS, type PillarColorKey } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS, type PillarColorKey } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'KORA Space · Company' };
 
@@ -34,10 +34,10 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const STATUS_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
   draft:          { label: 'Bozza',       color: 'rgba(6,3,43,0.50)', bg: 'rgba(6,3,43,0.06)',  border: 'rgba(6,3,43,0.12)' },
-  pending_review: { label: 'In revisione', color: '#8A5A00',          bg: 'rgba(192,125,42,0.08)', border: 'rgba(192,125,42,0.22)' },
-  published:      { label: 'Pubblicato',  color: '#2F7D55',           bg: 'rgba(47,125,85,0.08)', border: 'rgba(47,125,85,0.22)' },
+  pending_review: { label: 'In revisione', color: TOKENS.safeguard.watch.text,          bg: 'rgba(192,125,42,0.08)', border: 'rgba(192,125,42,0.22)' },
+  published:      { label: 'Pubblicato',  color: TOKENS.success,           bg: 'rgba(47,125,85,0.08)', border: 'rgba(47,125,85,0.22)' },
   archived:       { label: 'Archiviato',  color: 'rgba(6,3,43,0.40)', bg: 'rgba(6,3,43,0.04)',  border: 'rgba(6,3,43,0.10)' },
-  rejected:       { label: 'Rifiutato',   color: '#9E3B2F',           bg: 'rgba(158,59,47,0.08)', border: 'rgba(158,59,47,0.22)' },
+  rejected:       { label: 'Rifiutato',   color: TOKENS.critical,           bg: 'rgba(158,59,47,0.08)', border: 'rgba(158,59,47,0.22)' },
 };
 
 
@@ -78,7 +78,7 @@ export default async function CompanyCommonsPage() {
 
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: '0 0 8px' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: '0 0 8px' }}>
           KORA Space
         </h1>
         <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}>
@@ -97,7 +97,7 @@ export default async function CompanyCommonsPage() {
           marginBottom: 20,
         }}
       >
-        <p style={{ fontSize: 12, fontWeight: 700, color: '#06032B', margin: '0 0 6px' }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: TOKENS.ink, margin: '0 0 6px' }}>
           KORA Space è il luogo in cui KORA passa dalla misurazione all&apos;attivazione.
         </p>
         <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', margin: 0, lineHeight: 1.65 }}>
@@ -118,7 +118,7 @@ export default async function CompanyCommonsPage() {
           marginBottom: 20,
         }}
       >
-        <p style={{ fontSize: 11, fontWeight: 700, color: '#2F7D55', margin: '0 0 10px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.success, margin: '0 0 10px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
           Come funziona KORA Space
         </p>
         <ol style={{ fontSize: 12, color: '#2F5A42', lineHeight: 1.8, margin: 0, paddingLeft: 18 }}>
@@ -166,7 +166,7 @@ export default async function CompanyCommonsPage() {
         }}
       >
         <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>&#9432;</span>
-        <p style={{ fontSize: 13, color: '#8A5A00', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 13, color: TOKENS.safeguard.watch.text, margin: 0, lineHeight: 1.6 }}>
           <strong>KORA Space è uno spazio moderato.</strong>{' '}
           I contenuti diventano visibili ai worker solo dopo approvazione KORA.
           Invia i tuoi contenuti a revisione usando il pulsante &quot;Invia a revisione KORA&quot;.
@@ -176,8 +176,8 @@ export default async function CompanyCommonsPage() {
       {/* Stats row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 32 }}>
         {[
-          { label: 'In revisione', value: pending.length,   color: '#8A5A00', bg: 'rgba(192,125,42,0.08)' },
-          { label: 'Pubblicati',   value: published.length, color: '#2F7D55', bg: 'rgba(47,125,85,0.08)'  },
+          { label: 'In revisione', value: pending.length,   color: TOKENS.safeguard.watch.text, bg: 'rgba(192,125,42,0.08)' },
+          { label: 'Pubblicati',   value: published.length, color: TOKENS.success, bg: 'rgba(47,125,85,0.08)'  },
           { label: 'Bozze',        value: drafts.length,    color: 'rgba(6,3,43,0.50)', bg: 'rgba(6,3,43,0.04)' },
         ].map(({ label, value, color, bg }) => (
           <div key={label} style={{ background: bg, borderRadius: 12, padding: '16px 20px', textAlign: 'center' }}>
@@ -192,7 +192,7 @@ export default async function CompanyCommonsPage() {
 
       {/* Posts list */}
       <div style={{ marginTop: 40 }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#06032B', margin: '0 0 16px' }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: TOKENS.ink, margin: '0 0 16px' }}>
           Tutti i contenuti ({allPosts.length})
         </h2>
 
@@ -238,7 +238,7 @@ export default async function CompanyCommonsPage() {
                         </span>
                       )}
                     </div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: '#06032B', margin: '0 0 4px', lineHeight: 1.3 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px', lineHeight: 1.3 }}>
                       {post.title}
                     </p>
                     <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', margin: '0 0 8px', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>

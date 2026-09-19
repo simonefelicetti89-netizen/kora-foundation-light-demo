@@ -38,11 +38,11 @@ interface InitiativeSummary {
 const CANCELLABLE_STATUSES = new Set(['pending', 'requested', 'approved', 'confirmed']);
 
 const BOOKING_STATUS_COPY: Record<string, { label: string; color: string }> = {
-  pending:   { label: 'Richiesta inviata',          color: '#8A5A00'           },
-  requested: { label: 'Richiesta inviata',          color: '#8A5A00'           },
-  approved:  { label: 'Partecipazione confermata',  color: '#2F7D55'           },
-  confirmed: { label: 'Partecipazione confermata',  color: '#2F7D55'           },
-  rejected:  { label: 'Richiesta non approvata',    color: '#9E3B2F'           },
+  pending:   { label: 'Richiesta inviata',          color: TOKENS.safeguard.watch.text           },
+  requested: { label: 'Richiesta inviata',          color: TOKENS.safeguard.watch.text           },
+  approved:  { label: 'Partecipazione confermata',  color: TOKENS.success           },
+  confirmed: { label: 'Partecipazione confermata',  color: TOKENS.success           },
+  rejected:  { label: 'Richiesta non approvata',    color: TOKENS.critical           },
   attended:  { label: 'Partecipazione completata',  color: '#3B6EBA'           },
   cancelled: { label: 'Annullata',                  color: 'rgba(6,3,43,0.45)' },
 };
@@ -60,7 +60,7 @@ function PrivacyNotice() {
         borderRadius: 10, padding: '12px 16px', marginBottom: 20,
       }}
     >
-      <p style={{ fontFamily: FONT, fontSize: 12, color: '#2F7D55', margin: 0, lineHeight: 1.7 }}>
+      <p style={{ fontFamily: FONT, fontSize: 12, color: TOKENS.success, margin: 0, lineHeight: 1.7 }}>
         <strong>Il datore di lavoro non vede il tuo percorso individuale.</strong>{' '}
         Le tue prenotazioni sono private e non generano alcuna classifica individuale.
         La partecipazione confermata può contribuire
@@ -189,7 +189,7 @@ export function BookingsClient() {
                   )}
 
                   {booking.attended_at && (
-                    <p style={{ fontSize: 10, color: '#2F7D55', margin: '4px 0 0' }}>
+                    <p style={{ fontSize: 10, color: TOKENS.success, margin: '4px 0 0' }}>
                       Partecipazione confermata il {new Date(booking.attended_at).toLocaleDateString('it-IT')}
                     </p>
                   )}
@@ -213,7 +213,7 @@ export function BookingsClient() {
                           borderRadius: 7,
                           border:       '1px solid rgba(158,59,47,0.25)',
                           background:   'rgba(158,59,47,0.06)',
-                          color:        '#9E3B2F',
+                          color:        TOKENS.critical,
                           cursor:       cancellingId === booking.id ? 'not-allowed' : 'pointer',
                           fontFamily:   FONT,
                         }}
@@ -221,7 +221,7 @@ export function BookingsClient() {
                         {cancellingId === booking.id ? 'Annullamento…' : 'Annulla richiesta'}
                       </button>
                       {cancelErrors[booking.id] && (
-                        <p style={{ fontSize: 10, color: '#9E3B2F', margin: '4px 0 0', fontFamily: FONT }}>
+                        <p style={{ fontSize: 10, color: TOKENS.critical, margin: '4px 0 0', fontFamily: FONT }}>
                           {cancelErrors[booking.id]}
                         </p>
                       )}

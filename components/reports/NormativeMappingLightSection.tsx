@@ -70,7 +70,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
         <div className="flex flex-wrap gap-2 items-center">
           <span style={{
             fontFamily: 'monospace', fontSize: '10px', fontWeight: 700,
-            background: '#ede9ff', color: '#6156F5', borderRadius: 4, padding: '2px 7px',
+            background: '#ede9ff', color: TOKENS.violet, borderRadius: 4, padding: '2px 7px',
           }}>
             pre_empirical_calibration
           </span>
@@ -104,7 +104,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
                   padding: '6px 10px', textAlign: 'left',
                   fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '10px',
                   letterSpacing: '0.06em', textTransform: 'uppercase',
-                  color: '#6156F5', background: '#f3f2ff',
+                  color: TOKENS.violet, background: '#f3f2ff',
                 }}>
                   {h}
                 </th>
@@ -132,7 +132,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
                       {allPillars.map(p => (
                         <span key={p} style={{
                           fontSize: '10px', fontWeight: 700,
-                          background: '#ede9ff', color: '#6156F5',
+                          background: '#ede9ff', color: TOKENS.violet,
                           borderRadius: 3, padding: '1px 5px',
                         }}>
                           {p}

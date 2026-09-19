@@ -4,6 +4,7 @@
 // environment, until a human replaces them with confirmed content.
 
 import type { PrivacySection, PrivacyParagraph } from '@/lib/legal/privacy-content';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 function Paragraph({ paragraph, index }: { paragraph: PrivacyParagraph; index: number }) {
   if (typeof paragraph === 'string') {
@@ -42,7 +43,7 @@ export function LegalSection({ section }: { section: PrivacySection }) {
       data-testid={`privacy-section-${section.id}`}
       style={{ marginBottom: 32 }}
     >
-      <h2 style={{ fontSize: 17, fontWeight: 700, color: '#06032B', margin: '0 0 12px' }}>
+      <h2 style={{ fontSize: 17, fontWeight: 700, color: TOKENS.ink, margin: '0 0 12px' }}>
         {section.heading}
       </h2>
       {section.paragraphs.map((paragraph, index) => (

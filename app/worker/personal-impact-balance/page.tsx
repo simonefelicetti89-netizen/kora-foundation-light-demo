@@ -32,6 +32,7 @@ import {
   fetchWorkerParticipationRows,
 } from '@/app/api/worker/activation-profile/route';
 import { ActivationProfileSection } from '../workspace/_components/ActivationProfileSection';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
@@ -59,7 +60,7 @@ export default async function WorkerPersonalImpactBalancePage() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 20px 64px' }}>
         <h1 style={{
           fontWeight: 800, fontSize: '1.8rem', letterSpacing: '-0.02em',
-          color: '#06032B', marginBottom: 4,
+          color: TOKENS.ink, marginBottom: 4,
         }}>
           Personal Impact Balance
         </h1>
@@ -86,7 +87,7 @@ export default async function WorkerPersonalImpactBalancePage() {
               <div style={{ display: 'grid', gap: 8 }}>
                 {pib.pillar_breakdown.map(p => (
                   <div key={p.pillar} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5 }}>
-                    <span style={{ color: '#06032B', fontWeight: 600 }}>{PILLAR_LABELS[p.pillar] ?? p.pillar}</span>
+                    <span style={{ color: TOKENS.ink, fontWeight: 600 }}>{PILLAR_LABELS[p.pillar] ?? p.pillar}</span>
                     <span style={{ color: 'rgba(6,3,43,0.5)', fontVariantNumeric: 'tabular-nums' }}>{p.iu_total} IU</span>
                   </div>
                 ))}
@@ -119,7 +120,7 @@ function Stat({ label, value }: { label: string; value: number }) {
       background: 'rgba(6,3,43,0.03)', border: '1px solid rgba(6,3,43,0.07)',
       borderRadius: 7, padding: '10px 12px', textAlign: 'center',
     }}>
-      <div style={{ fontSize: 18, fontWeight: 800, color: '#06032B', lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: TOKENS.ink, lineHeight: 1 }}>{value}</div>
       <div style={{ fontSize: 9, color: 'rgba(6,3,43,0.45)', marginTop: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
     </div>
   );

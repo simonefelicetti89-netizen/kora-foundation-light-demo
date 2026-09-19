@@ -116,7 +116,7 @@ export default function PillarsInitiatives() {
   if (!hasKoraData) {
     return (
       <div style={{ padding: '32px 0' }}>
-        <p style={{ fontSize: '14px', fontWeight: 700, color: '#06032B' }}>
+        <p style={{ fontSize: '14px', fontWeight: 700, color: TOKENS.ink }}>
           Distribuzione pillar non ancora disponibile
         </p>
         <p style={{ fontSize: '12px', color: 'rgba(6,3,43,0.52)', marginTop: 6 }}>

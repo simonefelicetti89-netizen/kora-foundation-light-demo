@@ -10,6 +10,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = {
   title: 'Richiedi accesso · KORA',
@@ -45,7 +46,7 @@ export default async function RequestAccessPage({
         display:        'flex',
         alignItems:     'center',
         justifyContent: 'center',
-        background:     '#06032B',
+        background:     TOKENS.ink,
         padding:        '24px',
         fontFamily:     FONT,
       }}
@@ -93,7 +94,7 @@ export default async function RequestAccessPage({
             fontWeight:    700,
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
-            color:         '#C76F3D',
+            color:         TOKENS.accent,
             marginBottom:  8,
           }}>
             Accesso su invito
@@ -102,7 +103,7 @@ export default async function RequestAccessPage({
             fontSize:      '1.375rem',
             fontWeight:    800,
             letterSpacing: '-0.025em',
-            color:         '#06032B',
+            color:         TOKENS.ink,
             marginBottom:  8,
           }}>
             Richiedi accesso
@@ -134,7 +135,7 @@ export default async function RequestAccessPage({
                   background:  'rgba(6,3,43,0.06)',
                   borderRadius: 4,
                   padding:     '1px 5px',
-                  color:       '#06032B',
+                  color:       TOKENS.ink,
                 }}
               >
                 {requestedPath}
@@ -190,7 +191,7 @@ export default async function RequestAccessPage({
             fontSize:       13,
             borderRadius:   12,
             padding:        '13px 20px',
-            background:     '#06032B',
+            background:     TOKENS.ink,
             color:          '#FFFFFF',
             textDecoration: 'none',
             width:          '100%',

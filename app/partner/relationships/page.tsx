@@ -47,9 +47,9 @@ type RelationshipType =
 type RelationshipStatus = 'Nuova' | 'In corso' | 'Completata' | 'Ritirata';
 
 const STATUS_COLOR: Record<RelationshipStatus, { bg: string; text: string }> = {
-  Nuova: { bg: 'rgba(97,86,245,0.10)', text: '#6156F5' },
-  'In corso': { bg: 'rgba(217,154,43,0.12)', text: '#8A5A00' },
-  Completata: { bg: 'rgba(47,125,85,0.10)', text: '#2F7D55' },
+  Nuova: { bg: 'rgba(97,86,245,0.10)', text: TOKENS.violet },
+  'In corso': { bg: 'rgba(217,154,43,0.12)', text: TOKENS.safeguard.watch.text },
+  Completata: { bg: 'rgba(47,125,85,0.10)', text: TOKENS.success },
   Ritirata: { bg: 'rgba(6,3,43,0.06)', text: 'rgba(6,3,43,0.42)' },
 };
 
@@ -211,7 +211,7 @@ export default function PartnerRelationshipsPage() {
 
       {/* Why names appear here — explicit, non-suppressible */}
       <div style={{ background: 'rgba(97,86,245,0.06)', border: `1px dashed rgba(97,86,245,0.35)`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 18px' }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#6156F5' }}>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: TOKENS.violet }}>
           Anteprima design — dati mock, nessuna connessione a database o servizi esterni. Non attivo.
         </p>
         <p style={{ margin: '6px 0 0', fontSize: 12, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>

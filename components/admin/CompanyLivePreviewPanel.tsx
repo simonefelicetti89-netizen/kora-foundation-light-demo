@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -51,7 +52,7 @@ interface LivePreviewData {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const PILLAR_COLORS: Record<string, string> = {
-  LIFE: '#4A90D9', GROWTH: '#C76F3D', CONNECTION: '#8B72E0',
+  LIFE: '#4A90D9', GROWTH: TOKENS.accent, CONNECTION: '#8B72E0',
   IMPACT: '#059669', LEGACY: '#1E3A5F',
 };
 const PILLAR_LABELS: Record<string, string> = {
@@ -417,13 +418,13 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
                     <div className="mb-4">
                       <p className="text-[10px] text-[rgba(6,3,43,0.40)] uppercase tracking-[0.12em] mb-2">Classificazione budget</p>
                       <div className="h-4 rounded flex overflow-hidden">
-                        <div style={{ width: `${deepPct}%`, background: '#06032B' }} title={`Deep ${deepPct}%`} />
+                        <div style={{ width: `${deepPct}%`, background: TOKENS.ink }} title={`Deep ${deepPct}%`} />
                         <div style={{ width: `${reliefPct}%`, background: '#c7c8dc' }} title={`Relief ${reliefPct}%`} />
                         <div style={{ width: `${blockedPct}%`, background: '#fde68a' }} title={`Blocked ${blockedPct}%`} />
                         <div style={{ flex: 1, background: '#eaebf4' }} />
                       </div>
                       <div className="flex gap-5 mt-2 text-[11px] text-[rgba(6,3,43,0.52)]">
-                        <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: '#06032B' }} />Deep {deepPct}%</span>
+                        <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: TOKENS.ink }} />Deep {deepPct}%</span>
                         <span><span className="inline-block w-2 h-2 rounded-full mr-1 border border-[rgba(6,3,43,0.14)]" style={{ background: '#c7c8dc' }} />Relief {reliefPct}%</span>
                         <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: '#fde68a' }} />Blocked {blockedPct}%</span>
                       </div>

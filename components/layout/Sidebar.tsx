@@ -38,7 +38,7 @@ const BADGE: Record<string, React.CSSProperties> = {
   ADMIN:     { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.48)', border: '1px solid rgba(255,255,255,0.14)' },
   STRATEGIA: { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.48)', border: '1px solid rgba(255,255,255,0.14)' },
   ROADMAP:   { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.10)' },
-  SYNTHETIC: { background: 'rgba(199,111,61,0.18)',  color: '#C76F3D',                border: '1px solid rgba(199,111,61,0.38)' },
+  SYNTHETIC: { background: 'rgba(199,111,61,0.18)',  color: TOKENS.accent,                border: '1px solid rgba(199,111,61,0.38)' },
   FOUNDER:   { background: 'rgba(199,111,61,0.14)',  color: 'rgba(220,140,80,0.90)',  border: '1px solid rgba(199,111,61,0.30)' },
 };
 
@@ -687,7 +687,7 @@ export function Sidebar() {
             style={{
               background:  'rgba(199,111,61,0.20)',
               border:      '1.5px solid #C76F3D',
-              color:       '#C76F3D',
+              color:       TOKENS.accent,
               fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             }}
           >

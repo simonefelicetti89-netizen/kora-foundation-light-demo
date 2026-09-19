@@ -16,6 +16,7 @@ export const dynamic  = 'force-dynamic';
 import { redirect }     from 'next/navigation';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient }          from '@/lib/supabase/server';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Trial Control Center · KORA Admin' };
 
@@ -344,7 +345,7 @@ export default async function TrialControlCenterPage() {
         </a>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h1 style={{ fontSize: '1.625rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: '0 0 6px' }}>
+            <h1 style={{ fontSize: '1.625rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: '0 0 6px' }}>
               Trial Control Center
             </h1>
             <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}>
@@ -354,7 +355,7 @@ export default async function TrialControlCenterPage() {
           <span
             style={{
               fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em',
-              color: '#C76F3D', background: 'rgba(199,111,61,0.10)',
+              color: TOKENS.accent, background: 'rgba(199,111,61,0.10)',
               border: '1px solid rgba(199,111,61,0.30)', borderRadius: 999, padding: '4px 10px',
               whiteSpace: 'nowrap',
             }}
@@ -416,7 +417,7 @@ export default async function TrialControlCenterPage() {
               }}
             >
               <div style={{ flex: 1, minWidth: 180 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 2px' }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 2px' }}>
                   {t.name}
                 </p>
                 <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.40)', margin: 0 }}>
@@ -530,7 +531,7 @@ export default async function TrialControlCenterPage() {
             { label: 'Archiviati', value: partnerArchived },
           ].map(({ label, value }) => (
             <div key={label}>
-              <p style={{ fontSize: 22, fontWeight: 900, color: '#06032B', margin: '0 0 2px', letterSpacing: '-0.03em' }}>{value}</p>
+              <p style={{ fontSize: 22, fontWeight: 900, color: TOKENS.ink, margin: '0 0 2px', letterSpacing: '-0.03em' }}>{value}</p>
               <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.40)', margin: 0 }}>{label}</p>
             </div>
           ))}
@@ -551,7 +552,7 @@ export default async function TrialControlCenterPage() {
         style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 12, overflow: 'hidden', marginBottom: 24 }}
       >
         <div style={{ padding: '12px 18px', background: '#FAFAFA', borderBottom: '1px solid rgba(6,3,43,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#06032B', margin: 0 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, margin: 0 }}>
             {completedCount} / {checklistItems.length} completati
           </p>
           <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.40)', fontWeight: 600 }}>KORA End-to-End Demo</span>
@@ -609,7 +610,7 @@ export default async function TrialControlCenterPage() {
                   <a
                     key={link.href}
                     href={link.href}
-                    style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#06032B', textDecoration: 'none', padding: '6px 14px', lineHeight: 1.4 }}
+                    style={{ display: 'block', fontSize: 12, fontWeight: 500, color: TOKENS.ink, textDecoration: 'none', padding: '6px 14px', lineHeight: 1.4 }}
                     onMouseOver={/* @ts-ignore */ undefined}
                   >
                     {link.label}
@@ -665,7 +666,7 @@ function EmptyCard({ title, body, cta, href }: { title: string; body: string; ct
       border: '1px dashed rgba(6,3,43,0.15)', borderRadius: 12, padding: '20px 24px',
       marginBottom: 24, textAlign: 'center',
     }}>
-      <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 6px' }}>{title}</p>
+      <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 6px' }}>{title}</p>
       <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', margin: '0 0 14px' }}>{body}</p>
       <a href={href} style={{
         display: 'inline-block', fontSize: 12, fontWeight: 600, color: '#3B6EBA',

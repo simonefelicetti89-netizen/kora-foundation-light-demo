@@ -3,6 +3,7 @@
 // Calls /api/admin/worker-diagnostics on mount. KORA_ADMIN only.
 
 import { useEffect, useState } from 'react';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface WorkerAggregate {
   total: number; invited: number; active: number; pending: number; disabled: number; coveragePct: number;
@@ -47,10 +48,10 @@ export default function WorkerDiagnosticsClient() {
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em' }}>
           Worker Diagnostics
         </h1>
-        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', background: '#06032B', color: '#fff', borderRadius: 4, padding: '2px 7px' }}>
+        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', background: TOKENS.ink, color: '#fff', borderRadius: 4, padding: '2px 7px' }}>
           LIVE
         </span>
       </div>
@@ -94,7 +95,7 @@ export default function WorkerDiagnosticsClient() {
                 const sc = STATUS_CONFIG[t.provisioningStatus] ?? STATUS_CONFIG['none'];
                 return (
                   <tr key={t.tenantId} style={{ borderTop: '1px solid rgba(6,3,43,0.05)', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
-                    <td style={{ padding: '10px 14px', fontWeight: 600, color: '#06032B', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '10px 14px', fontWeight: 600, color: TOKENS.ink, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {t.companyName}
                     </td>
                     <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: 'rgba(6,3,43,0.70)' }}>{t.tenantCode}</td>
@@ -118,10 +119,10 @@ export default function WorkerDiagnosticsClient() {
       )}
 
       <div style={{ marginTop: 24, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <a href="/admin/workers" style={{ fontSize: 12, color: '#06032B', textDecoration: 'underline' }}>
+        <a href="/admin/workers" style={{ fontSize: 12, color: TOKENS.ink, textDecoration: 'underline' }}>
           → Provisioning Worker
         </a>
-        <a href="/admin/live-spine-diagnostics" style={{ fontSize: 12, color: '#06032B', textDecoration: 'underline' }}>
+        <a href="/admin/live-spine-diagnostics" style={{ fontSize: 12, color: TOKENS.ink, textDecoration: 'underline' }}>
           → Live Spine Diagnostics
         </a>
       </div>

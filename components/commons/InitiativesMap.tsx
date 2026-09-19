@@ -22,6 +22,7 @@ import { OPENING_GRADE_LABELS } from '@/lib/commons/types';
 // Fix Leaflet default icon (webpack asset issue)
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 function fixLeafletIcon() {
   // Leaflet v1.x bundled via webpack perde i path delle icone default.
@@ -43,7 +44,7 @@ interface Props {
 const GRADE_COLORS: Record<InitiativeOpeningGrade, string> = {
   company_internal: '#3B6EBA',
   company_extended: '#7C3D8F',
-  cross_company:    '#2F7D55',
+  cross_company:    TOKENS.success,
 };
 
 // Centro di default: Italia
@@ -97,7 +98,7 @@ export function InitiativesMap({ initiatives, height = 360 }: Props) {
             >
               <Popup>
                 <div style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif', minWidth: 180 }}>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
                     {initiative.title}
                   </p>
                   {initiative.opening_grade && (

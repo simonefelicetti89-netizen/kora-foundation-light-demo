@@ -13,6 +13,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface Props {
   postId: string;
@@ -85,7 +86,7 @@ export function WorkerBookingButton({ postId, initialStatus }: Props) {
             padding:      '3px 10px',
             borderRadius: 999,
             background:   'rgba(47,125,85,0.10)',
-            color:        '#2F7D55',
+            color:        TOKENS.success,
             border:       '1px solid rgba(47,125,85,0.25)',
             fontFamily:   FONT,
           }}
@@ -99,7 +100,7 @@ export function WorkerBookingButton({ postId, initialStatus }: Props) {
         </p>
         <Link
           href="/worker/bookings"
-          style={{ fontSize: 9, color: '#2F7D55', fontWeight: 700, textDecoration: 'none', display: 'inline-block', marginTop: 4 }}
+          style={{ fontSize: 9, color: TOKENS.success, fontWeight: 700, textDecoration: 'none', display: 'inline-block', marginTop: 4 }}
         >
           Vedi le tue prenotazioni →
         </Link>
@@ -112,7 +113,7 @@ export function WorkerBookingButton({ postId, initialStatus }: Props) {
       <div style={{ marginTop: 4 }}>
         <p
           data-testid={`worker-booking-duplicate-${postId}`}
-          style={{ fontSize: 11, color: '#8A5A00', margin: 0, fontFamily: FONT, lineHeight: 1.5 }}
+          style={{ fontSize: 11, color: TOKENS.safeguard.watch.text, margin: 0, fontFamily: FONT, lineHeight: 1.5 }}
         >
           Hai già una richiesta per questa iniziativa.
           Per una nuova richiesta sulla stessa iniziativa, contatta KORA/Admin.
@@ -145,7 +146,7 @@ export function WorkerBookingButton({ postId, initialStatus }: Props) {
       {state === 'error' && (
         <p
           data-testid={`worker-booking-error-${postId}`}
-          style={{ fontSize: 11, color: '#9E3B2F', margin: '4px 0 0', fontFamily: FONT }}
+          style={{ fontSize: 11, color: TOKENS.critical, margin: '4px 0 0', fontFamily: FONT }}
         >
           {errorMsg}
         </p>

@@ -53,7 +53,7 @@ export default function Reports() {
   if (!hasKoraData) {
     return (
       <div style={{ padding: '32px 0' }}>
-        <p style={{ fontSize: '14px', fontWeight: 700, color: '#06032B' }}>
+        <p style={{ fontSize: '14px', fontWeight: 700, color: TOKENS.ink }}>
           Decision Pack non ancora disponibile
         </p>
         <p style={{ fontSize: '12px', color: 'rgba(6,3,43,0.52)', marginTop: 6 }}>
@@ -108,7 +108,7 @@ export default function Reports() {
           <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.accent }}>
             KORA Decision Pack · La tua organizzazione
           </p>
-          <span style={{ fontSize: '10px', fontWeight: 600, background: 'rgba(47,125,85,0.10)', color: '#2F7D55', borderRadius: 4, padding: '2px 8px', border: '1px solid rgba(47,125,85,0.22)' }}>
+          <span style={{ fontSize: '10px', fontWeight: 600, background: 'rgba(47,125,85,0.10)', color: TOKENS.success, borderRadius: 4, padding: '2px 8px', border: '1px solid rgba(47,125,85,0.22)' }}>
             LIVE
           </span>
         </div>

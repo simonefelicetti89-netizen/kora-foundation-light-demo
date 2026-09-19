@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase/types';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export type InitiativeItem = {
   id: string;
@@ -87,9 +88,9 @@ function CTAButton({
     opacity: disabled ? 0.6 : 1, transition: 'opacity 0.1s',
   };
   const variants: Record<string, React.CSSProperties> = {
-    primary:   { background: '#06032B', color: '#fff', border: 'none' },
-    secondary: { background: 'transparent', color: '#06032B', border: '1px solid rgba(6,3,43,0.25)' },
-    danger:    { background: 'transparent', color: '#9e3b2f', border: '1px solid rgba(158,59,47,0.30)' },
+    primary:   { background: TOKENS.ink, color: '#fff', border: 'none' },
+    secondary: { background: 'transparent', color: TOKENS.ink, border: '1px solid rgba(6,3,43,0.25)' },
+    danger:    { background: 'transparent', color: TOKENS.critical, border: '1px solid rgba(158,59,47,0.30)' },
   };
   return (
     <button onClick={onClick} disabled={disabled} style={{ ...base, ...variants[variant] }}>
@@ -159,7 +160,7 @@ function InitiativeCard({
               </span>
             )}
           </div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#06032B', marginBottom: 2 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, marginBottom: 2 }}>
             {init.title}
           </div>
           {init.description && (

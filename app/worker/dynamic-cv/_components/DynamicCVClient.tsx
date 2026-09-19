@@ -16,7 +16,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { DynamicCVResponse, CVPillarEntry } from '@/app/api/worker/dynamic-cv/route';
 import type { SharesResponse, ShareLinkItem } from '@/app/api/worker/dynamic-cv/shares/route';
-import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -29,7 +29,7 @@ const PILLAR_META: Record<string, { color: string; bg: string; border: string }>
 };
 
 const STATUS_STYLE: Record<string, { color: string; bg: string }> = {
-  attended:   { color: '#2F7D55', bg: 'rgba(47,125,85,0.10)'  },
+  attended:   { color: TOKENS.success, bg: 'rgba(47,125,85,0.10)'  },
   registered: { color: '#3B6EBA', bg: 'rgba(59,110,186,0.10)' },
   interested: { color: '#C07D2A', bg: 'rgba(192,125,42,0.10)' },
 };
@@ -115,7 +115,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
 
   if (error || !data) {
     return (
-      <div style={{ textAlign: 'center', padding: '60px 0', fontFamily: FONT, fontSize: 13, color: '#9E3B2F' }}>
+      <div style={{ textAlign: 'center', padding: '60px 0', fontFamily: FONT, fontSize: 13, color: TOKENS.critical }}>
         {error ?? 'Errore nel caricamento del CV.'}
       </div>
     );
@@ -149,7 +149,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
       <div
         data-testid="dynamic-cv-hero"
         style={{
-          background:   '#06032B',
+          background:   TOKENS.ink,
           borderRadius: 16,
           padding:      '28px 32px',
           marginBottom: 20,
@@ -208,13 +208,13 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
           gap:           4,
         }}
       >
-        <p style={{ fontSize: 12, fontWeight: 700, color: '#2F7D55', margin: 0 }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: TOKENS.success, margin: 0 }}>
           Il tuo datore di lavoro non vede questo CV.
         </p>
         <p style={{ fontSize: 11, color: 'rgba(47,125,85,0.80)', margin: 0, lineHeight: 1.5 }}>
           Questo CV non è una valutazione individuale. Non contiene ranking o confronto con colleghi.
           Le esperienze derivano dalla tua partecipazione volontaria alle iniziative KORA Space —{' '}
-          <a href="/worker/commons" style={{ color: '#2F7D55', fontWeight: 600, textDecoration: 'underline' }}>
+          <a href="/worker/commons" style={{ color: TOKENS.success, fontWeight: 600, textDecoration: 'underline' }}>
             esplora KORA Space
           </a>{' '}
           per aggiungerne altre.
@@ -245,7 +245,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
               background:   '#FAFAFA',
             }}
           >
-            <p style={{ fontSize: 24, fontWeight: 900, color: '#06032B', margin: '0 0 4px', letterSpacing: '-0.03em' }}>
+            <p style={{ fontSize: 24, fontWeight: 900, color: TOKENS.ink, margin: '0 0 4px', letterSpacing: '-0.03em' }}>
               {value}
             </p>
             <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.40)', margin: 0 }}>
@@ -336,7 +336,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
               textAlign:    'center',
             }}
           >
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#06032B', margin: '0 0 8px' }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: TOKENS.ink, margin: '0 0 8px' }}>
               Nessuna esperienza ancora
             </p>
             <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}>
@@ -368,7 +368,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
           >
             {experiences.map(exp => {
               const meta   = PILLAR_META[exp.pillar];
-              const style  = STATUS_STYLE[exp.status] ?? { color: '#06032B', bg: 'rgba(6,3,43,0.06)' };
+              const style  = STATUS_STYLE[exp.status] ?? { color: TOKENS.ink, bg: 'rgba(6,3,43,0.06)' };
               return (
                 <div
                   key={exp.initiative_id}
@@ -398,7 +398,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 2 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#06032B' }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: TOKENS.ink }}>
                         {exp.title}
                       </span>
                       <span
@@ -450,7 +450,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {(badgeItems ?? []).map(exp => (
               <div key={exp.initiative_id} style={{ border: '1px solid rgba(192,125,42,0.25)', borderRadius: 8, padding: '10px 14px', background: 'rgba(192,125,42,0.04)' }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: '#06032B', margin: '0 0 2px' }}>{exp.title}</p>
+                <p style={{ fontSize: 12, fontWeight: 600, color: TOKENS.ink, margin: '0 0 2px' }}>{exp.title}</p>
                 <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>{exp.pillar} · {exp.date}</p>
               </div>
             ))}
@@ -477,7 +477,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {(privateItems ?? []).map(exp => (
               <div key={exp.initiative_id} style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 8, padding: '10px 14px', background: 'rgba(6,3,43,0.02)', opacity: 0.75 }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: '#06032B', margin: '0 0 2px' }}>{exp.title}</p>
+                <p style={{ fontSize: 12, fontWeight: 600, color: TOKENS.ink, margin: '0 0 2px' }}>{exp.title}</p>
                 <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>{exp.pillar} · {exp.date} · Privata</p>
               </div>
             ))}
@@ -527,7 +527,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
           marginBottom: 20,
         }}
       >
-        <p style={{ fontSize: 11, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
           Esporta e condividi
         </p>
         <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 14px', lineHeight: 1.5 }}>
@@ -549,7 +549,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
               padding:        '8px 16px',
               borderRadius:   8,
               border:         '1px solid rgba(6,3,43,0.18)',
-              background:     '#06032B',
+              background:     TOKENS.ink,
               color:          '#fff',
               cursor:         'pointer',
               textDecoration: 'none',
@@ -642,7 +642,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
                 }}
               >
                 <div style={{ flex: 1, minWidth: 160 }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: '#06032B', margin: '0 0 2px' }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: TOKENS.ink, margin: '0 0 2px' }}>
                     Creato {new Date(s.created_at).toLocaleDateString('it-IT')}
                   </p>
                   <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>
@@ -661,7 +661,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
                     borderRadius: 6,
                     border:       '1px solid rgba(158,59,47,0.28)',
                     background:   'rgba(158,59,47,0.06)',
-                    color:        '#9E3B2F',
+                    color:        TOKENS.critical,
                     cursor:       revoking === s.id ? 'not-allowed' : 'pointer',
                     opacity:      revoking === s.id ? 0.6 : 1,
                   }}
@@ -730,7 +730,7 @@ function NarrativeCard({ label, text, color }: { label: string; text: string; co
       <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color, margin: '0 0 4px' }}>
         {label}
       </p>
-      <p style={{ fontSize: 12, color: '#06032B', margin: 0, lineHeight: 1.6 }}>
+      <p style={{ fontSize: 12, color: TOKENS.ink, margin: 0, lineHeight: 1.6 }}>
         {text}
       </p>
     </div>

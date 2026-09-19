@@ -5,7 +5,7 @@
 // NEVER shows rankings, percentiles, or comparisons with other workers.
 
 import type { WorkerActivationProfile, PillarDistributionEntry } from '@/app/api/worker/activation-profile/route';
-import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
 
 const PILLAR_LABELS: Record<string, string> = {
@@ -73,7 +73,7 @@ function StatCell({ label, value }: { label: string; value: number }) {
       background: 'rgba(6,3,43,0.03)', border: '1px solid rgba(6,3,43,0.07)',
       borderRadius: 7, padding: '10px 12px', textAlign: 'center',
     }}>
-      <div style={{ fontSize: 18, fontWeight: 800, color: '#06032B', lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: TOKENS.ink, lineHeight: 1 }}>{value}</div>
       <div style={{ fontSize: 9, color: 'rgba(6,3,43,0.45)', marginTop: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
     </div>
   );

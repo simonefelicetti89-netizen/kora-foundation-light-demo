@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface WorkerRow {
   workerId:  string;
@@ -93,7 +94,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
   return (
     <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 24px', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em' }}>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em' }}>
           Provisioning Worker
         </h1>
         <BoundaryBadge mode="LIVE" variant="light" />
@@ -104,7 +105,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
 
       {/* Provision form */}
       <section style={{ background: '#f9f9fb', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10, padding: '24px', marginBottom: 32 }}>
-        <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#06032B', marginBottom: 16 }}>
+        <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: TOKENS.ink, marginBottom: 16 }}>
           Invita un nuovo worker
         </h2>
         <form onSubmit={handleProvision}>
@@ -155,7 +156,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
             <button
               type="submit"
               disabled={loading}
-              style={{ padding: '10px 20px', background: '#06032B', color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, alignSelf: 'flex-start' }}
+              style={{ padding: '10px 20px', background: TOKENS.ink, color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, alignSelf: 'flex-start' }}
             >
               {loading ? 'Provisioning…' : '+ Invita worker'}
             </button>
@@ -177,7 +178,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
       {/* Worker list */}
       <section style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', background: '#f9f9fb', borderBottom: '1px solid rgba(6,3,43,0.08)', display: 'flex', gap: 10, alignItems: 'center' }}>
-          <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#06032B', margin: 0 }}>
+          <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: TOKENS.ink, margin: 0 }}>
             Worker per tenant
           </h2>
           <input
@@ -189,7 +190,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
           <button
             onClick={() => loadWorkers(listTenant || tenantCode)}
             disabled={listLoading}
-            style={{ padding: '6px 14px', background: '#06032B', color: '#fff', border: 'none', borderRadius: 5, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+            style={{ padding: '6px 14px', background: TOKENS.ink, color: '#fff', border: 'none', borderRadius: 5, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
           >
             {listLoading ? '…' : 'Carica'}
           </button>
@@ -199,7 +200,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
           <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(6,3,43,0.07)' }}>
             {(['total', 'invited', 'active', 'pending', 'disabled'] as const).map(k => (
               <div key={k} style={{ flex: 1, padding: '10px 14px', textAlign: 'center', borderRight: k !== 'disabled' ? '1px solid rgba(6,3,43,0.06)' : 'none' }}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: '#06032B' }}>{summary[k]}</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: TOKENS.ink }}>{summary[k]}</div>
                 <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(6,3,43,0.45)' }}>{LABEL_MAP[k]}</div>
               </div>
             ))}
@@ -219,7 +220,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
             <tbody>
               {workers.map((w, i) => (
                 <tr key={w.workerId} style={{ borderTop: '1px solid rgba(6,3,43,0.05)', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
-                  <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: '#06032B' }}>{w.workerRef}</td>
+                  <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: TOKENS.ink }}>{w.workerRef}</td>
                   <td style={{ padding: '10px 16px' }}>
                     <span className={STATUS_COLOR[w.status] ?? 'bg-gray-100 text-gray-600'} style={{ fontSize: 10, fontWeight: 700, borderRadius: 4, padding: '2px 7px', display: 'inline-block' }}>
                       {w.status.toUpperCase()}

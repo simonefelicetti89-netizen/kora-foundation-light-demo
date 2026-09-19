@@ -499,7 +499,7 @@ export default async function KoraContributionPage() {
                   marginBottom: 16,
                 }}
               >
-                <p style={{ fontSize: 11, fontWeight: 700, color: '#2F7D55', margin: '0 0 8px', fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.success, margin: '0 0 8px', fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Contribution Events
                 </p>
                 <p style={{ fontSize: 11, color: '#2F5A42', margin: '0 0 8px', lineHeight: 1.6, fontFamily: FONT }}>

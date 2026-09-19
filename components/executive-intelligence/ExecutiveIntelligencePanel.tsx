@@ -17,8 +17,8 @@ import type { ExecutiveIntelligenceSummary, OrganizationStatusLabel } from '@/se
 
 function statusColors(status: OrganizationStatusLabel): { bg: string; border: string; text: string; dot: string } {
   if (status === 'Attivazione fragile')              return { bg: 'rgba(158,59,47,0.07)', border: 'rgba(158,59,47,0.22)', text: KORA_COLORS.CRITICAL, dot: KORA_COLORS.CRITICAL };
-  if (status === 'Attivazione concentrata')          return { bg: 'rgba(217,154,43,0.07)', border: 'rgba(217,154,43,0.25)', text: '#8A5A00', dot: KORA_COLORS.WARNING };
-  if (status === 'Attivazione in sviluppo')          return { bg: 'rgba(217,154,43,0.05)', border: 'rgba(217,154,43,0.18)', text: '#8A5A00', dot: KORA_COLORS.WARNING };
+  if (status === 'Attivazione concentrata')          return { bg: 'rgba(217,154,43,0.07)', border: 'rgba(217,154,43,0.25)', text: TOKENS.safeguard.watch.text, dot: KORA_COLORS.WARNING };
+  if (status === 'Attivazione in sviluppo')          return { bg: 'rgba(217,154,43,0.05)', border: 'rgba(217,154,43,0.18)', text: TOKENS.safeguard.watch.text, dot: KORA_COLORS.WARNING };
   if (status === 'Attivazione moderata')             return { bg: 'rgba(199,111,61,0.06)', border: 'rgba(199,111,61,0.18)', text: '#7A4A1A', dot: KORA_COLORS.TERRACOTTA };
   if (status === 'Attivazione solida')               return { bg: 'rgba(47,125,85,0.06)', border: 'rgba(47,125,85,0.20)', text: KORA_COLORS.SUCCESS, dot: KORA_COLORS.SUCCESS };
   if (status === 'Attivazione diffusa e sostenibile') return { bg: 'rgba(47,125,85,0.09)', border: 'rgba(47,125,85,0.28)', text: KORA_COLORS.SUCCESS, dot: KORA_COLORS.SUCCESS };

@@ -8,6 +8,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 const INK = '#06032B';
@@ -411,7 +412,7 @@ function Step5Profilo({
             style={{
               borderRadius: 8, border: '1px solid rgba(158,59,47,0.30)',
               background: 'rgba(158,59,47,0.07)', padding: '10px 14px',
-              fontFamily: FONT, fontSize: 12, color: '#9E3B2F', lineHeight: 1.5,
+              fontFamily: FONT, fontSize: 12, color: TOKENS.critical, lineHeight: 1.5,
             }}
           >
             {error}
@@ -543,7 +544,7 @@ export function OnboardingFlow({ reviewMode, initialDisplayName, initialLang }: 
   return (
     <div style={{ maxWidth: 600, margin: '0 auto', padding: '40px 24px', fontFamily: FONT }}>
       <div style={{ marginBottom: 20 }}>
-        <p style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#C76F3D', marginBottom: 4 }}>
+        <p style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: TOKENS.accent, marginBottom: 4 }}>
           My KORA · Primo accesso
         </p>
         <h1 style={{ fontFamily: FONT, fontSize: '1.8rem', fontWeight: 800, color: INK, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 4 }}>

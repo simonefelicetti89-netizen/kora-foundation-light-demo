@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import type { PartnerItem } from '../page';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const PILLARS   = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 
@@ -119,7 +120,7 @@ function PartnerCard({ partner }: { partner: PartnerItem }) {
               {PILLAR_DESCRIPTIONS[partner.pillar]}
             </span>
           </div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#06032B', marginBottom: 2 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, marginBottom: 2 }}>
             {partner.name}
           </div>
           {partner.category && (

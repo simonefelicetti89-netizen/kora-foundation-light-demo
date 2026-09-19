@@ -63,7 +63,7 @@ export default function Activation() {
     return (
       <div className="space-y-4">
         <div style={{ padding: '32px 0' }}>
-          <p style={{ fontSize: '14px', fontWeight: 700, color: '#06032B' }}>
+          <p style={{ fontSize: '14px', fontWeight: 700, color: TOKENS.ink }}>
             Dati di attivazione non ancora disponibili
           </p>
           <p style={{ fontSize: '12px', color: 'rgba(6,3,43,0.52)', marginTop: 6 }}>

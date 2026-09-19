@@ -17,6 +17,7 @@ import { SessionBar } from '@/components/auth/SessionBar';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PartnerCatalogClient } from './_components/PartnerCatalogClient';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export type PartnerItem = {
   id:            string;
@@ -74,7 +75,7 @@ export default async function WorkerOpportunitiesPage() {
           >
             ← Il mio spazio
           </a>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: 0, marginBottom: 6 }}>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: 0, marginBottom: 6 }}>
             Opportunità & Partner
           </h1>
           <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.55)', margin: 0 }}>

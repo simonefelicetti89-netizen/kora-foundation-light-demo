@@ -26,7 +26,7 @@ export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { hashShareToken, isShareExpired } from '@/lib/worker-cv/share-token';
-import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -196,7 +196,7 @@ export default async function CVSharePage({
       <div
         data-testid="cv-share-hero"
         style={{
-          background:   '#06032B',
+          background:   TOKENS.ink,
           borderRadius: 16,
           padding:      '28px 32px',
           marginBottom: 20,
@@ -291,7 +291,7 @@ export default async function CVSharePage({
                     </span>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#06032B', margin: '0 0 2px' }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: TOKENS.ink, margin: '0 0 2px' }}>
                       {exp.title}
                     </p>
                     <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>
@@ -351,7 +351,7 @@ function ShareInvalidPage({ reason }: { reason: 'revoked' | 'expired' }) {
       <p style={{ fontSize: 32, margin: '0 0 16px' }}>
         {reason === 'revoked' ? '🔒' : '⏰'}
       </p>
-      <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#06032B', margin: '0 0 10px' }}>
+      <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: TOKENS.ink, margin: '0 0 10px' }}>
         {msg.title}
       </h1>
       <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: '0 0 24px', lineHeight: 1.6 }}>

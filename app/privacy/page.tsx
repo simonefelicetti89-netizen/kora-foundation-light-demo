@@ -8,6 +8,7 @@
 import { MarketingNav } from '@/components/landing/MarketingNav';
 import { MarketingFooter } from '@/components/landing/MarketingFooter';
 import { LegalSection } from '@/components/legal/LegalSection';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 import {
   PRIVACY_SECTIONS,
   PRIVACY_DOCUMENT_VERSION,
@@ -52,7 +53,7 @@ export default function PrivacyPage() {
         >
           Privacy
         </p>
-        <h1 style={{ fontSize: '1.9rem', fontWeight: 800, color: '#06032B', margin: '0 0 20px', letterSpacing: '-0.02em' }}>
+        <h1 style={{ fontSize: '1.9rem', fontWeight: 800, color: TOKENS.ink, margin: '0 0 20px', letterSpacing: '-0.02em' }}>
           Informativa privacy
         </h1>
 

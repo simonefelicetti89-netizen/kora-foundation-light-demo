@@ -16,7 +16,7 @@
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = {
   title: 'Worker Opportunities — Admin Preview · KORA',
@@ -112,7 +112,7 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
         >
           ← Admin Dashboard
         </a>
-        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: 0, marginBottom: 6 }}>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: 0, marginBottom: 6 }}>
           Opportunità & Partner
         </h1>
         <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.55)', margin: 0 }}>
@@ -148,7 +148,7 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
           </p>
           <p style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(6,3,43,0.30)', margin: 0 }}>
             Pubblica un partner in{' '}
-            <a href="/admin/partners" style={{ color: '#C76F3D', textDecoration: 'none' }}>
+            <a href="/admin/partners" style={{ color: TOKENS.accent, textDecoration: 'none' }}>
               Admin → Partner Catalog
             </a>{' '}
             per vederlo qui.
@@ -177,7 +177,7 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
                   }}>
                     {p.pillar}
                   </span>
-                  <h3 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: '#06032B', margin: 0 }}>
+                  <h3 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: TOKENS.ink, margin: 0 }}>
                     {p.name}
                   </h3>
                 </div>

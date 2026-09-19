@@ -29,7 +29,7 @@ import { LandingMotion } from '@/components/landing/LandingMotion';
 import { MarketingNav } from '@/components/landing/MarketingNav';
 import { MarketingFooter } from '@/components/landing/MarketingFooter';
 import { RecoveryHashHandler } from '@/components/auth/RecoveryHashHandler';
-import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 import { PACKAGES } from '@/lib/landing/packages';
 import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
 import styles from './landing.module.css';
@@ -86,8 +86,8 @@ export default function LandingPage() {
         fontFeatureSettings: '"tnum"',
         WebkitFontSmoothing: 'antialiased',
         textRendering:       'optimizeLegibility',
-        background:          '#EFEBE2',
-        color:               '#06032B',
+        background:          TOKENS.canvas,
+        color:               TOKENS.ink,
         overflowX:           'hidden',
       }}
     >
@@ -120,7 +120,7 @@ export default function LandingPage() {
               </h1>
               <p className={`${styles.heroSub} ${styles.reveal} ${styles.revealIn} ${styles.d2}`}>
                 Le organizzazioni investono milioni in welfare, formazione e persone. KORA rende leggibile ciò che quella spesa{' '}
-                <strong style={{ color: '#EFEBE2' }}>attiva davvero</strong>{' '}
+                <strong style={{ color: TOKENS.canvas }}>attiva davvero</strong>{' '}
                 — con evidenze verificate, confini espliciti e Decision Pack di cui rispondere al board.
               </p>
               <div className={`${styles.heroCtas} ${styles.reveal} ${styles.revealIn} ${styles.d3}`}>
@@ -162,7 +162,7 @@ export default function LandingPage() {
                   transform="rotate(-90 220 218)"
                 />
                 <text id="gauge-num" x="220" y="214" textAnchor="middle"
-                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 36, fontWeight: 800, fill: '#EFEBE2' }}>
+                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 36, fontWeight: 800, fill: TOKENS.canvas }}>
                   0
                 </text>
                 <text x="220" y="234" textAnchor="middle"
@@ -177,7 +177,7 @@ export default function LandingPage() {
                   CONFIDENCE SCORE
                 </text>
                 <text x="418" y="425" textAnchor="end"
-                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 16, fontWeight: 800, fill: '#C76F3D' }}>
+                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 16, fontWeight: 800, fill: TOKENS.accent }}>
                   ESTERNO
                 </text>
                 <text x="418" y="438" textAnchor="end"
@@ -299,7 +299,7 @@ export default function LandingPage() {
       {/* ── METHOD / LINEAGE ─────────────────────────────────────────────── */}
       <section className={`${styles.block} ${styles.secDark}`} id="metodo">
         <div className={`${styles.wrap} ${styles.secDarkInner}`}>
-          <p className={`${styles.kicker} ${styles.eyebrow} ${styles.reveal}`} style={{ color: '#C76F3D' }}>
+          <p className={`${styles.kicker} ${styles.eyebrow} ${styles.reveal}`} style={{ color: TOKENS.accent }}>
             Come funziona · il filo del dato
           </p>
           <h2 className={`${styles.head} ${styles.secDarkHead} ${styles.reveal} ${styles.d1}`}>
@@ -508,7 +508,7 @@ export default function LandingPage() {
           </div>
           {/* Link to dedicated pilot page for full costs & contact */}
           <p className={`${styles.reveal} ${styles.d3}`} style={{ marginTop: '2rem', fontSize: 14, fontWeight: 600 }}>
-            <Link href="/pilot" style={{ color: '#C76F3D', textDecoration: 'none' }}>
+            <Link href="/pilot" style={{ color: TOKENS.accent, textDecoration: 'none' }}>
               Costi dettagliati, modalità, FAQ e richiesta informazioni →
             </Link>
           </p>

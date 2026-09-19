@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback, useId, isValidElement, cloneElement } from 'react';
 import type { WorkerInitiativeRow } from '@/lib/supabase/types';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 type Tenant = { id: string; company_name: string; tenant_code: string };
 type Initiative = WorkerInitiativeRow;
@@ -154,14 +155,14 @@ export function WorkerInitiativesClient({
         <>
           {/* Header + Add button */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#06032B' }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: TOKENS.ink }}>
               {loading ? 'Caricamento…' : `${initiatives.length} iniziative`}
             </span>
             <button
               onClick={() => { setShowForm(!showForm); setFormError(null); setFormSuccess(null); }}
               style={{
                 padding: '8px 16px', borderRadius: 7, border: 'none',
-                background: '#06032B', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                background: TOKENS.ink, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer',
               }}
             >
               {showForm ? 'Annulla' : '+ Nuova iniziativa'}
@@ -180,7 +181,7 @@ export function WorkerInitiativesClient({
               background: '#f9f9fb', border: '1px solid rgba(6,3,43,0.10)', borderRadius: 10,
               padding: '24px', marginBottom: 24,
             }}>
-              <h3 style={{ fontSize: 13, fontWeight: 700, color: '#06032B', marginBottom: 18, marginTop: 0 }}>Nuova iniziativa</h3>
+              <h3 style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, marginBottom: 18, marginTop: 0 }}>Nuova iniziativa</h3>
               <div style={{ display: 'grid', gap: 14 }}>
                 <Field label="Titolo *">
                   <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required style={inputStyle} />
@@ -226,7 +227,7 @@ export function WorkerInitiativesClient({
               {formError && <div style={{ color: '#dc2626', fontSize: 12, marginTop: 12 }}>{formError}</div>}
               <button type="submit" disabled={formLoading} style={{
                 marginTop: 18, padding: '10px 24px', borderRadius: 7, border: 'none',
-                background: '#06032B', color: '#fff', fontSize: 12, fontWeight: 700, cursor: formLoading ? 'not-allowed' : 'pointer',
+                background: TOKENS.ink, color: '#fff', fontSize: 12, fontWeight: 700, cursor: formLoading ? 'not-allowed' : 'pointer',
                 opacity: formLoading ? 0.6 : 1,
               }}>
                 {formLoading ? 'Creazione…' : 'Crea iniziativa'}
@@ -270,7 +271,7 @@ export function WorkerInitiativesClient({
                         </span>
                       )}
                     </div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#06032B', marginBottom: 2 }}>{init.title}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: TOKENS.ink, marginBottom: 2 }}>{init.title}</div>
                     {init.description && <div style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)' }}>{init.description.slice(0, 120)}</div>}
                     <div style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', marginTop: 4 }}>
                       {init.start_date && `Dal ${init.start_date}`}

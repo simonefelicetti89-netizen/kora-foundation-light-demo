@@ -23,7 +23,7 @@ import { OPENING_GRADE_LABELS, OPENING_GRADE_COLORS } from '@/lib/commons/types'
 import { InitiativesMapClient } from '@/components/commons/InitiativesMapClient';
 import { WorkerBookingButton } from '@/components/commons/WorkerBookingButton';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
-import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'KORA Space · Worker' };
 
@@ -124,7 +124,7 @@ export default async function WorkerCommonsPage() {
         <div style={{ marginBottom: 8 }}>
           <BoundaryBadge mode="LIVE" variant="light" />
         </div>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: '0 0 8px' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: '0 0 8px' }}>
           KORA Space
         </h1>
         <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}>
@@ -147,7 +147,7 @@ export default async function WorkerCommonsPage() {
         }}
       >
         <span style={{ fontSize: 14, lineHeight: 1.2, flexShrink: 0 }}>&#128274;</span>
-        <p style={{ fontSize: 12, color: '#2F7D55', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 12, color: TOKENS.success, margin: 0, lineHeight: 1.6 }}>
           KORA Space mostra contenuti approvati per il tuo tenant e iniziative aperte alla rete.
           La partecipazione è sempre volontaria e non genera classifiche individuali.
           La tua visualizzazione non viene mostrata al datore di lavoro come dato individuale — l&apos;azienda vede solo segnali aggregati.
@@ -185,7 +185,7 @@ export default async function WorkerCommonsPage() {
           data-testid="worker-commons-initiatives"
           style={{ marginBottom: 40 }}
         >
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#06032B', letterSpacing: '-0.02em', margin: '0 0 16px' }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: TOKENS.ink, letterSpacing: '-0.02em', margin: '0 0 16px' }}>
             Iniziative partecipabili
           </h2>
 
@@ -243,7 +243,7 @@ export default async function WorkerCommonsPage() {
                   </div>
 
                   {/* Title */}
-                  <h3 style={{ fontSize: 14, fontWeight: 700, color: '#06032B', margin: '0 0 6px', lineHeight: 1.35 }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: TOKENS.ink, margin: '0 0 6px', lineHeight: 1.35 }}>
                     {initiative.title}
                   </h3>
 
@@ -295,7 +295,7 @@ export default async function WorkerCommonsPage() {
 
       {/* ── Sezione Post generici ─────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#06032B', letterSpacing: '-0.02em', margin: '0 0 16px' }}>
+        <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: TOKENS.ink, letterSpacing: '-0.02em', margin: '0 0 16px' }}>
           Contenuti
         </h2>
 
@@ -310,7 +310,7 @@ export default async function WorkerCommonsPage() {
               border:       '1px dashed rgba(6,3,43,0.10)',
             }}
           >
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#06032B', margin: '0 0 8px' }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: TOKENS.ink, margin: '0 0 8px' }}>
               Nessun contenuto ancora
             </p>
             <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', margin: 0 }}>
@@ -345,7 +345,7 @@ export default async function WorkerCommonsPage() {
                       </span>
                     )}
                   </div>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#06032B', margin: '0 0 8px', lineHeight: 1.35 }}>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: TOKENS.ink, margin: '0 0 8px', lineHeight: 1.35 }}>
                     {post.title}
                   </h2>
                   <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.65)', margin: '0 0 12px', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>

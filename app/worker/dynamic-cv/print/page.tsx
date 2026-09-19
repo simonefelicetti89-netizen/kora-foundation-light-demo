@@ -17,7 +17,7 @@ import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PrintButton } from './_print-button';
-import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Stampa Dynamic Impact CV · KORA' };
 
@@ -143,7 +143,7 @@ export default async function DynamicCVPrintPage() {
             <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.40)', margin: '0 0 6px' }}>
               Dynamic Impact CV &middot; KORA Foundation Light
             </p>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: '#06032B', margin: '0 0 4px', letterSpacing: '-0.03em' }}>
+            <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: TOKENS.ink, margin: '0 0 4px', letterSpacing: '-0.03em' }}>
               {displayName}
             </h1>
             {tenantName && (
@@ -208,7 +208,7 @@ export default async function DynamicCVPrintPage() {
                     return (
                       <tr key={i} style={{ borderBottom: '1px solid rgba(6,3,43,0.05)' }}>
                         <td style={{ fontSize: 10, fontWeight: 700, color: meta?.color ?? '#06032B', padding: '7px 8px 7px 0', whiteSpace: 'nowrap' }}>{exp.pillar}</td>
-                        <td style={{ fontSize: 12, color: '#06032B', padding: '7px 8px 7px 0' }}>{exp.title}</td>
+                        <td style={{ fontSize: 12, color: TOKENS.ink, padding: '7px 8px 7px 0' }}>{exp.title}</td>
                         <td style={{ fontSize: 10, color: 'rgba(6,3,43,0.55)', padding: '7px 8px 7px 0', whiteSpace: 'nowrap' }}>{exp.statusLabel}</td>
                         <td style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', padding: '7px 0', whiteSpace: 'nowrap' }}>{exp.date}</td>
                       </tr>
@@ -246,7 +246,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
     <div>
-      <p style={{ fontSize: 18, fontWeight: 900, color: '#06032B', margin: '0 0 2px', letterSpacing: '-0.02em' }}>{value}</p>
+      <p style={{ fontSize: 18, fontWeight: 900, color: TOKENS.ink, margin: '0 0 2px', letterSpacing: '-0.02em' }}>{value}</p>
       <p style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.40)', margin: 0 }}>{label}</p>
     </div>
   );

@@ -39,9 +39,9 @@ const STATUS_LABEL: Record<CampaignStatus, string> = {
 
 const STATUS_COLOR: Record<CampaignStatus, { bg: string; text: string }> = {
   Draft: { bg: 'rgba(6,3,43,0.06)', text: 'rgba(6,3,43,0.62)' },
-  Approved: { bg: 'rgba(97,86,245,0.10)', text: '#6156F5' },
-  'Ready to distribute': { bg: 'rgba(47,125,85,0.10)', text: '#2F7D55' },
-  Expired: { bg: 'rgba(158,59,47,0.10)', text: '#9E3B2F' },
+  Approved: { bg: 'rgba(97,86,245,0.10)', text: TOKENS.violet },
+  'Ready to distribute': { bg: 'rgba(47,125,85,0.10)', text: TOKENS.success },
+  Expired: { bg: 'rgba(158,59,47,0.10)', text: TOKENS.critical },
 };
 
 type DeliveryChannel = 'QR' | 'NFC' | 'Link';
@@ -195,7 +195,7 @@ export default function CompanyKoraLinkCampaignsPage() {
 
       {/* Demo shell banner — explicit, non-suppressible */}
       <div style={{ background: 'rgba(97,86,245,0.06)', border: `1px dashed rgba(97,86,245,0.35)`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 18px' }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#6156F5' }}>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: TOKENS.violet }}>
           Anteprima design — no DB, nessuna RLS, nessuna chiamata a Supabase o RPC. Non attivo.
         </p>
         <p style={{ margin: '6px 0 0', fontSize: 12, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>

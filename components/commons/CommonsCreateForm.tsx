@@ -7,6 +7,7 @@
 // Nessun tracking individuale. Nessun commento. Nessuna reaction.
 
 import { useState } from 'react';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -106,7 +107,7 @@ export function CommonsCreateForm({ tenantId }: Props) {
     border:       '1px solid rgba(6,3,43,0.14)',
     background:   '#FAFAFA',
     fontSize:     13,
-    color:        '#06032B',
+    color:        TOKENS.ink,
     fontFamily:   FONT,
     boxSizing:    'border-box',
   };
@@ -146,7 +147,7 @@ export function CommonsCreateForm({ tenantId }: Props) {
           borderBottom:   open ? '1px solid rgba(6,3,43,0.08)' : 'none',
         }}
       >
-        <span style={{ fontSize: 14, fontWeight: 700, color: '#06032B' }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: TOKENS.ink }}>
           + Crea nuovo contenuto
         </span>
         <span style={{ fontSize: 12, color: 'rgba(6,3,43,0.40)' }}>
@@ -228,7 +229,7 @@ export function CommonsCreateForm({ tenantId }: Props) {
                   borderRadius: 8,
                   border:       '1px solid rgba(6,3,43,0.18)',
                   background:   'transparent',
-                  color:        '#06032B',
+                  color:        TOKENS.ink,
                   fontSize:     13,
                   fontWeight:   600,
                   fontFamily:   FONT,
@@ -247,7 +248,7 @@ export function CommonsCreateForm({ tenantId }: Props) {
                   padding:      '9px 18px',
                   borderRadius: 8,
                   border:       'none',
-                  background:   '#06032B',
+                  background:   TOKENS.ink,
                   color:        '#FFFFFF',
                   fontSize:     13,
                   fontWeight:   700,
@@ -262,12 +263,12 @@ export function CommonsCreateForm({ tenantId }: Props) {
           </div>
 
           {submitState === 'success' && (
-            <p style={{ fontSize: 13, color: '#2F7D55', fontFamily: FONT, fontWeight: 600 }}>
+            <p style={{ fontSize: 13, color: TOKENS.success, fontFamily: FONT, fontWeight: 600 }}>
               ✓ Contenuto salvato con successo. Aggiornamento in corso...
             </p>
           )}
           {submitState === 'error' && (
-            <p style={{ fontSize: 12, color: '#9E3B2F', fontFamily: FONT }}>
+            <p style={{ fontSize: 12, color: TOKENS.critical, fontFamily: FONT }}>
               Errore: {errorMsg}
             </p>
           )}

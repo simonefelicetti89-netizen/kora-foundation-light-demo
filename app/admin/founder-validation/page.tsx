@@ -7,6 +7,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { founderValidationService } from '@/services/founder-validation/FounderValidationService';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 import {
   STAGE_META,
   INTEREST_META,
@@ -24,11 +25,11 @@ const C = {
   inkSec:   'rgba(6,3,43,0.55)',
   inkHint:  'rgba(6,3,43,0.38)',
   inkBdr:   'rgba(6,3,43,0.08)',
-  surface:  '#F8F6F1',
-  accent:   '#C76F3D',
-  green:    '#2F7D55',
+  surface:  TOKENS.surface,
+  accent:   TOKENS.accent,
+  green:    TOKENS.success,
   blue:     '#1E4DA0',
-  amber:    '#8A5A00',
+  amber:    TOKENS.safeguard.watch.text,
 };
 
 // ── Stage pills ────────────────────────────────────────────────────────────────
@@ -197,7 +198,7 @@ export default function FounderValidationPage() {
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div style={{
-        borderRadius: 14, background: '#06032B',
+        borderRadius: 14, background: TOKENS.ink,
         padding: '22px 28px', marginBottom: 20,
         display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12,
       }}>
@@ -213,7 +214,7 @@ export default function FounderValidationPage() {
           </p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'flex-end', gap: 6 }}>
-          <span style={{ borderRadius: 6, padding: '3px 10px', fontSize: 9, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase' as const, background: 'rgba(199,111,61,0.20)', color: '#C76F3D', border: '1px solid rgba(199,111,61,0.40)' }}>
+          <span style={{ borderRadius: 6, padding: '3px 10px', fontSize: 9, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase' as const, background: 'rgba(199,111,61,0.20)', color: TOKENS.accent, border: '1px solid rgba(199,111,61,0.40)' }}>
             FOUNDER TOOL
           </span>
           <span style={{ borderRadius: 6, padding: '3px 10px', fontSize: 9, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase' as const, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.10)' }}>

@@ -13,6 +13,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PartnersAdminClient } from './_components/PartnersAdminClient';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = {
   title: 'Partner Catalog — KORA Admin',
@@ -58,7 +59,7 @@ export default async function AdminPartnersPage() {
     }}>
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: 0 }}>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: 0 }}>
             Partner Catalog
           </h1>
           <span style={{
@@ -88,7 +89,7 @@ export default async function AdminPartnersPage() {
             fontSize: 13,
           }}
         >
-          <p style={{ fontWeight: 700, color: '#C76F3D', marginBottom: 6 }}>
+          <p style={{ fontWeight: 700, color: TOKENS.accent, marginBottom: 6 }}>
             ⚠ Schema &quot;network&quot; non raggiungibile via PostgREST
           </p>
           <p style={{ color: 'rgba(6,3,43,0.65)', margin: 0, lineHeight: 1.6 }}>

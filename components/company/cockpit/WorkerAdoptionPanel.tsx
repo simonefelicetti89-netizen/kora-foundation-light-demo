@@ -43,7 +43,7 @@ const PILLAR_LABELS: Record<string, string> = {
 const STATUS_STYLE: Record<string, React.CSSProperties> = {
   ENABLED: {
     background: 'rgba(47,125,85,0.10)',
-    color:      '#2F7D55',
+    color:      TOKENS.success,
     border:     '1px solid rgba(47,125,85,0.25)',
   },
   NOT_ENABLED: {

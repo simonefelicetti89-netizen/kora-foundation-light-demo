@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 import { requirePartnerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Partner Workspace · KORA' };
 
@@ -32,8 +32,8 @@ const PILLAR_META: Record<string, { color: string; bg: string; border: string }>
 };
 
 const STATUS_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  published: { label: 'Pubblicato',  color: '#2F7D55', bg: 'rgba(47,125,85,0.08)',  border: 'rgba(47,125,85,0.22)'  },
-  draft:     { label: 'In revisione', color: '#8A5A00', bg: 'rgba(192,125,42,0.08)', border: 'rgba(192,125,42,0.22)' },
+  published: { label: 'Pubblicato',  color: TOKENS.success, bg: 'rgba(47,125,85,0.08)',  border: 'rgba(47,125,85,0.22)'  },
+  draft:     { label: 'In revisione', color: TOKENS.safeguard.watch.text, bg: 'rgba(192,125,42,0.08)', border: 'rgba(192,125,42,0.22)' },
   archived:  { label: 'Archiviato',  color: 'rgba(6,3,43,0.45)', bg: 'rgba(6,3,43,0.04)', border: 'rgba(6,3,43,0.12)' },
 };
 
@@ -88,7 +88,7 @@ export default async function PartnerWorkspacePage() {
       <div
         data-testid="partner-workspace-hero"
         style={{
-          background:   '#06032B',
+          background:   TOKENS.ink,
           borderRadius: 16,
           padding:      '28px 32px',
           marginBottom: 20,
@@ -141,7 +141,7 @@ export default async function PartnerWorkspacePage() {
           marginBottom: 20,
         }}
       >
-        <p style={{ fontSize: 12, fontWeight: 700, color: '#2F7D55', margin: '0 0 8px' }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: TOKENS.success, margin: '0 0 8px' }}>
           Perimetro dati — accesso partner
         </p>
         <ul style={{ margin: 0, padding: '0 0 0 18px', display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -153,7 +153,7 @@ export default async function PartnerWorkspacePage() {
             'Le opportunità sono visibili ai worker solo se il tuo profilo è pubblicato da KORA.',
             'Nessun marketplace, nessuna prenotazione, nessun pagamento in questa area.',
           ].map((item, i) => (
-            <li key={i} style={{ fontSize: 12, color: '#2F7D55', lineHeight: 1.5 }}>
+            <li key={i} style={{ fontSize: 12, color: TOKENS.success, lineHeight: 1.5 }}>
               {item}
             </li>
           ))}
@@ -180,7 +180,7 @@ export default async function PartnerWorkspacePage() {
             {profile.description && (
               <div>
                 <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: '0 0 4px' }}>Descrizione</p>
-                <p style={{ fontSize: 13, color: '#06032B', margin: 0, lineHeight: 1.6 }}>
+                <p style={{ fontSize: 13, color: TOKENS.ink, margin: 0, lineHeight: 1.6 }}>
                   {profile.description}
                 </p>
               </div>
@@ -189,16 +189,16 @@ export default async function PartnerWorkspacePage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div>
                 <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: '0 0 4px' }}>Categoria</p>
-                <p style={{ fontSize: 12, color: '#06032B', margin: 0 }}>{profile.category ?? '—'}</p>
+                <p style={{ fontSize: 12, color: TOKENS.ink, margin: 0 }}>{profile.category ?? '—'}</p>
               </div>
               <div>
                 <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: '0 0 4px' }}>Modalità</p>
-                <p style={{ fontSize: 12, color: '#06032B', margin: 0, textTransform: 'capitalize' }}>{profile.delivery_mode}</p>
+                <p style={{ fontSize: 12, color: TOKENS.ink, margin: 0, textTransform: 'capitalize' }}>{profile.delivery_mode}</p>
               </div>
               {profile.city && (
                 <div>
                   <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: '0 0 4px' }}>Città</p>
-                  <p style={{ fontSize: 12, color: '#06032B', margin: 0 }}>{profile.city}</p>
+                  <p style={{ fontSize: 12, color: TOKENS.ink, margin: 0 }}>{profile.city}</p>
                 </div>
               )}
               {profile.website_url && (
@@ -228,7 +228,7 @@ export default async function PartnerWorkspacePage() {
             marginBottom: 20,
           }}
         >
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#06032B', margin: '0 0 8px' }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: TOKENS.ink, margin: '0 0 8px' }}>
             Profilo partner non trovato
           </p>
           <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', margin: 0 }}>
@@ -261,7 +261,7 @@ export default async function PartnerWorkspacePage() {
         )}
         <p
           data-testid="partner-workspace-visibility-note"
-          style={{ fontSize: 13, color: '#06032B', margin: 0, lineHeight: 1.6 }}
+          style={{ fontSize: 13, color: TOKENS.ink, margin: 0, lineHeight: 1.6 }}
         >
           {visibilityNote}
         </p>

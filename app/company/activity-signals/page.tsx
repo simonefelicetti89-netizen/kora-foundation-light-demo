@@ -125,7 +125,7 @@ function SignalCard({ s }: { s: ActivationSignalPreview }) {
         <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkSecondary, border: `1px solid ${TOKENS.inkBorder}` }}>
           {AGGREGATION_LEVEL_LABELS[s.aggregationLevel]}
         </span>
-        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: 'rgba(97,86,245,0.10)', color: '#6156F5' }}>
+        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: 'rgba(97,86,245,0.10)', color: TOKENS.violet }}>
           {INDEX_COMPONENT_PREVIEW_LABELS[s.indexComponentPreview]}
         </span>
       </div>
@@ -203,7 +203,7 @@ export default function CompanyActivitySignalsPage() {
 
       {/* Preview banner */}
       <div style={{ background: 'rgba(97,86,245,0.06)', border: `1px dashed rgba(97,86,245,0.35)`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 18px' }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#6156F5' }}>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: TOKENS.violet }}>
           Anteprima design — dati mock aggregati, nessuna connessione a database o servizi esterni.
         </p>
         <p style={{ margin: '6px 0 0', fontSize: 12, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>

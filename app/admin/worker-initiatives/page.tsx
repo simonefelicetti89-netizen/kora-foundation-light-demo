@@ -8,6 +8,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { WorkerInitiativesClient } from './_components/WorkerInitiativesClient';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = {
   title: 'Worker Initiatives — KORA Admin',
@@ -40,7 +41,7 @@ export default async function WorkerInitiativesPage() {
     }}>
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: 0 }}>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: 0 }}>
             Worker Initiatives
           </h1>
           <span style={{

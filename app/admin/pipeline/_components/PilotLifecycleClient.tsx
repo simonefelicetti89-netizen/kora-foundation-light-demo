@@ -53,6 +53,7 @@ import type { CanonicalDataIntakeStatus } from '@/lib/live/data-intake-status-vi
 import type { CanonicalDecisionPackStatus } from '@/lib/live/decision-pack-status-view';
 import type { CanonicalAccountProvisioningStatus } from '@/lib/live/account-provisioning-status-view';
 import type { CanonicalWorkerProvisioningStatus } from '@/lib/live/worker-provisioning-status-view';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 import {
   LIFECYCLE_STEPS,
   deriveAllStepStatuses,
@@ -171,7 +172,7 @@ function StepCard({
               fontSize: 11, color: 'rgba(6,3,43,0.62)', fontStyle: 'italic',
               display: 'flex', alignItems: 'flex-start', gap: 5,
             }}>
-              <span style={{ color: '#C76F3D', fontWeight: 700, fontStyle: 'normal', flexShrink: 0 }}>→</span>
+              <span style={{ color: TOKENS.accent, fontWeight: 700, fontStyle: 'normal', flexShrink: 0 }}>→</span>
               {step.nextAction}
             </div>
           )}
@@ -203,7 +204,7 @@ function RoleContextLinks() {
   const links = [
     { label: 'KORA Admin — Company Console',   href: '/admin/companies',   badge: 'LIVE · KORA Admin',   badgeColor: 'rgba(6,3,43,0.65)',  badgeBg: 'rgba(6,3,43,0.07)',  badgeBdr: 'rgba(6,3,43,0.14)' },
     { label: 'Company Workspace',              href: '/company',            badge: 'PREVIEW · Company',   badgeColor: '#7A4019',            badgeBg: 'rgba(199,111,61,0.09)', badgeBdr: 'rgba(199,111,61,0.25)' },
-    { label: 'My KORA Preview (Worker Space)', href: '/admin/preview/worker', badge: 'PREVIEW · Lavoratore', badgeColor: '#2F7D55',           badgeBg: 'rgba(47,125,85,0.09)', badgeBdr: 'rgba(47,125,85,0.28)' },
+    { label: 'My KORA Preview (Worker Space)', href: '/admin/preview/worker', badge: 'PREVIEW · Lavoratore', badgeColor: TOKENS.success,           badgeBg: 'rgba(47,125,85,0.09)', badgeBdr: 'rgba(47,125,85,0.28)' },
   ];
 
   return (

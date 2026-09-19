@@ -14,7 +14,7 @@ import {
   OPENING_GRADE_LABELS,
   OPENING_GRADE_COLORS,
 } from '@/lib/commons/types';
-import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
 // ── Pillar styling ────────────────────────────────────────────────────────────
 
@@ -35,9 +35,9 @@ const PILLAR_BG: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<CommonsDiscoveryStatus, string> = {
-  open:      '#2F7D55',
+  open:      TOKENS.success,
   upcoming:  '#4A7FE0',
-  full:      '#9E3B2F',
+  full:      TOKENS.critical,
   completed: 'rgba(6,3,43,0.35)',
 };
 
@@ -117,7 +117,7 @@ function InitiativeCard({ initiative, featured = false }: { initiative: CommonsD
 
       {/* Title & description */}
       <div>
-        <h3 style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif', fontWeight: 700, fontSize: 15, color: '#06032B', lineHeight: 1.35, margin: 0 }}>
+        <h3 style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif', fontWeight: 700, fontSize: 15, color: TOKENS.ink, lineHeight: 1.35, margin: 0 }}>
           {initiative.title}
         </h3>
         <p style={{
@@ -185,7 +185,7 @@ function NetworkStats({ initiatives }: { initiatives: CommonsDiscoveryInitiative
 
   return (
     <div style={{
-      background: '#06032B', borderRadius: 16, padding: '20px 28px', display: 'flex', alignItems: 'center',
+      background: TOKENS.ink, borderRadius: 16, padding: '20px 28px', display: 'flex', alignItems: 'center',
       flexWrap: 'wrap', gap: '16px 32px', border: '1px solid rgba(255,255,255,0.08)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
@@ -274,7 +274,7 @@ export function CommonsDiscoveryBrowser({ initiatives }: { initiatives: CommonsD
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <h1 style={{ fontWeight: 800, fontSize: 32, color: '#06032B', letterSpacing: '-0.03em', lineHeight: 1.06, margin: 0 }}>
+          <h1 style={{ fontWeight: 800, fontSize: 32, color: TOKENS.ink, letterSpacing: '-0.03em', lineHeight: 1.06, margin: 0 }}>
             KORA Space
           </h1>
         </div>
@@ -290,7 +290,7 @@ export function CommonsDiscoveryBrowser({ initiatives }: { initiatives: CommonsD
       }}>
         <span style={{ fontSize: 18, lineHeight: 1, marginTop: 1 }}>⚠</span>
         <div>
-          <p style={{ fontWeight: 700, fontSize: 12.5, color: '#06032B', margin: 0 }}>
+          <p style={{ fontWeight: 700, fontSize: 12.5, color: TOKENS.ink, margin: 0 }}>
             KORA Space non è un social network.
           </p>
           <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', margin: '4px 0 0 0', lineHeight: 1.5 }}>
@@ -317,11 +317,11 @@ export function CommonsDiscoveryBrowser({ initiatives }: { initiatives: CommonsD
             <section style={{ marginBottom: 44 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <div>
-                  <h2 style={{ fontWeight: 800, fontSize: 18, color: '#06032B', margin: 0 }}>Iniziative in evidenza</h2>
+                  <h2 style={{ fontWeight: 800, fontSize: 18, color: TOKENS.ink, margin: 0 }}>Iniziative in evidenza</h2>
                   <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', marginTop: 3 }}>Aperte o in arrivo</p>
                 </div>
                 <Link href="/company/commons" style={{
-                  fontSize: 12, fontWeight: 700, padding: '8px 16px', borderRadius: 8, background: '#06032B',
+                  fontSize: 12, fontWeight: 700, padding: '8px 16px', borderRadius: 8, background: TOKENS.ink,
                   color: '#FFFFFF', textDecoration: 'none', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
                 }}>
                   + Pubblica in KORA Space
@@ -336,7 +336,7 @@ export function CommonsDiscoveryBrowser({ initiatives }: { initiatives: CommonsD
           {/* Explore by pillar */}
           {!hasFilters && (
             <section style={{ marginBottom: 44 }}>
-              <h2 style={{ fontWeight: 800, fontSize: 18, color: '#06032B', marginBottom: 14 }}>Esplora per Pillar</h2>
+              <h2 style={{ fontWeight: 800, fontSize: 18, color: TOKENS.ink, marginBottom: 14 }}>Esplora per Pillar</h2>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 {PILLARS.map((pillar) => {
                   const count = initiatives.filter((i) => i.pillar === pillar).length;
@@ -364,7 +364,7 @@ export function CommonsDiscoveryBrowser({ initiatives }: { initiatives: CommonsD
           {/* Explore by category */}
           {!hasFilters && categories.length > 0 && (
             <section style={{ marginBottom: 44 }}>
-              <h2 style={{ fontWeight: 800, fontSize: 18, color: '#06032B', marginBottom: 14 }}>Esplora per Categoria</h2>
+              <h2 style={{ fontWeight: 800, fontSize: 18, color: TOKENS.ink, marginBottom: 14 }}>Esplora per Categoria</h2>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {categories.map((category) => {
                   const count = initiatives.filter((i) => i.category === category).length;
@@ -394,7 +394,7 @@ export function CommonsDiscoveryBrowser({ initiatives }: { initiatives: CommonsD
           {/* Filter bar + All initiatives */}
           <section>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-              <h2 style={{ fontWeight: 800, fontSize: 18, color: '#06032B', margin: 0, flex: 1 }}>
+              <h2 style={{ fontWeight: 800, fontSize: 18, color: TOKENS.ink, margin: 0, flex: 1 }}>
                 {hasFilters ? `Risultati (${filtered.length})` : `Tutte le iniziative (${initiatives.length})`}
               </h2>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -424,7 +424,7 @@ export function CommonsDiscoveryBrowser({ initiatives }: { initiatives: CommonsD
                     onClick={() => { setPillarFilter(''); setCategoryFilter(''); setStatusFilter(''); }}
                     style={{
                       fontSize: 12, fontWeight: 600, padding: '6px 12px', borderRadius: 8,
-                      border: '1px solid rgba(6,3,43,0.12)', background: 'transparent', color: '#9E3B2F',
+                      border: '1px solid rgba(6,3,43,0.12)', background: 'transparent', color: TOKENS.critical,
                       cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
                     }}
                   >
@@ -453,7 +453,7 @@ export function CommonsDiscoveryBrowser({ initiatives }: { initiatives: CommonsD
       <div
         data-testid="commons-next-activation-layer"
         style={{
-          marginTop: 44, padding: '28px 32px', background: '#06032B', borderRadius: 16, display: 'flex',
+          marginTop: 44, padding: '28px 32px', background: TOKENS.ink, borderRadius: 16, display: 'flex',
           alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap',
         }}
       >
@@ -471,7 +471,7 @@ export function CommonsDiscoveryBrowser({ initiatives }: { initiatives: CommonsD
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0 }}>
           <Link href="/company/commons" style={{
-            fontSize: 13, fontWeight: 700, padding: '10px 22px', borderRadius: 10, background: '#C76F3D',
+            fontSize: 13, fontWeight: 700, padding: '10px 22px', borderRadius: 10, background: TOKENS.accent,
             color: '#FFFFFF', textDecoration: 'none', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
             whiteSpace: 'nowrap', textAlign: 'center', display: 'block',
           }}>

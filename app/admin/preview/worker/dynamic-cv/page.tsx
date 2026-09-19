@@ -15,6 +15,7 @@
 
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { redirect } from 'next/navigation';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Admin Preview — Dynamic Impact CV · KORA' };
 
@@ -28,7 +29,7 @@ const SYNTHETIC_FIXTURE = {
   headline:      'Profilo attivo con partecipazioni verificate, con focus principale su GROWTH.',
   summary:       { total: 7, attended: 3, activePillars: 3 },
   pillars: [
-    { code: 'LIFE',       count: 1, color: '#2F7D55' },
+    { code: 'LIFE',       count: 1, color: TOKENS.success },
     { code: 'GROWTH',     count: 4, color: '#3B6EBA' },
     { code: 'CONNECTION', count: 2, color: '#7C3D8F' },
     { code: 'IMPACT',     count: 0, color: '#C07D2A' },
@@ -49,7 +50,7 @@ const SYNTHETIC_FIXTURE = {
 };
 
 const PILLAR_COLOR: Record<string, string> = {
-  LIFE: '#2F7D55', GROWTH: '#3B6EBA', CONNECTION: '#7C3D8F', IMPACT: '#C07D2A', LEGACY: '#5A4A3F',
+  LIFE: TOKENS.success, GROWTH: '#3B6EBA', CONNECTION: '#7C3D8F', IMPACT: '#C07D2A', LEGACY: '#5A4A3F',
 };
 
 const STATUS_COLOR: Record<string, string> = {
@@ -101,7 +102,7 @@ export default async function AdminPreviewWorkerDynamicCVPage() {
         <a href="/admin" style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', textDecoration: 'none', display: 'inline-block', marginBottom: 8 }}>
           ← Admin Dashboard
         </a>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.025em', margin: '0 0 4px' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.025em', margin: '0 0 4px' }}>
           Dynamic Impact CV — Anteprima Admin
         </h1>
         <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', margin: 0 }}>
@@ -110,7 +111,7 @@ export default async function AdminPreviewWorkerDynamicCVPage() {
       </div>
 
       {/* Hero synthetic */}
-      <div style={{ background: '#06032B', borderRadius: 16, padding: '24px 28px', marginBottom: 16 }}>
+      <div style={{ background: TOKENS.ink, borderRadius: 16, padding: '24px 28px', marginBottom: 16 }}>
         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', margin: '0 0 6px' }}>
           Dynamic Impact CV · esempio sintetico
         </p>
@@ -133,7 +134,7 @@ export default async function AdminPreviewWorkerDynamicCVPage() {
           { label: 'Partecipazioni verify.', value: f.summary.attended      },
         ].map(({ label, value }) => (
           <div key={label} style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 12, padding: '14px 16px' }}>
-            <p style={{ fontSize: 22, fontWeight: 900, color: '#06032B', margin: '0 0 2px', letterSpacing: '-0.03em' }}>{value}</p>
+            <p style={{ fontSize: 22, fontWeight: 900, color: TOKENS.ink, margin: '0 0 2px', letterSpacing: '-0.03em' }}>{value}</p>
             <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.40)', margin: 0 }}>{label}</p>
           </div>
         ))}
@@ -166,7 +167,7 @@ export default async function AdminPreviewWorkerDynamicCVPage() {
             return (
               <div key={i} style={{ border: '1px solid rgba(6,3,43,0.07)', borderRadius: 10, padding: '10px 14px', display: 'flex', gap: 10, alignItems: 'center' }}>
                 <span style={{ fontSize: 9, fontWeight: 700, color: pc, textTransform: 'uppercase', letterSpacing: '0.08em', minWidth: 60 }}>{exp.pillar}</span>
-                <span style={{ fontSize: 12, color: '#06032B', flex: 1 }}>{exp.title}</span>
+                <span style={{ fontSize: 12, color: TOKENS.ink, flex: 1 }}>{exp.title}</span>
                 <span style={{ fontSize: 9, fontWeight: 700, color: sc, letterSpacing: '0.06em' }}>{exp.status}</span>
                 <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', minWidth: 70, textAlign: 'right' }}>{exp.date}</span>
               </div>
@@ -186,7 +187,7 @@ export default async function AdminPreviewWorkerDynamicCVPage() {
           background:   'rgba(6,3,43,0.02)',
         }}
       >
-        <p style={{ fontSize: 11, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
           Esporta e condividi (anteprima)
         </p>
         <p style={{ fontSize: 11, color: 'rgba(199,111,61,0.80)', margin: '0 0 12px', fontWeight: 600 }}>

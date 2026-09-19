@@ -5,6 +5,7 @@
 // No marketplace, no booking, no partner ranking, no per-worker interaction data.
 
 import { useState, useId, isValidElement, cloneElement } from 'react';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const PILLARS   = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 const MODES     = ['online', 'onsite', 'hybrid'] as const;
@@ -133,7 +134,7 @@ export function PartnersAdminClient({ initialPartners }: { initialPartners: Part
         <button
           onClick={() => { setShowForm(v => !v); setCreateError(null); }}
           style={{
-            background: '#06032B', color: '#fff', border: 'none', borderRadius: 7,
+            background: TOKENS.ink, color: '#fff', border: 'none', borderRadius: 7,
             padding: '8px 18px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
           }}
         >
@@ -147,7 +148,7 @@ export function PartnersAdminClient({ initialPartners }: { initialPartners: Part
           background: '#fff', border: '1px solid rgba(6,3,43,0.10)', borderRadius: 10,
           padding: '24px', marginBottom: 20,
         }}>
-          <h2 style={{ fontSize: 13, fontWeight: 700, color: '#06032B', marginTop: 0, marginBottom: 20 }}>
+          <h2 style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, marginTop: 0, marginBottom: 20 }}>
             Nuovo partner
           </h2>
           <form onSubmit={handleCreate}>
@@ -218,7 +219,7 @@ export function PartnersAdminClient({ initialPartners }: { initialPartners: Part
               <button
                 type="submit" disabled={creating}
                 style={{
-                  background: '#06032B', color: '#fff', border: 'none', borderRadius: 7,
+                  background: TOKENS.ink, color: '#fff', border: 'none', borderRadius: 7,
                   padding: '9px 24px', fontSize: 12, fontWeight: 700,
                   cursor: creating ? 'not-allowed' : 'pointer', opacity: creating ? 0.6 : 1,
                 }}
@@ -300,7 +301,7 @@ export function PartnersAdminClient({ initialPartners }: { initialPartners: Part
                       {partner.city && ` · ${partner.city}`}
                     </span>
                   </div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#06032B' }}>{partner.name}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink }}>{partner.name}</div>
                   {partner.description && (
                     <div style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', marginTop: 3, lineHeight: 1.4 }}>
                       {partner.description.length > 120 ? `${partner.description.slice(0, 120)}…` : partner.description}
@@ -386,7 +387,7 @@ function FormField({ label, children }: { label: string; children: React.ReactEl
 const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
   border: '1px solid rgba(6,3,43,0.15)', borderRadius: 7, padding: '8px 12px',
-  fontSize: 12, color: '#06032B', background: '#fff',
+  fontSize: 12, color: TOKENS.ink, background: '#fff',
   fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
   outline: 'none',
 };

@@ -13,6 +13,7 @@ import { InitiativeCardsClient } from './_components/InitiativeCardsClient';
 import type { InitiativeItem } from './_components/InitiativeCardsClient';
 import { ActivationProfileSection } from './_components/ActivationProfileSection';
 import type { WorkerActivationProfile, PillarDistributionEntry } from '@/app/api/worker/activation-profile/route';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -227,7 +228,7 @@ export default async function WorkerWorkspacePage() {
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <h1 data-testid="workspace-hero" style={{ fontSize: '1.7rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: 0 }}>
+          <h1 data-testid="workspace-hero" style={{ fontSize: '1.7rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: 0 }}>
             {firstName ? `Ciao, ${firstName}` : 'Il mio spazio'}
           </h1>
           <span style={{
@@ -362,7 +363,7 @@ export default async function WorkerWorkspacePage() {
             <a
               href="/worker/opportunities"
               style={{
-                fontSize: 11, fontWeight: 700, color: '#06032B',
+                fontSize: 11, fontWeight: 700, color: TOKENS.ink,
                 background: 'rgba(6,3,43,0.04)', border: '1px solid rgba(6,3,43,0.10)',
                 borderRadius: 7, padding: '8px 14px', textDecoration: 'none',
                 display: 'inline-block', marginTop: 6, textAlign: 'center',
@@ -393,7 +394,7 @@ export default async function WorkerWorkspacePage() {
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3B6EBA', margin: '0 0 6px' }}>
             Le tue tracce personali
           </p>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
             Partecipazioni e percorso privato
           </p>
           <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
@@ -409,13 +410,13 @@ export default async function WorkerWorkspacePage() {
             </a>
             <a
               href="/worker/personal-impact-balance"
-              style={{ fontSize: 12, fontWeight: 600, color: '#C76F3D', textDecoration: 'none' }}
+              style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}
             >
               Il tuo bilancio →
             </a>
             <a
               href="/worker/dynamic-cv"
-              style={{ fontSize: 12, fontWeight: 600, color: '#2F7D55', textDecoration: 'none' }}
+              style={{ fontSize: 12, fontWeight: 600, color: TOKENS.success, textDecoration: 'none' }}
             >
               Dynamic Impact CV →
             </a>
@@ -453,10 +454,10 @@ export default async function WorkerWorkspacePage() {
         }}
       >
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#C76F3D', margin: '0 0 6px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.accent, margin: '0 0 6px' }}>
             My KORA · Area personale
           </p>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
             Il tuo spazio privato KORA
           </p>
           <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
@@ -469,7 +470,7 @@ export default async function WorkerWorkspacePage() {
               display:        'inline-block',
               fontSize:       12,
               fontWeight:     600,
-              color:          '#C76F3D',
+              color:          TOKENS.accent,
               textDecoration: 'none',
               padding:        '7px 14px',
               border:         '1px solid rgba(199,111,61,0.28)',
@@ -489,7 +490,7 @@ export default async function WorkerWorkspacePage() {
             padding:       '3px 8px',
             borderRadius:  999,
             background:    'rgba(199,111,61,0.10)',
-            color:         '#C76F3D',
+            color:         TOKENS.accent,
           }}
         >
           Privato
@@ -512,10 +513,10 @@ export default async function WorkerWorkspacePage() {
         }}
       >
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6156F5', margin: '0 0 6px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.violet, margin: '0 0 6px' }}>
             KORA Link
           </p>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
             Il tuo collegamento fisico–digitale KORA
           </p>
           <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
@@ -528,7 +529,7 @@ export default async function WorkerWorkspacePage() {
               display:        'inline-block',
               fontSize:       12,
               fontWeight:     600,
-              color:          '#6156F5',
+              color:          TOKENS.violet,
               textDecoration: 'none',
               padding:        '7px 14px',
               border:         '1px solid rgba(97,86,245,0.28)',
@@ -548,7 +549,7 @@ export default async function WorkerWorkspacePage() {
             padding:       '3px 8px',
             borderRadius:  999,
             background:    'rgba(97,86,245,0.10)',
-            color:         '#6156F5',
+            color:         TOKENS.violet,
           }}
         >
           In preparazione
@@ -573,7 +574,7 @@ export default async function WorkerWorkspacePage() {
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3B6EBA', margin: '0 0 6px' }}>
             Dynamic Impact CV
           </p>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
             {hasAnyActivity ? 'Il tuo percorso KORA è in costruzione' : 'Inizia a costruire il tuo profilo'}
           </p>
           <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
@@ -631,10 +632,10 @@ export default async function WorkerWorkspacePage() {
         }}
       >
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#2F7D55', margin: '0 0 6px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.success, margin: '0 0 6px' }}>
             Privacy & Condivisione
           </p>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
             I tuoi dati restano privati
           </p>
           <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
@@ -647,7 +648,7 @@ export default async function WorkerWorkspacePage() {
               display:        'inline-block',
               fontSize:       12,
               fontWeight:     600,
-              color:          '#2F7D55',
+              color:          TOKENS.success,
               textDecoration: 'none',
               padding:        '7px 14px',
               border:         '1px solid rgba(47,125,85,0.28)',
@@ -667,7 +668,7 @@ export default async function WorkerWorkspacePage() {
             padding:       '3px 8px',
             borderRadius:  999,
             background:    'rgba(47,125,85,0.10)',
-            color:         '#2F7D55',
+            color:         TOKENS.success,
           }}
         >
           Attivo
@@ -715,7 +716,7 @@ function HistoryRow({ item }: { item: HistoryItem }) {
           <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: pillarColor, marginRight: 6 }}>
             {item.pillar}
           </span>
-          <span style={{ fontSize: 12, color: '#06032B' }}>{item.initiative_title}</span>
+          <span style={{ fontSize: 12, color: TOKENS.ink }}>{item.initiative_title}</span>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
           <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.45)' }}>{partLabel}</span>
@@ -754,7 +755,7 @@ function PartnerPreviewRow({ partner }: { partner: { id: string; name: string; p
         <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: pc, marginRight: 6 }}>
           {partner.pillar}
         </span>
-        <span style={{ fontSize: 12, color: '#06032B', fontWeight: 600 }}>{partner.name}</span>
+        <span style={{ fontSize: 12, color: TOKENS.ink, fontWeight: 600 }}>{partner.name}</span>
         {partner.category && (
           <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', marginLeft: 6 }}>{partner.category}</span>
         )}
@@ -770,7 +771,7 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, borderBottom: '1px solid rgba(6,3,43,0.05)' }}>
       <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(6,3,43,0.50)' }}>{label}</span>
-      <span style={{ fontSize: 13, color: '#06032B', fontFamily: mono ? 'monospace' : 'inherit' }}>{value}</span>
+      <span style={{ fontSize: 13, color: TOKENS.ink, fontFamily: mono ? 'monospace' : 'inherit' }}>{value}</span>
     </div>
   );
 }
@@ -781,7 +782,7 @@ function PlaceholderSection({ title, description }: { title: string; description
       background: '#f9f9fb', border: '1px dashed rgba(6,3,43,0.15)', borderRadius: 10, padding: '18px 20px',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-        <h3 style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: 0 }}>{title}</h3>
+        <h3 style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: 0 }}>{title}</h3>
         <span style={{
           fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
           background: 'rgba(6,3,43,0.07)', color: 'rgba(6,3,43,0.45)', borderRadius: 3, padding: '1px 5px',

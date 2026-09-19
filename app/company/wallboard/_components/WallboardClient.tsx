@@ -10,7 +10,7 @@
 //   - Nessun fallback sintetico: empty state onesto se dati non disponibili
 
 import { useEffect, useRef, useState } from 'react';
-import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -28,15 +28,15 @@ const MACROBLOCK_ORDER = ['REACH', 'QUALITY', 'EQUITY', 'BTI'] as const;
 
 const MACROBLOCK_META: Record<string, { label: string; description: string; weight: number; color: string; bg: string }> = {
   REACH:   { label: 'Activation Reach',       description: 'Quota della workforce raggiunta dall\'attivazione.',           weight: 0.25, color: '#3B6EBA', bg: 'rgba(59,110,186,0.06)'  },
-  QUALITY: { label: 'Activation Quality',     description: 'Profondita\', verifica e continuita\' dell\'attivazione.',     weight: 0.30, color: '#2F7D55', bg: 'rgba(47,125,85,0.06)'   },
+  QUALITY: { label: 'Activation Quality',     description: 'Profondita\', verifica e continuita\' dell\'attivazione.',     weight: 0.30, color: TOKENS.success, bg: 'rgba(47,125,85,0.06)'   },
   EQUITY:  { label: 'Distribution & Equity',  description: 'Distribuzione equa tra lavoratori, reparti, sedi.',           weight: 0.25, color: '#7C3D8F', bg: 'rgba(124,61,143,0.06)'  },
   BTI:     { label: 'Budget-to-Human-Impact', description: 'Quanto il budget welfare si traduce in valore umano reale.',   weight: 0.20, color: '#C07D2A', bg: 'rgba(192,125,42,0.06)'  },
 };
 
 const SAFEGUARD_STYLE: Record<string, { color: string; bg: string; border: string }> = {
-  CLEAR:   { color: '#2F7D55', bg: 'rgba(47,125,85,0.08)',   border: 'rgba(47,125,85,0.25)'   },
-  WARNING: { color: '#8A5A00', bg: 'rgba(217,154,43,0.10)',  border: 'rgba(217,154,43,0.30)'  },
-  FLAGGED: { color: '#9E3B2F', bg: 'rgba(158,59,47,0.08)',   border: 'rgba(158,59,47,0.25)'   },
+  CLEAR:   { color: TOKENS.success, bg: 'rgba(47,125,85,0.08)',   border: 'rgba(47,125,85,0.25)'   },
+  WARNING: { color: TOKENS.safeguard.watch.text, bg: 'rgba(217,154,43,0.10)',  border: 'rgba(217,154,43,0.30)'  },
+  FLAGGED: { color: TOKENS.critical, bg: 'rgba(158,59,47,0.08)',   border: 'rgba(158,59,47,0.25)'   },
 };
 
 function koraIndexBand(v: number): string {
@@ -123,7 +123,7 @@ function deriveInsights(ki: WorkspaceData['koraIndex'], agg: AggData | null): Ar
     insights.push({
       label: 'Forza principale',
       text:  `Activation Rate al ${fmtPct(ki.activationRate)} — quota significativa della workforce attivata.`,
-      color: '#2F7D55',
+      color: TOKENS.success,
     });
   }
 
@@ -132,19 +132,19 @@ function deriveInsights(ki: WorkspaceData['koraIndex'], agg: AggData | null): Ar
     insights.push({
       label: 'Area da rafforzare',
       text:  'Activation Safeguard FLAGGED — i requisiti minimi di attivazione non sono soddisfatti. Intervento urgente raccomandato.',
-      color: '#9E3B2F',
+      color: TOKENS.critical,
     });
   } else if (ki.safeguardStatus === 'WARNING') {
     insights.push({
       label: 'Area da rafforzare',
       text:  'Activation Safeguard WARNING — attivazione sotto i minimi raccomandati. Espandere le iniziative o aumentare la partecipazione.',
-      color: '#8A5A00',
+      color: TOKENS.safeguard.watch.text,
     });
   } else if (ki.meaningfulActivationRate != null && ki.meaningfulActivationRate < 0.3) {
     insights.push({
       label: 'Area da rafforzare',
       text:  `Meaningful Activation Rate al ${fmtPct(ki.meaningfulActivationRate)} — aumentare la quota di attivazione significativa.`,
-      color: '#8A5A00',
+      color: TOKENS.safeguard.watch.text,
     });
   }
 
@@ -237,7 +237,7 @@ export function WallboardClient({ userEmail, userRole }: WallboardClientProps) {
               padding:       '3px 8px',
               borderRadius:  999,
               background:    'rgba(47,125,85,0.10)',
-              color:         '#2F7D55',
+              color:         TOKENS.success,
               border:        '1px solid rgba(47,125,85,0.28)',
             }}
           >
@@ -270,7 +270,7 @@ export function WallboardClient({ userEmail, userRole }: WallboardClientProps) {
         </div>
       )}
       {!loading && error && (
-        <div style={{ textAlign: 'center', padding: '60px 0', fontSize: 13, color: '#9E3B2F' }}>
+        <div style={{ textAlign: 'center', padding: '60px 0', fontSize: 13, color: TOKENS.critical }}>
           {error}
         </div>
       )}
@@ -286,7 +286,7 @@ export function WallboardClient({ userEmail, userRole }: WallboardClientProps) {
             borderRadius: 16,
           }}
         >
-          <p style={{ fontSize: 18, fontWeight: 700, color: '#06032B', margin: '0 0 10px' }}>
+          <p style={{ fontSize: 18, fontWeight: 700, color: TOKENS.ink, margin: '0 0 10px' }}>
             KORA Wallboard
           </p>
           <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: '0 0 6px', lineHeight: 1.6 }}>
@@ -306,7 +306,7 @@ export function WallboardClient({ userEmail, userRole }: WallboardClientProps) {
           <div
             data-testid="wallboard-header"
             style={{
-              background:   '#06032B',
+              background:   TOKENS.ink,
               borderRadius: 16,
               padding:      '24px 28px',
               display:      'flex',
@@ -358,7 +358,7 @@ export function WallboardClient({ userEmail, userRole }: WallboardClientProps) {
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                 <span
                   data-testid="wallboard-kora-index-value"
-                  style={{ fontSize: '2.5rem', fontWeight: 900, color: '#06032B', letterSpacing: '-0.04em', lineHeight: 1 }}
+                  style={{ fontSize: '2.5rem', fontWeight: 900, color: TOKENS.ink, letterSpacing: '-0.04em', lineHeight: 1 }}
                 >
                   {Math.round(ki.koraIndexValue)}
                 </span>
@@ -379,7 +379,7 @@ export function WallboardClient({ userEmail, userRole }: WallboardClientProps) {
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                 <span
                   data-testid="wallboard-confidence-score"
-                  style={{ fontSize: '2rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em' }}
+                  style={{ fontSize: '2rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em' }}
                 >
                   {Math.round(ki.confidenceScore)}
                 </span>
@@ -414,13 +414,13 @@ export function WallboardClient({ userEmail, userRole }: WallboardClientProps) {
               <div style={{ marginTop: 8, display: 'flex', gap: 12 }}>
                 <div>
                   <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.35)' }}>AR</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#06032B', marginLeft: 4 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: TOKENS.ink, marginLeft: 4 }}>
                     {fmtPct(ki.activationRate)}
                   </span>
                 </div>
                 <div>
                   <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.35)' }}>MAR</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#06032B', marginLeft: 4 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: TOKENS.ink, marginLeft: 4 }}>
                     {fmtPct(ki.meaningfulActivationRate)}
                   </span>
                 </div>
@@ -454,7 +454,7 @@ export function WallboardClient({ userEmail, userRole }: WallboardClientProps) {
                     <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta.color, margin: '0 0 2px' }}>
                       {code}
                     </p>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: '#06032B', margin: '0 0 8px', lineHeight: 1.3 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, margin: '0 0 8px', lineHeight: 1.3 }}>
                       {meta.label}
                     </p>
                     {score !== null ? (
@@ -562,7 +562,7 @@ export function WallboardClient({ userEmail, userRole }: WallboardClientProps) {
                     <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: insight.color, margin: '0 0 6px' }}>
                       {insight.label}
                     </p>
-                    <p style={{ fontSize: 12, color: '#06032B', margin: 0, lineHeight: 1.6 }}>
+                    <p style={{ fontSize: 12, color: TOKENS.ink, margin: 0, lineHeight: 1.6 }}>
                       {insight.text}
                     </p>
                   </div>

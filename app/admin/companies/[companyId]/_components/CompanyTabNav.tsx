@@ -4,6 +4,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 // B-TRUTH Gen 0/1 Retirement Wave 1 (2026-08-30): removed the Workforce,
 // Data Intake, and Onboarding tabs — those pages were 100% synthetic
@@ -72,7 +73,7 @@ export function CompanyTabNav({ companyId, companyName }: Props) {
               {isActive && (
                 <span
                   className="absolute bottom-0 left-0 right-0 h-[2px] rounded-t"
-                  style={{ background: '#C76F3D' }}
+                  style={{ background: TOKENS.accent }}
                 />
               )}
             </Link>

@@ -9,6 +9,7 @@
 //   - Actions manage participation status — do not evaluate the worker
 
 import { useState, useEffect, useCallback } from 'react';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -42,9 +43,9 @@ interface Props {
 // ── Status metadata ───────────────────────────────────────────────────────────
 
 const STATUS_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  pending:   { label: 'Richiesta inviata',          color: '#8A5A00',           bg: 'rgba(192,125,42,0.10)', border: 'rgba(192,125,42,0.30)' },
-  approved:  { label: 'Partecipazione confermata',  color: '#2F7D55',           bg: 'rgba(47,125,85,0.08)',  border: 'rgba(47,125,85,0.22)'  },
-  rejected:  { label: 'Richiesta non approvata',    color: '#9E3B2F',           bg: 'rgba(158,59,47,0.08)', border: 'rgba(158,59,47,0.22)'  },
+  pending:   { label: 'Richiesta inviata',          color: TOKENS.safeguard.watch.text,           bg: 'rgba(192,125,42,0.10)', border: 'rgba(192,125,42,0.30)' },
+  approved:  { label: 'Partecipazione confermata',  color: TOKENS.success,           bg: 'rgba(47,125,85,0.08)',  border: 'rgba(47,125,85,0.22)'  },
+  rejected:  { label: 'Richiesta non approvata',    color: TOKENS.critical,           bg: 'rgba(158,59,47,0.08)', border: 'rgba(158,59,47,0.22)'  },
   attended:  { label: 'Partecipazione completata',  color: '#3B6EBA',           bg: 'rgba(59,110,186,0.08)', border: 'rgba(59,110,186,0.22)' },
   cancelled: { label: 'Annullata',                  color: 'rgba(6,3,43,0.45)', bg: 'rgba(6,3,43,0.05)',    border: 'rgba(6,3,43,0.12)'    },
 };
@@ -129,13 +130,13 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
     >
       {/* Section header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-        <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#06032B', margin: 0, fontFamily: FONT }}>
+        <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TOKENS.ink, margin: 0, fontFamily: FONT }}>
           Controllo prenotazioni KORA Space
         </h2>
         {bookings.length > 0 && activeScope === 'pending' && (
           <span style={{
             fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
-            background: 'rgba(192,125,42,0.12)', color: '#8A5A00',
+            background: 'rgba(192,125,42,0.12)', color: TOKENS.safeguard.watch.text,
           }}>
             {bookings.length} in attesa
           </span>
@@ -148,7 +149,7 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
         style={{
           background: 'rgba(199,111,61,0.07)', border: '1.5px solid rgba(199,111,61,0.28)',
           borderRadius: 10, padding: '10px 14px', marginBottom: 16,
-          fontSize: 11, color: '#C76F3D', fontFamily: FONT, lineHeight: 1.6,
+          fontSize: 11, color: TOKENS.accent, fontFamily: FONT, lineHeight: 1.6,
         }}
       >
         <strong>Anonimato worker garantito.</strong>{' '}
@@ -212,7 +213,7 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
       </div>
 
       {error && (
-        <p style={{ fontSize: 12, color: '#9E3B2F', marginBottom: 12, fontFamily: FONT }}>
+        <p style={{ fontSize: 12, color: TOKENS.critical, marginBottom: 12, fontFamily: FONT }}>
           Errore: {error}
         </p>
       )}
@@ -292,7 +293,7 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
                 </div>
 
                 {/* Initiative title + date */}
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 4px', fontFamily: FONT, lineHeight: 1.3 }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px', fontFamily: FONT, lineHeight: 1.3 }}>
                   {initiativeTitle}
                 </p>
                 {eventDate && (
@@ -340,7 +341,7 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
                       data-testid={`admin-booking-approve-${booking.id}`}
                       disabled={isLoading}
                       onClick={() => doAction(booking.id, 'approve')}
-                      style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: '#2F7D55', color: '#FFFFFF', fontSize: 11, fontWeight: 700, fontFamily: FONT, cursor: isLoading ? 'not-allowed' : 'pointer' }}
+                      style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: TOKENS.success, color: '#FFFFFF', fontSize: 11, fontWeight: 700, fontFamily: FONT, cursor: isLoading ? 'not-allowed' : 'pointer' }}
                     >
                       ✓ Approva
                     </button>
@@ -348,7 +349,7 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
                       data-testid={`admin-booking-reject-${booking.id}`}
                       disabled={isLoading}
                       onClick={() => doAction(booking.id, 'reject')}
-                      style={{ padding: '6px 14px', borderRadius: 7, border: '1px solid rgba(158,59,47,0.25)', background: 'rgba(158,59,47,0.06)', color: '#9E3B2F', fontSize: 11, fontWeight: 700, fontFamily: FONT, cursor: isLoading ? 'not-allowed' : 'pointer' }}
+                      style={{ padding: '6px 14px', borderRadius: 7, border: '1px solid rgba(158,59,47,0.25)', background: 'rgba(158,59,47,0.06)', color: TOKENS.critical, fontSize: 11, fontWeight: 700, fontFamily: FONT, cursor: isLoading ? 'not-allowed' : 'pointer' }}
                     >
                       ✕ Rifiuta
                     </button>

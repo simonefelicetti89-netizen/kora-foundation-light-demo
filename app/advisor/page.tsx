@@ -10,6 +10,7 @@
 
 import Link from 'next/link';
 import { requireAdvisorUser, isKoraAuthError } from '@/lib/auth/kora-session';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 import {
   getAdvisorIdentityByAuthUserId,
   listRoleQualificationsForAdvisor,
@@ -69,7 +70,7 @@ export default async function AdvisorProfilePage() {
         <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.40)', marginBottom: 6 }}>
           Profilo Advisor
         </p>
-        <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#06032B', marginBottom: 4 }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, color: TOKENS.ink, marginBottom: 4 }}>
           {identity.fullName}
         </h1>
         <p style={{ fontSize: '13px', color: 'rgba(6,3,43,0.62)' }}>
@@ -78,7 +79,7 @@ export default async function AdvisorProfilePage() {
       </div>
 
       <div>
-        <p style={{ fontSize: '11px', fontWeight: 700, color: '#06032B', marginBottom: 10 }}>
+        <p style={{ fontSize: '11px', fontWeight: 700, color: TOKENS.ink, marginBottom: 10 }}>
           Qualifiche di ruolo
         </p>
 
@@ -94,10 +95,10 @@ export default async function AdvisorProfilePage() {
               <li
                 key={q.id}
                 className="rounded-[12px] px-4 py-3"
-                style={{ background: '#F8F6F1', border: '1px solid rgba(6,3,43,0.08)' }}
+                style={{ background: TOKENS.surface, border: '1px solid rgba(6,3,43,0.08)' }}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#06032B' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.ink }}>
                     {ROLE_LABEL[q.role] ?? q.role}
                   </span>
                   <span style={{ fontSize: '11px', color: 'rgba(6,3,43,0.62)' }}>
@@ -113,7 +114,7 @@ export default async function AdvisorProfilePage() {
       <div>
         {/* KORA-WP-033 — minimal entry point to the Company surface. No
             navigation shell/polish here (KORA-WP-064's scope); one plain link. */}
-        <Link href="/advisor/companies" style={{ fontSize: '12px', fontWeight: 700, color: '#C76F3D' }}>
+        <Link href="/advisor/companies" style={{ fontSize: '12px', fontWeight: 700, color: TOKENS.accent }}>
           Le tue Company →
         </Link>
       </div>

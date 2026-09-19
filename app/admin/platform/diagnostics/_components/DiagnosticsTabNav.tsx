@@ -3,6 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const TABS = [
   { label: 'Live Spine',    slug: 'live-spine'    },
@@ -43,7 +44,7 @@ export function DiagnosticsTabNav() {
               {isActive && (
                 <span
                   className="absolute bottom-0 left-0 right-0 h-[2px] rounded-t"
-                  style={{ background: '#C76F3D' }}
+                  style={{ background: TOKENS.accent }}
                 />
               )}
             </Link>
