@@ -43,7 +43,7 @@ import {
   getAdvisorCredentials,
 } from './helpers/env';
 import { guardE2ETarget } from './helpers/e2e-safety';
-import { ROLE_HOME, ADVISOR_HOME } from './helpers/roles';
+import { ROLE_HOME, ADVISOR_HOME, WORKER_WORKSPACE_HOME } from './helpers/roles';
 import { loginViaUI, assertReachedWorkspace } from './helpers/auth';
 import { applyProtectionBypass } from './helpers/vercel-bypass';
 
@@ -119,7 +119,12 @@ test.describe('KORA-WP-088 — validazione responsive autenticata multi-viewport
     test.skip(!creds, 'E2E_WORKER_EMAIL / E2E_WORKER_PASSWORD non impostate — test saltato.');
     await applyProtectionBypass(page);
     await loginViaUI(page, creds!);
-    await runRoleViewportCase(page, ROLE_HOME.WORKER);
+    // Founder Decision 3: validate the real Worker environment, not the
+    // onboarding wizard. getRoleHome('WORKER') lands on /worker/onboarding and
+    // its gate forwards a COMPLETED worker to /worker/workspace — so reaching
+    // the workspace is itself proof that onboarding is genuinely complete. An
+    // onboarding-incomplete account fails this case loudly, which is intended.
+    await runRoleViewportCase(page, WORKER_WORKSPACE_HOME);
   });
 
   test('R04 · Partner', async ({ page }) => {
@@ -138,11 +143,9 @@ test.describe('KORA-WP-088 — validazione responsive autenticata multi-viewport
     const creds = getAdvisorCredentials();
     test.skip(!creds, 'E2E_ADVISOR_EMAIL / E2E_ADVISOR_PASSWORD non impostate — test saltato.');
     await applyProtectionBypass(page);
-    // ADVISOR has no post-login redirect target (see LoginOptions) — navigate
-    // to its guarded entry point explicitly. app/advisor/layout.tsx still
-    // enforces requireAdvisorUser(), so this proves real authenticated access.
-    await loginViaUI(page, creds!, { awaitRedirect: false });
-    await page.goto(ADVISOR_HOME);
+    await loginViaUI(page, creds!);
+    // Normal product routing: getRoleHome('ADVISOR') -> /advisor, guarded by
+    // requireAdvisorUser(). No harness workaround — R05 proves the real flow.
     await runRoleViewportCase(page, ADVISOR_HOME);
   });
 });

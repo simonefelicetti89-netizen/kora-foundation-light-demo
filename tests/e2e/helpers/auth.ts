@@ -10,40 +10,14 @@
 import { expect, type Page } from 'playwright/test';
 import type { Credentials } from './env';
 
-export interface LoginOptions {
-  /**
-   * Wait for the app to redirect away from /login after sign-in. Default true.
-   *
-   * KORA-WP-088: must be FALSE for ADVISOR. lib/auth/role-home.ts has no
-   * ADVISOR branch — getRoleHome('ADVISOR') falls through to '/login' — so
-   * app/login/page.tsx pushes an authenticated advisor straight back to
-   * /login. The session IS valid; only the redirect target is missing. Waiting
-   * for a navigation that never happens would time out and report a
-   * responsive failure that is really a routing gap. The caller navigates to
-   * the advisor entry point explicitly instead.
-   */
-  awaitRedirect?: boolean;
-}
-
-export async function loginViaUI(
-  page: Page,
-  credentials: Credentials,
-  options: LoginOptions = {},
-): Promise<void> {
-  const { awaitRedirect = true } = options;
+export async function loginViaUI(page: Page, credentials: Credentials): Promise<void> {
   await page.goto('/login');
   await page.getByTestId('login-email-input').fill(credentials.email);
   await page.getByTestId('login-password-input').fill(credentials.password);
   await page.getByTestId('login-submit').click();
-  if (!awaitRedirect) {
-    // Sign-in is asynchronous; give the Supabase session time to settle before
-    // the caller navigates. The submit button leaving its pending state is the
-    // app's own signal that the auth round-trip finished.
-    await page.waitForLoadState('networkidle');
-    return;
-  }
   // Wait until the app navigates away from /login (redirect happens after
-  // Supabase confirms the session and role is resolved).
+  // Supabase confirms the session and role is resolved). Every KORA role,
+  // ADVISOR included, has a role-home mapping — see lib/auth/role-home.ts.
   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 15_000 });
 }
 

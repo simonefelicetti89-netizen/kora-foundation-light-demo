@@ -438,6 +438,38 @@ describe('KORA-WP-088 — authenticated multi-viewport validation is runnable on
     expect(fx).not.toMatch(/console\.\w+\([^)]*,\s*password\s*[),]/i);
   });
 
+  it('the staging fixture is EPHEMERAL with provision / verify / cleanup modes', () => {
+    const fx = fixtureCode();
+    for (const m of ['provision', 'verify', 'cleanup']) expect(fx).toContain(`'${m}'`);
+    expect(fx).toMatch(/mode must be exactly one of/);
+    // Cleanup actually removes the partner fixture, both halves.
+    expect(fx).toContain('deleteAuthUserIfPresent');
+    expect(fx).toMatch(/from\('partner_identity'\)[\s\S]{0,200}\.delete\(\)/);
+    // And never touches the business data it attached to.
+    expect(fx).not.toMatch(/from\('partner_profile'\)[\s\S]{0,200}\.delete\(\)/);
+    expect(fx).not.toMatch(/from\('advisor_assignment'\)/);
+    expect(fx).not.toMatch(/from\('advisor_role_qualification'\)/);
+    expect(fx).not.toMatch(/from\('tenant'\)/);
+  });
+
+  it('advisor cleanup respects the no-DELETE governance invariant', () => {
+    const fx = fixtureCode();
+    // advisor.advisor_identity has NO DELETE grant for anyone, by design
+    // (migration 056). Cleanup must transition, never attempt a delete.
+    expect(fx).not.toMatch(/from\('advisor_identity'\)[\s\S]{0,200}\.delete\(\)/);
+    expect(fx).toContain("inactive_offboarded");
+    expect(fx).toMatch(/from\('advisor_identity'\)[\s\S]{0,200}\.update\(/);
+    // The migration's own wording is preserved as the justification...
+    const migration = read('supabase/migrations/056_advisor_identity_qualification.sql');
+    expect(migration).toMatch(/No DELETE for anyone/);
+    // ...and the GRANT statements themselves confirm it. SQL comments are
+    // stripped first: the justification comment legitimately contains both
+    // "GRANT" and "DELETE" and would otherwise match its own explanation.
+    const grants = migration.replace(/--.*$/gm, '');
+    expect(grants).not.toMatch(/GRANT[^;]*DELETE[^;]*advisor_identity/i);
+    expect(grants).toMatch(/GRANT SELECT, INSERT, UPDATE ON advisor\.advisor_identity\s+TO service_role/);
+  });
+
   it('the fixture mirrors real schema truth for both roles', () => {
     const fx = fixtureCode();
     // advisor_identity has NO email column (migration 056): full_name + status.
@@ -517,6 +549,19 @@ describe('KORA-WP-088 — authenticated multi-viewport validation is runnable on
       // Declared empty — a real value must never land in the template.
       expect(tpl, `${v} has a value in the template`).toMatch(new RegExp(`^${v}=\\s*$`, 'm'));
     }
+  });
+
+  it('the Worker case validates the real workspace, not the onboarding wizard', () => {
+    const spec = read('tests/e2e/responsive-viewports.spec.ts');
+    const roles = read('tests/e2e/helpers/roles.ts');
+    // Founder Decision 3: onboarding alone is not Worker runtime evidence.
+    expect(roles).toContain("WORKER_WORKSPACE_HOME = '/worker/workspace'");
+    expect(spec).toContain('WORKER_WORKSPACE_HOME');
+    expect(spec).not.toMatch(/runRoleViewportCase\(page, ROLE_HOME\.WORKER\)/);
+    // The gate that makes reaching the workspace proof of completion.
+    const gate = read('app/worker/workspace/page.tsx');
+    expect(gate).toContain('onboarding_completed_at');
+    expect(gate).toContain("redirect('/worker/onboarding')");
   });
 
   it('the responsive spec covers all five role environments and skips without credentials', () => {
