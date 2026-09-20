@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KORA — My KORA · SIGNAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kora-signal.css">
+<style>
+  .tlr { display:grid; grid-template-columns:62px 16px minmax(0,1fr); gap:14px; padding:14px 0; align-items:start; }
+  .tlr + .tlr { border-top:1px solid var(--line); }
+  .tld { font-size:11.5px; font-weight:700; color:var(--ink-3); padding-top:2px; font-variant-numeric:tabular-nums; }
+  .tlm { display:grid; place-items:center; padding-top:5px; }
+  .tlm i { width:9px; height:9px; border-radius:99px; display:block; }
+  @media (max-width:720px){ .tlr { grid-template-columns:52px 12px minmax(0,1fr); gap:10px; } }
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="nav" aria-label="Navigazione KORA">
+  <div class="nav-brand">
+    <span class="nav-mark" style="background:linear-gradient(145deg,#6E63F8,#3B2FD4)"><svg class="mark5" width="19" height="19" viewBox="0 0 22 22" aria-hidden="true"><polygon points="11,3.5 18.13,8.68 15.41,17.07 6.59,17.07 3.87,8.68" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="1"/><circle cx="11" cy="3.5" r="2.1" fill="#fff"/><circle cx="18.13" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="15.41" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="6.59" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="3.87" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/></svg></span>
+    <span class="nav-word">KORA</span>
+    <button class="nav-collapse" aria-label="Comprimi navigazione"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+  </div>
+  <div class="ws">
+    <button class="ws-btn">
+      <span class="ws-avatar" style="background:linear-gradient(145deg,#6E63F8,#3B2FD4)">GR</span>
+      <span style="min-width:0;text-align:left">
+        <span class="ws-name" style="display:block">Giulia Ronchi</span>
+        <span class="ws-meta">My KORA · H1 2026</span>
+      </span>
+      <svg style="margin-left:auto;opacity:.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 9 5 5 5-5"/></svg>
+    </button>
+  </div>
+  <button class="nav-cmd"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Cerca o esegui…</span><kbd>⌘K</kbd></button>
+  <div class="nav-scroll">
+    <div class="nav-group">
+      <span class="lbl">Il mio spazio</span>
+      <a class="nav-i" href="worker.html" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h4l3 7 4-16 3 9h4"/></svg><span>Percorso</span></a>
+      <a class="nav-i" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/></svg><span>Opportunità</span> <span class="nav-count">4</span></a>
+      <a class="nav-i" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Prenotazioni</span></a>
+    </div>
+    <div class="nav-group">
+      <span class="lbl">Evidenze</span>
+      <a class="nav-i" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><span>Le mie evidenze</span> <span class="nav-count">2</span></a>
+      <a class="nav-i" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg><span>Dynamic Impact CV</span></a>
+    </div>
+    <div class="nav-group">
+      <span class="lbl">Controllo</span>
+      <a class="nav-i" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/></svg><span>Privacy e condivisione</span></a>
+      <a class="nav-i" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2.2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span>Consensi</span></a>
+    </div>
+  </div>
+  <div class="nav-state">
+    <div class="nav-state-r"><span style="width:6px;height:6px;border-radius:99px;background:var(--ok);box-shadow:0 0 7px var(--ok)"></span><span>Evidenze valide</span><span>18</span></div>
+    <div class="nav-state-r"><span style="width:6px;height:6px;border-radius:99px;background:var(--warn)"></span><span>Da completare</span><span>1</span></div>
+  </div>
+  <div class="nav-foot">
+    <div style="display:flex;align-items:center;gap:7px;padding:0 8px 8px">
+      <span class="env-dot"></span>
+      <span style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.52)">Staging · dati sintetici</span>
+    </div>
+    <a class="nav-user" href="#">
+      <span class="nav-ua">GR</span>
+      <span><span class="nav-un" style="display:block">Giulia Ronchi</span><span class="nav-ur">Lavoratrice</span></span>
+      <svg style="margin-left:auto;opacity:.45" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 9 5 5 5-5"/></svg>
+    </a>
+  </div>
+</nav>
+<div class="work">
+  <header class="topbar">
+    <div class="crumbs"><span>My KORA</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><b>Percorso</b></div>
+    <div class="topbar-r"><div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Cerca attività, evidenze<kbd>⌘K</kbd></div><button class="btn btn-g btn-ico" aria-label="Notifiche"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 6-3 7-3 7h18s-3-1-3-7M13.7 21a2 2 0 0 1-3.4 0"/></svg></button><button class="btn btn-g"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/></svg>Privacy</button></div>
+  </header>
+  <div class="content">
+    <div class="g12">
+
+      <!-- PERSONAL BALANCE — the pillar grammar, in the register that belongs
+           to a worker: personal, private, never comparative. -->
+      <section class="c8 s1" aria-label="Personal Impact Balance">
+        <div class="hd">
+          <span class="lbl">Personal Impact Balance · H1 2026</span>
+          <div class="hd-r">
+            <span class="st idle"><i></i>Solo tu vedi questa pagina</span>
+            <div class="seg"><button aria-pressed="true">Semestre</button><button aria-pressed="false">Anno</button></div>
+          </div>
+        </div>
+        <div class="pad">
+          <div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap">
+            <div>
+              <div class="d1" style="font-size:56px">284</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+                <span class="delta up">+42</span><span class="sm">Impact Units vs H2 2025</span>
+              </div>
+            </div>
+            <div style="flex:1;min-width:220px">
+              <div class="track-bar" style="height:30px" role="img" aria-label="LIFE 96, GROWTH 79, CONNECTION 60, LEGACY 49">
+                <div class="track-seg" style="flex:96;background:var(--life)"><b>96</b></div>
+                <div class="track-seg" style="flex:79;background:var(--growth)"><b>79</b></div>
+                <div class="track-seg" style="flex:60;background:var(--connection)"><b>60</b></div>
+                <div class="track-seg" style="flex:49;background:var(--legacy)"><b>49</b></div>
+                <div class="track-seg track-gap" style="flex:40"><b style="color:var(--ink-3);text-shadow:none">IMPACT —</b></div>
+              </div>
+              <div class="track-key" style="margin-top:10px">
+                <span class="tk"><i style="background:var(--life)"></i><s>LIFE</s><b>96</b></span>
+                <span class="tk"><i style="background:var(--growth)"></i><s>GROWTH</s><b>79</b></span>
+                <span class="tk"><i style="background:var(--connection)"></i><s>CONNECTION</s><b>60</b></span>
+                <span class="tk"><i style="background:var(--legacy)"></i><s>LEGACY</s><b>49</b></span>
+                <span class="tk"><i style="background:rgba(6,3,43,.12)"></i><s>IMPACT</s><b>nessuna attività</b></span>
+              </div>
+            </div>
+          </div>
+          <div class="s2" style="padding:12px 14px;margin-top:16px;display:flex;gap:10px;align-items:center">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+            <span class="sm" style="min-width:0">Il tuo PIB non viene confrontato con altre persone e non è mai visibile
+            a ruoli aziendali. Serve solo a te, e ad alimentare l'aggregato d'organizzazione.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRIVACY as a first-class Product object, not a policy link -->
+      <section class="c4 s1" aria-label="Confine di visibilità">
+        <div class="hd"><span class="lbl">Chi vede cosa</span><div class="hd-r"><span class="st ok"><i></i>Attivo</span></div></div>
+        <div class="pad" style="display:grid;gap:14px">
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <span style="width:28px;height:28px;border-radius:8px;background:var(--ok-tint);display:grid;place-items:center;flex:none;color:var(--ok)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg></span>
+            <div><span class="h2" style="font-size:13px">La tua azienda vede</span>
+            <p class="p" style="margin-top:3px">Solo aggregati d'organizzazione, e solo per gruppi di almeno 10 persone.</p></div>
+          </div>
+          <div style="height:1px;background:var(--line)"></div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <span style="width:28px;height:28px;border-radius:8px;background:rgba(6,3,43,.06);display:grid;place-items:center;flex:none;color:var(--ink-3)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2.2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+            <div><span class="h2" style="font-size:13px">Resta privato</span>
+            <p class="p" style="margin-top:3px">PIB, timeline, evidenze, prenotazioni, note e consensi. Per architettura, non per impostazione.</p></div>
+          </div>
+          <button class="btn btn-g btn-sm" style="justify-content:center">Gestisci condivisione</button>
+        </div>
+      </section>
+
+      <section class="c8 s1" aria-label="Timeline">
+        <div class="hd">
+          <span class="lbl">Timeline contributi</span>
+          <div class="hd-r">
+            <div class="seg"><button aria-pressed="true">Tutti</button><button aria-pressed="false">Con evidenza</button><button aria-pressed="false">Da completare</button></div>
+          </div>
+        </div>
+        <div class="pad" style="padding-top:4px">
+        <div class="tlr">
+          <span class="tld">12 giu</span>
+          <span class="tlm"><i style="background:var(--growth)"></i></span>
+          <div style="min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="h2">Certificazione competenze digitali — livello 2</span>
+              <span class="st idle" style="background:rgba(47,125,85,.12);color:#2F7D55"><i style="background:var(--growth)"></i>GROWTH</span>
+            </div>
+            <p class="p" style="margin-top:4px">Completata. Evidenza verificata dal provider LMS.</p>
+            <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap"><span class="chip" style="box-shadow:none;background:var(--l2)">+16,4 IU</span><span class="chip" style="box-shadow:none;background:var(--l2)">Tier 3 · verificata</span></div>
+          </div>
+        </div>
+        <div class="tlr">
+          <span class="tld">03 giu</span>
+          <span class="tlm"><i style="background:var(--life)"></i></span>
+          <div style="min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="h2">Percorso prevenzione cardiologica</span>
+              <span class="st idle" style="background:rgba(199,111,61,.12);color:#8A4A22"><i style="background:var(--life)"></i>LIFE</span>
+            </div>
+            <p class="p" style="margin-top:4px">Partecipazione confermata. Nessun dato clinico è raccolto da KORA.</p>
+            <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap"><span class="chip" style="box-shadow:none;background:var(--l2)">+18,4 IU</span><span class="chip" style="box-shadow:none;background:var(--l2)">Tier 3 · verificata</span></div>
+          </div>
+        </div>
+        <div class="tlr">
+          <span class="tld">21 mag</span>
+          <span class="tlm"><i style="background:var(--legacy)"></i></span>
+          <div style="min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="h2">Mentoring senior–junior, ciclo trimestrale</span>
+              <span class="st idle" style="background:rgba(138,117,98,.14);color:#6B5A49"><i style="background:var(--legacy)"></i>LEGACY</span>
+            </div>
+            <p class="p" style="margin-top:4px">In attesa di evidenza. Puoi allegare un documento o chiedere conferma al referente.</p>
+            <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap"><span class="chip" style="box-shadow:none;background:var(--l2)">7,1 IU stimate</span><button class="btn btn-primary btn-sm">Allega evidenza</button></div>
+          </div>
+        </div>
+        <div class="tlr">
+          <span class="tld">08 mag</span>
+          <span class="tlm"><i style="background:var(--connection)"></i></span>
+          <div style="min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="h2">Community di pratica cross-funzionale</span>
+              <span class="st idle" style="background:rgba(217,151,103,.16);color:#8A4A22"><i style="background:var(--connection)"></i>CONNECTION</span>
+            </div>
+            <p class="p" style="margin-top:4px">Partecipazione registrata dal sistema HR.</p>
+            <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap"><span class="chip" style="box-shadow:none;background:var(--l2)">+11,9 IU</span><span class="chip" style="box-shadow:none;background:var(--l2)">Tier 2 · documentale</span></div>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <div class="c4" style="display:grid;gap:var(--gap);align-content:start">
+        <section class="s1" aria-label="Dynamic Impact CV">
+          <div class="hd"><span class="lbl">Dynamic Impact CV</span><div class="hd-r"><span class="st idle"><i></i>volontario</span></div></div>
+          <div class="pad">
+            <p class="p">Genera un link di sola lettura del tuo percorso, valido 7 giorni. Non indicizzato dai motori di ricerca, revocabile in qualsiasi momento.</p>
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <button class="btn btn-primary" style="flex:1;justify-content:center">Genera link</button>
+              <button class="btn btn-g">Anteprima</button>
+            </div>
+          </div>
+        </section>
+        <section class="s1" aria-label="Opportunità">
+          <div class="hd"><span class="lbl">Opportunità aperte</span><div class="hd-r"><span class="xs">4</span></div></div>
+          <div class="pad" style="display:grid;gap:10px">
+            <div class="s2" style="padding:11px 12px;display:flex;align-items:center;gap:10px">
+              <span class="st idle" style="background:rgba(217,154,43,.15);color:#8A5A00"><i style="background:var(--impact)"></i>IMPACT</span>
+              <span class="h2" style="font-size:12.5px;min-width:0">Giornata volontariato — parco fluviale</span>
+              <button class="btn btn-g btn-sm" style="margin-left:auto;flex:none">Apri</button>
+            </div>
+            <div class="s2" style="padding:11px 12px;display:flex;align-items:center;gap:10px">
+              <span class="st idle" style="background:rgba(47,125,85,.12);color:#2F7D55"><i style="background:var(--growth)"></i>GROWTH</span>
+              <span class="h2" style="font-size:12.5px;min-width:0">Percorso leadership inclusiva</span>
+              <button class="btn btn-g btn-sm" style="margin-left:auto;flex:none">Apri</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div class="flag">WP124 · SIGNAL · Worker / My KORA</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KORA — Advisor · SIGNAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kora-signal.css">
+<style>
+  .ops { display:grid; grid-template-columns:minmax(0,1fr) 336px; gap:var(--gap); align-items:start; }
+  .tabs { display:flex; gap:2px; border-bottom:1px solid var(--line); padding:0 4px; }
+  .tab { display:flex; align-items:center; gap:7px; height:38px; padding:0 13px; position:relative;
+         font-size:13px; font-weight:700; color:var(--ink-3); border-radius:8px 8px 0 0; }
+  .tab:hover { color:var(--ink); background:rgba(6,3,43,.035); }
+  .tab[aria-selected='true'] { color:var(--ink); }
+  .tab[aria-selected='true']::after { content:''; position:absolute; left:10px; right:10px; bottom:-1px;
+         height:2px; border-radius:2px; background:var(--violet); }
+  .tab b { font-size:11px; font-weight:800; padding:1px 6px; border-radius:99px; background:rgba(6,3,43,.07); color:var(--ink-2); }
+  .tab[aria-selected='true'] b { background:var(--violet-tint); color:var(--violet-700); }
+  .toolbar { display:flex; align-items:center; gap:8px; padding:11px 14px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  @media (max-width:1200px){ .ops { grid-template-columns:minmax(0,1fr); } }
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="nav" aria-label="Navigazione KORA">
+  <div class="nav-brand">
+    <span class="nav-mark" style="background:linear-gradient(145deg,#6E63F8,#3B2FD4)"><svg class="mark5" width="19" height="19" viewBox="0 0 22 22" aria-hidden="true"><polygon points="11,3.5 18.13,8.68 15.41,17.07 6.59,17.07 3.87,8.68" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="1"/><circle cx="11" cy="3.5" r="2.1" fill="#fff"/><circle cx="18.13" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="15.41" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="6.59" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="3.87" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/></svg></span>
+    <span class="nav-word">KORA</span>
+    <button class="nav-collapse" aria-label="Comprimi navigazione"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+  </div>
+  <div class="ws">
+    <button class="ws-btn">
+      <span class="ws-avatar" style="background:linear-gradient(145deg,#7C3D8F,#54266B)">SF</span>
+      <span style="min-width:0;text-align:left">
+        <span class="ws-name" style="display:block">Studio Ferrari & Co.</span>
+        <span class="ws-meta">Advisor · 3 aziende</span>
+      </span>
+      <svg style="margin-left:auto;opacity:.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 9 5 5 5-5"/></svg>
+    </button>
+  </div>
+  <button class="nav-cmd"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Cerca o esegui…</span><kbd>⌘K</kbd></button>
+  <div class="nav-scroll">
+    <div class="nav-group">
+      <span class="lbl">Revisione</span>
+      <a class="nav-i" href="advisor.html" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg><span>Coda assegnata</span> <span class="nav-count">14</span></a>
+      <a class="nav-i" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>In attesa evidenza</span> <span class="nav-count">5</span></a>
+      <a class="nav-i" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg><span>Concluse</span></a>
+    </div>
+    <div class="nav-group">
+      <span class="lbl">Strumenti</span>
+      <a class="nav-i" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><span>Metodologia</span></a>
+      <a class="nav-i" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/></svg><span>Criteri eleggibilità</span></a>
+    </div>
+  </div>
+  <div class="nav-state">
+    <div class="nav-state-r"><span style="width:6px;height:6px;border-radius:99px;background:var(--warn)"></span><span>Da valutare</span><span>14</span></div>
+    <div class="nav-state-r"><span style="width:6px;height:6px;border-radius:99px;background:var(--ok);box-shadow:0 0 7px var(--ok)"></span><span>Concluse oggi</span><span>6</span></div>
+  </div>
+  <div class="nav-foot">
+    <div style="display:flex;align-items:center;gap:7px;padding:0 8px 8px">
+      <span class="env-dot"></span>
+      <span style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.52)">Staging · dati sintetici</span>
+    </div>
+    <a class="nav-user" href="#">
+      <span class="nav-ua">PF</span>
+      <span><span class="nav-un" style="display:block">Paolo Ferrari</span><span class="nav-ur">Advisor</span></span>
+      <svg style="margin-left:auto;opacity:.45" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 9 5 5 5-5"/></svg>
+    </a>
+  </div>
+</nav>
+<div class="work">
+  <header class="topbar">
+    <div class="crumbs"><span>Advisor</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><span>Revisione</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><b>Coda assegnata</b></div>
+    <div class="topbar-r"><div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Cerca evento, azienda<kbd>⌘K</kbd></div><button class="btn btn-g btn-ico" aria-label="Notifiche"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 6-3 7-3 7h18s-3-1-3-7M13.7 21a2 2 0 0 1-3.4 0"/></svg></button><button class="btn btn-ink">Concludi revisione</button></div>
+  </header>
+  <div class="content">
+    <div class="ops">
+      <div style="display:grid;gap:var(--gap);align-content:start;min-width:0">
+      <section class="s1" aria-label="Coda advisor" style="overflow:hidden">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true">Da valutare <b>14</b></button>
+          <button class="tab" role="tab" aria-selected="false">In attesa evidenza <b>5</b></button>
+          <button class="tab" role="tab" aria-selected="false">Concluse <b>128</b></button>
+        </div>
+        <div class="toolbar">
+          <button class="chip on">Tier evidenza: 1–2 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+          <button class="chip">Azienda <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+          <button class="chip">Pillar <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+          <button class="chip dash">+ Filtro</button>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <span class="xs">14 eventi · 140,9 IU in valutazione · 1 squalificato</span>
+            <button class="btn btn-g btn-sm">Colonne</button>
+          </div>
+        </div>
+        <div class="tw"><table class="t">
+          <thead><tr><th style="width:80px">Evento</th><th class="desc">Descrizione</th>
+          <th style="width:114px">Azienda</th><th style="width:104px">Pillar</th>
+          <th style="width:92px">Traccia IU</th><th class="r" style="width:50px">IU</th>
+          <th style="width:116px">Stato</th><th style="width:30px"></th></tr></thead>
+          <tbody>
+              <tr class="active">
+                <td class="b mono">UEF-4823</td>
+                <td class="desc">Mentoring senior–junior, ciclo trimestrale</td>
+                <td class="m">Acme Manifattura</td>
+                <td><span class="st idle" style="background:rgba(138,117,98,.14);color:#6B5A49"><i style="background:var(--legacy)"></i>LEGACY</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,11.8 20,4 35,4 50,4 65,4 80,7.9" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="11.8" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="7.9" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">7,1</td>
+                <td><span class="st warn"><i></i>Da valutare</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-4834</td>
+                <td class="desc">Banca del tempo interna — primo trimestre</td>
+                <td class="m">Acme Manifattura</td>
+                <td><span class="st idle" style="background:rgba(217,151,103,.16);color:#8A4A22"><i style="background:var(--connection)"></i>CONNECTION</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,13.1 20,4 35,4 50,4 65,4 80,6.6" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="13.1" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="6.6" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">6,3</td>
+                <td><span class="st warn"><i></i>Da valutare</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-5102</td>
+                <td class="desc">Progetto rigenerazione urbana</td>
+                <td class="m">Val Padana Food</td>
+                <td><span class="st idle" style="background:rgba(217,154,43,.15);color:#8A5A00"><i style="background:var(--impact)"></i>IMPACT</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,5.3 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="5.3" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">19,7</td>
+                <td><span class="st info"><i></i>Da valutare</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-5118</td>
+                <td class="desc">Archivio pratiche di reparto</td>
+                <td class="m">Costa Chimica</td>
+                <td><span class="st idle" style="background:rgba(138,117,98,.14);color:#6B5A49"><i style="background:var(--legacy)"></i>LEGACY</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,10.5 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="10.5" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">10,9</td>
+                <td><span class="st info"><i></i>Da valutare</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-5140</td>
+                <td class="desc">Percorso onboarding buddy</td>
+                <td class="m">Nordest Servizi</td>
+                <td><span class="st idle" style="background:rgba(217,151,103,.16);color:#8A4A22"><i style="background:var(--connection)"></i>CONNECTION</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,9.2 20,4 35,6.6 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="9.2" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="6.6" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">9,4</td>
+                <td><span class="st warn"><i></i>Evidenza debole</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-5147</td>
+                <td class="desc">Ciclo formazione sicurezza — turno B</td>
+                <td class="m">Costa Chimica</td>
+                <td><span class="st idle" style="background:rgba(47,125,85,.12);color:#2F7D55"><i style="background:var(--growth)"></i>GROWTH</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,6.6 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="6.6" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">14,2</td>
+                <td><span class="st info"><i></i>Da valutare</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-5153</td>
+                <td class="desc">Sportello ascolto — accessi aggregati</td>
+                <td class="m">Acme Manifattura</td>
+                <td><span class="st idle" style="background:rgba(199,111,61,.12);color:#8A4A22"><i style="background:var(--life)"></i>LIFE</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,4 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">—</td>
+                <td><span class="st idle"><i></i>Soppresso N<10</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-5161</td>
+                <td class="desc">Trasferimento competenze pre-pensionamento</td>
+                <td class="m">Nordest Servizi</td>
+                <td><span class="st idle" style="background:rgba(138,117,98,.14);color:#6B5A49"><i style="background:var(--legacy)"></i>LEGACY</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,11.8 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="11.8" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">8,8</td>
+                <td><span class="st warn"><i></i>Evidenza debole</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-5168</td>
+                <td class="desc">Adozione orto urbano di quartiere</td>
+                <td class="m">Val Padana Food</td>
+                <td><span class="st idle" style="background:rgba(217,154,43,.15);color:#8A5A00"><i style="background:var(--impact)"></i>IMPACT</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,7.9 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="7.9" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">12,5</td>
+                <td><span class="st info"><i></i>Da valutare</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-5174</td>
+                <td class="desc">Percorso screening metabolico</td>
+                <td class="m">Acme Manifattura</td>
+                <td><span class="st idle" style="background:rgba(199,111,61,.12);color:#8A4A22"><i style="background:var(--life)"></i>LIFE</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,4 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">15,2</td>
+                <td><span class="st info"><i></i>Da valutare</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-5180</td>
+                <td class="desc">Mentoring inverso digitale</td>
+                <td class="m">Costa Chimica</td>
+                <td><span class="st idle" style="background:rgba(217,151,103,.16);color:#8A4A22"><i style="background:var(--connection)"></i>CONNECTION</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,14.4 20,4 35,4 50,4 65,4 80,7.9" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="14.4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="7.9" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">5,4</td>
+                <td><span class="st warn"><i></i>Evidenza debole</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-5186</td>
+                <td class="desc">Corso primo soccorso avanzato</td>
+                <td class="m">Nordest Servizi</td>
+                <td><span class="st idle" style="background:rgba(47,125,85,.12);color:#2F7D55"><i style="background:var(--growth)"></i>GROWTH</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,5.3 20,4 35,4 50,4 65,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="5.3" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><path d="M76 10 l8 8 M84 10 l-8 8" stroke="#9E3B2F" stroke-width="2" stroke-linecap="round"/></svg></td>
+                <td class="r mono b">0,0</td>
+                <td><span class="st risk"><i></i>Squalificato</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-5191</td>
+                <td class="desc">Archivio fotografico di stabilimento</td>
+                <td class="m">Val Padana Food</td>
+                <td><span class="st idle" style="background:rgba(138,117,98,.14);color:#6B5A49"><i style="background:var(--legacy)"></i>LEGACY</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,10.5 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="10.5" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">9,1</td>
+                <td><span class="st warn"><i></i>Evidenza debole</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td class="b mono">UEF-5199</td>
+                <td class="desc">Settimana della prevenzione — rete</td>
+                <td class="m">Acme Manifattura</td>
+                <td><span class="st idle" style="background:rgba(199,111,61,.12);color:#8A4A22"><i style="background:var(--life)"></i>LIFE</span></td>
+                <td><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,4 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono b">21,4</td>
+                <td><span class="st info"><i></i>Da valutare</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+          </tbody></table></div>
+        <div class="only-narrow">
+          <div class="rec"><div class="rec-top"><span class="b mono">UEF-4823</span><span class="mono b" style="margin-left:auto">7,1 IU</span></div>
+            <div>Mentoring senior–junior, ciclo trimestrale</div>
+            <div class="rec-meta"><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,11.8 20,4 35,4 50,4 65,4 80,7.9" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="11.8" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="7.9" r="2" fill="#6156F5"/></svg><span class="st warn"><i></i>Da valutare</span></div></div>
+          <div class="rec"><div class="rec-top"><span class="b mono">UEF-4834</span><span class="mono b" style="margin-left:auto">6,3 IU</span></div>
+            <div>Banca del tempo interna — primo trimestre</div>
+            <div class="rec-meta"><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,13.1 20,4 35,4 50,4 65,4 80,6.6" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="13.1" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="6.6" r="2" fill="#6156F5"/></svg><span class="st warn"><i></i>Da valutare</span></div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:20px;padding:12px 14px;border-top:1px solid var(--line);flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <span class="lbl" style="flex:none">Traccia IU</span>
+            <span style="display:flex;align-items:center;gap:7px"><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,4 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg><span class="xs">piena</span></span>
+            <span style="display:flex;align-items:center;gap:7px"><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,11.8 20,4 35,4 50,4 65,4 80,7.9" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="11.8" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="7.9" r="2" fill="#6156F5"/></svg><span class="xs">degrado</span></span>
+            <span style="display:flex;align-items:center;gap:7px"><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,5.3 20,4 35,4 50,4 65,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="5.3" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><path d="M76 10 l8 8 M84 10 l-8 8" stroke="#9E3B2F" stroke-width="2" stroke-linecap="round"/></svg><span class="xs">AGF 0</span></span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px"><span class="xs">14 di 14 · coda completa</span>
+            <button class="btn btn-g btn-sm" disabled>Precedenti</button><button class="btn btn-g btn-sm">Successivi</button></div>
+        </div>
+      </section>
+
+      <section class="s1" aria-label="Concluse oggi" style="overflow:hidden">
+        <div class="hd"><span class="lbl">Concluse oggi · 6</span>
+          <div class="hd-r"><span class="st ok"><i></i>registrate nel Trust Ledger</span>
+            <button class="btn btn-g btn-sm">Esporta registro</button></div></div>
+        <div class="tw"><table class="t">
+          <thead><tr><th style="width:86px">Evento</th><th class="desc">Descrizione</th>
+          <th style="width:136px">Azienda</th><th style="width:150px">Esito</th>
+          <th class="r" style="width:54px">IU</th><th style="width:74px">Ora</th></tr></thead>
+          <tbody>
+            <tr><td class="b mono">UEF-5090</td><td class="desc">Percorso nutrizione e movimento</td><td class="m">Costa Chimica</td>
+              <td><span class="st ok"><i></i>Confermato</span></td><td class="r mono b">13,4</td><td class="m mono">11:42</td></tr>
+            <tr><td class="b mono">UEF-5087</td><td class="desc">Giornata volontariato ambientale</td><td class="m">Acme Manifattura</td>
+              <td><span class="st ok"><i></i>Confermato</span></td><td class="r mono b">22,0</td><td class="m mono">11:05</td></tr>
+            <tr><td class="b mono">UEF-5081</td><td class="desc">Banca ore solidali — pilota</td><td class="m">Nordest Servizi</td>
+              <td><span class="st warn"><i></i>Evidenza richiesta</span></td><td class="r mono m">—</td><td class="m mono">10:28</td></tr>
+            <tr><td class="b mono">UEF-5076</td><td class="desc">Laboratorio benessere posturale</td><td class="m">Nordest Servizi</td>
+              <td><span class="st ok"><i></i>Confermato</span></td><td class="r mono b">12,8</td><td class="m mono">09:54</td></tr>
+            <tr><td class="b mono">UEF-5070</td><td class="desc">Corso aggiornamento normativo</td><td class="m">Val Padana Food</td>
+              <td><span class="st risk"><i></i>Non eleggibile</span></td><td class="r mono b">0,0</td><td class="m mono">09:31</td></tr>
+            <tr><td class="b mono">UEF-5064</td><td class="desc">Community di pratica cross-funzionale</td><td class="m">Acme Manifattura</td>
+              <td><span class="st ok"><i></i>Confermato</span></td><td class="r mono b">11,9</td><td class="m mono">09:02</td></tr>
+          </tbody></table></div>
+      </section>
+      </div>
+
+      <aside class="drawer" aria-label="Valutazione advisor">
+        <div class="s1" style="overflow:hidden">
+          <div class="hd" style="background:var(--l2)"><span class="lbl">Valutazione</span>
+            <div class="hd-r"><button class="ib" aria-label="Precedente"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m15 6-6 6 6 6"/></svg></button>
+            <button class="ib" aria-label="Successivo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div></div>
+          <div class="pad">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span class="mono" style="font-size:12px;font-weight:800;color:var(--ink-3)">UEF-4823</span>
+              <span class="st idle" style="background:rgba(138,117,98,.14);color:#6B5A49"><i style="background:var(--legacy)"></i>LEGACY</span>
+              <span class="st warn" style="margin-left:auto"><i></i>Da valutare</span>
+            </div>
+            <h2 class="d3" style="line-height:1.25">Mentoring senior–junior, ciclo trimestrale</h2>
+            <p class="p" style="margin-top:8px">Acme Manifattura · H1 2026 · dichiarato dal referente di reparto,
+            senza documento allegato.</p>
+
+            <div class="s2" style="padding:13px 14px;margin-top:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <span class="lbl">Catena di calcolo IU</span><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,11.8 20,4 35,4 50,4 65,4 80,7.9" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="11.8" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="7.9" r="2" fill="#6156F5"/></svg>
+              </div>
+              <div class="trace">
+                <div class="trace-r"><span class="k">NM</span><span class="sm">Normalized Magnitude</span><span class="v mono" style="color:var(--warn-text)">0,70</span></div>
+                <div class="trace-r"><span class="k">BC</span><span class="sm">Base Contribution · LEGACY</span><span class="v mono">12,0</span></div>
+                <div class="trace-r"><span class="k">CQ</span><span class="sm">Correction · qualità</span><span class="v mono">1,00</span></div>
+                <div class="trace-r"><span class="k">EV</span><span class="sm">Evidence · autodichiarata</span><span class="v mono" style="color:var(--warn-text)">Tier 1</span></div>
+                <div class="trace-r"><span class="k">CF</span><span class="sm">Correction factor</span><span class="v mono">1,00</span></div>
+                <div class="trace-r"><span class="k" style="color:var(--violet-700)">AGF</span><span class="sm">Anti-Gaming Factor</span><span class="v mono" style="color:var(--warn-text)">0,85</span></div>
+              </div>
+              <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:11px;padding-top:11px;border-top:1px solid var(--l2-edge)">
+                <span class="lbl">Impact Units</span><span class="d2" style="font-size:26px">7,1</span>
+              </div>
+            </div>
+
+            <span class="lbl" style="display:block;margin:16px 0 8px">Esito advisor</span>
+            <div style="display:grid;gap:8px">
+              <label class="s3" style="padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer">
+                <input type="radio" name="esito" checked><span class="h2" style="font-size:12.5px">Confermo la classificazione</span></label>
+              <label class="s3" style="padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer">
+                <input type="radio" name="esito"><span class="h2" style="font-size:12.5px">Richiedo evidenza documentale</span></label>
+              <label class="s3" style="padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer">
+                <input type="radio" name="esito"><span class="h2" style="font-size:12.5px">Non eleggibile</span></label>
+            </div>
+
+            <div class="field" style="margin-top:14px">
+              <label for="nota">Nota di valutazione</label>
+              <textarea class="input" id="nota" rows="3" placeholder="Motivazione sintetica, riferimenti…"></textarea>
+              <span class="hint">La nota entra nel Trust Ledger ed è visibile all'azienda in forma aggregata.</span>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <button class="btn btn-primary" style="flex:1;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg>Registra esito</button>
+              <button class="btn btn-g">Rinvia</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="s1" style="margin-top:var(--gap)">
+          <div class="hd"><span class="lbl">Criteri di eleggibilità</span><div class="hd-r"><span class="xs">v0.1</span></div></div>
+          <div class="pad" style="display:grid;gap:0">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:9px 0;align-items:center">
+              <span class="sm">Evidenza documentale o di terza parte</span><span class="st ok"><i></i>Tier 2+</span></div>
+            <div style="height:1px;background:var(--line)"></div>
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:9px 0;align-items:center">
+              <span class="sm">Classificazione in un solo pillar</span><span class="st ok"><i></i>obbligatoria</span></div>
+            <div style="height:1px;background:var(--line)"></div>
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:9px 0;align-items:center">
+              <span class="sm">Coorte ≥ 10 per il conteggio</span><span class="st idle"><i></i>altrimenti soppresso</span></div>
+            <div style="height:1px;background:var(--line)"></div>
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:9px 0;align-items:center">
+              <span class="sm">AGF = 0 non è revisionabile</span><span class="st risk"><i></i>squalifica</span></div>
+          </div>
+        </div>
+
+        <div class="s1" style="margin-top:var(--gap)">
+          <div class="hd"><span class="lbl">Scorciatoie</span></div>
+          <div class="pad" style="display:grid;gap:9px">
+            <div style="display:flex;align-items:center;gap:10px"><kbd style="font:inherit;font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;background:var(--l0);border:1px solid var(--line-2)">J / K</kbd><span class="sm">Evento precedente / successivo</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><kbd style="font:inherit;font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;background:var(--l0);border:1px solid var(--line-2)">C</kbd><span class="sm">Conferma classificazione</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><kbd style="font:inherit;font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;background:var(--l0);border:1px solid var(--line-2)">E</kbd><span class="sm">Richiedi evidenza documentale</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><kbd style="font:inherit;font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;background:var(--l0);border:1px solid var(--line-2)">⌘K</kbd><span class="sm">Comando rapido</span></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="flag">WP124 · SIGNAL · Advisor</div>
+</div>
+</div>
+</body>
+</html>

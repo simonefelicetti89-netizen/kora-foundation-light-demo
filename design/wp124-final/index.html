@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KORA — WP124 SIGNAL · inventario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kora-signal.css">
+<style>
+  .exr { display:flex; align-items:center; gap:16px; padding:14px 0; }
+  .exr + .exr { border-top:1px solid var(--line); }
+  .exr:hover .h2 { color:var(--violet-700); }
+  .exn { font-size:11px; font-weight:800; color:var(--ink-mute); letter-spacing:.06em; flex:none; width:22px; }
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="nav" aria-label="Navigazione KORA">
+  <div class="nav-brand">
+    <span class="nav-mark" style="background:linear-gradient(145deg,#6E63F8,#3B2FD4)"><svg class="mark5" width="19" height="19" viewBox="0 0 22 22" aria-hidden="true"><polygon points="11,3.5 18.13,8.68 15.41,17.07 6.59,17.07 3.87,8.68" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="1"/><circle cx="11" cy="3.5" r="2.1" fill="#fff"/><circle cx="18.13" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="15.41" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="6.59" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="3.87" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/></svg></span>
+    <span class="nav-word">KORA</span>
+    <button class="nav-collapse" aria-label="Comprimi navigazione"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+  </div>
+  <div class="ws">
+    <button class="ws-btn">
+      <span class="ws-avatar" style="background:linear-gradient(145deg,#6E63F8,#3B2FD4)">KD</span>
+      <span style="min-width:0;text-align:left">
+        <span class="ws-name" style="display:block">KORA Design</span>
+        <span class="ws-meta">SIGNAL · WP124</span>
+      </span>
+      <svg style="margin-left:auto;opacity:.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 9 5 5 5-5"/></svg>
+    </button>
+  </div>
+  <button class="nav-cmd"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Cerca o esegui…</span><kbd>⌘K</kbd></button>
+  <div class="nav-scroll">
+    <div class="nav-group">
+      <span class="lbl">Esemplari</span>
+      <a class="nav-i" href="index.html" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg><span>Indice</span></a>
+      <a class="nav-i" href="company.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h4l3 7 4-16 3 9h4"/></svg><span>Company</span></a>
+      <a class="nav-i" href="operations.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg><span>Operations</span></a>
+      <a class="nav-i" href="worker.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg><span>My KORA</span></a>
+      <a class="nav-i" href="admin.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1M9 13h1m4 0h1M9 17h1m4 0h1"/></svg><span>Admin</span></a>
+      <a class="nav-i" href="partner.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/></svg><span>Partner</span></a>
+      <a class="nav-i" href="advisor.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><span>Advisor</span></a>
+      <a class="nav-i" href="system.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 11h13M10 16h10"/></svg><span>Stati e form</span></a>
+    </div>
+  </div>
+  <div class="nav-state">
+    <div class="nav-state-r"><span style="width:6px;height:6px;border-radius:99px;background:var(--ok);box-shadow:0 0 7px var(--ok)"></span><span>Contrasto</span><span>AA</span></div>
+    <div class="nav-state-r"><span style="width:6px;height:6px;border-radius:99px;background:var(--ok);box-shadow:0 0 7px var(--ok)"></span><span>Overflow</span><span>0</span></div>
+  </div>
+  <div class="nav-foot">
+    <div style="display:flex;align-items:center;gap:7px;padding:0 8px 8px">
+      <span class="env-dot"></span>
+      <span style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.52)">Staging · dati sintetici</span>
+    </div>
+    <a class="nav-user" href="#">
+      <span class="nav-ua">DS</span>
+      <span><span class="nav-un" style="display:block">Design System</span><span class="nav-ur">WP124</span></span>
+      <svg style="margin-left:auto;opacity:.45" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 9 5 5 5-5"/></svg>
+    </a>
+  </div>
+</nav>
+<div class="work">
+  <header class="topbar">
+    <div class="crumbs"><span>WP124</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><span>SIGNAL</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><b>Inventario</b></div>
+    <div class="topbar-r"><button class="btn btn-g btn-ico" aria-label="Notifiche"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 6-3 7-3 7h18s-3-1-3-7M13.7 21a2 2 0 0 1-3.4 0"/></svg></button></div>
+  </header>
+  <div class="content">
+    <div class="g12">
+      <section class="c12 s1">
+        <div class="pad-l">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span class="nav-mark" style="background:linear-gradient(145deg,#6E63F8,#3B2FD4);width:34px;height:34px"><svg class="mark5" width="19" height="19" viewBox="0 0 22 22" aria-hidden="true"><polygon points="11,3.5 18.13,8.68 15.41,17.07 6.59,17.07 3.87,8.68" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="1"/><circle cx="11" cy="3.5" r="2.1" fill="#fff"/><circle cx="18.13" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="15.41" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="6.59" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="3.87" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/></svg></span>
+            <div><span class="lbl" style="display:block">KORA-WP-124 · Product Experience North Star</span>
+            <h1 class="d2" style="margin-top:4px">SIGNAL — inventario esemplari</h1></div>
+            <span class="st ok" style="margin-left:auto"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg>Founder Visual Acceptance · 2026-09-20</span>
+          </div>
+          <p class="p" style="max-width:76ch;margin-top:14px">
+            Direzione approvata. Un solo sistema visivo su sei ambienti. Artefatti isolati, dati sintetici,
+            nessuna route di Prodotto, nessuna API, nessun database. Verificati a 1440 · 768 · 375 senza overflow orizzontale.
+          </p>
+        </div>
+      </section>
+      <section class="c12 s1">
+        <div class="hd"><span class="lbl">Esemplari</span><div class="hd-r"><span class="xs">7 superfici · 6 ambienti</span></div></div>
+        <div class="pad" style="padding:6px 14px 14px">
+          <a class="exr" href="company.html">
+            <span class="exn">01</span>
+            <span style="min-width:0"><span class="h2" style="display:block">Company Intelligence</span>
+              <span class="sm" style="display:block;margin-top:2px">Index composition, movement, five-pillar balance, qualification path, 10-component console</span></span>
+            <span class="st idle" style="flex:none">Company</span>
+            <span class="ib" style="flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          </a>
+          <a class="exr" href="operations.html">
+            <span class="exn">02</span>
+            <span style="min-width:0"><span class="h2" style="display:block">Dense Operations</span>
+              <span class="sm" style="display:block;margin-top:2px">Queue tabs, filters, bulk actions, 17-row table, IU trace, contextual drawer</span></span>
+            <span class="st idle" style="flex:none">Company</span>
+            <span class="ib" style="flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          </a>
+          <a class="exr" href="worker.html">
+            <span class="exn">03</span>
+            <span style="min-width:0"><span class="h2" style="display:block">My KORA</span>
+              <span class="sm" style="display:block;margin-top:2px">Personal Impact Balance, privacy boundary, timeline, Dynamic Impact CV</span></span>
+            <span class="st idle" style="flex:none">Worker</span>
+            <span class="ib" style="flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          </a>
+          <a class="exr" href="admin.html">
+            <span class="exn">04</span>
+            <span style="min-width:0"><span class="h2" style="display:block">Control plane</span>
+              <span class="sm" style="display:block;margin-top:2px">Cross-tenant table, pipeline runs, governance events, safeguard rollup</span></span>
+            <span class="st idle" style="flex:none">Admin</span>
+            <span class="ib" style="flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          </a>
+          <a class="exr" href="partner.html">
+            <span class="exn">05</span>
+            <span style="min-width:0"><span class="h2" style="display:block">Partner</span>
+              <span class="sm" style="display:block;margin-top:2px">Services delivered, aggregate participation with N&lt;10 suppression, evidence tier</span></span>
+            <span class="st idle" style="flex:none">Partner</span>
+            <span class="ib" style="flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          </a>
+          <a class="exr" href="advisor.html">
+            <span class="exn">06</span>
+            <span style="min-width:0"><span class="h2" style="display:block">Advisor</span>
+              <span class="sm" style="display:block;margin-top:2px">Review queue, IU trace, evidence assessment, structured outcome</span></span>
+            <span class="st idle" style="flex:none">Advisor</span>
+            <span class="ib" style="flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          </a>
+          <a class="exr" href="system.html">
+            <span class="exn">07</span>
+            <span style="min-width:0"><span class="h2" style="display:block">Stati e form</span>
+              <span class="sm" style="display:block;margin-top:2px">Empty, loading, error, success, warning, pending, disabled, selected, hover, focus</span></span>
+            <span class="st idle" style="flex:none">Sistema</span>
+            <span class="ib" style="flex:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+          </a>
+        </div>
+      </section>
+      <section class="c12 s1">
+        <div class="hd"><span class="lbl">Le tre grammatiche proprietarie</span></div>
+        <div class="pad">
+          <dl>
+            <div class="spec"><dt>A · Composizione</dt><dd class="sm">L'indice è assemblato: contributo ponderato per macroblocco, peso non disponibile, tetto. Ricorre su Company e nella console.</dd></div>
+            <div class="spec"><dt>B · Qualificazione</dt><dd class="sm">Evidenza → Confidence → Safeguard → Calibrazione come percorso, e la traccia IU a sei fattori. Ricorre su Company, Operations, Advisor, Partner, Admin.</dd></div>
+            <div class="spec"><dt>C · Equilibrio</dt><dd class="sm">Cinque pillar come un sistema attorno al riferimento del 20%, scostamenti a somma zero. Ricorre su Company e, in registro personale, su My KORA.</dd></div>
+          </dl>
+          <div class="notice info" style="margin-top:14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>
+            Ogni superficie usa la grammatica che appartiene al suo significato di Prodotto. Operations non contiene
+            la composizione dell'indice, e non deve contenerla: l'identità KORA è sistemica, non ripetizione di ogni oggetto ovunque.</span></div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="flag">WP124 · SIGNAL · Inventario</div>
+</div>
+</div>
+</body>
+</html>

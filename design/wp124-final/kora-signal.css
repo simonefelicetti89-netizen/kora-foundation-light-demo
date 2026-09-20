@@ -1,0 +1,799 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   KORA — SIGNAL
+   KORA-WP-124 Round 2 · contemporary enterprise intelligence workspace
+   STATUS: FOUNDER VISUAL ACCEPTANCE GRANTED — 2026-09-20 · WP124 COMPLETE
+
+   Round 1 (Calm Intelligence) was rejected: too editorial, too beige, too
+   sparse, a report artefact rather than software. This is not an iteration of
+   it. The premise is inverted.
+
+   ROUND 1 SAID   the interface should disappear.
+   SIGNAL SAYS    the interface is the instrument, and it should look like one.
+
+   Structure is now explicit: a luminous cool canvas, a real layered surface
+   system, a substantial Cosmic Blue workspace shell, product chrome that does
+   its job, a 12-column grid used across the whole viewport, and data
+   visualisation treated as the differentiator rather than an illustration.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Canvas & surfaces — LUMINOUS COOL, never beige ────────────────────
+     L0 canvas is a cool near-white with a deliberate Cosmic/Violet bias, so
+     white L1 panels read as lit rather than as paper. */
+  --l0:        #EAECF4;   /* application canvas */
+  --l1:        #FFFFFF;   /* primary working surface */
+  --l2:        #F4F6FC;   /* analytical / functional panel, inset in L1 */
+  --l2-edge:   #E7EAF5;
+  --l3:        #FFFFFF;   /* interactive / elevated object */
+  --l4:        #FFFFFF;   /* overlay / command object */
+
+  --nav:       #06032B;   /* Cosmic Blue workspace shell */
+  --nav-2:     #0C0742;
+  --nav-line:  rgba(255,255,255,.09);
+
+  /* ── Ink ─────────────────────────────────────────────────────────────── */
+  --ink:       #06032B;
+  --ink-2:     rgba(6,3,43,.70);
+  --ink-3:     rgba(6,3,43,.58);
+  --ink-mute:  rgba(6,3,43,.34);   /* NON-TEXT only */
+
+  /* ── KORA intelligence register — now with real Product presence ─────── */
+  --violet:      #6156F5;
+  --violet-700:  #4A3DE0;
+  --violet-tint: rgba(97,86,245,.09);
+  --violet-edge: rgba(97,86,245,.30);
+  --cyan:        #2BB7D9;   /* secondary analytical accent, KORA layer only */
+
+  /* ── Data register — pillars (ratified, unchanged) ────────────────────── */
+  --life: #C76F3D;  --growth: #2F7D55;  --connection: #D99767;
+  --impact: #D99A2B; --legacy: #8A7562;
+
+  /* ── Data register — macroblocks (ratified categoricals) ─────────────── */
+  --mb-reach: #3B6EBA; --mb-quality: #2F7D55; --mb-equity: #7C3D8F; --mb-bti: #C07D2A;
+
+  /* ── Semantic state: fill and text are separate tokens ───────────────── */
+  --ok: #2F7D55;    --ok-tint: rgba(47,125,85,.10);
+  --warn: #D99A2B;  --warn-text: #8A5A00;  --warn-tint: rgba(217,154,43,.13);
+  --risk: #9E3B2F;  --risk-tint: rgba(158,59,47,.10);
+  --info: #3B6EBA;  --info-text: #1E4A8A;  --info-tint: rgba(59,110,186,.10);
+
+  /* ── Borders: present, thin, purposeful — structure is allowed to show ── */
+  --line:      rgba(6,3,43,.09);
+  --line-2:    rgba(6,3,43,.14);
+
+  /* ── Depth: cool shadows derived from Cosmic Blue, never black, no glow ── */
+  --sh-1: 0 1px 2px rgba(6,3,43,.06), 0 1px 3px rgba(6,3,43,.04);
+  --sh-2: 0 1px 2px rgba(6,3,43,.05), 0 8px 18px -8px rgba(6,3,43,.14);
+  --sh-3: 0 2px 6px rgba(6,3,43,.07), 0 18px 40px -12px rgba(6,3,43,.22);
+  --sh-inset: inset 0 1px 0 rgba(255,255,255,.7);
+
+  --r-panel: 14px; --r-inner: 10px; --r-ctl: 8px; --r-chip: 6px; --r-pill: 999px;
+
+  --sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --nav-w: 248px;
+  --gap: 20px;
+
+  --t1: 90ms; --t2: 160ms; --ease: cubic-bezier(.2,.6,.25,1);
+}
+
+@media (prefers-reduced-motion: reduce) { * { transition-duration:.01ms !important; animation-duration:.01ms !important } }
+
+*,*::before,*::after { box-sizing: border-box; }
+html,body { margin:0; padding:0; height:100%; }
+body {
+  background: var(--l0); color: var(--ink);
+  font-family: var(--sans); font-size: 13.5px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;   /* analytical by default */
+}
+h1,h2,h3,h4,p { margin:0; }
+button { font:inherit; color:inherit; background:none; border:0; cursor:pointer; }
+table { border-collapse:separate; border-spacing:0; width:100%; }
+a { color:inherit; text-decoration:none; }
+:focus-visible { outline:2px solid var(--violet); outline-offset:2px; border-radius:4px; }
+
+/* ── TYPE — weight, scale and numerals carry hierarchy. No serif. ───────── */
+.d1 { font-size:66px; font-weight:800; letter-spacing:-.045em; line-height:.92; }
+.d2 { font-size:34px; font-weight:750; letter-spacing:-.03em; line-height:1; }
+.d3 { font-size:22px; font-weight:700; letter-spacing:-.022em; }
+.h1 { font-size:19px; font-weight:700; letter-spacing:-.018em; }
+.h2 { font-size:14.5px; font-weight:700; letter-spacing:-.008em; }
+.lbl{ font-size:11px; font-weight:700; letter-spacing:.075em; text-transform:uppercase; color:var(--ink-3); }
+.p  { font-size:13px; line-height:1.6; color:var(--ink-2); }
+.sm { font-size:12px; color:var(--ink-3); }
+.xs { font-size:11.5px; font-weight:600; color:var(--ink-3); letter-spacing:.01em; }
+.mono { font-variant-numeric: tabular-nums; font-feature-settings:'tnum','zero'; }
+.up { color:var(--ok); } .dn { color:var(--risk); }
+
+/* ═══ APPLICATION SHELL ═══════════════════════════════════════════════════ */
+
+.app { display:grid; grid-template-columns: var(--nav-w) minmax(0,1fr); min-height:100vh; }
+
+/* ── L-NAV: a substantial, deliberately designed Cosmic Blue workspace ──── */
+.nav {
+  min-height:100vh;
+  background: linear-gradient(180deg, #0A0636 0%, var(--nav) 62%, #05021F 100%);
+  color:#fff; display:flex; flex-direction:column;
+  position:sticky; top:0; height:100vh; padding:14px 0 10px;
+}
+.nav-brand { display:flex; align-items:center; gap:10px; padding:2px 16px 14px; }
+.nav-mark {
+  width:30px; height:30px; border-radius:9px; flex:none;
+  background:linear-gradient(145deg,#7B70FF,#4A3DE0);
+  box-shadow:0 2px 8px rgba(97,86,245,.45), inset 0 1px 0 rgba(255,255,255,.35);
+  display:grid; place-items:center; font-weight:800; font-size:14px; letter-spacing:-.04em;
+}
+.nav-word { font-size:15px; font-weight:800; letter-spacing:-.02em; }
+.nav-collapse { margin-left:auto; color:rgba(255,255,255,.45); display:grid; place-items:center;
+  width:26px; height:26px; border-radius:7px; }
+.nav-collapse:hover { background:rgba(255,255,255,.08); color:#fff; }
+
+/* Workspace switcher — a real control, not a label */
+.ws { margin:0 12px 12px; }
+.ws-btn {
+  width:100%; display:flex; align-items:center; gap:10px; padding:9px 10px;
+  border-radius:var(--r-ctl); background:rgba(255,255,255,.07);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+  transition:background var(--t1) var(--ease);
+}
+.ws-btn:hover { background:rgba(255,255,255,.12); }
+.ws-avatar { width:26px; height:26px; border-radius:7px; flex:none; display:grid; place-items:center;
+  background:linear-gradient(145deg,#C76F3D,#A2552B); font-size:10.5px; font-weight:800; }
+.ws-name { font-size:12.5px; font-weight:700; letter-spacing:-.01em; }
+.ws-meta { font-size:11.5px; color:rgba(255,255,255,.48); font-weight:600; }
+
+/* Command / search */
+.nav-cmd {
+  margin:0 12px 16px; display:flex; align-items:center; gap:8px; height:32px; padding:0 10px;
+  border-radius:var(--r-ctl); background:rgba(0,0,0,.28);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.07);
+  color:rgba(255,255,255,.55); font-size:12.5px; width:calc(100% - 24px);
+}
+.nav-cmd kbd {
+  margin-left:auto; font:inherit; font-size:10px; font-weight:700; padding:2px 5px; border-radius:4px;
+  background:rgba(255,255,255,.10); color:rgba(255,255,255,.62);
+}
+
+.nav-scroll { flex:1; overflow-y:auto; padding:0 12px; }
+.nav-group { margin-bottom:18px; }
+.nav-group > .lbl { color:rgba(255,255,255,.62); padding:0 10px; margin-bottom:6px; display:block; }
+.nav-i {
+  display:flex; align-items:center; gap:10px; padding:7px 10px; border-radius:var(--r-ctl);
+  color:rgba(255,255,255,.66); font-size:13px; font-weight:600; position:relative;
+  transition:background var(--t1) var(--ease), color var(--t1) var(--ease);
+}
+.nav-i svg { flex:none; opacity:.85; }
+.nav-i:hover { background:rgba(255,255,255,.07); color:#fff; }
+.nav-i[aria-current='page'] {
+  background:linear-gradient(90deg, rgba(97,86,245,.36), rgba(97,86,245,.14));
+  color:#fff; box-shadow: inset 0 0 0 1px rgba(123,112,255,.36);
+}
+.nav-i[aria-current='page']::before {
+  content:''; position:absolute; left:-12px; top:8px; bottom:8px; width:3px;
+  border-radius:0 3px 3px 0; background:#7B70FF; box-shadow:0 0 10px rgba(123,112,255,.8);
+}
+.nav-count {
+  margin-left:auto; font-size:11px; font-weight:700; padding:1px 6px; border-radius:var(--r-pill);
+  background:rgba(255,255,255,.12); color:rgba(255,255,255,.80);
+}
+.nav-i[aria-current='page'] .nav-count { background:rgba(255,255,255,.20); color:#fff; }
+
+.nav-foot { border-top:1px solid var(--nav-line); margin:8px 12px 0; padding-top:10px; }
+.nav-user { display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:var(--r-ctl); }
+.nav-user:hover { background:rgba(255,255,255,.07); }
+.nav-ua { width:27px; height:27px; border-radius:var(--r-pill); flex:none; display:grid; place-items:center;
+  background:rgba(255,255,255,.14); font-size:10.5px; font-weight:800; }
+.nav-un { font-size:12.5px; font-weight:700; }
+.nav-ur { font-size:11.5px; color:rgba(255,255,255,.46); font-weight:600; }
+.env-dot { width:6px; height:6px; border-radius:var(--r-pill); background:#2BB7D9; box-shadow:0 0 8px #2BB7D9; }
+
+/* ── TOP CHROME: contextual, sticky, does real work ─────────────────────── */
+.work { min-width:0; display:flex; flex-direction:column; }
+.topbar {
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; gap:14px;
+  height:56px; padding:0 24px;
+  background:rgba(234,236,244,.86); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.crumbs { display:flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; color:var(--ink-3); }
+.crumbs b { color:var(--ink); font-weight:700; }
+.crumbs svg { opacity:.42; }
+.topbar-r { margin-left:auto; display:flex; align-items:center; gap:9px; }
+.content { padding:22px 24px 40px; }
+
+/* ── GRID ───────────────────────────────────────────────────────────────── */
+.g12 { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:var(--gap); }
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}
+.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}
+.c9{grid-column:span 9}.c12{grid-column:span 12}
+
+/* ── SURFACES — the layer system, used semantically ─────────────────────── */
+.s1 { background:var(--l1); border:1px solid var(--line); border-radius:var(--r-panel); box-shadow:var(--sh-1); }
+.s2 { background:var(--l2); border:1px solid var(--l2-edge); border-radius:var(--r-inner); }
+.s3 { background:var(--l3); border:1px solid var(--line); border-radius:var(--r-inner); box-shadow:var(--sh-2); }
+.pad  { padding:18px 20px; }
+.pad-l{ padding:22px 24px; }
+.hd { display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--line); }
+.hd .lbl { flex:none; }
+.hd-r { margin-left:auto; display:flex; align-items:center; gap:8px; }
+
+/* ── CONTROLS ───────────────────────────────────────────────────────────── */
+.btn { display:inline-flex; align-items:center; gap:7px; height:32px; padding:0 13px;
+  border-radius:var(--r-ctl); font-size:12.5px; font-weight:700; letter-spacing:-.005em;
+  transition:all var(--t1) var(--ease); white-space:nowrap; }
+.btn-primary {
+  background:linear-gradient(180deg,#6F64F7,#5648EC); color:#fff;
+  box-shadow:0 1px 2px rgba(6,3,43,.16), inset 0 1px 0 rgba(255,255,255,.22);
+}
+.btn-primary:hover { background:linear-gradient(180deg,#7A70FF,#4A3DE0); }
+.btn-ink { background:var(--ink); color:#fff; box-shadow:0 1px 2px rgba(6,3,43,.18), inset 0 1px 0 rgba(255,255,255,.12); }
+.btn-ink:hover { background:#17123F; }
+.btn-g { background:var(--l1); color:var(--ink); border:1px solid var(--line-2); box-shadow:var(--sh-1); }
+.btn-g:hover { background:#FAFBFF; border-color:rgba(6,3,43,.22); }
+.btn-q { color:var(--ink-2); } .btn-q:hover { background:rgba(6,3,43,.055); color:var(--ink); }
+.btn-sm { height:28px; padding:0 10px; font-size:12px; }
+.btn-ico { width:32px; padding:0; justify-content:center; }
+.btn[disabled]{ opacity:.45; cursor:not-allowed; }
+
+.seg { display:inline-flex; background:var(--l0); border:1px solid var(--line); border-radius:var(--r-ctl); padding:2px; }
+.seg button { height:26px; padding:0 11px; border-radius:6px; font-size:12px; font-weight:700; color:var(--ink-3); }
+.seg button:hover{ color:var(--ink) }
+.seg button[aria-pressed='true']{ background:var(--l1); color:var(--ink); box-shadow:var(--sh-1); }
+
+.search {
+  display:flex; align-items:center; gap:8px; height:32px; padding:0 11px; min-width:236px;
+  background:var(--l1); border:1px solid var(--line-2); border-radius:var(--r-ctl); box-shadow:var(--sh-1);
+  color:var(--ink-3); font-size:12.5px;
+}
+.search kbd { margin-left:auto; font:inherit; font-size:10px; font-weight:700; padding:2px 5px;
+  border-radius:4px; background:var(--l0); color:var(--ink-3); border:1px solid var(--line); }
+
+.chip { display:inline-flex; align-items:center; gap:6px; height:28px; padding:0 10px;
+  border-radius:var(--r-chip); font-size:12px; font-weight:700; color:var(--ink-2);
+  background:var(--l1); border:1px solid var(--line-2); box-shadow:var(--sh-1); }
+.chip:hover { border-color:rgba(6,3,43,.24); }
+.chip.on { background:var(--violet-tint); border-color:var(--violet-edge); color:var(--violet-700); }
+.chip.dash { border-style:dashed; color:var(--ink-3); box-shadow:none; background:transparent; }
+
+.st { display:inline-flex; align-items:center; gap:6px; height:23px; padding:0 8px;
+  border-radius:var(--r-chip); font-size:11.5px; font-weight:700; white-space:nowrap; }
+.st i { width:6px; height:6px; border-radius:var(--r-pill); flex:none; }
+.st.ok{ background:var(--ok-tint); color:var(--ok);} .st.ok i{background:var(--ok)}
+.st.warn{ background:var(--warn-tint); color:var(--warn-text);} .st.warn i{background:var(--warn)}
+.st.risk{ background:var(--risk-tint); color:var(--risk);} .st.risk i{background:var(--risk)}
+.st.info{ background:var(--info-tint); color:var(--info-text);} .st.info i{background:var(--info)}
+.st.idle{ background:rgba(6,3,43,.055); color:var(--ink-3);} .st.idle i{background:var(--ink-mute)}
+
+.delta { display:inline-flex; align-items:center; gap:3px; height:21px; padding:0 7px;
+  border-radius:var(--r-chip); font-size:11.5px; font-weight:800; }
+.delta.up{ background:var(--ok-tint); color:var(--ok) } .delta.dn{ background:var(--risk-tint); color:var(--risk) }
+
+/* ── HERO: one analytical instrument ────────────────────────────────────── */
+.hero { display:grid; grid-template-columns:minmax(300px,.85fr) minmax(0,1.35fr); }
+.hero-l { padding:22px 24px; border-right:1px solid var(--line); }
+.hero-r { padding:18px 22px 14px; min-width:0; }
+.idx { display:flex; align-items:flex-end; gap:12px; margin:10px 0 2px; }
+.idx-scale { font-size:13px; font-weight:700; color:var(--ink-mute); padding-bottom:9px; }
+
+/* Trust rail — integrated into the instrument, not a separate beige band */
+.trust { display:flex; align-items:stretch; gap:0; border-top:1px solid var(--line); background:var(--l2); }
+.trust-c { flex:1; padding:12px 18px; min-width:0; }
+.trust-c + .trust-c { border-left:1px solid var(--l2-edge); }
+.trust-v { display:flex; align-items:center; gap:8px; margin-top:5px; font-size:14px; font-weight:750; letter-spacing:-.01em; }
+.trust-m { font-size:11.5px; color:var(--ink-3); font-weight:600; margin-top:3px; overflow-wrap:anywhere; }
+.trust-note { padding:10px 18px; border-top:1px solid var(--l2-edge); background:var(--l2);
+  font-size:11.5px; line-height:1.55; color:var(--ink-3); border-radius:0 0 var(--r-panel) var(--r-panel); }
+
+/* secondary metric strip inside the hero */
+.mstrip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px; }
+.mcell { padding:10px 12px; border-radius:var(--r-inner); background:var(--l2); border:1px solid var(--l2-edge); }
+.mcell .v { font-size:19px; font-weight:750; letter-spacing:-.02em; margin-top:3px; }
+
+/* ── PILLAR MODULE ──────────────────────────────────────────────────────── */
+.pcomp { display:flex; height:28px; border-radius:var(--r-chip); overflow:hidden; gap:2px; }
+.pcomp i { display:block; position:relative; }
+.pcomp span { position:absolute; inset:0; display:grid; place-items:center; font-size:10.5px; font-weight:800; color:#fff; }
+.prow { display:grid; grid-template-columns:10px 104px 1fr 76px 54px 58px; align-items:center; gap:12px;
+  padding:9px 10px; border-radius:var(--r-chip); transition:background var(--t1) var(--ease); }
+.prow:hover { background:var(--l2); }
+.prow + .prow { box-shadow: inset 0 1px 0 var(--line); }
+.pdot { width:9px; height:9px; border-radius:2px; }
+.bar { display:block; height:7px; border-radius:var(--r-pill); background:rgba(6,3,43,.07); overflow:hidden; }
+.bar i { display:block; height:100%; border-radius:var(--r-pill); }
+
+/* ── COMPONENT CONSOLE ──────────────────────────────────────────────────── */
+.mbh { display:grid; grid-template-columns:10px 1fr auto auto; align-items:center; gap:10px;
+  padding:9px 14px; background:var(--l2); border-top:1px solid var(--l2-edge); border-bottom:1px solid var(--l2-edge); }
+.mbh .w { font-size:11px; font-weight:800; color:var(--ink-2); }
+.crow { display:grid; grid-template-columns:56px 1fr 150px 62px 66px 62px 34px; align-items:center; gap:12px;
+  padding:9px 14px; transition:background var(--t1) var(--ease); }
+.crow + .crow { box-shadow: inset 0 1px 0 var(--line); }
+.crow:hover { background:#FAFBFF; }
+.ccode { font-size:11px; font-weight:800; letter-spacing:.05em; color:var(--ink-3); }
+
+/* ── TABLE ──────────────────────────────────────────────────────────────── */
+.tw { overflow:auto; max-height:none; }
+.t { font-size:13px; table-layout:fixed; }
+.t thead th {
+  position:sticky; top:0; z-index:2; background:var(--l2);
+  text-align:left; padding:9px 10px; white-space:nowrap;
+  font-size:11px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-3);
+  border-bottom:1px solid var(--line-2);
+}
+.t tbody td { padding:0 10px; height:42px; border-bottom:1px solid var(--line); vertical-align:middle; white-space:nowrap; }
+.t td.desc { overflow:hidden; text-overflow:ellipsis; }
+.t tbody tr { transition:background var(--t1) var(--ease); }
+.t tbody tr:hover { background:#FAFBFF; }
+.t tbody tr[aria-selected='true'] { background:var(--violet-tint); }
+.t tbody tr[aria-selected='true'] td:first-child { box-shadow: inset 3px 0 0 var(--violet); }
+.t tbody tr.active { background:#F2F0FF; }
+.t tbody tr.active td:first-child { box-shadow: inset 3px 0 0 var(--violet-700); }
+.t .r { text-align:right; }
+.t .b { font-weight:700; }
+.t .m { color:var(--ink-3); }
+.acts { display:flex; gap:3px; justify-content:flex-end; opacity:0; transition:opacity var(--t1) var(--ease); }
+tr:hover .acts, tr:focus-within .acts, tr.active .acts { opacity:1; }
+.ib { width:26px; height:26px; border-radius:6px; display:grid; place-items:center; color:var(--ink-3); }
+.ib:hover { background:rgba(6,3,43,.08); color:var(--ink); }
+
+/* ── DETAIL DRAWER ──────────────────────────────────────────────────────── */
+.drawer { position:sticky; top:78px; align-self:start; }
+.kv { display:grid; grid-template-columns:96px minmax(0,1fr); gap:8px 12px; font-size:12px; }
+.kv dt { color:var(--ink-3); font-weight:600; }
+.kv dd { margin:0; font-weight:650; min-width:0; }
+.kv dd .st { white-space:normal; height:auto; padding:3px 8px; }
+.trace { display:grid; gap:6px; }
+.trace-r { display:flex; align-items:center; gap:8px; font-size:11.5px; }
+.trace-r .k { width:34px; font-weight:800; color:var(--ink-3); font-size:10.5px; letter-spacing:.04em; }
+.trace-r .v { margin-left:auto; font-weight:700; }
+
+.ph { background:linear-gradient(180deg,#F7F8FD,#EFF1FA); border:1px solid var(--l2-edge);
+      border-radius:var(--r-inner); }
+
+.flag { align-self:flex-start; display:inline-flex; align-items:center; gap:8px; margin:0 24px 22px; height:26px; padding:0 11px;
+  border-radius:var(--r-pill); background:var(--ink); color:rgba(255,255,255,.88);
+  font-size:10px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ROUND 2B — KORA-DISTINCTIVE GRAMMAR
+   Everything below exists to answer one question: if the colours were muted,
+   would this still be KORA? Palette alone was not enough. These are FORMS.
+
+   Four proprietary mechanisms, each derived from real KORA semantics — not
+   from a style reference:
+
+   1. COMPOSITION SPINE   the Index is assembled, and shows its assembly
+   2. QUALIFICATION CHAIN trust as a provenance path, not metadata cells
+   3. PILLAR ORCHESTRA    five signals read against their own balance reference
+   4. IU FACTOR CHAIN     the multiplicative formula, scannable per row
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── The five-node mark. KORA's five pillars as brand geometry, so the
+   identity survives even in greyscale (docs/30 §12.3 five-node symbolism). */
+.mark5 { display:block; }
+
+/* ── 1. COMPOSITION SPINE ────────────────────────────────────────────────
+   The KORA Index is not measured, it is COMPOSED: Σ(component × weight),
+   renormalised over available weight. The hero states that literally.
+   No generic dashboard hero does this, because no generic metric is built
+   this way. */
+.spine { margin-top:16px; }
+.spine-bar {
+  display:flex; height:34px; border-radius:7px; overflow:hidden;
+  background:var(--l2); box-shadow: inset 0 0 0 1px var(--l2-edge);
+}
+.spine-seg { position:relative; display:grid; place-items:center; min-width:0; }
+.spine-seg span {
+  font-size:11px; font-weight:800; color:#fff; letter-spacing:-.01em;
+  text-shadow:0 1px 1px rgba(6,3,43,.25);
+}
+.spine-rest { flex:1; display:grid; place-items:center;
+  background:repeating-linear-gradient(135deg, rgba(6,3,43,.045) 0 6px, transparent 6px 12px); }
+.spine-rest span { font-size:10.5px; font-weight:700; color:var(--ink-3); }
+.spine-axis { display:flex; justify-content:space-between; margin-top:5px; }
+.spine-key { display:flex; flex-wrap:wrap; gap:4px 16px; margin-top:11px; }
+.spine-k { display:flex; align-items:center; gap:7px; font-size:11px; font-weight:700; }
+.spine-k i { width:9px; height:9px; border-radius:2px; flex:none; }
+.spine-k b { color:var(--ink); font-variant-numeric:tabular-nums; }
+.spine-k s { text-decoration:none; color:var(--ink-3); font-weight:600; }
+
+/* ── 2. QUALIFICATION CHAIN ──────────────────────────────────────────────
+   Mandatory trust information rendered as the PATH the number passed
+   through — evidence → confidence → safeguard → calibration → evidence
+   gateway — connected by a real rule. Reads as provenance, not compliance. */
+.qchain { display:flex; align-items:stretch; background:var(--l2); border-top:1px solid var(--line); }
+.qnode { position:relative; flex:1; padding:13px 18px 13px 22px; min-width:0; }
+.qnode:first-child { padding-left:24px; }
+/* the connector: a hairline running the whole band, with a node marker */
+.qnode::before {
+  content:''; position:absolute; left:0; top:50%; width:100%; height:1px;
+  background:var(--l2-edge); z-index:0;
+}
+.qnode::after {
+  content:''; position:absolute; left:8px; top:50%; transform:translateY(-50%);
+  width:7px; height:7px; border-radius:2px; background:var(--ink-mute);
+  box-shadow:0 0 0 3px var(--l2); z-index:1;
+}
+.qnode.pass::after { background:var(--ok); }
+.qnode.hold::after { background:var(--warn); }
+.qnode > * { position:relative; z-index:1; }
+.qnode-v { display:flex; align-items:center; gap:8px; margin-top:5px;
+  font-size:14px; font-weight:750; letter-spacing:-.012em; }
+.qnode-m { font-size:11.5px; color:var(--ink-3); font-weight:600; margin-top:3px; overflow-wrap:anywhere; }
+.qgate { flex:0 0 190px; display:flex; align-items:center; justify-content:flex-end;
+  padding:13px 20px; background:var(--l1); border-left:1px solid var(--line); }
+
+/* the 10-tick confidence meter — precise and instrument-like, not a donut */
+.ticks { display:flex; gap:2px; align-items:flex-end; height:16px; }
+.ticks i { width:3px; border-radius:1px; background:rgba(6,3,43,.14); height:8px; }
+.ticks i.on { background:var(--info); height:16px; }
+
+/* ── 3. PILLAR ORCHESTRA ─────────────────────────────────────────────────
+   Five columns read against a shared BALANCE REFERENCE — the even-
+   distribution line at 20%. That line is not decoration: it is the visual
+   statement of Pillar Balance (PB), a real Index component. The five earth
+   tones become one measured system instead of five swatches. */
+.orch { position:relative; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:14px; }
+/* Trend row, value row and bar baseline are all on SHARED alignments, so the
+   five signals read as one orchestrated system rather than five widgets. */
+.ocol { display:flex; flex-direction:column; min-width:0; }
+.ocol-trend { height:26px; width:100%; }
+.ocol-val { height:20px; display:flex; align-items:flex-end; justify-content:center;
+  font-size:13px; font-weight:800; letter-spacing:-.02em; }
+.ocol-plot { height:140px; display:flex; align-items:flex-end; }
+.ocol-bar { width:100%; border-radius:5px 5px 0 0; transition:filter var(--t1) var(--ease); }
+.ocol:hover .ocol-bar { filter:brightness(1.07); }
+.ocol-foot { width:100%; padding-top:9px; margin-top:9px; border-top:1px solid var(--line);
+  display:grid; gap:3px; justify-items:center; }
+.ocol-name { font-size:11px; font-weight:800; letter-spacing:.04em; }
+.ocol-sub { font-size:10.5px; font-weight:700; color:var(--ink-3); }
+/* The balance reference. 140px plot, tallest share 31% → 20% sits 90.3px high,
+   i.e. 49.7px below the plot top; the plot starts 46px into the column. */
+.orch-ref { position:absolute; left:0; right:0; top:96px; height:0;
+  border-top:1px dashed rgba(6,3,43,.32); z-index:3; pointer-events:none; }
+.orch-ref span { position:absolute; right:0; top:-17px; font-size:10px; font-weight:700;
+  color:var(--ink-2); background:var(--l1); padding:0 5px; }
+
+/* ── 4. IU FACTOR CHAIN ──────────────────────────────────────────────────
+   The canonical formula IU = NM × BC × CQ × EV × CF × AGF rendered as six
+   scannable cells per row. A full cell is a factor at 1,00; a partial cell
+   is a discount; AGF = 0 breaks the chain visibly. Seventeen rows of
+   provenance quality, readable in one pass. Nothing generic looks like it. */
+.chain { display:flex; gap:2px; align-items:center; }
+.chain i {
+  width:12px; height:15px; border-radius:2px; background:rgba(6,3,43,.10);
+  position:relative; overflow:hidden; flex:none;
+}
+.chain i::after { content:''; position:absolute; left:0; bottom:0; width:100%;
+  background:var(--violet); border-radius:2px; }
+.chain i.f100::after { height:100%; }
+.chain i.f95::after  { height:88%; background:#7A70F7; }
+.chain i.f90::after  { height:78%; background:#8A81F8; }
+.chain i.f85::after  { height:66%; background:#8A81F8; }
+.chain i.f80::after  { height:58%; background:#A79FFA; }
+.chain i.f75::after  { height:50%; background:#A79FFA; }
+.chain i.f70::after  { height:42%; background:#A79FFA; }
+.chain i.f65::after  { height:36%; background:#C0BAFC; }
+/* evidence tier colours the EV cell — tier is information, kept visible */
+.chain i.ev3::after { background:var(--ok); height:100%; }
+.chain i.ev2::after { background:var(--info); height:100%; }
+.chain i.ev1::after { background:var(--warn); height:62%; }
+/* AGF = 0 — the disqualification gate, shown as a broken link */
+.chain i.zero { background:var(--risk-tint); box-shadow:inset 0 0 0 1px rgba(158,59,47,.45); }
+.chain i.zero::after { height:0; }
+.chain i.zero::before {
+  content:''; position:absolute; inset:0; z-index:1;
+  background:linear-gradient(to bottom right, transparent 45%, var(--risk) 45%, var(--risk) 55%, transparent 55%);
+}
+.chain-legend { display:flex; gap:12px; align-items:center; }
+.chain-legend span { font-size:10px; font-weight:700; color:var(--ink-3); letter-spacing:.04em; }
+
+/* ── console: dual-scale reading (local value vs contribution to index) ─── */
+.crow2 { display:grid; grid-template-columns:52px 1fr 118px 56px 108px 56px 30px;
+  align-items:center; gap:14px; padding:9px 16px; transition:background var(--t1) var(--ease); }
+.crow2 + .crow2 { box-shadow: inset 0 1px 0 var(--line); }
+.crow2:hover { background:#FAFBFF; }
+.cbar { height:6px; border-radius:99px; background:rgba(6,3,43,.08); overflow:hidden; display:block; }
+.cbar i { display:block; height:100%; border-radius:99px; }
+/* contribution is drawn on ONE shared scale across all ten rows, so the eye
+   can rank what actually moves the Index. This is the console's whole point. */
+.cshare { height:14px; background:var(--l2); border-radius:3px; overflow:hidden; display:block;
+  box-shadow: inset 0 0 0 1px var(--l2-edge); }
+.cshare { display:flex; }
+.cshare i { display:block; height:100%; flex:none; }
+.mbh2 { display:grid; grid-template-columns:52px 1fr auto 108px 56px 30px; align-items:center; gap:14px;
+  padding:10px 16px; background:linear-gradient(180deg,#F6F8FD,#F1F4FC);
+  border-top:1px solid var(--l2-edge); border-bottom:1px solid var(--l2-edge); }
+.mbh2 .msum { font-size:13.5px; font-weight:800; letter-spacing:-.015em; text-align:right; }
+.ctot { display:grid; grid-template-columns:52px 1fr 118px 56px 108px 56px 30px; gap:14px;
+  align-items:center; padding:13px 16px; background:var(--ink); color:#fff;
+  border-radius:0 0 var(--r-panel) var(--r-panel); }
+.ctot .lbl { color:rgba(255,255,255,.60); }
+
+.hatch { background:repeating-linear-gradient(135deg, rgba(6,3,43,.10) 0 4px, transparent 4px 8px); }
+
+/* shell refinement: group rhythm + a pipeline state footer widget */
+.nav-group + .nav-group { border-top:1px solid rgba(255,255,255,.07); padding-top:14px; }
+.nav-state { margin:0 12px 8px; padding:9px 10px; border-radius:var(--r-ctl);
+  background:rgba(255,255,255,.055); box-shadow:inset 0 0 0 1px rgba(255,255,255,.07); }
+.nav-state-r { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:700; }
+.nav-state-r + .nav-state-r { margin-top:6px; }
+.nav-state-r span:last-child { margin-left:auto; color:rgba(255,255,255,.55); font-weight:600; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ROUND 2C — SEMANTIC CORRECTION + THREE GRAMMARS
+   Canonical doctrine (lib/kora-engine/kora-index-engine.ts:14, repeated in
+   lib/constants/kora.ts:110, lib/live/persistence.ts:52,
+   lib/kora-engine/run-kora-pipeline.ts:14):
+
+     "insufficient_data contribuisce 0 senza redistribuzione
+      (TETTO, NON GONFIAGGIO)"
+
+   Renormalising over available weight is FORBIDDEN. Unavailable weight is a
+   CEILING on the attainable index, never a rescale of what was measured.
+   Round 2B's 54,5 applied that forbidden rescale. Corrected here to 50,4
+   with the ceiling drawn, not divided away.
+
+   Exactly THREE recurring grammars. No more.
+     A · COMPOSITION   weight → contribution → ceiling → index
+     B · QUALIFICATION evidence → confidence → safeguard → calibration
+     C · BALANCE       five pillars as deviation from equilibrium
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── GRAMMAR A · COMPOSITION TRACK ───────────────────────────────────────
+   One 0–100 track. Segments are contributed points. The ceiling marks the
+   maximum attainable while a component is insufficient_data. The zone beyond
+   the ceiling is structurally unreachable — hatched, and labelled as such. */
+.track { margin-top:18px; }
+.track-rail { position:relative; }
+.track-bar { position:relative; display:flex; height:38px; border-radius:8px; overflow:hidden;
+  background:var(--l2); box-shadow: inset 0 0 0 1px var(--l2-edge); }
+.track-seg { position:relative; display:grid; place-items:center; min-width:0; }
+.track-seg b { font-size:11.5px; font-weight:800; color:#fff; text-shadow:0 1px 1px rgba(6,3,43,.28); }
+.track-gap { background:repeating-linear-gradient(135deg, rgba(6,3,43,.05) 0 5px, transparent 5px 10px); }
+.track-void { background:repeating-linear-gradient(135deg, rgba(158,59,47,.13) 0 5px, transparent 5px 10px); }
+.track-ceil { position:absolute; top:-9px; bottom:-9px; width:2px; background:var(--ink); z-index:5;
+  border-radius:1px; }
+/* label sits above the rail, outside the clipped bar */
+.track-ceil::after { content:'tetto 92,5'; position:absolute; top:-17px; right:0; transform:none;
+  font-size:9.5px; font-weight:800; letter-spacing:.03em; color:var(--ink); white-space:nowrap; }
+.track-scale { display:flex; justify-content:space-between; margin-top:9px; }
+.track-key { display:flex; flex-wrap:wrap; gap:5px 16px; margin-top:12px; }
+.tk { display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:700; }
+.tk i { width:9px; height:9px; border-radius:2px; flex:none; }
+.tk s { text-decoration:none; color:var(--ink-3); font-weight:600; }
+.tk b { font-variant-numeric:tabular-nums; }
+
+/* ── movement: a DIFFERENT question — what moved it, not what it is ────── */
+.wf { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; align-items:end; height:150px; }
+.wfc { display:flex; flex-direction:column; justify-content:flex-end; height:100%; min-width:0; }
+.wfc-plot { position:relative; flex:1; display:flex; flex-direction:column; justify-content:flex-end; }
+.wfb { border-radius:4px 4px 0 0; }
+.wfb.neg { border-radius:0 0 4px 4px; }
+.wf-anchor { background:linear-gradient(180deg,#2C2762,#06032B); border-radius:4px; }
+.wfc-lab { padding-top:8px; margin-top:8px; border-top:1px solid var(--line);
+  display:grid; gap:2px; justify-items:center; text-align:center; }
+.wfc-lab .n { font-size:10px; font-weight:800; letter-spacing:.04em; color:var(--ink-3); }
+.wfc-lab .v { font-size:12px; font-weight:800; font-variant-numeric:tabular-nums; }
+
+/* ── GRAMMAR C · BALANCE — deviation from equilibrium, not five heights ──
+   Five columns diverging from the 20% equilibrium axis. The deviations sum
+   to zero by construction; the spread IS Pillar Balance. */
+.dev { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:16px; }
+.devc { display:grid; grid-template-rows:60px 1px 60px auto; min-width:0; }
+.devc-up { display:flex; align-items:flex-end; }
+.devc-dn { display:flex; align-items:flex-start; }
+.devc-bar { width:100%; position:relative; }
+.devc-bar.up { border-radius:5px 5px 0 0; }
+.devc-bar.dn { border-radius:0 0 5px 5px; }
+.devc-pp { position:absolute; left:0; right:0; text-align:center; font-size:11.5px; font-weight:800;
+  font-variant-numeric:tabular-nums; }
+.devc-bar.up .devc-pp { top:-18px; }
+.devc-bar.dn .devc-pp { bottom:-18px; }
+.dev-axis { grid-column:1 / -1; position:relative; height:1px; background:var(--ink-mute); }
+.devc-foot { padding-top:26px; display:grid; gap:3px; justify-items:center; }
+.devc-name { font-size:11px; font-weight:800; letter-spacing:.04em; }
+.devc-share { font-size:15px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.devc-iu { font-size:11.5px; font-weight:700; color:var(--ink-3); font-variant-numeric:tabular-nums; }
+.dev-wrap { position:relative; }
+.dev-eq { position:absolute; left:0; right:0; top:60px; height:0;
+  border-top:1.5px solid rgba(6,3,43,.55); z-index:1; }
+.dev-eq span { position:absolute; right:0; top:-17px; font-size:11px; font-weight:800; color:var(--ink-2);
+  background:var(--l1); padding:0 5px; }
+/* Movement variant: the zero rule is a solid baseline and each bar carries a
+   direction glyph, so increase / unchanged / decrease read without the label. */
+.dev-eq.zero { border-top:1.5px solid var(--ink-mute); }
+.devc-bar.up::before, .devc-bar.dn::before {
+  content:''; position:absolute; left:50%; transform:translateX(-50%);
+  border-left:4px solid transparent; border-right:4px solid transparent;
+}
+.devc-bar.up::before { top:-7px; border-bottom:5px solid currentColor; }
+.devc-bar.dn::before { bottom:-7px; border-top:5px solid currentColor; }
+.dev-eq span { position:absolute; right:0; top:-17px; font-size:10px; font-weight:800; color:var(--ink-2);
+  background:var(--l1); padding:0 5px; }
+
+/* ── GRAMMAR B · QUALIFICATION TRACE (matured) ───────────────────────────
+   The six-factor path drawn as a PROFILE, not six colour blocks. A clean
+   chain is a flat line at the top; a discount dips it; weak evidence marks
+   the EV node hollow; AGF = 0 breaks the line. Shape carries the meaning,
+   so the legend is needed once, not on every read. */
+.tp { display:block; }
+.tp-legend { display:flex; align-items:center; gap:14px; }
+.tp-legend span { font-size:11.5px; font-weight:700; color:var(--ink-3); }
+
+/* console: capped weight is stated, never hidden */
+.wcap { font-size:10.5px; font-weight:700; color:var(--warn-text); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — navigation TRANSFORMS, analytics REPRIORITISE, tables BECOME
+   LISTS. Nothing is merely shrunk. Breakpoints: 1200 / 900 / 720.
+   Acceptance is assessed at 1440 · 768 · 375 (Registry 219 gate E).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.only-narrow { display:none; }
+.devc-abbr { display:none; }
+
+/* ── ≤1200 — the shell collapses to a rail; the drawer stops being a column ── */
+@media (max-width:1200px) {
+  :root { --nav-w:68px; --gap:16px; }
+  .nav-word, .ws-name, .ws-meta, .nav-cmd span, .nav-i span:not(.nav-count),
+  .nav-un, .nav-ur, .nav-state, .nav-group > .lbl, .nav-collapse { display:none; }
+  .nav { padding:14px 0 10px; }
+  .nav-brand { justify-content:center; padding:2px 0 14px; }
+  .ws { margin:0 10px 12px; }
+  .ws-btn { justify-content:center; padding:7px; }
+  .ws-btn svg { display:none; }
+  .nav-cmd { width:44px; margin:0 12px 14px; justify-content:center; padding:0; }
+  .nav-cmd kbd { display:none; }
+  .nav-scroll { padding:0 10px; }
+  .nav-i { justify-content:center; padding:9px 0; position:relative; }
+  .nav-i .nav-count { position:absolute; top:2px; right:2px; margin:0; font-size:9.5px; padding:0 4px; }
+  .nav-i[aria-current='page']::before { left:-10px; }
+  .nav-foot { margin:8px 10px 0; }
+  .nav-user { justify-content:center; padding:6px 0; }
+  .nav-user svg { display:none; }
+  .ops { grid-template-columns:minmax(0,1fr); }
+  .drawer { position:static; }
+  .c7,.c8,.c9 { grid-column:span 12; }
+  .c3,.c4,.c5,.c6 { grid-column:span 12; }
+  .content { padding:20px 18px 36px; }
+  .topbar { padding:0 18px; }
+  .search { min-width:170px; }
+}
+
+/* ── ≤900 — analytics reprioritise: index + composition first, movement after ── */
+@media (max-width:900px) {
+  .hero { grid-template-columns:minmax(0,1fr) !important; }
+  .hero-l { border-right:0; border-bottom:1px solid var(--line); }
+  .qchain { flex-wrap:wrap; }
+  .qnode { flex:1 1 46%; min-width:220px; }
+  .qgate { flex:1 1 100%; justify-content:flex-start; border-left:0; border-top:1px solid var(--line); }
+  .crow2, .mbh2 { grid-template-columns:48px minmax(0,1fr) 96px 56px 30px; }
+  .crow2 > :nth-child(3), .crow2 > :nth-child(5) { display:none; }  /* keep value + points */
+  .mbh2 > :nth-child(3) { display:none; }
+  .crow2.xs > :nth-child(3), .crow2.xs > :nth-child(5) { display:none; }
+  .search { display:none; }
+}
+
+/* ── ≤720 — phone: top bar, record lists, compacted grammars ───────────── */
+@media (max-width:720px) {
+  :root { --gap:14px; }
+  .app { grid-template-columns:minmax(0,1fr); }
+  .nav {
+    position:sticky; top:0; z-index:40; height:auto; min-height:0;
+    flex-direction:row; align-items:center; padding:9px 14px; gap:10px;
+  }
+  .nav-brand { padding:0; }
+  .ws, .nav-cmd, .nav-foot { display:none; }
+  .nav-scroll { flex:1; display:flex; gap:4px; overflow-x:auto; padding:0; }
+  .nav-group { display:flex; gap:4px; margin:0; border:0 !important; padding:0 !important; }
+  .nav-i { padding:8px 10px; }
+  .nav-i[aria-current='page']::before { left:10px; right:10px; top:auto; bottom:-6px; width:auto; height:2px; }
+  .topbar { height:auto; padding:10px 14px; flex-wrap:wrap; gap:8px; }
+  .crumbs { width:100%; font-size:12px; }
+  .topbar-r { margin-left:0; width:100%; flex-wrap:wrap; }
+  .content { padding:16px 14px 32px; }
+  .hd { flex-wrap:wrap; padding:12px 14px; }
+  .hd-r { width:100%; }
+  .pad, .pad-l { padding:14px; }
+  .hero-l, .hero-r { padding:16px 14px !important; }
+  .d1 { font-size:52px; }
+
+  /* trust path stacks but keeps every mandatory node */
+  .qnode { flex:1 1 100%; min-width:0; padding:12px 14px 12px 22px; }
+  .qnode::before { display:none; }
+  .qnode + .qnode { border-top:1px solid var(--l2-edge); }
+
+  /* composition track: segment labels drop, the key carries the numbers */
+  .track-bar { height:30px; }
+  .track-seg b { font-size:10px; }
+  .track-seg:nth-child(5) b, .track-seg:nth-child(6) b { display:none; }
+
+  /* five-pillar balance: compressed, abbreviated, still one system */
+  .dev { gap:7px; }
+  .devc { grid-template-rows:44px 1px 44px auto !important; }
+  .dev-eq { top:44px !important; }
+  .devc-share { font-size:13px; }
+  .devc-iu, .devc-foot .st { display:none; }
+  .devc-name { display:none; }
+  .devc-abbr { display:block; font-size:10.5px; font-weight:800; letter-spacing:.04em; }
+  .devc-pp { font-size:10.5px; }
+
+  /* console: two-line rows, all canonical fields retained */
+  .crow2, .mbh2, .crow2.xs { grid-template-columns:44px minmax(0,1fr) 62px; gap:10px; padding:10px 14px; }
+  .crow2 > :nth-child(3), .crow2 > :nth-child(5), .crow2 > :nth-child(7),
+  .mbh2 > :nth-child(3), .mbh2 > :nth-child(6) { display:none; }
+  .ctot { grid-template-columns:minmax(0,1fr) auto; gap:10px; padding:14px; }
+  .ctot > :nth-child(1), .ctot > :nth-child(3), .ctot > :nth-child(4), .ctot > :nth-child(7) { display:none; }
+
+  /* tables become record lists */
+  .tw { display:none; }
+  .only-narrow { display:block; }
+  .rec { padding:13px 14px; border-bottom:1px solid var(--line); display:grid; gap:7px; }
+  .rec-top { display:flex; align-items:center; gap:9px; }
+  .rec-meta { display:flex; flex-wrap:wrap; gap:6px 12px; align-items:center; }
+  .rec-kv { font-size:11.5px; color:var(--ink-3); }
+  .rec-kv b { color:var(--ink-2); font-weight:700; font-variant-numeric:tabular-nums; }
+
+  /* drawer becomes a stacked sheet below the working list */
+  .drawer .s1 { border-radius:var(--r-panel); }
+  .kv { grid-template-columns:86px minmax(0,1fr); }
+  .flag { margin:0 14px 18px; height:auto; padding:6px 10px; white-space:normal; line-height:1.4; }
+}
+
+/* ── FORMS + STATE LANGUAGE (SIGNAL) ────────────────────────────────────── */
+.field { display:grid; gap:7px; margin-bottom:16px; }
+.field > label { font-size:12.5px; font-weight:700; color:var(--ink-2); }
+.field .hint { font-size:11.5px; color:var(--ink-3); }
+.input {
+  height:36px; padding:0 12px; width:100%; font:inherit; font-size:13px; color:var(--ink);
+  background:var(--l1); border:1px solid var(--line-2); border-radius:var(--r-ctl);
+  box-shadow:var(--sh-1); transition:border-color var(--t1) var(--ease), box-shadow var(--t1) var(--ease);
+}
+textarea.input { height:auto; padding:9px 12px; resize:vertical; line-height:1.55; }
+.input::placeholder { color:var(--ink-mute); }
+.input:hover { border-color:rgba(6,3,43,.24); }
+.input:focus { outline:none; border-color:var(--violet); box-shadow:0 0 0 3px var(--violet-tint); }
+.input[disabled] { color:var(--ink-mute); background:var(--l0); box-shadow:none; cursor:not-allowed; }
+.field.invalid .input { border-color:var(--risk); box-shadow:0 0 0 3px rgba(158,59,47,.10); }
+.err { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--risk); }
+.ok-msg { display:flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; color:var(--ok); }
+
+.state-box { padding:40px 20px; text-align:center; max-width:44ch; margin:0 auto; }
+.state-box h4 { font-size:15px; font-weight:700; margin-bottom:6px; }
+.state-box p { font-size:12.5px; color:var(--ink-3); line-height:1.6; margin-bottom:18px; }
+.skel { background:rgba(6,3,43,.07); border-radius:5px; animation:pulse 1.5s var(--ease) infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+.spin { animation:rot .7s linear infinite; color:var(--violet); }
+@keyframes rot { to { transform:rotate(360deg) } }
+.notice { display:flex; flex-wrap:wrap; gap:10px; padding:12px 14px; border-radius:var(--r-inner); font-size:12.5px; line-height:1.55; }
+.notice svg { flex:none; margin-top:1px; }
+.notice.warn { background:var(--warn-tint); color:var(--warn-text); box-shadow:inset 3px 0 0 var(--warn); }
+.notice.risk { background:var(--risk-tint); color:var(--risk); box-shadow:inset 3px 0 0 var(--risk); }
+.notice.info { background:var(--info-tint); color:var(--info-text); box-shadow:inset 3px 0 0 var(--info); }
+.notice.ok   { background:var(--ok-tint);   color:var(--ok);   box-shadow:inset 3px 0 0 var(--ok); }
+.spec { display:grid; grid-template-columns:132px minmax(0,1fr); gap:14px; padding:12px 0; align-items:baseline; }
+.spec + .spec { border-top:1px solid var(--line); }
+.spec dt { font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); }
+@media (max-width:720px){ .spec { grid-template-columns:minmax(0,1fr); gap:6px; } }
+
+
+/* ── OVERFLOW CONTAINMENT (found by automated 1440/768/375 sweep) ──────── */
+/* A section header must shrink and wrap before it pushes the page. */
+.hd { flex-wrap:wrap; }
+.hd > .lbl { flex:0 1 auto; min-width:0; overflow-wrap:anywhere; }
+.hd-r { flex-wrap:wrap; min-width:0; }
+/* A status chip is content, not a rigid box: below the desktop breakpoint it
+   wraps rather than forcing a horizontal scrollbar. */
+@media (max-width:900px) {
+  .st { white-space:normal; height:auto; min-height:23px; padding:3px 8px; align-items:flex-start; }
+  .st i { margin-top:5px; }
+}
+/* The phone nav scrolls horizontally inside itself; as a flex item it needs
+   min-width:0 or it sizes to its content and pushes the document. */
+@media (max-width:720px) {
+  .nav-scroll { min-width:0; }
+  .nav { min-width:0; }
+  .topbar-r > * { min-width:0; }
+}

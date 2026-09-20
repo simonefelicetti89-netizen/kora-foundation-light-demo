@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KORA — Company Intelligence · SIGNAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kora-signal.css">
+</head>
+<body>
+<div class="app">
+
+<nav class="nav" aria-label="Navigazione KORA">
+  <div class="nav-brand">
+    <span class="nav-mark" style="background:linear-gradient(145deg,#6E63F8,#3B2FD4)">
+      <svg class="mark5" width="19" height="19" viewBox="0 0 22 22" aria-hidden="true">
+        <polygon points="11,3.5 18.13,8.68 15.41,17.07 6.59,17.07 3.87,8.68" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="1"/>
+        <circle cx="11" cy="3.5" r="2.1" fill="#fff"/>
+        <circle cx="18.13" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/>
+        <circle cx="15.41" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/>
+        <circle cx="6.59" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/>
+        <circle cx="3.87" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/>
+      </svg>
+    </span>
+    <span class="nav-word">KORA</span>
+    <button class="nav-collapse" aria-label="Comprimi navigazione">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+  </div>
+  <div class="ws">
+    <button class="ws-btn">
+      <span class="ws-avatar">AM</span>
+      <span style="min-width:0;text-align:left">
+        <span class="ws-name" style="display:block">Acme Manifattura</span>
+        <span class="ws-meta">1.284 lavoratori · H1 2026</span>
+      </span>
+      <svg style="margin-left:auto;opacity:.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 9 5 5 5-5"/></svg>
+    </button>
+  </div>
+  <button class="nav-cmd">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    Cerca o esegui… <kbd>⌘K</kbd>
+  </button>
+  <div class="nav-scroll">
+    <div class="nav-group">
+      <span class="lbl">Intelligence</span>
+      <a class="nav-i" href="#" aria-current="page">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 13h4l3 7 4-16 3 9h4"/></svg>
+        KORA Index
+      </a>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/></svg>
+        Attivazione
+      </a>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        Andamento
+      </a>
+    </div>
+    <div class="nav-group">
+      <span class="lbl">Operazioni</span>
+      <a class="nav-i" href="operations.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+        Revisione UEF <span class="nav-count">142</span>
+      </a>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11m0 0 4-4m-4 4-4-4M4 20h16"/></svg>
+        Ingestione
+      </a>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 11h13M10 16h10"/></svg>
+        Mappatura AI <span class="nav-count">9</span>
+      </a>
+    </div>
+    <div class="nav-group">
+      <span class="lbl">Evidenza</span>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+        Report
+      </a>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/></svg>
+        Metodologia
+      </a>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/></svg>
+        Sorgenti dati
+      </a>
+    </div>
+  </div>
+  <div class="nav-state">
+    <div class="nav-state-r">
+      <span style="width:6px;height:6px;border-radius:99px;background:var(--ok);box-shadow:0 0 7px var(--ok)"></span>
+      <span>Scoring</span><span>2h fa</span>
+    </div>
+    <div class="nav-state-r">
+      <span style="width:6px;height:6px;border-radius:99px;background:var(--warn)"></span>
+      <span>Evidence debt</span><span>38</span>
+    </div>
+    <div class="nav-state-r">
+      <span style="width:6px;height:6px;border-radius:99px;background:var(--ink-mute)"></span>
+      <span>Peso non disp.</span><span>7,5%</span>
+    </div>
+  </div>
+  <div class="nav-foot">
+    <div style="display:flex;align-items:center;gap:7px;padding:0 8px 8px">
+      <span class="env-dot"></span>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.50)">Staging · dati sintetici</span>
+    </div>
+    <a class="nav-user" href="#">
+      <span class="nav-ua">GR</span>
+      <span><span class="nav-un" style="display:block">Giulia Ronchi</span><span class="nav-ur">Company Admin</span></span>
+      <svg style="margin-left:auto;opacity:.45" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 9 5 5 5-5"/></svg>
+    </a>
+  </div>
+</nav>
+
+<div class="work">
+  <header class="topbar">
+    <div class="crumbs">
+      <span>Company</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+      <span>Intelligence</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+      <b>KORA Index</b>
+    </div>
+    <div class="topbar-r">
+      <div class="search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        Cerca eventi, pillar, evidenze <kbd>⌘K</kbd>
+      </div>
+      <div class="seg" role="group" aria-label="Periodo">
+        <button aria-pressed="false">H1 25</button><button aria-pressed="false">H2 25</button><button aria-pressed="true">H1 26</button>
+      </div>
+      <button class="btn btn-g btn-ico" aria-label="Notifiche">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 6-3 7-3 7h18s-3-1-3-7M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      </button>
+      <button class="btn btn-ink">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 4v11m0 0 4-4m-4 4-4-4M4 20h16"/></svg>
+        Board Pack
+      </button>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="g12">
+
+      <!-- ══ ONE INSTRUMENT · reading order: INDEX → MOVEMENT → COMPOSITION
+           → QUALIFICATION → EVIDENCE ═══════════════════════════════════════ -->
+      <section class="c12 s1" aria-label="KORA Index">
+        <div class="hero" style="grid-template-columns:352px minmax(0,1fr)">
+
+          <!-- 1 · WHERE IT IS, AND WHERE IT IS GOING -->
+          <div class="hero-l">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="lbl">KORA Index</span>
+              <span class="st info" style="height:20px"><i></i>v1.0</span>
+              <span class="st idle" style="height:20px;margin-left:auto">H1 2026</span>
+            </div>
+
+            <div class="idx">
+              <span class="d1">50,4</span>
+              <span class="idx-scale">/ 100</span>
+              <span class="delta up" style="margin-bottom:11px">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5m0 0-6 6m6-6 6 6"/></svg>3,0
+              </span>
+            </div>
+
+            <svg viewBox="0 0 300 62" width="100%" style="display:block;margin-top:14px" role="img"
+                 aria-label="Traiettoria KORA Index: 40,8 · 42,6 · 45,1 · 46,3 · 47,4 · 50,4">
+              <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#6156F5" stop-opacity=".22"/><stop offset="100%" stop-color="#6156F5" stop-opacity="0"/>
+              </linearGradient></defs>
+              <line x1="0" y1="54" x2="300" y2="54" stroke="rgba(6,3,43,.12)" stroke-width="1"/>
+              <path d="M4 44.4 L63 39.6 L122 33 L181 29.8 L240 26.9 L296 18 L296 54 L4 54 Z" fill="url(#tg)"/>
+              <polyline points="4,44.4 63,39.6 122,33 181,29.8 240,26.9 296,18"
+                        fill="none" stroke="#6156F5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="296" cy="18" r="3.6" fill="#6156F5" stroke="#fff" stroke-width="1.6"/>
+            </svg>
+            <div style="display:flex;justify-content:space-between;margin-top:3px">
+              <span class="xs">H1 23 · 40,8</span><span class="xs">6 semestri</span><span class="xs">H1 26 · 50,4</span>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:18px">
+              <button class="btn btn-primary">Apri esplorazione</button>
+              <button class="btn btn-g">Traccia il calcolo</button>
+            </div>
+          </div>
+
+          <div class="hero-r" style="padding:18px 24px 18px 22px;display:grid;gap:22px;align-content:start">
+
+            <!-- 2 · WHAT CREATED IT — GRAMMAR A · COMPOSITION -->
+            <div>
+              <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:30px">
+                <span class="lbl">Composizione · contributo ponderato</span>
+                <span class="xs" style="margin-left:auto">nessuna redistribuzione dei pesi</span>
+              </div>
+              <div class="track">
+                <div class="track-rail">
+                <div class="track-bar" role="img"
+                     aria-label="Composizione su 100: Reach 10,0, Quality 16,3, Equity 12,5, BTI 11,6; indice 50,4; tetto 92,5; 7,5 di peso non disponibile">
+                  <div class="track-seg" style="flex:10.0;background:var(--mb-reach)"><b>10,0</b></div>
+                  <div class="track-seg" style="flex:16.3;background:var(--mb-quality)"><b>16,3</b></div>
+                  <div class="track-seg" style="flex:12.5;background:var(--mb-equity)"><b>12,5</b></div>
+                  <div class="track-seg" style="flex:11.6;background:var(--mb-bti)"><b>11,6</b></div>
+                  <div class="track-seg track-gap" style="flex:42.1"><b style="color:var(--ink-3);text-shadow:none">margine 42,1</b></div>
+                  <div class="track-seg track-void" style="flex:7.5"></div>
+                </div>
+                  <span class="track-ceil" style="left:92.5%"></span>
+                </div>
+                <div class="track-scale">
+                  <span class="xs">0</span>
+                  <span class="xs" style="font-weight:800;color:var(--ink)">indice 50,4</span>
+                  <span class="xs">100</span>
+                </div>
+                <div class="track-key">
+                  <span class="tk"><i style="background:var(--mb-reach)"></i><s>Reach</s><b>10,0</b></span>
+                  <span class="tk"><i style="background:var(--mb-quality)"></i><s>Quality</s><b>16,3</b></span>
+                  <span class="tk"><i style="background:var(--mb-equity)"></i><s>Equity</s><b>12,5</b><span class="wcap">· 17,5 di 25,0 disp.</span></span>
+                  <span class="tk"><i style="background:var(--mb-bti)"></i><s>BTI</s><b>11,6</b></span>
+                  <span class="tk"><i class="track-void" style="box-shadow:inset 0 0 0 1px rgba(158,59,47,.35)"></i><s>Non disponibile</s><b>7,5</b></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3 · WHAT MOVED IT — a different question, same deviation grammar -->
+            <div>
+              <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:22px">
+                <span class="lbl">Movimento · da cosa arrivano i +3,0</span>
+                <span class="xs" style="margin-left:auto">47,4 → 50,4 · H2 25 → H1 26</span>
+              </div>
+              <div class="dev-wrap" style="padding-bottom:4px">
+                <div class="dev-eq zero" style="top:46px"><span>invariato</span></div>
+                <div class="dev" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+                  <div class="devc" style="grid-template-rows:46px 1px 46px auto">
+                    <div class="devc-up"><div class="devc-bar up" style="height:20px;background:var(--mb-reach);color:var(--mb-reach)"><span class="devc-pp" style="color:var(--mb-reach)">+1,2</span></div></div>
+                    <div></div><div class="devc-dn"></div>
+                    <div class="devc-foot" style="padding-top:12px"><span class="devc-name" style="color:var(--mb-reach)">REACH</span></div>
+                  </div>
+                  <div class="devc" style="grid-template-rows:46px 1px 46px auto">
+                    <div class="devc-up"><div class="devc-bar up" style="height:46px;background:var(--mb-quality);color:var(--mb-quality)"><span class="devc-pp" style="color:var(--mb-quality)">+2,8</span></div></div>
+                    <div></div><div class="devc-dn"></div>
+                    <div class="devc-foot" style="padding-top:12px"><span class="devc-name" style="color:var(--mb-quality)">QUALITY</span></div>
+                  </div>
+                  <div class="devc" style="grid-template-rows:46px 1px 46px auto">
+                    <div class="devc-up"><div class="devc-bar up" style="height:21px;background:var(--mb-equity);color:var(--mb-equity)"><span class="devc-pp" style="color:var(--mb-equity)">+1,3</span></div></div>
+                    <div></div><div class="devc-dn"></div>
+                    <div class="devc-foot" style="padding-top:12px"><span class="devc-name" style="color:var(--mb-equity)">EQUITY</span></div>
+                  </div>
+                  <div class="devc" style="grid-template-rows:46px 1px 46px auto">
+                    <div class="devc-up"></div><div></div>
+                    <div class="devc-dn"><div class="devc-bar dn" style="height:38px;background:var(--risk);color:var(--risk)"><span class="devc-pp" style="color:var(--risk)">−2,3</span></div></div>
+                    <div class="devc-foot" style="padding-top:12px"><span class="devc-name" style="color:var(--risk)">BTI</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 · GRAMMAR B · QUALIFICATION PATH -->
+        <div class="qchain">
+          <div class="qnode pass">
+            <span class="lbl">1 · Evidenza</span>
+            <div class="qnode-v">78% <span class="xs" style="font-weight:700">verificata</span></div>
+            <div class="qnode-m">Terza parte 41% · documentale 37%</div>
+          </div>
+          <div class="qnode pass">
+            <span class="lbl">2 · Confidence Score</span>
+            <div class="qnode-v">
+              <span class="ticks" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span>
+              72
+            </div>
+            <div class="qnode-m">Esterno all'indice · peso 0</div>
+          </div>
+          <div class="qnode pass">
+            <span class="lbl">3 · Activation Safeguard</span>
+            <div class="qnode-v"><span class="st ok" style="height:22px;font-size:11px"><i></i>CLEAR</span></div>
+            <div class="qnode-m">AR 0,47 · MAR 0,33 · soglie D-21</div>
+          </div>
+          <div class="qnode hold">
+            <span class="lbl">4 · Calibrazione</span>
+            <div class="qnode-v"><span class="st warn" style="height:22px;font-size:11px"><i></i>Pre-empirical</span></div>
+            <div class="qnode-m">KORA Index v1.0 · methodology v0.1</div>
+          </div>
+          <div class="qgate">
+            <button class="btn btn-g">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+              Apri evidenze
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="trust-note">
+          <b>EQW = insufficient_data</b> — contribuisce 0, senza redistribuzione dei pesi: l'indice massimo
+          raggiungibile in questo periodo è <b>92,5</b>, non 100. Output diagnostico pilot-grade su dati sintetici —
+          non certificato, non validato empiricamente, non regulatory-grade. Il KORA Index misura l'organizzazione:
+          non valuta, classifica né confronta singoli lavoratori.
+        </div>
+      </section>
+
+      <!-- ══ GRAMMAR C · FIVE-PILLAR BALANCE ═══════════════════════════════
+           Deviation from the 20% equilibrium, not five heights. The deviations
+           sum to zero by construction; their spread is Pillar Balance. -->
+      <section class="c8 s1" aria-label="Sistema pillar">
+        <div class="hd">
+          <span class="lbl">Sistema pillar · scostamento dall'equilibrio</span>
+          <div class="hd-r">
+            <span class="xs">9.200 IU</span>
+            <span class="st idle"><i style="background:var(--mb-equity)"></i>PB 71,0</span>
+            <span class="st idle"><i style="background:var(--mb-equity)"></i>PC 80,0</span>
+            <div class="seg"><button aria-pressed="true">Scostamento</button><button aria-pressed="false">Quota</button></div>
+          </div>
+        </div>
+        <div class="pad" style="padding-top:26px">
+          <div class="dev-wrap">
+            <div class="dev-eq"><span>equilibrio · 20% ciascuno</span></div>
+            <div class="dev">
+              <div class="devc">
+                <div class="devc-up"><div class="devc-bar up" style="height:55px;background:linear-gradient(180deg,#D4834F,#C76F3D);color:#C76F3D"><span class="devc-pp" style="color:#8A4A22">+11</span></div></div>
+                <div></div><div class="devc-dn"></div>
+                <div class="devc-foot">
+                  <span class="devc-name" style="color:#8A4A22">LIFE</span><span class="devc-abbr" style="color:#8A4A22">LIFE</span>
+                  <span class="devc-share">31%</span><span class="devc-iu">2.840 IU</span>
+                  <span class="st ok" style="height:18px;font-size:10px"><i></i>+6,1%</span>
+                </div>
+              </div>
+              <div class="devc">
+                <div class="devc-up"><div class="devc-bar up" style="height:20px;background:linear-gradient(180deg,#3D9166,#2F7D55);color:#2F7D55"><span class="devc-pp" style="color:#2F7D55">+4</span></div></div>
+                <div></div><div class="devc-dn"></div>
+                <div class="devc-foot">
+                  <span class="devc-name" style="color:#2F7D55">GROWTH</span><span class="devc-abbr" style="color:#2F7D55">GROW</span>
+                  <span class="devc-share">24%</span><span class="devc-iu">2.210 IU</span>
+                  <span class="st ok" style="height:18px;font-size:10px"><i></i>+11,4%</span>
+                </div>
+              </div>
+              <div class="devc">
+                <div class="devc-up"></div><div></div>
+                <div class="devc-dn"><div class="devc-bar dn" style="height:15px;background:linear-gradient(0deg,#E2A87C,#D99767);color:#D99767"><span class="devc-pp" style="color:#8A4A22">−3</span></div></div>
+                <div class="devc-foot">
+                  <span class="devc-name" style="color:#8A4A22">CONNECTION</span><span class="devc-abbr" style="color:#8A4A22">CONN</span>
+                  <span class="devc-share">17%</span><span class="devc-iu">1.580 IU</span>
+                  <span class="st ok" style="height:18px;font-size:10px"><i></i>+2,8%</span>
+                </div>
+              </div>
+              <div class="devc">
+                <div class="devc-up"></div><div></div>
+                <div class="devc-dn"><div class="devc-bar dn" style="height:20px;background:linear-gradient(0deg,#E3AA43,#D99A2B);color:#D99A2B"><span class="devc-pp" style="color:#8A5A00">−4</span></div></div>
+                <div class="devc-foot">
+                  <span class="devc-name" style="color:#8A5A00">IMPACT</span><span class="devc-abbr" style="color:#8A5A00">IMP</span>
+                  <span class="devc-share">16%</span><span class="devc-iu">1.490 IU</span>
+                  <span class="st risk" style="height:18px;font-size:10px"><i></i>−4,2%</span>
+                </div>
+              </div>
+              <div class="devc">
+                <div class="devc-up"></div><div></div>
+                <div class="devc-dn"><div class="devc-bar dn" style="height:40px;background:linear-gradient(0deg,#9A8471,#8A7562);color:#8A7562"><span class="devc-pp" style="color:#6B5A49">−8</span></div></div>
+                <div class="devc-foot">
+                  <span class="devc-name" style="color:#6B5A49">LEGACY</span><span class="devc-abbr" style="color:#6B5A49">LEG</span>
+                  <span class="devc-share">12%</span><span class="devc-iu">1.080 IU</span>
+                  <span class="st ok" style="height:18px;font-size:10px"><i></i>+1,0%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="s2" style="padding:12px 14px;margin-top:22px;display:flex;align-items:center;gap:12px">
+            <span class="st warn"><i></i>Concentrazione su LIFE</span>
+            <span class="sm" style="min-width:0">
+              Gli scostamenti sommano a zero per costruzione: gli 11 punti in eccesso di LIFE sono
+              esattamente ciò che manca a LEGACY, IMPACT e CONNECTION. È questa dispersione — non il
+              livello dei singoli pillar — a tenere <b>Pillar Balance a 71,0</b>.
+            </span>
+            <button class="btn btn-g btn-sm" style="margin-left:auto;flex:none">Analizza</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- panel discipline: two adjacent signals, ONE surface, two regions -->
+      <section class="c4 s1" aria-label="Segnali adiacenti">
+        <div class="hd"><span class="lbl">Segnali adiacenti</span><div class="hd-r"><span class="xs">fuori dall'Index</span></div></div>
+
+        <div class="pad">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span class="h2" style="font-size:13px">KORA Contribution</span>
+            <span class="st idle" style="margin-left:auto;font-size:10px"><i></i>companion</span>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:14px">
+            <div>
+              <div class="d2">1.245</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:5px">
+                <span class="delta up">+18,2%</span><span class="sm">vs H2 25</span>
+              </div>
+            </div>
+            <svg width="100%" height="46" viewBox="0 0 160 46" preserveAspectRatio="none" style="flex:1;min-width:0">
+              <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2BB7D9" stop-opacity=".28"/><stop offset="100%" stop-color="#2BB7D9" stop-opacity="0"/>
+              </linearGradient></defs>
+              <path d="M0 37 L32 34 L64 28 L96 25 L128 16 L160 6 L160 46 L0 46 Z" fill="url(#cg)"/>
+              <polyline points="0,37 32,34 64,28 96,25 128,16 160,6" fill="none" stroke="#2BB7D9" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div style="height:1px;background:var(--line)"></div>
+
+        <div class="pad">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span class="h2" style="font-size:13px">Evidence debt</span>
+            <span class="st warn" style="margin-left:auto;font-size:10px"><i></i>blocca EVQ</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px">
+            <span class="d2" style="font-size:28px">38</span>
+            <span class="sm">eventi senza evidenza sufficiente · 412 IU trattenute</span>
+          </div>
+          <div class="cshare" style="height:16px"><i style="width:22%;background:var(--warn)"></i></div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px">
+            <span class="xs">22% del volume</span><span class="xs">obiettivo &lt; 15%</span>
+          </div>
+          <div class="s2" style="padding:10px 12px;margin-top:12px;display:flex;gap:9px;align-items:flex-start">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+            <span style="font-size:11.5px;line-height:1.5;color:var(--ink-2)">
+              Chiudere il debito porterebbe EVQ da 68,0 a ~74 e l'indice a <b>~51,0</b>.
+            </span>
+          </div>
+          <button class="btn btn-g btn-sm" style="justify-content:center;width:100%;margin-top:10px">Apri coda evidenze</button>
+        </div>
+      </section>
+
+      <!-- ══ CONSOLE — value → weight → contribution → availability → index ══ -->
+      <section class="c12 s1" aria-label="Scomposizione a 10 componenti">
+        <div class="hd">
+          <span class="lbl">Console di scomposizione · 10 componenti · 4 macroblocchi</span>
+          <div class="hd-r">
+            <span class="chip dash">Pesi da <b style="margin-left:3px">v0.1.ts</b></span>
+            <div class="seg"><button aria-pressed="true">Contributo</button><button aria-pressed="false">Valore</button></div>
+            <button class="btn btn-g btn-sm">Esporta</button>
+          </div>
+        </div>
+
+        <div class="crow2 xs" style="padding-top:9px;padding-bottom:9px">
+          <span>Cod.</span><span>Componente</span><span>Valore 0–100</span><span style="text-align:right">Val.</span>
+          <span>Contributo ai punti indice</span><span style="text-align:right">Punti</span><span></span>
+        </div>
+
+        <div class="mbh2">
+          <span class="pdot" style="background:var(--mb-reach);justify-self:center"></span>
+          <span class="h2">Activation Reach</span>
+          <span class="st idle"><i style="background:var(--mb-reach)"></i>peso 25,0% · tutto disponibile</span>
+          <span class="cshare"><i style="width:50%;background:var(--mb-reach)"></i></span>
+          <span class="msum">10,0</span><span></span>
+        </div>
+        <div class="crow2">
+          <span class="ccode">AR</span><span class="h2" style="font-weight:650">Activation Rate</span>
+          <span class="cbar"><i style="width:47%;background:var(--mb-reach)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">47,0</span>
+          <span class="cshare"><i style="width:29.4%;background:var(--mb-reach)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">5,88</span>
+          <span><button class="ib" aria-label="Dettaglio AR"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></span>
+        </div>
+        <div class="crow2">
+          <span class="ccode">MAR</span><span class="h2" style="font-weight:650">Meaningful Activation Rate</span>
+          <span class="cbar"><i style="width:33%;background:var(--mb-reach)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">33,0</span>
+          <span class="cshare"><i style="width:20.6%;background:var(--mb-reach)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">4,13</span>
+          <span><button class="ib" aria-label="Dettaglio MAR"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></span>
+        </div>
+
+        <div class="mbh2">
+          <span class="pdot" style="background:var(--mb-quality);justify-self:center"></span>
+          <span class="h2">Activation Quality</span>
+          <span class="st ok"><i></i>driver del periodo · peso 30,0%</span>
+          <span class="cshare"><i style="width:81.5%;background:var(--mb-quality)"></i></span>
+          <span class="msum">16,3</span><span></span>
+        </div>
+        <div class="crow2">
+          <span class="ccode">EVQ</span><span class="h2" style="font-weight:650">Evidence Quality</span>
+          <span class="cbar"><i style="width:68%;background:var(--mb-quality)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">68,0</span>
+          <span class="cshare"><i style="width:34%;background:var(--mb-quality)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">6,80</span>
+          <span><button class="ib" aria-label="Dettaglio EVQ"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></span>
+        </div>
+        <div class="crow2">
+          <span class="ccode">INT</span><span class="h2" style="font-weight:650">Normalized Intensity</span>
+          <span class="cbar"><i style="width:54%;background:var(--mb-quality)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">54,0</span>
+          <span class="cshare"><i style="width:27%;background:var(--mb-quality)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">5,40</span>
+          <span><button class="ib" aria-label="Dettaglio INT"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></span>
+        </div>
+        <div class="crow2">
+          <span class="ccode">CONT</span><span class="h2" style="font-weight:650">Continuity</span>
+          <span class="cbar"><i style="width:41%;background:var(--mb-quality)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">41,0</span>
+          <span class="cshare"><i style="width:20.5%;background:var(--mb-quality)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">4,10</span>
+          <span><button class="ib" aria-label="Dettaglio CONT"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></span>
+        </div>
+
+        <div class="mbh2" style="background:linear-gradient(180deg,#FBF7F0,#F7F1E8)">
+          <span class="pdot" style="background:var(--mb-equity);justify-self:center"></span>
+          <span class="h2">Distribution &amp; Equity</span>
+          <span class="st warn"><i></i>peso 25,0% — solo <b style="margin:0 3px">17,5</b> disponibile</span>
+          <span class="cshare"><i style="width:50%;background:var(--mb-equity)"></i><i class="hatch" style="width:30%"></i></span>
+          <span class="msum">12,5</span><span></span>
+        </div>
+        <div class="crow2">
+          <span class="ccode">EQW</span><span class="h2" style="font-weight:650">Equity Workers <span class="sm" style="font-weight:600">· Gini</span></span>
+          <span class="cbar hatch" style="background-color:transparent"></span>
+          <span class="st idle" style="justify-self:end;font-size:10px">insufficient_data</span>
+          <span class="cshare hatch"></span>
+          <span class="mono sm" style="text-align:right">0,00</span>
+          <span><button class="ib" aria-label="Perché EQW non è calcolabile"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></span>
+        </div>
+        <div class="crow2">
+          <span class="ccode">EQS</span><span class="h2" style="font-weight:650">Equity Segments</span>
+          <span class="cbar"><i style="width:62%;background:var(--mb-equity)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">62,0</span>
+          <span class="cshare"><i style="width:15.5%;background:var(--mb-equity)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">3,10</span>
+          <span><button class="ib" aria-label="Dettaglio EQS"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></span>
+        </div>
+        <div class="crow2">
+          <span class="ccode">PC</span><span class="h2" style="font-weight:650">Pillar Coverage</span>
+          <span class="cbar"><i style="width:80%;background:var(--mb-equity)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">80,0</span>
+          <span class="cshare"><i style="width:25%;background:var(--mb-equity)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">5,00</span>
+          <span><button class="ib" aria-label="Dettaglio PC"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></span>
+        </div>
+        <div class="crow2">
+          <span class="ccode">PB</span><span class="h2" style="font-weight:650">Pillar Balance</span>
+          <span class="cbar"><i style="width:71%;background:var(--mb-equity)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">71,0</span>
+          <span class="cshare"><i style="width:22.2%;background:var(--mb-equity)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">4,44</span>
+          <span><button class="ib" aria-label="Dettaglio PB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></span>
+        </div>
+
+        <div class="mbh2">
+          <span class="pdot" style="background:var(--mb-bti);justify-self:center"></span>
+          <span class="h2">Budget-to-Human-Impact</span>
+          <span class="st idle"><i style="background:var(--mb-bti)"></i>BTI Engine · peso 20,0%</span>
+          <span class="cshare"><i style="width:58%;background:var(--mb-bti)"></i></span>
+          <span class="msum">11,6</span><span></span>
+        </div>
+        <div class="crow2">
+          <span class="ccode">BTI</span><span class="h2" style="font-weight:650">Budget-to-Human-Impact</span>
+          <span class="cbar"><i style="width:58%;background:var(--mb-bti)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">58,0</span>
+          <span class="cshare"><i style="width:58%;background:var(--mb-bti)"></i></span>
+          <span class="mono" style="text-align:right;font-weight:750">11,60</span>
+          <span><button class="ib" aria-label="Dettaglio BTI"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></span>
+        </div>
+
+        <div class="ctot">
+          <span></span>
+          <span style="font-size:13px;font-weight:750">Somma ponderata · insufficient_data contribuisce 0, senza redistribuzione</span>
+          <span></span>
+          <span class="lbl" style="text-align:right;white-space:nowrap">tetto 92,5</span>
+          <span class="lbl" style="text-align:right">KORA Index</span>
+          <span class="mono" style="text-align:right;font-size:20px;font-weight:800;letter-spacing:-.025em">50,4</span>
+          <span></span>
+        </div>
+      </section>
+
+    </div>
+  </div>
+  <div class="flag">WP124 · SIGNAL · Company Intelligence</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KORA — Stati e form · SIGNAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kora-signal.css">
+</head>
+<body>
+<div class="app">
+<nav class="nav" aria-label="Navigazione KORA">
+  <div class="nav-brand">
+    <span class="nav-mark" style="background:linear-gradient(145deg,#6E63F8,#3B2FD4)"><svg class="mark5" width="19" height="19" viewBox="0 0 22 22" aria-hidden="true"><polygon points="11,3.5 18.13,8.68 15.41,17.07 6.59,17.07 3.87,8.68" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="1"/><circle cx="11" cy="3.5" r="2.1" fill="#fff"/><circle cx="18.13" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="15.41" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="6.59" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/><circle cx="3.87" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/></svg></span>
+    <span class="nav-word">KORA</span>
+    <button class="nav-collapse" aria-label="Comprimi navigazione"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+  </div>
+  <div class="ws">
+    <button class="ws-btn">
+      <span class="ws-avatar" style="background:linear-gradient(145deg,#6E63F8,#3B2FD4)">KD</span>
+      <span style="min-width:0;text-align:left">
+        <span class="ws-name" style="display:block">KORA Design</span>
+        <span class="ws-meta">SIGNAL · sistema</span>
+      </span>
+      <svg style="margin-left:auto;opacity:.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 9 5 5 5-5"/></svg>
+    </button>
+  </div>
+  <button class="nav-cmd"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Cerca o esegui…</span><kbd>⌘K</kbd></button>
+  <div class="nav-scroll">
+    <div class="nav-group">
+      <span class="lbl">Sistema</span>
+      <a class="nav-i" href="system.html" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg><span>Stati e form</span></a>
+      <a class="nav-i" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><span>Tipografia</span></a>
+      <a class="nav-i" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/></svg><span>Colore</span></a>
+    </div>
+    <div class="nav-group">
+      <span class="lbl">Esemplari</span>
+      <a class="nav-i" href="company.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h4l3 7 4-16 3 9h4"/></svg><span>Company</span></a>
+      <a class="nav-i" href="operations.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg><span>Operations</span></a>
+      <a class="nav-i" href="worker.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg><span>Worker</span></a>
+      <a class="nav-i" href="admin.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1M9 13h1m4 0h1M9 17h1m4 0h1"/></svg><span>Admin</span></a>
+    </div>
+  </div>
+  <div class="nav-state">
+    <div class="nav-state-r"><span style="width:6px;height:6px;border-radius:99px;background:var(--ok);box-shadow:0 0 7px var(--ok)"></span><span>Contrasto</span><span>AA</span></div>
+    <div class="nav-state-r"><span style="width:6px;height:6px;border-radius:99px;background:var(--ink-mute)"></span><span>Motion</span><span>ridotta ok</span></div>
+  </div>
+  <div class="nav-foot">
+    <div style="display:flex;align-items:center;gap:7px;padding:0 8px 8px">
+      <span class="env-dot"></span>
+      <span style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.52)">Staging · dati sintetici</span>
+    </div>
+    <a class="nav-user" href="#">
+      <span class="nav-ua">DS</span>
+      <span><span class="nav-un" style="display:block">Design System</span><span class="nav-ur">WP124</span></span>
+      <svg style="margin-left:auto;opacity:.45" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 9 5 5 5-5"/></svg>
+    </a>
+  </div>
+</nav>
+<div class="work">
+  <header class="topbar">
+    <div class="crumbs"><span>WP124</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><span>SIGNAL</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><b>Stati e form</b></div>
+    <div class="topbar-r"><button class="btn btn-g btn-ico" aria-label="Notifiche"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 6-3 7-3 7h18s-3-1-3-7M13.7 21a2 2 0 0 1-3.4 0"/></svg></button><button class="btn btn-g">Esporta token</button></div>
+  </header>
+  <div class="content">
+    <div class="g12">
+
+      <section class="c7 s1" aria-label="Form strutturato">
+        <div class="hd"><span class="lbl">Form strutturato · registrazione evidenza</span>
+          <div class="hd-r"><span class="st idle"><i></i>bozza</span></div></div>
+        <div class="pad">
+          <form onsubmit="return false">
+            <div class="field">
+              <label for="f1">Titolo iniziativa</label>
+              <input class="input" id="f1" value="Percorso prevenzione cardiologica">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div class="field">
+                <label for="f2">Pillar</label>
+                <select class="input" id="f2"><option>LIFE</option><option>GROWTH</option><option>CONNECTION</option><option>IMPACT</option><option>LEGACY</option></select>
+                <span class="hint">Esattamente un pillar per istanza di evento.</span>
+              </div>
+              <div class="field">
+                <label for="f3">Tier evidenza</label>
+                <select class="input" id="f3"><option>Tier 3 · verificata da terza parte</option><option>Tier 2 · documentale</option><option>Tier 1 · autodichiarata</option></select>
+                <span class="hint">Determina il fattore EV nella catena IU.</span>
+              </div>
+            </div>
+            <div class="field invalid">
+              <label for="f4">Partecipanti confermati</label>
+              <input class="input" id="f4" value="6" aria-invalid="true" aria-describedby="f4e">
+              <span class="err" id="f4e"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 17.5A1.8 1.8 0 0 0 4 20.2h16a1.8 1.8 0 0 0 1.6-2.7L13.7 3.9a1.8 1.8 0 0 0-3.4 0Z"/></svg>Sotto la soglia di aggregazione sicura: il conteggio sarà soppresso (N&lt;10).</span>
+            </div>
+            <div class="field">
+              <label for="f5">Documento di evidenza</label>
+              <textarea class="input" id="f5" rows="3" placeholder="Riferimento, verificatore, data…"></textarea>
+            </div>
+            <div class="field">
+              <label for="f6">Riferimento Commitment</label>
+              <input class="input" id="f6" value="non disponibile" disabled>
+              <span class="hint">Disabilitato: nessun Commitment collegato a questo evento osservato.</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+              <button class="btn btn-primary">Salva evidenza</button>
+              <button class="btn btn-g">Annulla</button>
+              <span class="ok-msg" style="margin-left:4px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg>Bozza salvata 12:04</span>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <div class="c5" style="display:grid;gap:var(--gap);align-content:start">
+        <section class="s1" aria-label="Stati di sistema">
+          <div class="hd"><span class="lbl">Messaggi di sistema</span></div>
+          <div class="pad" style="display:grid;gap:10px">
+            <div class="notice ok"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg><span><b>Scoring completato.</b> KORA Index 50,4 · tetto 92,5.</span></div>
+            <div class="notice info"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2.2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span><b>Gruppo sotto soglia.</b> Dato soppresso per privacy (N&lt;10) — mai un conteggio parziale.</span></div>
+            <div class="notice warn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 17.5A1.8 1.8 0 0 0 4 20.2h16a1.8 1.8 0 0 0 1.6-2.7L13.7 3.9a1.8 1.8 0 0 0-3.4 0Z"/></svg><span><b>Activation Safeguard: WARNING.</b> AR 0,31 sotto la soglia CLEAR di 0,40.</span></div>
+            <div class="notice risk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span><b>AGF = 0.</b> Evento squalificato: IU = 0, non modificabile in revisione.</span></div>
+          </div>
+        </section>
+
+        <section class="s1" aria-label="Stati di caricamento e vuoto">
+          <div class="hd"><span class="lbl">Caricamento · vuoto</span></div>
+          <div class="pad">
+            <p class="xs" style="margin-bottom:10px">In caricamento — skeleton, mai spinner a tutta pagina</p>
+            <div style="display:grid;gap:8px">
+              <div class="skel" style="height:11px;width:36%"></div>
+              <div class="skel" style="height:28px;width:58%"></div>
+              <div class="skel" style="height:11px;width:82%"></div>
+              <div class="skel" style="height:11px;width:54%"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
+              <svg class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg>
+              <span class="xs">Ricalcolo scoring in corso</span>
+            </div>
+            <div style="height:1px;background:var(--line);margin:16px 0"></div>
+            <div class="state-box" style="padding:22px 12px">
+              <span style="display:inline-grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--l2);color:var(--ink-mute);margin-bottom:12px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>
+              <h4>Nessun evento da rivedere</h4>
+              <p>Quando una sorgente produce nuovi eventi UEF compariranno qui, ordinati per IU potenziali.</p>
+              <button class="btn btn-g btn-sm">Configura sorgente</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="c12 s1" aria-label="Controlli e stati interattivi">
+        <div class="hd"><span class="lbl">Controlli · riposo, hover, focus, selezionato, disabilitato</span>
+          <div class="hd-r"><span class="xs">prova con Tab: anello Violet 2px, offset 2px, su ogni elemento</span></div></div>
+        <div class="pad" style="display:grid;gap:18px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button class="btn btn-primary">Azione primaria</button>
+            <button class="btn btn-ink">Azione ink</button>
+            <button class="btn btn-g">Secondaria</button>
+            <button class="btn btn-q">Quiet</button>
+            <button class="btn btn-g" disabled>Disabilitata</button>
+            <div class="seg"><button aria-pressed="true">Selezionato</button><button aria-pressed="false">Alternativo</button></div>
+          </div>
+          <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center">
+            <span class="chip">Filtro</span><span class="chip on">Filtro attivo</span><span class="chip dash">+ Aggiungi</span>
+            <span class="st ok"><i></i>CLEAR</span><span class="st warn"><i></i>WARNING</span>
+            <span class="st risk"><i></i>FLAGGED</span><span class="st info"><i></i>In corso</span>
+            <span class="st idle"><i></i>In attesa</span>
+            <span class="delta up">+3,0</span><span class="delta dn">−2,3</span>
+          </div>
+          <dl style="max-width:760px">
+            <div class="spec"><dt>Hover riga</dt><dd class="sm">fondo #FAFBFF · azioni contestuali in fade 90 ms</dd></div>
+            <div class="spec"><dt>Selezione</dt><dd class="sm">fondo Violet 9% · barra sinistra 3px Violet</dd></div>
+            <div class="spec"><dt>Focus</dt><dd class="sm">outline 2px Violet, offset 2px — mai rimosso, identico ovunque</dd></div>
+            <div class="spec"><dt>Disabilitato</dt><dd class="sm">opacità .45 · cursor not-allowed · nessuna ombra</dd></div>
+            <div class="spec"><dt>Stato semantico</dt><dd class="sm">sempre punto + parola: il colore non è mai l'unico segnale</dd></div>
+            <div class="spec"><dt>Motion</dt><dd class="sm">90 / 160 / 280 ms · cubic-bezier(.2,.6,.25,1) · prefers-reduced-motion → 0,01 ms</dd></div>
+          </dl>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="flag">WP124 · SIGNAL · Stati / Form</div>
+</div>
+</div>
+</body>
+</html>

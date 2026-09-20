@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KORA — Revisione UEF · SIGNAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kora-signal.css">
+<style>
+  .ops { display:grid; grid-template-columns:minmax(0,1fr) 348px; gap:var(--gap); align-items:start; }
+  .tabs { display:flex; gap:2px; border-bottom:1px solid var(--line); padding:0 4px; }
+  .tab { display:flex; align-items:center; gap:7px; height:38px; padding:0 13px; position:relative;
+         font-size:12.5px; font-weight:700; color:var(--ink-3); border-radius:8px 8px 0 0; }
+  .tab:hover { color:var(--ink); background:rgba(6,3,43,.035); }
+  .tab[aria-selected='true'] { color:var(--ink); }
+  .tab[aria-selected='true']::after { content:''; position:absolute; left:10px; right:10px; bottom:-1px;
+         height:2px; border-radius:2px; background:var(--violet); }
+  .tab b { font-size:10.5px; font-weight:800; padding:1px 6px; border-radius:99px;
+           background:rgba(6,3,43,.07); color:var(--ink-2); }
+  .tab[aria-selected='true'] b { background:var(--violet-tint); color:var(--violet-700); }
+  .bulk { display:flex; align-items:center; gap:12px; padding:10px 14px;
+          background:linear-gradient(90deg, rgba(97,86,245,.14), rgba(97,86,245,.04));
+          border-bottom:1px solid var(--violet-edge); }
+  .toolbar { display:flex; align-items:center; gap:8px; padding:11px 14px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  /* the selection carries its own IU composition — a KORA review reads in IU */
+  .selmix { display:flex; height:16px; width:96px; border-radius:4px; overflow:hidden; gap:1px; }
+  .selmix i { display:block; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<nav class="nav" aria-label="Navigazione KORA">
+  <div class="nav-brand">
+    <span class="nav-mark" style="background:linear-gradient(145deg,#6E63F8,#3B2FD4)">
+      <svg class="mark5" width="19" height="19" viewBox="0 0 22 22" aria-hidden="true">
+        <polygon points="11,3.5 18.13,8.68 15.41,17.07 6.59,17.07 3.87,8.68" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="1"/>
+        <circle cx="11" cy="3.5" r="2.1" fill="#fff"/>
+        <circle cx="18.13" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/>
+        <circle cx="15.41" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/>
+        <circle cx="6.59" cy="17.07" r="1.7" fill="rgba(255,255,255,.80)"/>
+        <circle cx="3.87" cy="8.68" r="1.7" fill="rgba(255,255,255,.80)"/>
+      </svg>
+    </span>
+    <span class="nav-word">KORA</span>
+    <button class="nav-collapse" aria-label="Comprimi navigazione">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+  </div>
+  <div class="ws">
+    <button class="ws-btn">
+      <span class="ws-avatar">AM</span>
+      <span style="min-width:0;text-align:left">
+        <span class="ws-name" style="display:block">Acme Manifattura</span>
+        <span class="ws-meta">1.284 lavoratori · H1 2026</span>
+      </span>
+      <svg style="margin-left:auto;opacity:.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 9 5 5 5-5"/></svg>
+    </button>
+  </div>
+  <button class="nav-cmd">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    Cerca o esegui… <kbd>⌘K</kbd>
+  </button>
+  <div class="nav-scroll">
+    <div class="nav-group">
+      <span class="lbl">Intelligence</span>
+      <a class="nav-i" href="company.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 13h4l3 7 4-16 3 9h4"/></svg>
+        KORA Index
+      </a>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/></svg>
+        Attivazione
+      </a>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        Andamento
+      </a>
+    </div>
+    <div class="nav-group">
+      <span class="lbl">Operazioni</span>
+      <a class="nav-i" href="#" aria-current="page">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+        Revisione UEF <span class="nav-count">142</span>
+      </a>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11m0 0 4-4m-4 4-4-4M4 20h16"/></svg>
+        Ingestione
+      </a>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 11h13M10 16h10"/></svg>
+        Mappatura AI <span class="nav-count">9</span>
+      </a>
+    </div>
+    <div class="nav-group">
+      <span class="lbl">Evidenza</span>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+        Report
+      </a>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/></svg>
+        Metodologia
+      </a>
+      <a class="nav-i" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/></svg>
+        Sorgenti dati
+      </a>
+    </div>
+  </div>
+  <div class="nav-state">
+    <div class="nav-state-r">
+      <span style="width:6px;height:6px;border-radius:99px;background:var(--ok);box-shadow:0 0 7px var(--ok)"></span>
+      <span>Scoring</span><span>2h fa</span>
+    </div>
+    <div class="nav-state-r">
+      <span style="width:6px;height:6px;border-radius:99px;background:var(--warn)"></span>
+      <span>Evidence debt</span><span>38</span>
+    </div>
+  </div>
+  <div class="nav-foot">
+    <div style="display:flex;align-items:center;gap:7px;padding:0 8px 8px">
+      <span class="env-dot"></span>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.50)">Staging · dati sintetici</span>
+    </div>
+    <a class="nav-user" href="#">
+      <span class="nav-ua">GR</span>
+      <span><span class="nav-un" style="display:block">Giulia Ronchi</span><span class="nav-ur">Company Admin</span></span>
+      <svg style="margin-left:auto;opacity:.45" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m7 9 5 5 5-5"/></svg>
+    </a>
+  </div>
+</nav>
+
+<div class="work">
+  <header class="topbar">
+    <div class="crumbs">
+      <span>Company</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+      <span>Operazioni</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+      <b>Revisione UEF</b>
+    </div>
+    <div class="topbar-r">
+      <div class="search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        Cerca evento, descrizione, fonte <kbd>⌘K</kbd>
+      </div>
+      <div class="seg" role="group" aria-label="Periodo">
+        <button aria-pressed="false">H2 25</button><button aria-pressed="true">H1 26</button>
+      </div>
+      <button class="btn btn-g btn-ico" aria-label="Notifiche">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 6-3 7-3 7h18s-3-1-3-7M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      </button>
+      <button class="btn btn-ink">Esegui scoring</button>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="ops">
+
+      <section class="s1" aria-label="Coda revisione UEF" style="overflow:hidden">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true">Da rivedere <b>142</b></button>
+          <button class="tab" role="tab" aria-selected="false">In attesa evidenza <b>38</b></button>
+          <button class="tab" role="tab" aria-selected="false">Respinti <b>11</b></button>
+          <button class="tab" role="tab" aria-selected="false">Approvati <b>892</b></button>
+        </div>
+
+        <div class="toolbar">
+          <button class="chip on">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>
+            Stato: da rivedere
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+          <button class="chip">Pillar <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <button class="chip">Tier evidenza <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <button class="chip">Fonte <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+          <button class="chip dash">+ Filtro</button>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <span class="xs">142 eventi · 8.412 IU potenziali</span>
+            <div class="seg">
+              <button aria-pressed="true" title="Densità compatta"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg></button>
+              <button aria-pressed="false" title="Densità comoda"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+            </div>
+            <button class="btn btn-g btn-sm">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h6"/></svg>
+              Colonne
+            </button>
+          </div>
+        </div>
+
+        <!-- selection speaks in IU and pillar mix, not in row counts alone -->
+        <div class="bulk">
+          <span class="st info" style="height:24px"><i></i>2 selezionati</span>
+          <span class="xs">IU in approvazione <b class="mono" style="color:var(--ink);font-size:13px">34,8</b></span>
+          <span class="selmix" role="img" aria-label="Mix pillar della selezione: LIFE 53%, GROWTH 47%">
+            <i style="flex:53;background:var(--life)"></i><i style="flex:47;background:var(--growth)"></i>
+          </span>
+          <span class="xs">LIFE · GROWTH</span>
+          <div style="margin-left:auto;display:flex;gap:7px">
+            <button class="btn btn-g btn-sm">Assegna advisor</button>
+            <button class="btn btn-g btn-sm">Richiedi evidenza</button>
+            <button class="btn btn-primary btn-sm">Approva 2 eventi</button>
+          </div>
+        </div>
+
+        <div class="tw">
+          <table class="t">
+            <thead>
+              <tr>
+                <th style="width:28px"><input type="checkbox" aria-label="Seleziona tutto"></th>
+                <th style="width:78px">Evento</th>
+                <th class="desc">Descrizione</th>
+                <th style="width:84px">Pillar</th>
+                <th style="width:96px" title="NM · BC · CQ · EV · CF · AGF">Traccia IU</th>
+                <th class="r" style="width:42px">NM</th>
+                <th class="r" style="width:42px">AGF</th>
+                <th class="r" style="width:50px">IU</th>
+                <th style="width:108px">Stato</th>
+                <th style="width:38px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="active">
+                <td><input type="checkbox" checked aria-label="Seleziona UEF-4821"></td>
+                <td class="b mono">UEF-4821</td>
+                <td class="desc">Percorso prevenzione cardiologica — coorte Nord</td>
+                <td><span class="st idle" style="background:rgba(199,111,61,.12);color:#8A4A22"><i style="background:var(--life)"></i>LIFE</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,4 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">1,00</td><td class="r mono">1,00</td><td class="r mono b">18,4</td>
+                <td><span class="st info"><i></i>Da rivedere</span></td>
+                <td><div class="acts">
+                  <button class="ib" aria-label="Approva"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg></button>
+                </div></td>
+              </tr>
+              <tr aria-selected="true">
+                <td><input type="checkbox" checked aria-label="Seleziona UEF-4822"></td>
+                <td class="b mono">UEF-4822</td>
+                <td class="desc">Certificazione competenze digitali — 2ª sessione</td>
+                <td><span class="st idle" style="background:rgba(47,125,85,.12);color:#2F7D55"><i style="background:var(--growth)"></i>GROWTH</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,6.6 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="6.6" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">0,90</td><td class="r mono">1,00</td><td class="r mono b">16,4</td>
+                <td><span class="st info"><i></i>Da rivedere</span></td>
+                <td><div class="acts">
+                  <button class="ib" aria-label="Approva"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg></button>
+                </div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4823"></td>
+                <td class="b mono">UEF-4823</td>
+                <td class="desc">Mentoring senior–junior, ciclo trimestrale</td>
+                <td><span class="st idle" style="background:rgba(138,117,98,.14);color:#6B5A49"><i style="background:var(--legacy)"></i>LEGACY</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,11.8 20,4 35,4 50,4 65,4 80,7.9" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="11.8" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="7.9" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">0,70</td><td class="r mono">0,85</td><td class="r mono b">7,1</td>
+                <td><span class="st warn"><i></i>Evidenza debole</span></td>
+                <td><div class="acts">
+                  <button class="ib" aria-label="Richiedi evidenza"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button>
+                </div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4824"></td>
+                <td class="b mono">UEF-4824</td>
+                <td class="desc">Giornata volontariato ambientale — parco fluviale</td>
+                <td><span class="st idle" style="background:rgba(217,154,43,.15);color:#8A5A00"><i style="background:var(--impact)"></i>IMPACT</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,4 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">1,00</td><td class="r mono">1,00</td><td class="r mono b">22,0</td>
+                <td><span class="st ok"><i></i>Approvato</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4825"></td>
+                <td class="b mono">UEF-4825</td>
+                <td class="desc">Community di pratica cross-funzionale — kickoff</td>
+                <td><span class="st idle" style="background:rgba(217,151,103,.16);color:#8A4A22"><i style="background:var(--connection)"></i>CONNECT.</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,7.9 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="7.9" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">0,85</td><td class="r mono">1,00</td><td class="r mono b">11,9</td>
+                <td><span class="st ok"><i></i>Approvato</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4826"></td>
+                <td class="b mono">UEF-4826</td>
+                <td class="desc">Sportello supporto psicologico — accessi aggregati</td>
+                <td><span class="st idle" style="background:rgba(199,111,61,.12);color:#8A4A22"><i style="background:var(--life)"></i>LIFE</span></td>
+                <td><span class="hatch" style="display:block;width:88px;height:14px;border-radius:3px" role="img" aria-label="Catena non esposta: coorte sotto soglia"></span></td>
+                <td class="r mono m">—</td><td class="r mono m">—</td><td class="r mono m">—</td>
+                <td><span class="st idle"><i></i>Soppresso N&lt;10</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Perché soppresso"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4827"></td>
+                <td class="b mono">UEF-4827</td>
+                <td class="desc">Corso sicurezza avanzata — reparto logistica</td>
+                <td><span class="st idle" style="background:rgba(47,125,85,.12);color:#2F7D55"><i style="background:var(--growth)"></i>GROWTH</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,5.3 20,4 35,4 50,4 65,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="5.3" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><path d="M76 10 l8 8 M84 10 l-8 8" stroke="#9E3B2F" stroke-width="2" stroke-linecap="round"/><line x1="65" y1="4" x2="72" y2="4" stroke="#9E3B2F" stroke-width="1.6" stroke-dasharray="2 2"/></svg></td>
+                <td class="r mono">0,95</td><td class="r mono" style="color:var(--risk);font-weight:800">0,00</td><td class="r mono b">0,0</td>
+                <td><span class="st risk"><i></i>Squalificato</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4828"></td>
+                <td class="b mono">UEF-4828</td>
+                <td class="desc">Trasferimento conoscenza pre-pensionamento</td>
+                <td><span class="st idle" style="background:rgba(138,117,98,.14);color:#6B5A49"><i style="background:var(--legacy)"></i>LEGACY</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,9.2 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="9.2" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">0,80</td><td class="r mono">1,00</td><td class="r mono b">13,6</td>
+                <td><span class="st info"><i></i>Da rivedere</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Approva"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4829"></td>
+                <td class="b mono">UEF-4829</td>
+                <td class="desc">Screening metabolico volontario — turno notte</td>
+                <td><span class="st idle" style="background:rgba(199,111,61,.12);color:#8A4A22"><i style="background:var(--life)"></i>LIFE</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,4 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">1,00</td><td class="r mono">1,00</td><td class="r mono b">15,2</td>
+                <td><span class="st info"><i></i>Da rivedere</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Approva"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4830"></td>
+                <td class="b mono">UEF-4830</td>
+                <td class="desc">Progetto rigenerazione urbana — partner territoriale</td>
+                <td><span class="st idle" style="background:rgba(217,154,43,.15);color:#8A5A00"><i style="background:var(--impact)"></i>IMPACT</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,5.3 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="5.3" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">0,95</td><td class="r mono">1,00</td><td class="r mono b">19,7</td>
+                <td><span class="st info"><i></i>Da rivedere</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Approva"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4831"></td>
+                <td class="b mono">UEF-4831</td>
+                <td class="desc">Percorso onboarding buddy — coorte primavera</td>
+                <td><span class="st idle" style="background:rgba(217,151,103,.16);color:#8A4A22"><i style="background:var(--connection)"></i>CONNECT.</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,9.2 20,4 35,6.6 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="9.2" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="6.6" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">0,80</td><td class="r mono">1,00</td><td class="r mono b">9,4</td>
+                <td><span class="st warn"><i></i>Evidenza debole</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Richiedi evidenza"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4832"></td>
+                <td class="b mono">UEF-4832</td>
+                <td class="desc">Laboratorio benessere posturale — sede centrale</td>
+                <td><span class="st idle" style="background:rgba(199,111,61,.12);color:#8A4A22"><i style="background:var(--life)"></i>LIFE</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,7.9 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="7.9" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">0,85</td><td class="r mono">1,00</td><td class="r mono b">12,8</td>
+                <td><span class="st info"><i></i>Da rivedere</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Approva"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4833"></td>
+                <td class="b mono">UEF-4833</td>
+                <td class="desc">Percorso leadership inclusiva — cohort 3</td>
+                <td><span class="st idle" style="background:rgba(47,125,85,.12);color:#2F7D55"><i style="background:var(--growth)"></i>GROWTH</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,4 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">1,00</td><td class="r mono">1,00</td><td class="r mono b">20,5</td>
+                <td><span class="st info"><i></i>Da rivedere</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Approva"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4834"></td>
+                <td class="b mono">UEF-4834</td>
+                <td class="desc">Banca del tempo interna — primo trimestre</td>
+                <td><span class="st idle" style="background:rgba(217,151,103,.16);color:#8A4A22"><i style="background:var(--connection)"></i>CONNECT.</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,13.1 20,4 35,4 50,4 65,4 80,6.6" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="13.1" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="6.6" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">0,65</td><td class="r mono">0,90</td><td class="r mono b">6,3</td>
+                <td><span class="st warn"><i></i>Evidenza debole</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Richiedi evidenza"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4835"></td>
+                <td class="b mono">UEF-4835</td>
+                <td class="desc">Donazione competenze a ente terzo settore</td>
+                <td><span class="st idle" style="background:rgba(217,154,43,.15);color:#8A5A00"><i style="background:var(--impact)"></i>IMPACT</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,5.3 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="5.3" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">0,95</td><td class="r mono">1,00</td><td class="r mono b">17,2</td>
+                <td><span class="st ok"><i></i>Approvato</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4836"></td>
+                <td class="b mono">UEF-4836</td>
+                <td class="desc">Archivio pratiche di reparto — knowledge base</td>
+                <td><span class="st idle" style="background:rgba(138,117,98,.14);color:#6B5A49"><i style="background:var(--legacy)"></i>LEGACY</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,10.5 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="10.5" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">0,75</td><td class="r mono">1,00</td><td class="r mono b">10,9</td>
+                <td><span class="st info"><i></i>Da rivedere</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Approva"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" aria-label="Seleziona UEF-4837"></td>
+                <td class="b mono">UEF-4837</td>
+                <td class="desc">Check-up nutrizionale volontario — sede Sud</td>
+                <td><span class="st idle" style="background:rgba(199,111,61,.12);color:#8A4A22"><i style="background:var(--life)"></i>LIFE</span></td>
+                <td><svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,4 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg></td>
+                <td class="r mono">1,00</td><td class="r mono">1,00</td><td class="r mono b">14,1</td>
+                <td><span class="st ok"><i></i>Approvato</span></td>
+                <td><div class="acts"><button class="ib" aria-label="Apri"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="only-narrow">
+          <div class="rec"><div class="rec-top"><span class="b mono">UEF-4821</span><span class="mono b" style="margin-left:auto">18,4 IU</span></div>
+            <div>Percorso prevenzione cardiologica — coorte Nord</div>
+            <div class="rec-meta"><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,4 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg><span class="rec-kv">Pillar <b>LIFE</b></span><span class="rec-kv">NM <b>1,00</b></span><span class="rec-kv">AGF <b>1,00</b></span></div>
+            <div><span class="st info"><i></i>Da rivedere</span></div></div>
+          <div class="rec"><div class="rec-top"><span class="b mono">UEF-4823</span><span class="mono b" style="margin-left:auto">7,1 IU</span></div>
+            <div>Mentoring senior–junior, ciclo trimestrale</div>
+            <div class="rec-meta"><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,11.8 20,4 35,4 50,4 65,4 80,7.9" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="11.8" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="7.9" r="2" fill="#6156F5"/></svg><span class="rec-kv">Pillar <b>LEGACY</b></span><span class="rec-kv">NM <b>0,70</b></span><span class="rec-kv">AGF <b>0,85</b></span></div>
+            <div><span class="st warn"><i></i>Evidenza debole</span></div></div>
+          <div class="rec"><div class="rec-top"><span class="b mono">UEF-4826</span><span class="mono b" style="margin-left:auto">— IU</span></div>
+            <div>Sportello supporto psicologico — accessi aggregati</div>
+            <div class="rec-meta"><span class="rec-kv">Pillar <b>LIFE</b></span><span class="rec-kv">NM <b>—</b></span><span class="rec-kv">AGF <b>—</b></span></div>
+            <div><span class="st idle"><i></i>Soppresso N&lt;10</span></div></div>
+          <div class="rec"><div class="rec-top"><span class="b mono">UEF-4827</span><span class="mono b" style="margin-left:auto">0,0 IU</span></div>
+            <div>Corso sicurezza avanzata — reparto logistica</div>
+            <div class="rec-meta"><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,5.3 20,4 35,4 50,4 65,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="5.3" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><path d="M76 10 l8 8 M84 10 l-8 8" stroke="#9E3B2F" stroke-width="2" stroke-linecap="round"/></svg><span class="rec-kv">Pillar <b>GROWTH</b></span><span class="rec-kv">NM <b>0,95</b></span><span class="rec-kv">AGF <b>0,00</b></span></div>
+            <div><span class="st risk"><i></i>Squalificato</span></div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:22px;padding:12px 14px;border-top:1px solid var(--line);flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+            <span class="lbl" style="flex:none">Traccia IU</span>
+            <span style="display:flex;align-items:center;gap:7px;flex:none"><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,4 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg><span class="xs">piena</span></span>
+            <span style="display:flex;align-items:center;gap:7px;flex:none"><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,11.8 20,4 35,4 50,4 65,4 80,7.9" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="11.8" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#fff" stroke="#D99A2B" stroke-width="1.8"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="7.9" r="2" fill="#6156F5"/></svg><span class="xs">degrado · evidenza debole</span></span>
+            <span style="display:flex;align-items:center;gap:7px;flex:none"><svg width="88" height="20" viewBox="0 0 88 20" style="flex:none" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,5.3 20,4 35,4 50,4 65,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="5.3" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#6156F5"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><path d="M76 10 l8 8 M84 10 l-8 8" stroke="#9E3B2F" stroke-width="2" stroke-linecap="round"/></svg><span class="xs">AGF 0 · interrotta</span></span>
+            <span class="xs" style="color:var(--ink-mute);flex:none">nodi: NM · BC · CQ · EV · CF · AGF</span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex:none">
+            <span class="xs">1–17 di 142</span>
+            <button class="btn btn-g btn-sm" disabled>Precedenti</button>
+            <button class="btn btn-g btn-sm">Successivi</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="drawer" aria-label="Dettaglio evento">
+        <div class="s1" style="overflow:hidden">
+          <div class="hd" style="background:var(--l2)">
+            <span class="lbl">Evento selezionato</span>
+            <div class="hd-r">
+              <button class="ib" aria-label="Precedente"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m15 6-6 6 6 6"/></svg></button>
+              <button class="ib" aria-label="Successivo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+              <button class="ib" aria-label="Chiudi"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            </div>
+          </div>
+
+          <div class="pad">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span class="mono" style="font-size:12px;font-weight:800;color:var(--ink-3)">UEF-4821</span>
+              <span class="st idle" style="background:rgba(199,111,61,.12);color:#8A4A22"><i style="background:var(--life)"></i>LIFE</span>
+              <span class="st info" style="margin-left:auto"><i></i>Da rivedere</span>
+            </div>
+            <h2 class="d3" style="line-height:1.25">Percorso prevenzione cardiologica — coorte Nord</h2>
+            <p class="p" style="margin-top:8px">
+              Screening volontario erogato dal provider welfare su tre giornate. Partecipazione
+              registrata in forma aggregata: nessun dato clinico è raccolto da KORA.
+            </p>
+
+            <!-- the full multiplicative trace, as an instrument readout -->
+            <div class="s2" style="padding:13px 14px;margin-top:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <span class="lbl">Catena di calcolo IU</span>
+                <svg class="tp" width="88" height="20" viewBox="0 0 88 20" aria-hidden="true"><line x1="5" y1="4" x2="80" y2="4" stroke="rgba(6,3,43,.13)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="5,4 20,4 35,4 50,4 65,4 80,4" fill="none" stroke="#6156F5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="4" r="2" fill="#6156F5"/><circle cx="20" cy="4" r="2" fill="#6156F5"/><circle cx="35" cy="4" r="2" fill="#6156F5"/><circle cx="50" cy="4" r="2.6" fill="#2F7D55"/><circle cx="65" cy="4" r="2" fill="#6156F5"/><circle cx="80" cy="4" r="2" fill="#6156F5"/></svg>
+              </div>
+              <div class="trace">
+                <div class="trace-r"><span class="k">NM</span><span class="sm">Normalized Magnitude</span><span class="v mono">1,00</span></div>
+                <div class="trace-r"><span class="k">BC</span><span class="sm">Base Contribution · LIFE</span><span class="v mono">18,4</span></div>
+                <div class="trace-r"><span class="k">CQ</span><span class="sm">Correction · qualità</span><span class="v mono">1,00</span></div>
+                <div class="trace-r"><span class="k">EV</span><span class="sm">Evidence · terza parte</span><span class="v mono">1,00</span></div>
+                <div class="trace-r"><span class="k">CF</span><span class="sm">Correction factor</span><span class="v mono">1,00</span></div>
+                <div class="trace-r"><span class="k" style="color:var(--violet-700)">AGF</span><span class="sm">Anti-Gaming Factor</span><span class="v mono" style="color:var(--ok)">1,00</span></div>
+              </div>
+              <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:11px;padding-top:11px;border-top:1px solid var(--l2-edge)">
+                <span class="lbl">Impact Units</span>
+                <span class="d2" style="font-size:26px">18,4</span>
+              </div>
+            </div>
+
+            <span class="lbl" style="display:block;margin:16px 0 8px">Evidenza · tier 3</span>
+            <div class="s3" style="padding:10px 12px;display:flex;align-items:center;gap:10px">
+              <span style="width:30px;height:30px;border-radius:8px;background:var(--ok-tint);display:grid;place-items:center;flex:none">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"><path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
+              </span>
+              <span style="min-width:0">
+                <span class="h2" style="display:block;font-size:12.5px">attestato_provider_H1.pdf</span>
+                <span class="xs">Verificata da terza parte · 12 giu 2026</span>
+              </span>
+              <button class="ib" style="margin-left:auto" aria-label="Apri evidenza"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button>
+            </div>
+
+            <dl class="kv" style="margin-top:16px">
+              <dt>Fonte</dt><dd>Provider welfare · SB-2026-041</dd>
+              <dt>Periodo</dt><dd>H1 2026</dd>
+              <dt>Coorte</dt><dd>Stabilimento Nord · 34 partecipanti</dd>
+              <dt>Identità</dt><dd><span class="st idle"><i></i>pseudonym_id — nessun dato individuale</span></dd>
+            </dl>
+
+            <div class="s2" style="padding:10px 12px;margin-top:14px;display:flex;gap:9px;align-items:flex-start">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><path d="M3 13h4l3 7 4-16 3 9h4"/></svg>
+              <span style="font-size:11.5px;line-height:1.5;color:var(--ink-2)">
+                Approvando, LIFE sale a 2.858 IU e l'indice a <b>50,5</b>.
+              </span>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:16px">
+              <button class="btn btn-primary" style="flex:1;justify-content:center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg>
+                Approva
+              </button>
+              <button class="btn btn-g">Rifiuta</button>
+              <button class="btn btn-g btn-ico" aria-label="Altre azioni">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="s1" style="margin-top:var(--gap)">
+          <div class="hd"><span class="lbl">Scorciatoie</span></div>
+          <div class="pad" style="display:grid;gap:9px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <kbd style="font:inherit;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:5px;background:var(--l0);border:1px solid var(--line-2)">J / K</kbd>
+              <span class="sm">Evento precedente / successivo</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <kbd style="font:inherit;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:5px;background:var(--l0);border:1px solid var(--line-2)">A</kbd>
+              <span class="sm">Approva evento selezionato</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <kbd style="font:inherit;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:5px;background:var(--l0);border:1px solid var(--line-2)">E</kbd>
+              <span class="sm">Richiedi evidenza</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <kbd style="font:inherit;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:5px;background:var(--l0);border:1px solid var(--line-2)">⌘K</kbd>
+              <span class="sm">Comando rapido</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+  <div class="flag">WP124 · SIGNAL · Dense Operations</div>
+</div>
+</div>
+</body>
+</html>
