@@ -56,8 +56,15 @@ export function getCompanyBCredentials(): CompanyCredentials | null {
  * are readers only; the values must come from the authorized environment.
  */
 export function getWorkerCredentials(): Credentials | null {
-  const email = readEnv('E2E_WORKER_EMAIL');
-  const password = readEnv('E2E_WORKER_PASSWORD');
+  // Naming compatibility (KORA-WP-088): scripts/e2e/seed-local-golden-path.ts
+  // predates this reader and writes E2E_WORKER_A_* (the "_A" mirrors the
+  // COMPANY_A/COMPANY_B tenant pair, though only one worker is ever seeded).
+  // E2E_WORKER_* is the canonical WP-088 name and ALWAYS wins; E2E_WORKER_A_*
+  // is accepted only as a fallback so the existing local seed output works
+  // unmodified. This is a single ordered precedence, not dual semantics: there
+  // is exactly one worker identity, reachable under either spelling.
+  const email = readEnv('E2E_WORKER_EMAIL') ?? readEnv('E2E_WORKER_A_EMAIL');
+  const password = readEnv('E2E_WORKER_PASSWORD') ?? readEnv('E2E_WORKER_A_PASSWORD');
   if (!email || !password) return null;
   return { email, password };
 }

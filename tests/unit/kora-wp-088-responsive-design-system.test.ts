@@ -397,6 +397,61 @@ describe('KORA-WP-088 — authenticated multi-viewport validation is runnable on
     }
   });
 
+  // The script's own header legitimately DESCRIBES what it never does ("never a
+  // raw INSERT into auth.users", "never prints a password"). Strip comments so
+  // the guard reads the code, not the prose about the code.
+  const fixtureCode = () =>
+    read('scripts/e2e/provision-staging-e2e-fixtures.ts')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*(\/\/|\*).*$/gm, '');
+
+  it('the staging fixture script refuses production and demands a positively identified target', () => {
+    const fx = fixtureCode();
+    expect(fx).toContain("E2E_STAGING_FIXTURE_CONFIRM') !== 'YES'");
+    expect(fx).toContain('ALLOWED_STAGING_REF');
+    expect(fx).toContain('DENIED_PRODUCTION_REF');
+    expect(fx).toMatch(/expectedRef !== ALLOWED_STAGING_REF/);
+    expect(fx).toMatch(/expectedRef === DENIED_PRODUCTION_REF/);
+    // Supabase Admin Auth API only — never a raw INSERT into auth.users.
+    // Asserted structurally: no raw SQL driver is imported at all, so the
+    // script physically cannot execute SQL against auth.users.
+    expect(fx).toContain('auth.admin.createUser');
+    expect(fx).not.toMatch(/from\s+'pg'/);
+    expect(fx).not.toMatch(/\bnew Client\(/);
+    expect(fx).not.toMatch(/\.rpc\(/);
+    expect(fx).not.toMatch(/\.schema\('auth'\)/);
+  });
+
+  it('the staging fixture script never prints, writes or returns a password', () => {
+    const fx = fixtureCode();
+    for (const v of ['E2E_PARTNER_PASSWORD', 'E2E_ADVISOR_PASSWORD']) expect(fx).toContain(v);
+    // No hardcoded value, no default, no generated fallback.
+    expect(fx).not.toMatch(/PASSWORD'?\s*\)?\s*(\|\||\?\?)\s*['"`]/);
+    expect(fx).not.toMatch(/randomBytes|generatePassword/);
+    // It writes no files at all.
+    expect(fx).not.toMatch(/writeFileSync|appendFileSync|createWriteStream/);
+    // And never passes the password VALUE to a logger. Naming the variable in
+    // a message ("E2E_PARTNER_PASSWORD not set") is fine and intended; what
+    // must never happen is interpolating or passing the binding itself.
+    expect(fx).not.toMatch(/console\.\w+\([^)]*\$\{\s*password/i);
+    expect(fx).not.toMatch(/console\.\w+\(\s*password\b/i);
+    expect(fx).not.toMatch(/console\.\w+\([^)]*,\s*password\s*[),]/i);
+  });
+
+  it('the fixture mirrors real schema truth for both roles', () => {
+    const fx = fixtureCode();
+    // advisor_identity has NO email column (migration 056): full_name + status.
+    expect(fx).toContain('full_name');
+    expect(fx).toMatch(/status: 'active'/);
+    expect(fx).not.toMatch(/advisor_identity[\s\S]{0,200}email:/);
+    // Partner must attach to an EXISTING partner_profile, never invent one.
+    expect(fx).toContain('E2E_PARTNER_PROFILE_ID');
+    expect(fx).toContain("from('partner_profile')");
+    expect(fx).not.toMatch(/partner_profile'\)[\s\S]{0,120}\.insert\(/);
+    // Partners are never company-scoped.
+    expect(fx).not.toContain('kora_tenant_id:');
+  });
+
   it('playwright defines the three Founder-mandated viewport projects', () => {
     const cfg = read('playwright.config.ts');
     for (const [name, width] of [['mobile-375', 375], ['tablet-768', 768], ['desktop-1440', 1440]] as const) {
@@ -406,6 +461,62 @@ describe('KORA-WP-088 — authenticated multi-viewport validation is runnable on
     // The viewport projects must not silently re-run every existing spec.
     expect(cfg).toContain('testMatch');
     expect(cfg).toContain('testIgnore');
+  });
+
+  it('the Vercel protection bypass reads the secret only from process.env and never hardcodes it', () => {
+    const bypass = read('tests/e2e/helpers/vercel-bypass.ts');
+    expect(bypass).toContain('process.env.VERCEL_AUTOMATION_BYPASS_SECRET');
+    // No literal secret, no default, no fallback value of any kind.
+    expect(bypass).not.toMatch(/VERCEL_AUTOMATION_BYPASS_SECRET\s*(\|\||\?\?)\s*['"`]/);
+    expect(bypass).not.toMatch(/VERCEL_AUTOMATION_BYPASS_SECRET\s*=\s*['"`]/);
+    // The value must never be logged, printed or returned.
+    expect(bypass).not.toMatch(/console\.(log|info|warn|error)/);
+    expect(bypass).not.toMatch(/return\s+secret/);
+  });
+
+  it('absent secret means no bypass is attempted at all', () => {
+    const bypass = read('tests/e2e/helpers/vercel-bypass.ts');
+    expect(bypass).toMatch(/if \(!secret\) return;/);
+    // Presence is observable; the value is not.
+    expect(bypass).toContain('export function hasProtectionBypass(): boolean');
+    expect(bypass).toMatch(/readSecret\(\) !== undefined/);
+  });
+
+  it('the bypass secret is host-scoped and can never reach a third-party host', () => {
+    const bypass = read('tests/e2e/helpers/vercel-bypass.ts');
+    // Scoped via a route handler, NOT use.extraHTTPHeaders — which Playwright
+    // would apply to every request, including fonts.googleapis.com.
+    expect(bypass).toContain('page.route');
+    expect(bypass).toMatch(/sameHost/);
+    expect(bypass).toMatch(/if \(!sameHost\)/);
+    expect(read('playwright.config.ts')).not.toContain('extraHTTPHeaders');
+  });
+
+  it('the bypass does not weaken the E2E target allowlist', () => {
+    const spec = read('tests/e2e/responsive-viewports.spec.ts');
+    // guardE2ETarget must still run, and must run BEFORE the bypass is applied.
+    expect(spec.indexOf('guardE2ETarget')).toBeLessThan(spec.indexOf('applyProtectionBypass('));
+    expect((spec.match(/guardE2ETarget\('responsive-viewports'\)/g) ?? []).length).toBe(5);
+    expect((spec.match(/await applyProtectionBypass\(page\);/g) ?? []).length).toBe(5);
+    const safety = read('tests/e2e/helpers/e2e-safety.ts');
+    expect(safety).toContain('E2E_ALLOWED_STAGING_HOSTS');
+  });
+
+  it('E2E_WORKER_* is canonical, with the legacy seed name only as a fallback', () => {
+    const env = read('tests/e2e/helpers/env.ts');
+    expect(env).toMatch(/readEnv\('E2E_WORKER_EMAIL'\) \?\? readEnv\('E2E_WORKER_A_EMAIL'\)/);
+    expect(env).toMatch(/readEnv\('E2E_WORKER_PASSWORD'\) \?\? readEnv\('E2E_WORKER_A_PASSWORD'\)/);
+  });
+
+  it('the env template documents every required variable NAME and no value', () => {
+    const tpl = read('.env.local.example');
+    for (const v of ['E2E_WORKER_EMAIL', 'E2E_WORKER_PASSWORD', 'E2E_PARTNER_EMAIL',
+                     'E2E_PARTNER_PASSWORD', 'E2E_ADVISOR_EMAIL', 'E2E_ADVISOR_PASSWORD',
+                     'E2E_ALLOWED_STAGING_HOSTS', 'VERCEL_AUTOMATION_BYPASS_SECRET']) {
+      expect(tpl, `${v} undocumented`).toContain(`${v}=`);
+      // Declared empty — a real value must never land in the template.
+      expect(tpl, `${v} has a value in the template`).toMatch(new RegExp(`^${v}=\\s*$`, 'm'));
+    }
   });
 
   it('the responsive spec covers all five role environments and skips without credentials', () => {

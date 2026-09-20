@@ -16,9 +16,15 @@
  * when they are absent — exactly the GOLDEN-02 contract. A green run with all
  * cases skipped is NOT validation and must never be reported as such.
  *
- * Target safety: guardE2ETarget() applies unchanged. A deployed Preview host
- * must be named in E2E_ALLOWED_STAGING_HOSTS; E2E_ALLOW_PRODUCTION alone is
- * deliberately not sufficient.
+ * Target safety: guardE2ETarget() applies unchanged and runs FIRST. A deployed
+ * Preview host must be named in E2E_ALLOWED_STAGING_HOSTS; E2E_ALLOW_PRODUCTION
+ * alone is deliberately not sufficient.
+ *
+ * Vercel Deployment Protection: a protected Preview answers 302 -> vercel.com
+ * /sso-api, which would make every case FAIL at login rather than skip.
+ * applyProtectionBypass() attaches the official bypass header, host-scoped, and
+ * only when VERCEL_AUTOMATION_BYPASS_SECRET is set. It gates Vercel's
+ * deployment access only — KORA auth, roles and RLS are exercised for real.
  *
  * What is asserted is the WP-088 responsive contract, not pixel appearance:
  *   - the page never scrolls horizontally (the defect RESPONSIVE-001 names);
@@ -39,6 +45,7 @@ import {
 import { guardE2ETarget } from './helpers/e2e-safety';
 import { ROLE_HOME, ADVISOR_HOME } from './helpers/roles';
 import { loginViaUI, assertReachedWorkspace } from './helpers/auth';
+import { applyProtectionBypass } from './helpers/vercel-bypass';
 
 const SIDEBAR_DRAWER_ID = 'kora-sidebar-drawer';
 
@@ -90,6 +97,7 @@ test.describe('KORA-WP-088 — validazione responsive autenticata multi-viewport
     test.skip(guard.blocked, guard.reason);
     const creds = getAdminCredentials();
     test.skip(!creds, 'E2E_KORA_ADMIN_EMAIL / E2E_KORA_ADMIN_PASSWORD non impostate — test saltato.');
+    await applyProtectionBypass(page);
     await loginViaUI(page, creds!);
     await runRoleViewportCase(page, ROLE_HOME.ADMIN);
   });
@@ -99,6 +107,7 @@ test.describe('KORA-WP-088 — validazione responsive autenticata multi-viewport
     test.skip(guard.blocked, guard.reason);
     const creds = getCompanyACredentials();
     test.skip(!creds, 'E2E_COMPANY_A_EMAIL / E2E_COMPANY_A_PASSWORD non impostate — test saltato.');
+    await applyProtectionBypass(page);
     await loginViaUI(page, creds!);
     await runRoleViewportCase(page, ROLE_HOME.COMPANY);
   });
@@ -108,6 +117,7 @@ test.describe('KORA-WP-088 — validazione responsive autenticata multi-viewport
     test.skip(guard.blocked, guard.reason);
     const creds = getWorkerCredentials();
     test.skip(!creds, 'E2E_WORKER_EMAIL / E2E_WORKER_PASSWORD non impostate — test saltato.');
+    await applyProtectionBypass(page);
     await loginViaUI(page, creds!);
     await runRoleViewportCase(page, ROLE_HOME.WORKER);
   });
@@ -117,6 +127,7 @@ test.describe('KORA-WP-088 — validazione responsive autenticata multi-viewport
     test.skip(guard.blocked, guard.reason);
     const creds = getPartnerCredentials();
     test.skip(!creds, 'E2E_PARTNER_EMAIL / E2E_PARTNER_PASSWORD non impostate — test saltato.');
+    await applyProtectionBypass(page);
     await loginViaUI(page, creds!);
     await runRoleViewportCase(page, ROLE_HOME.PARTNER);
   });
@@ -126,7 +137,12 @@ test.describe('KORA-WP-088 — validazione responsive autenticata multi-viewport
     test.skip(guard.blocked, guard.reason);
     const creds = getAdvisorCredentials();
     test.skip(!creds, 'E2E_ADVISOR_EMAIL / E2E_ADVISOR_PASSWORD non impostate — test saltato.');
-    await loginViaUI(page, creds!);
+    await applyProtectionBypass(page);
+    // ADVISOR has no post-login redirect target (see LoginOptions) — navigate
+    // to its guarded entry point explicitly. app/advisor/layout.tsx still
+    // enforces requireAdvisorUser(), so this proves real authenticated access.
+    await loginViaUI(page, creds!, { awaitRedirect: false });
+    await page.goto(ADVISOR_HOME);
     await runRoleViewportCase(page, ADVISOR_HOME);
   });
 });

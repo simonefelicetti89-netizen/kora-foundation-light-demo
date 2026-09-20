@@ -103,6 +103,68 @@ As of GOLDEN-03B, this guard now governs a value that actually drives
 browser navigation, so it is a meaningful safeguard rather than a
 documentation-only check.
 
+## KORA-WP-088 — authenticated multi-viewport responsive validation
+
+`tests/e2e/responsive-viewports.spec.ts` runs 5 role environments x 3 viewports
+(375 / 768 / 1440) = **15 cases**. The viewports are Playwright *projects*
+(`mobile-375`, `tablet-768`, `desktop-1440`), so the project name in the report
+is the viewport evidence. They are scoped by `testMatch` to this spec alone, so
+the GOLDEN suites do not triple in runtime.
+
+### Additional variables
+
+| Variable | Purpose |
+|---|---|
+| `E2E_WORKER_EMAIL` / `E2E_WORKER_PASSWORD` | Test-only WORKER account. `E2E_WORKER_A_*` (written by the local golden-path seed) is accepted as a fallback; `E2E_WORKER_*` always wins. |
+| `E2E_PARTNER_EMAIL` / `E2E_PARTNER_PASSWORD` | Test-only PARTNER account. |
+| `E2E_ADVISOR_EMAIL` / `E2E_ADVISOR_PASSWORD` | Test-only ADVISOR account. |
+| `E2E_ALLOWED_STAGING_HOSTS` | Comma-separated bare hostnames allowed as a non-local target. Required by `tests/e2e/helpers/e2e-safety.ts`; `E2E_ALLOW_PRODUCTION=true` is deliberately **not** sufficient on its own. |
+| `VERCEL_AUTOMATION_BYPASS_SECRET` | Vercel Deployment Protection bypass, for a protected Preview. |
+
+### Vercel Deployment Protection
+
+A protected Preview answers any request with `302 -> https://vercel.com/sso-api`,
+so without a bypass the browser never reaches the KORA `/login` form and every
+case **fails** rather than skips.
+
+`tests/e2e/helpers/vercel-bypass.ts` attaches the officially supported
+`x-vercel-protection-bypass` header (plus `x-vercel-set-bypass-cookie`). Read the
+secret from the Vercel project's Deployment Protection settings.
+
+Three properties worth knowing:
+
+- **Host-scoped.** It is a `page.route` handler, not `use.extraHTTPHeaders`.
+  Playwright applies `extraHTTPHeaders` to *every* request the context makes,
+  including third-party ones (the print CV page pulls a stylesheet from
+  `fonts.googleapis.com`), which would send the secret to hosts that have no
+  business receiving it. The handler attaches the header only when the request
+  host equals the host of `E2E_BASE_URL`.
+- **Absent secret means no bypass at all.** The handler is simply not installed.
+- **It gates Vercel deployment access only.** KORA authentication, role
+  resolution and RLS are untouched — every case still logs in through the real
+  `/login` form. It also does not interact with `guardE2ETarget()`, which runs
+  first and still decides whether a test runs at all.
+
+### Supplying credentials without exposing them
+
+Shell export (canonical, per the sections above) or a **gitignored**
+`.env.e2e.local`. `.gitignore` already excludes `.env*` — verify with
+`git check-ignore -v .env.e2e.local` before writing anything into it.
+
+**Playwright does not auto-load env files.** Nothing in `playwright.config.ts`,
+`vitest.config.ts` or the npm scripts reads a dotenv file, so the values must be
+in the shell that launches the run:
+
+```bash
+set -a
+source .env.e2e.local
+set +a
+npx playwright test responsive-viewports
+```
+
+Never paste a value into a commit, a PR, a report under `.kora-audit/`, a test
+snapshot, or a chat message. Only variable **names** belong in reports.
+
 ## What is intentionally out of scope here
 
 - Self-service or real customer data — use disposable test accounts only.
