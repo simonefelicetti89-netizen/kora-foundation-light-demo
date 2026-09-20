@@ -128,6 +128,12 @@
  *      production ref, and this script does not inherit that gap.
  *   4. Passwords come from E2E_PARTNER_PASSWORD / E2E_ADVISOR_PASSWORD only —
  *      no default, no generator, no fallback.
+ *   5. cleanup ONLY: E2E_PARTNER_EMAIL and E2E_ADVISOR_EMAIL must BOTH be set.
+ *      Cleanup identifies what to remove by email, so an unset email means it
+ *      cannot name its own fixture — it refuses (exit 1, no mutation, no
+ *      summary) instead of skipping that role. It previously skipped and still
+ *      printed an unconditional success line, which reported removals that
+ *      never happened and left the EPHEMERAL PARTNER auth user live in staging.
  *
  * SECRET HANDLING
  *   - no password, key or token is ever printed, returned, written to disk or
@@ -137,7 +143,10 @@
  *   Every step tolerates "already in the desired state". cleanup removes what
  *   exists and accepts what is already gone, so a cleanup after a half-finished
  *   provision is safe and repeatable. cleanup never aborts one role because the
- *   other failed.
+ *   other failed. That tolerance is about staging STATE, never about missing
+ *   CONFIGURATION: an incomplete env is refused up front by gate 5 above.
+ *   cleanup reports the actions it actually performed; `verify` remains the
+ *   authoritative post-state check.
  *
  * Usage (staging only):
  *   SUPABASE_URL=https://<ref>.supabase.co \
@@ -239,6 +248,48 @@ function readMode(): Mode {
   const arg = process.argv[2];
   if (arg === 'provision' || arg === 'verify' || arg === 'cleanup') return arg;
   fail('mode must be exactly one of: provision | verify | cleanup');
+}
+
+/**
+ * Variables cleanup cannot run without. Cleanup removes EPHEMERAL identities by
+ * email: with the email unset it cannot name the fixture it is meant to remove,
+ * so it must refuse rather than skip. The prior behaviour skipped each role
+ * whose email was unset and still printed an unconditional success summary,
+ * leaving a live PARTNER auth user in staging behind a green log.
+ */
+export const CLEANUP_REQUIRED_ENV = ['E2E_PARTNER_EMAIL', 'E2E_ADVISOR_EMAIL'] as const;
+
+/** Carries variable NAMES only — never a value. */
+export class FixtureEnvError extends Error {
+  constructor(public readonly missing: readonly string[]) {
+    super(`missing required environment variable(s): ${missing.join(', ')}`);
+    this.name = 'FixtureEnvError';
+  }
+}
+
+export function missingCleanupEnv(env: NodeJS.ProcessEnv = process.env): string[] {
+  return CLEANUP_REQUIRED_ENV.filter((name) => {
+    const v = env[name];
+    return !v || v.trim().length === 0;
+  });
+}
+
+export function assertCleanupEnvComplete(env: NodeJS.ProcessEnv = process.env): void {
+  const missing = missingCleanupEnv(env);
+  if (missing.length > 0) throw new FixtureEnvError(missing);
+}
+
+/**
+ * The only supported cleanup entry point. Gates BEFORE any role runs, so a
+ * partially-configured cleanup mutates nothing at all — not even the role whose
+ * email happens to be set. Returns the actions actually performed, for the
+ * caller to print; it never prints a summary of its own.
+ */
+export async function cleanupAll(db: SupabaseClient): Promise<string[]> {
+  assertCleanupEnvComplete();
+  const performed = await partnerCleanup(db);
+  performed.push(...(await advisorCleanup(db)));
+  return performed;
 }
 
 function assertIntendedStagingTarget(): { url: string; serviceKey: string } {
@@ -454,9 +505,11 @@ async function partnerProvision(db: SupabaseClient): Promise<void> {
   );
 }
 
-async function partnerCleanup(db: SupabaseClient): Promise<void> {
+async function partnerCleanup(db: SupabaseClient): Promise<string[]> {
   const env = partnerEnv();
-  if (!env) return console.log('[e2e-fixtures] PARTNER: E2E_PARTNER_EMAIL not set — skipped.');
+  // Unreachable via cleanupAll(), which gates on the same variable first.
+  // Kept so a future caller cannot reintroduce the silent skip this replaced.
+  if (!env) throw new FixtureEnvError(['E2E_PARTNER_EMAIL']);
 
   const authUserId = await findAuthUserIdByEmail(db, env.email);
 
@@ -479,11 +532,11 @@ async function partnerCleanup(db: SupabaseClient): Promise<void> {
   if (byEmailErr) fail('could not delete network.partner_identity by fixture email.');
 
   const removed = await deleteAuthUserIfPresent(db, env.email);
-  console.log(
-    `[e2e-fixtures] PARTNER cleanup done — auth user ${removed ? 'removed' : 'already absent'}, ` +
-      'identity mapping removed. The synthetic anchor partner_profile is RETAINED ' +
-      'by design (permanent staging fixture) — cleanup never deletes it.',
-  );
+  return [
+    'PARTNER: partner_identity delete executed, scoped to this fixture\'s auth_user_id and email',
+    removed ? 'PARTNER: auth user removed' : 'PARTNER: auth user already absent — nothing removed',
+    'PARTNER: anchor partner_profile retained by design — cleanup never deletes it',
+  ];
 }
 
 async function partnerVerify(db: SupabaseClient): Promise<boolean> {
@@ -590,9 +643,10 @@ async function advisorProvision(db: SupabaseClient): Promise<void> {
   );
 }
 
-async function advisorCleanup(db: SupabaseClient): Promise<void> {
+async function advisorCleanup(db: SupabaseClient): Promise<string[]> {
   const env = advisorEnv();
-  if (!env) return console.log('[e2e-fixtures] ADVISOR: E2E_ADVISOR_EMAIL not set — skipped.');
+  // Unreachable via cleanupAll() — see partnerCleanup().
+  if (!env) throw new FixtureEnvError(['E2E_ADVISOR_EMAIL']);
 
   // DELIBERATE NO-OP. The advisor fixture is PERSISTENT: deleting the Auth user
   // would mint a new uuid on the next run, which would INSERT a second
@@ -601,12 +655,11 @@ async function advisorCleanup(db: SupabaseClient): Promise<void> {
   // would still create a fresh row beside the offboarded one. Keeping the user
   // and the row is what makes "exactly one fixture, forever" true.
   const authUserId = await findAuthUserIdByEmail(db, env.email);
-  console.log(
-    `[e2e-fixtures] ADVISOR cleanup: nothing to do by design — the fixture is ` +
-      `PERSISTENT (auth ${mask(authUserId)}). Deleting it would cause unbounded, ` +
-      'irreversible advisor_identity growth. No qualification, eligibility, ' +
-      'assignment or governance data was ever created, so none is left behind.',
-  );
+  return [
+    `ADVISOR: no action taken, by design — the fixture is PERSISTENT (auth ${mask(authUserId)}). ` +
+      'Deleting it would cause unbounded, irreversible advisor_identity growth. No ' +
+      'qualification, eligibility, assignment or governance data was ever created.',
+  ];
 }
 
 async function advisorVerify(db: SupabaseClient): Promise<boolean> {
@@ -645,9 +698,27 @@ async function advisorVerify(db: SupabaseClient): Promise<boolean> {
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 
+/** Converts the testable throw into this script's sanitized refusal + exit 1. */
+function assertCleanupEnvCompleteOrFail(): void {
+  try {
+    assertCleanupEnvComplete();
+  } catch (e) {
+    if (e instanceof FixtureEnvError) {
+      fail(
+        `cleanup requires ${e.missing.join(' and ')} to be set. Nothing was cleaned up. ` +
+          'A cleanup that cannot name its fixtures would leave EPHEMERAL staging identities ' +
+          'live while reporting success.',
+      );
+    }
+    throw e;
+  }
+}
+
 async function main(): Promise<void> {
   const mode = readMode();
   const { url, serviceKey } = assertIntendedStagingTarget();
+  // Fail closed BEFORE a client exists, so a refused cleanup cannot reach staging.
+  if (mode === 'cleanup') assertCleanupEnvCompleteOrFail();
   const db = createClient(url, serviceKey, { auth: { persistSession: false } });
 
   console.log(`[e2e-fixtures] mode=${mode}, target ref ${mask(readEnv('E2E_STAGING_PROJECT_REF'))}.`);
@@ -657,12 +728,12 @@ async function main(): Promise<void> {
     await advisorProvision(db);
     console.log('[e2e-fixtures] EPHEMERAL fixtures created. Run `cleanup` after the matrix.');
   } else if (mode === 'cleanup') {
-    await partnerCleanup(db);
-    await advisorCleanup(db);
+    const performed = await cleanupAll(db);
+    console.log('[e2e-fixtures] cleanup actions performed:');
+    for (const action of performed) console.log(`[e2e-fixtures]   - ${action}`);
     console.log(
-      '[e2e-fixtures] cleanup complete: partner identity + auth user removed; ' +
-        'partner anchor profile and the persistent advisor fixture retained. ' +
-        'Run `verify`.',
+      '[e2e-fixtures] cleanup finished. Run `verify` — it, not this list, is the ' +
+        'authoritative post-state check.',
     );
   } else {
     const partnerClean = await partnerVerify(db);
@@ -680,8 +751,17 @@ async function main(): Promise<void> {
   console.log('[e2e-fixtures] done. No password was printed, returned or written to disk.');
 }
 
-main().catch(() => {
-  // Never surface a raw driver error: it can echo a connection string.
-  console.error('[e2e-fixtures] FAILED. See the refusal reason above, if any.');
-  process.exit(1);
-});
+/** True only under `tsx scripts/e2e/provision-staging-e2e-fixtures.ts <mode>`. */
+function isDirectInvocation(): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  return /provision-staging-e2e-fixtures(\.[cm]?[jt]s)?$/.test(entry.replace(/\\/g, '/'));
+}
+
+if (isDirectInvocation()) {
+  main().catch(() => {
+    // Never surface a raw driver error: it can echo a connection string.
+    console.error('[e2e-fixtures] FAILED. See the refusal reason above, if any.');
+    process.exit(1);
+  });
+}
