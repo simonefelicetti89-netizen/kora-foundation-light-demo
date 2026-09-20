@@ -5,7 +5,7 @@
 // Non-certificative, non-compliance, non-assurance.
 
 import type { NormativeMappingLight } from '@/lib/normative-mapping/normative-mapping-light';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface Props {
   mapping: NormativeMappingLight;
@@ -26,9 +26,9 @@ const FRAMEWORK_USE_LABELS: Record<string, string> = {
 };
 
 const STRENGTH_STYLES: Record<string, { background: string; color: string }> = {
-  direct:     { background: '#dcfce7', color: '#166534' },
-  indirect:   { background: '#fef9c3', color: '#854d0e' },
-  contextual: { background: '#fee2e2', color: '#991b1b' },
+  direct:     { background: BADGE_TOKENS.eligible.bg, color: BADGE_TOKENS.eligible.text },
+  indirect:   { background: BADGE_TOKENS.limited.bg, color: BADGE_TOKENS.limited.text },
+  contextual: { background: BADGE_TOKENS.blocked.bg, color: BADGE_TOKENS.blocked.text },
 };
 
 export function NormativeMappingLightSection({ mapping }: Props) {
@@ -46,8 +46,8 @@ export function NormativeMappingLightSection({ mapping }: Props) {
 
   return (
     <div style={{
-      background: '#f9f8ff',
-      border: `1px solid #e0dff8`,
+      background: TOKENS.accentSoft,
+      border: `1px solid ${TOKENS.accentSoft}`,
       borderRadius: TOKENS.cardRadius,
       padding: '1.25rem',
     }}>
@@ -70,12 +70,12 @@ export function NormativeMappingLightSection({ mapping }: Props) {
         <div className="flex flex-wrap gap-2 items-center">
           <span style={{
             fontFamily: 'monospace', fontSize: '10px', fontWeight: 700,
-            background: '#ede9ff', color: '#6156F5', borderRadius: 4, padding: '2px 7px',
+            background: TOKENS.accentSoft, color: TOKENS.violet, borderRadius: 4, padding: '2px 7px',
           }}>
             pre_empirical_calibration
           </span>
           <span style={{
-            fontSize: '10px', background: '#f0fdf4', color: '#166534',
+            fontSize: '10px', background: BADGE_TOKENS.eligible.bg, color: BADGE_TOKENS.eligible.text,
             borderRadius: 4, padding: '2px 7px', fontWeight: 600,
           }}>
             non-certificativa
@@ -85,8 +85,8 @@ export function NormativeMappingLightSection({ mapping }: Props) {
 
       {/* Disclaimer */}
       <div style={{
-        background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 6,
-        padding: '10px 12px', fontSize: '12px', color: '#92400e', lineHeight: 1.6,
+        background: BADGE_TOKENS.limited.bg, border: `1px solid ${BADGE_TOKENS.limited.border}`, borderRadius: 6,
+        padding: '10px 12px', fontSize: '12px', color: BADGE_TOKENS.limited.text, lineHeight: 1.6,
         marginBottom: '1rem',
       }}>
         KORA mappa le evidenze di attivazione organizzativa rispetto ad alcuni riferimenti di human capital e sustainability reporting.
@@ -98,13 +98,13 @@ export function NormativeMappingLightSection({ mapping }: Props) {
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
           <thead>
-            <tr style={{ borderBottom: `2px solid #e0dff8` }}>
+            <tr style={{ borderBottom: `2px solid ${TOKENS.accentSoft}` }}>
               {['Framework', 'Aree', 'Pillar principali', 'Forza prevalente', 'Uso indicativo'].map(h => (
-                <th key={h} style={{
+                <th scope="col" key={h} style={{
                   padding: '6px 10px', textAlign: 'left',
                   fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '10px',
                   letterSpacing: '0.06em', textTransform: 'uppercase',
-                  color: '#6156F5', background: '#f3f2ff',
+                  color: TOKENS.violet, background: TOKENS.accentSoft,
                 }}>
                   {h}
                 </th>
@@ -124,7 +124,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
               const usoIndicativo = FRAMEWORK_USE_LABELS[fw] ?? '';
 
               return (
-                <tr key={fw} style={{ borderBottom: `1px solid #eaebf4` }}>
+                <tr key={fw} style={{ borderBottom: `1px solid ${TOKENS.inkBorder}` }}>
                   <td style={{ padding: '7px 10px', fontWeight: 600, color: TOKENS.ink }}>{label}</td>
                   <td style={{ padding: '7px 10px', textAlign: 'center', color: TOKENS.inkSecondary }}>{areas.length}</td>
                   <td style={{ padding: '7px 10px' }}>
@@ -132,7 +132,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
                       {allPillars.map(p => (
                         <span key={p} style={{
                           fontSize: '10px', fontWeight: 700,
-                          background: '#ede9ff', color: '#6156F5',
+                          background: TOKENS.accentSoft, color: TOKENS.violet,
                           borderRadius: 3, padding: '1px 5px',
                         }}>
                           {p}

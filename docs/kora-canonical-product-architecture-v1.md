@@ -5,7 +5,7 @@
 **Date:** 2026-05-19 (QA patch applied same date)
 **Author:** Simone Felicetti (Founder) + Claude Code (architectural synthesis + QA)
 **Gate status:** Gate 1 CLOSED · Gate 2 OPEN (blocks SQL) · Gate 3 OPEN · Gate 5 OPEN
-**Sections:** 34 (§25 Capability Scope Matrix added; §26 "Do Not Build Yet" added; §33 Alignment Plan restructured by priority tier)
+**Sections:** 35 (§25 Capability Scope Matrix added; §26 "Do Not Build Yet" added; §33 Alignment Plan restructured by priority tier; §35 Living KORAL product-capability addendum added 2026-09-13, planning-only, canonically inserted per `.kora-audit/output/132`/`133`)
 
 ---
 
@@ -1134,6 +1134,47 @@ Il documento Authority Hierarchy applicabile:
 5. **doc 22A** (build cutline) — override su tutte le decisioni di scope
 6. **docs 24, 25, 26** — dettagli del demo build
 7. **Appendix B, WhitePaper v3/v4** — solo storico; non usare per implementazione
+
+---
+
+## 35. Living KORAL — Product Capability (Addendum, 2026-09-13)
+
+**Status:** Canonically inserted, planning-only — no implementation authorized by this addendum. Founder-approved per `.kora-audit/output/132_KORA_LIVING_KORAL_MASTER_PLAN_INSERTION_DESIGN.md` and its own supporting research (`128`–`131`); executable specification lives in `.kora-audit/output/133_KORA_MASTER_PLAN_FINAL_CANONICAL_EXECUTION_REGISTRY_WITH_LIVING_KORAL.md`, `KORA-WP-111`–`119`. This section extends §1–34; it does not contradict or supersede anything above.
+
+**Definition.** Living KORAL is a KORA capability that recognizes genuine organizational transformations from canonical KORA truth and renders them as a persistent, explainable morphological identity belonging to one Company — never a score, ranking, certification, mascot, decorative visualization, gamification mechanic, or employer-brand badge.
+
+**Architectural position.** Not a fourth KORA pillar. A cross-cutting organizational memory/representation/expression layer, consuming truth from CORE (Company/tenant, initiatives), GOVERN (`governance_event`, Operational Case), and NETWORK/Advisor (Assignment) domains, producing its own new artifacts (Material Change record, transformation ledger, canonical KORAL state, Edition). Sits beside the Decision Pack — Decision Pack is decision-oriented, Living KORAL is memory/identity-oriented — neither subsumes the other.
+
+**Constitution (binding on every Living KORAL package):**
+
+1. Time alone never changes a KORAL.
+2. Data arrival alone never changes a KORAL.
+3. Evidence-confidence change is not organizational change.
+4. A Material Change requires a canonical organizational-state transition.
+5. A domain transition is a candidate signal, not automatically a recognized Material Change.
+6. Change does not imply improvement or deterioration.
+7. More/larger/more-complex morphology never means better.
+8. Simplification and consolidation are valid, neutral transformations.
+9. Reversal adds history; it does not erase it.
+10. Local change must preserve global identity.
+11. Advisor may interpret/confirm where allowed but never draws the KORAL.
+12. Company may preserve/use an authorized state but never manipulates morphology.
+13. Provenance must remain recoverable.
+14. Worker-level/private data must never leak through morphology or Expression.
+15. Historical Editions must remain reproducible.
+16. Bias toward under-recognition rather than false visual change.
+17. Decision Pack alone can never create a RECOGNIZED Material Change.
+18. Expression Mode is mandatory before Worker-facing, public, or external use.
+19. Persistent public/physical manifestations normally derive from an authorized Edition.
+20. No single domain-specific adapter defines the semantics of Living KORAL as a whole.
+
+**Pilot classification:** every Living KORAL package (`KORA-WP-111`–`119`) is canonically `NOT BASE PILOT SCOPE`. Living KORAL does not alter, block, or reprioritize the current Base Pilot Blockers or the existing Completion Frontier.
+
+**Production V1 (the chain, not the render):** a real canonical-object transition (the existing initiative-lifecycle status writer) occurs → the Change Protocol recognizes it as a Material Change Candidate and, only where the evidence/persistence rule is satisfied, promotes it to RECOGNIZED → an immutable, versioned transformation-ledger entry is created, provenance-linked to the real initiative record → the Morphogenesis Engine (v1) updates canonical KORAL state under the Continuity Contract → the Company Hub's Overview shows the current state and can answer, with real provenance, what transformation contributed to it. An initiative status transition alone is never sufficient for RECOGNIZED status — it is a candidate signal only (Constitution §5); Decision Pack alone is never sufficient either (Constitution §17). V1 excludes Edition, KORAL Review's polished ritual UI, Expression Mode's runtime, KORA Commons integration, social export, Public KORAL, merchandise/Artifact/spatial manifestations, full Time Machine, and Need-Hypothesis-driven recognition (that domain's own classification-transition mechanism does not yet exist in Code Truth and is a local, not global, future dependency).
+
+**Distribution.** KORA Commons (`commons.post`) is, and remains, the sole internal Company→Worker distribution channel; Living KORAL is a content producer into it, never a second board or feed. No KORAL content of any kind (internal post, social export, Public KORAL, merchandise, Artifact, spatial use) may be generated from anything other than an Expression Mode projection — a positive allow-list, never "Evidence Mode with labels hidden." Merchandise, Artifact production, and spatial installation are commercial/service extensions, fulfilled by partners, never KORA-owned inventory or fulfillment — they sit outside the core engineering roadmap.
+
+**Out of scope for this addendum:** the concrete morphogenesis/rendering algorithm; any branch/thickness/color-to-business-metric visual mapping (deliberately undefined, never to be invented without a dedicated Founder-approved design pass); worker-level morphology of any kind; rankings; certification framing; gamification; NFT/blockchain; direct third-party social-provider publishing (deferred, not forbidden); fulfillment/vendor selection; M&A/lineage implementation; cross-Company comparison of any kind; pricing; a specific visual design system; legal/licensing decisions.
 
 ---
 

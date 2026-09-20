@@ -52,7 +52,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function BlockingBadge() {
   return (
-    <span className="rounded border border-[rgba(158,59,47,0.30)] bg-[rgba(158,59,47,0.10)] px-1.5 py-0.5 text-[9px] font-bold text-[#9E3B2F]">
+    <span className="rounded border border-[rgba(158,59,47,0.30)] bg-[rgba(158,59,47,0.10)] px-1.5 py-0.5 text-[9px] font-bold text-kora-critical">
       BLOCCANTE
     </span>
   );
@@ -69,7 +69,7 @@ function StepBar({ current }: { current: ImportStep }) {
         <div key={s} className="flex items-center gap-1">
           <span
             className={`text-[9px] font-semibold ${
-              idx < currentIdx  ? 'text-[#2F7D55]' :
+              idx < currentIdx  ? 'text-kora-success' :
               idx === currentIdx ? 'text-[rgba(6,3,43,0.78)]' :
               'text-[rgba(6,3,43,0.28)]'
             }`}
@@ -91,8 +91,8 @@ function ColBadge({ status }: { status: 'required' | 'optional' | 'forbidden' | 
   const cfg = {
     required:  { label: 'RICHIESTO',  cls: 'border-[rgba(6,3,43,0.20)] bg-[rgba(6,3,43,0.06)] text-[rgba(6,3,43,0.65)]' },
     optional:  { label: 'OPZIONALE',  cls: 'border-[rgba(6,3,43,0.10)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.42)]' },
-    forbidden: { label: 'VIETATO',    cls: 'border-[rgba(158,59,47,0.30)] bg-[rgba(158,59,47,0.10)] text-[#9E3B2F]' },
-    unknown:   { label: 'IGNORATO',   cls: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]' },
+    forbidden: { label: 'VIETATO',    cls: 'border-[rgba(158,59,47,0.30)] bg-[rgba(158,59,47,0.10)] text-kora-critical' },
+    unknown:   { label: 'IGNORATO',   cls: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-kora-warning-text' },
   }[status];
   return (
     <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold ${cfg.cls}`}>{cfg.label}</span>
@@ -154,7 +154,7 @@ function StepUpload({
       </div>
 
       {error && (
-        <div className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-3 py-2 text-xs text-[#9E3B2F]">
+        <div className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-3 py-2 text-xs text-kora-critical">
           {error}
         </div>
       )}
@@ -162,7 +162,7 @@ function StepUpload({
       {/* Accepted columns */}
       <div className="grid gap-3 sm:grid-cols-2 text-[10px]">
         <div className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.05)] p-3 space-y-1">
-          <p className="font-semibold text-[#2F7D55] mb-1.5">✓ Colonne accettate</p>
+          <p className="font-semibold text-kora-success mb-1.5">✓ Colonne accettate</p>
           {[
             ['employee_code / matricola',  'RICHIESTO'],
             ['department / reparto',        'RICHIESTO'],
@@ -179,7 +179,7 @@ function StepUpload({
           ))}
         </div>
         <div className="rounded border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.04)] p-3 space-y-1">
-          <p className="font-semibold text-[#9E3B2F] mb-1.5">✕ Colonne vietate</p>
+          <p className="font-semibold text-kora-critical mb-1.5">✕ Colonne vietate</p>
           {['email / telefono', 'stipendio / salary', 'performance / rating', 'pib / iu', 'dati sanitari', 'consenso / consent', 'sindacato / religione'].map((c) => (
             <p key={c} className="text-[rgba(6,3,43,0.55)] font-mono">{c}</p>
           ))}
@@ -228,10 +228,10 @@ function StepPreview({
         <div className="rounded border border-[rgba(158,59,47,0.25)] bg-[rgba(158,59,47,0.07)] p-3 space-y-2">
           <div className="flex items-center gap-2">
             <BlockingBadge />
-            <p className="text-xs font-semibold text-[#9E3B2F]">Colonne vietate — importazione bloccata</p>
+            <p className="text-xs font-semibold text-kora-critical">Colonne vietate — importazione bloccata</p>
           </div>
           {parseResult.blockingErrors.map((e, i) => (
-            <p key={i} className="text-[10px] text-[#9E3B2F]">{e}</p>
+            <p key={i} className="text-[10px] text-kora-critical">{e}</p>
           ))}
         </div>
       )}
@@ -239,7 +239,7 @@ function StepPreview({
       {/* Column analysis */}
       <div className="space-y-1.5">
         <SectionLabel>Analisi colonne</SectionLabel>
-        <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+        <div className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper overflow-hidden">
           <div className="grid grid-cols-[1fr_1fr_100px] gap-2 px-4 py-2 bg-[rgba(6,3,43,0.03)] border-b border-[rgba(6,3,43,0.07)]">
             {['Header originale', 'Header canonico', 'Stato'].map((h) => (
               <span key={h} className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.38)]">{h}</span>
@@ -263,12 +263,12 @@ function StepPreview({
       {previewRows.length > 0 && !hasForbidden && (
         <div className="space-y-1.5">
           <SectionLabel>Anteprima dati — prime {Math.min(20, previewRows.length)} righe</SectionLabel>
-          <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-x-auto text-[10px]">
+          <div className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper overflow-x-auto text-[10px]">
             <table className="w-full min-w-max">
               <thead>
                 <tr className="border-b border-[rgba(6,3,43,0.07)] bg-[rgba(6,3,43,0.03)]">
                   {presentCanonical.map((c) => (
-                    <th key={c} className="px-3 py-2 text-left font-semibold text-[rgba(6,3,43,0.40)] text-[9px] uppercase tracking-wide whitespace-nowrap">
+                    <th scope="col" key={c} className="px-3 py-2 text-left font-semibold text-[rgba(6,3,43,0.40)] text-[9px] uppercase tracking-wide whitespace-nowrap">
                       {c}
                     </th>
                   ))}
@@ -302,7 +302,7 @@ function StepPreview({
         </button>
         {!hasForbidden && (
           <button type="button" onClick={onProceed}
-            className="flex-1 rounded-md bg-[#06032B] px-4 py-2 text-xs font-semibold text-white hover:bg-[rgba(6,3,43,0.82)] transition-colors">
+            className="flex-1 rounded-md bg-kora-ink px-4 py-2 text-xs font-semibold text-white hover:bg-[rgba(6,3,43,0.82)] transition-colors">
             Procedi alla validazione →
           </button>
         )}
@@ -330,15 +330,15 @@ function StepValidation({
       <div className="grid grid-cols-3 gap-3 text-center text-[10px]">
         <div className="rounded border border-[rgba(47,125,85,0.28)] bg-[rgba(47,125,85,0.06)] p-2.5">
           <p className="text-[rgba(6,3,43,0.40)]">Righe valide</p>
-          <p className="text-xl font-bold text-[#2F7D55] mt-0.5">{report.validRowCount}</p>
+          <p className="text-xl font-bold text-kora-success mt-0.5">{report.validRowCount}</p>
         </div>
         <div className={`rounded border p-2.5 ${report.blockedRowCount > 0 ? 'border-[rgba(158,59,47,0.25)] bg-[rgba(158,59,47,0.06)]' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]'}`}>
           <p className="text-[rgba(6,3,43,0.40)]">Righe escluse</p>
-          <p className={`text-xl font-bold mt-0.5 ${report.blockedRowCount > 0 ? 'text-[#9E3B2F]' : 'text-[rgba(6,3,43,0.40)]'}`}>{report.blockedRowCount}</p>
+          <p className={`text-xl font-bold mt-0.5 ${report.blockedRowCount > 0 ? 'text-kora-critical' : 'text-[rgba(6,3,43,0.40)]'}`}>{report.blockedRowCount}</p>
         </div>
         <div className={`rounded border p-2.5 ${report.warnedRowCount > 0 ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.07)]' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]'}`}>
           <p className="text-[rgba(6,3,43,0.40)]">Con avvisi</p>
-          <p className={`text-xl font-bold mt-0.5 ${report.warnedRowCount > 0 ? 'text-[#8A5A00]' : 'text-[rgba(6,3,43,0.40)]'}`}>{report.warnedRowCount}</p>
+          <p className={`text-xl font-bold mt-0.5 ${report.warnedRowCount > 0 ? 'text-kora-warning-text' : 'text-[rgba(6,3,43,0.40)]'}`}>{report.warnedRowCount}</p>
         </div>
       </div>
 
@@ -347,11 +347,11 @@ function StepValidation({
         <div className="rounded border border-[rgba(158,59,47,0.25)] bg-[rgba(158,59,47,0.06)] p-3 space-y-2">
           <div className="flex items-center gap-2">
             <BlockingBadge />
-            <p className="text-xs font-semibold text-[#9E3B2F]">Errori bloccanti — correggi prima di importare</p>
+            <p className="text-xs font-semibold text-kora-critical">Errori bloccanti — correggi prima di importare</p>
           </div>
           <ul className="space-y-1">
             {report.blockingErrors.slice(0, 8).map((e, i) => (
-              <li key={i} className="text-[10px] text-[#9E3B2F]">· {e}</li>
+              <li key={i} className="text-[10px] text-kora-critical">· {e}</li>
             ))}
             {report.blockingErrors.length > 8 && (
               <li className="text-[10px] text-[rgba(158,59,47,0.65)]">… e altri {report.blockingErrors.length - 8} errori.</li>
@@ -377,10 +377,10 @@ function StepValidation({
       {/* Warnings */}
       {report.warnings.filter(w => !w.includes('sotto soglia')).length > 0 && (
         <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.07)] p-3 space-y-2">
-          <p className="text-xs font-semibold text-[#8A5A00]">Avvisi</p>
+          <p className="text-xs font-semibold text-kora-warning-text">Avvisi</p>
           <ul className="space-y-1 max-h-28 overflow-y-auto">
             {report.warnings.filter(w => !w.includes('sotto soglia')).slice(0, 10).map((w, i) => (
-              <li key={i} className="text-[10px] text-[#8A5A00]">· {w}</li>
+              <li key={i} className="text-[10px] text-kora-warning-text">· {w}</li>
             ))}
           </ul>
         </div>
@@ -407,7 +407,7 @@ function StepValidation({
           type="button"
           onClick={onProceed}
           disabled={!canProceed}
-          className="flex-1 rounded-md px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-[#06032B] text-white hover:bg-[rgba(6,3,43,0.82)]"
+          className="flex-1 rounded-md px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-kora-ink text-white hover:bg-[rgba(6,3,43,0.82)]"
         >
           {canProceed ? 'Procedi alla verifica privacy →' : 'Correggi gli errori prima di continuare'}
         </button>
@@ -439,7 +439,7 @@ function StepPrivacy({
   return (
     <div className="space-y-4">
       {/* Summary */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper p-4">
         <p className="text-xs font-semibold text-[rgba(6,3,43,0.52)] mb-3">Riepilogo importazione</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-[10px]">
           {[
@@ -496,7 +496,7 @@ function StepPrivacy({
           type="button"
           onClick={onAccept}
           disabled={!privacyChecked}
-          className="flex-1 rounded-md px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-35 disabled:cursor-not-allowed bg-[#06032B] text-white hover:bg-[rgba(6,3,43,0.82)]"
+          className="flex-1 rounded-md px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-35 disabled:cursor-not-allowed bg-kora-ink text-white hover:bg-[rgba(6,3,43,0.82)]"
         >
           Accetta importazione — {report.validRowCount} lavoratori
         </button>
@@ -529,8 +529,8 @@ function StepDone({
   return (
     <div className="space-y-4 text-center">
       <div className="rounded-lg border border-[rgba(47,125,85,0.28)] bg-[rgba(47,125,85,0.07)] p-5">
-        <p className="text-2xl font-bold text-[#2F7D55]">{importedCount}</p>
-        <p className="text-sm font-semibold text-[#2F7D55] mt-1">lavoratori importati nel roster</p>
+        <p className="text-2xl font-bold text-kora-success">{importedCount}</p>
+        <p className="text-sm font-semibold text-kora-success mt-1">lavoratori importati nel roster</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-left text-[10px]">
@@ -559,7 +559,7 @@ function StepDone({
       <button
         type="button"
         onClick={onClose}
-        className="w-full rounded-md bg-[#06032B] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[rgba(6,3,43,0.82)] transition-colors"
+        className="w-full rounded-md bg-kora-ink px-4 py-2.5 text-xs font-semibold text-white hover:bg-[rgba(6,3,43,0.82)] transition-colors"
       >
         Chiudi e torna al Workforce Command Center
       </button>
@@ -650,7 +650,7 @@ export function RosterImportModal({ companyId, tenantId, existingWorkerIds, onIm
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.38)]">
               KORA Admin · Import Workforce
             </p>
-            <h2 className="text-base font-bold text-[#06032B]">{title}</h2>
+            <h2 className="text-base font-bold text-kora-ink">{title}</h2>
             <StepBar current={step} />
           </div>
           {step !== 'DONE' && (

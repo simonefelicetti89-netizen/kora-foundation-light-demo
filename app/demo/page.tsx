@@ -34,6 +34,7 @@ export const dynamic = 'force-static';
 import Link from 'next/link';
 import { DemoAccessBanner } from '@/components/demo/DemoAccessBanner';
 import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
+import { ACTIVATION_SIGNATURE, BADGE_TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
@@ -78,7 +79,7 @@ function SurfaceLink({ surface }: { surface: DemoSurface }) {
       }}
     >
       <div>
-        <p style={{ fontWeight: 700, fontSize: 14, color: '#211F1A', marginBottom: 3 }}>{surface.label}</p>
+        <p style={{ fontWeight: 700, fontSize: 14, color: ACTIVATION_SIGNATURE.inkWarm, marginBottom: 3 }}>{surface.label}</p>
         <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', lineHeight: 1.5 }}>{surface.desc}</p>
       </div>
       <span style={{ fontSize: 16, color: 'rgba(6,3,43,0.25)', flexShrink: 0 }}>→</span>
@@ -104,10 +105,10 @@ export default function DemoHomePage() {
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <div style={{ marginBottom: 36 }}>
-        <p style={{ fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#B5512E', marginBottom: 10 }}>
+        <p style={{ fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: ACTIVATION_SIGNATURE.cotto, marginBottom: 10 }}>
           KORA Foundation Light · Demo
         </p>
-        <h1 style={{ fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: '#211F1A', marginBottom: 12 }}>
+        <h1 style={{ fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: ACTIVATION_SIGNATURE.inkWarm, marginBottom: 12 }}>
           Scopri KORA
         </h1>
         <p style={{ fontSize: '14px', color: 'rgba(6,3,43,0.55)', lineHeight: 1.65, maxWidth: '60ch' }}>
@@ -128,14 +129,14 @@ export default function DemoHomePage() {
           data-testid="demo-index-schematic"
           style={{ background: '#FFFFFF', border: '1px solid rgba(6,3,43,0.09)', borderRadius: 14, padding: '24px 22px', maxWidth: 480 }}
         >
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#B5512E', marginBottom: 10 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: ACTIVATION_SIGNATURE.cotto, marginBottom: 10 }}>
             KORA Index v1.0 · Esempio schematico
           </p>
-          <p style={{ fontSize: '1.75rem', fontWeight: 800, color: '#211F1A', lineHeight: 1, marginBottom: 14 }}>
+          <p style={{ fontSize: '1.75rem', fontWeight: 800, color: ACTIVATION_SIGNATURE.inkWarm, lineHeight: 1, marginBottom: 14 }}>
             0–100
           </p>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 999, fontWeight: 700, background: '#fffbeb', color: '#92400e', border: '1px solid #fcd34d' }}>
+            <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 999, fontWeight: 700, background: BADGE_TOKENS.limited.bg, color: BADGE_TOKENS.limited.text, border: `1px solid ${BADGE_TOKENS.limited.border}` }}>
               CLEAR · WARNING · FLAGGED
             </span>
             <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 999, fontWeight: 700, background: 'rgba(6,3,43,0.05)', color: 'rgba(6,3,43,0.55)' }}>
@@ -147,13 +148,13 @@ export default function DemoHomePage() {
             {MACROBLOCKS.map((mb) => (
               <div key={mb.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
                 <span style={{ color: 'rgba(6,3,43,0.60)' }}>{mb.label}</span>
-                <span style={{ fontWeight: 700, color: '#211F1A' }}>{mb.weight}%</span>
+                <span style={{ fontWeight: 700, color: ACTIVATION_SIGNATURE.inkWarm }}>{mb.weight}%</span>
               </div>
             ))}
           </div>
           <Link
             href="/company/kora-index"
-            style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: '#B5512E', textDecoration: 'none' }}
+            style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: ACTIVATION_SIGNATURE.cotto, textDecoration: 'none' }}
           >
             Esplora KORA Index™ →
           </Link>
@@ -191,7 +192,7 @@ export default function DemoHomePage() {
             >
               <div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 3 }}>
-                  <p style={{ fontWeight: 700, fontSize: 14, color: '#211F1A' }}>{s.label}</p>
+                  <p style={{ fontWeight: 700, fontSize: 14, color: ACTIVATION_SIGNATURE.inkWarm }}>{s.label}</p>
                   <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.40)', padding: '1px 6px', border: '1px solid rgba(6,3,43,0.15)', borderRadius: 4 }}>
                     INATTIVO
                   </span>

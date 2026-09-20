@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { useState, useId } from 'react';
+import { TOKENS, BUTTON_TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface ExplainerProps {
   what:     string;   // "cosa misura" — definizione operativa
@@ -16,6 +16,7 @@ interface ExplainerProps {
 // In compact mode: icona ⓘ con tooltip al hover.
 export function Explainer({ what, how, source, compact = false }: ExplainerProps) {
   const [open, setOpen] = useState(false);
+  const tooltipId = useId();
 
   if (compact) {
     return (
@@ -23,33 +24,51 @@ export function Explainer({ what, how, source, compact = false }: ExplainerProps
         <button
           type="button"
           aria-label="Informazioni su questa metrica"
+          aria-describedby={open ? tooltipId : undefined}
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => setOpen(false)}
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           style={{
+            // 44x44 minimum touch target (WCAG 2.5.5 / EXPERIENCE_LAYER.md
+            // §6 / docs/30 §21.2 — named example: "Confidence Score info
+            // icons") — the visible dot stays 16px; only the invisible hit
+            // area expands, so brand appearance is unchanged.
             display:        'inline-flex',
             alignItems:     'center',
             justifyContent: 'center',
-            width:          16,
-            height:         16,
-            borderRadius:   '50%',
-            background:     TOKENS.inkBorder,
+            width:          44,
+            height:         44,
+            minWidth:       44,
+            background:     'transparent',
             border:         'none',
             cursor:         'pointer',
-            color:          TOKENS.inkHint,
-            fontSize:       10,
-            fontFamily:     'ui-monospace, monospace',
-            fontWeight:     700,
             padding:        0,
             flexShrink:     0,
-            minWidth:       16,
           }}
         >
-          i
+          <span
+            aria-hidden="true"
+            style={{
+              display:        'inline-flex',
+              alignItems:     'center',
+              justifyContent: 'center',
+              width:          16,
+              height:         16,
+              borderRadius:   '50%',
+              background:     TOKENS.inkBorder,
+              color:          TOKENS.inkHint,
+              fontSize:       10,
+              fontFamily:     'ui-monospace, monospace',
+              fontWeight:     700,
+            }}
+          >
+            i
+          </span>
         </button>
         {open && (
           <div
+            id={tooltipId}
             role="tooltip"
             style={{
               position:    'absolute',
@@ -58,7 +77,7 @@ export function Explainer({ what, how, source, compact = false }: ExplainerProps
               transform:   'translateX(-50%)',
               zIndex:      300,
               background:  TOKENS.ink,
-              color:       '#FFFFFF',
+              color:       BUTTON_TOKENS.primary.color,
               border:      `1px solid ${TOKENS.accentSoft}`,
               borderRadius: 10,
               padding:     '10px 14px',

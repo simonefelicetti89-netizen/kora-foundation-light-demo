@@ -37,8 +37,8 @@ const STATUS_LABEL: Record<InitiativeStatus, string> = {
 
 const STATUS_COLOR: Record<InitiativeStatus, { bg: string; text: string }> = {
   Draft: { bg: 'rgba(6,3,43,0.06)', text: 'rgba(6,3,43,0.62)' },
-  'Pending accreditation': { bg: 'rgba(217,154,43,0.12)', text: '#8A5A00' },
-  Verified: { bg: 'rgba(47,125,85,0.10)', text: '#2F7D55' },
+  'Pending accreditation': { bg: 'rgba(217,154,43,0.12)', text: TOKENS.safeguard.watch.text },
+  Verified: { bg: 'rgba(47,125,85,0.10)', text: TOKENS.success },
   Closed: { bg: 'rgba(6,3,43,0.06)', text: 'rgba(6,3,43,0.42)' },
 };
 
@@ -148,7 +148,7 @@ export default function PartnerKoraLinkInitiativesPage() {
 
       {/* Demo shell banner — explicit, non-suppressible */}
       <div style={{ background: 'rgba(97,86,245,0.06)', border: `1px dashed rgba(97,86,245,0.35)`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 18px' }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#6156F5' }}>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: TOKENS.violet }}>
           Anteprima design — no DB, nessuna RLS, nessuna chiamata a Supabase o RPC. Non attivo.
         </p>
         <p style={{ margin: '6px 0 0', fontSize: 12, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
@@ -206,7 +206,7 @@ export default function PartnerKoraLinkInitiativesPage() {
       </Panel>
 
       {/* Privacy-safe interaction — mirrors /partner/kora-link */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Interazione privacy-safe</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           Il modello Track A è progettato perché il partner non riceva mai dati identificativi non

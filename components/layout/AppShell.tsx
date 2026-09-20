@@ -8,6 +8,7 @@ import { DemoStateProvider, useEnvironment } from '@/lib/demo-state';
 import { SyntheticDataBanner } from '@/components/demo/SyntheticDataBanner';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { SidebarDrawerProvider } from '@/components/layout/SidebarDrawerContext';
 
 // Route che non ricevono il chrome AppShell (sidebar + header + banner).
 // /pilot è pubblico come la landing.
@@ -34,25 +35,30 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className={`flex min-h-screen flex-col env-${activeEnvironment}`}>
-      {/* Synthetic data / environment banner — non-suppressible */}
-      <SyntheticDataBanner />
-      {/* Header — environment switcher, persona, scenario, role */}
-      <Header />
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar — navigazione per ruolo */}
-        <Sidebar />
-        {/* Main content — padding dal Layer SPACE scale */}
-        <main
-          id="main-content"
-          aria-label="Contenuto principale"
-          className="flex-1 overflow-y-auto bg-kora-canvas"
-          style={{ padding: '32px 40px' }}
-        >
-          {children}
-        </main>
+    // WP-088: the drawer provider wraps Header + Sidebar so the mobile
+    // toggle (Header) and the drawer itself (Sidebar) share one state.
+    <SidebarDrawerProvider>
+      <div className={`flex min-h-screen flex-col env-${activeEnvironment}`}>
+        {/* Synthetic data / environment banner — non-suppressible */}
+        <SyntheticDataBanner />
+        {/* Header — environment switcher, persona, scenario, role */}
+        <Header />
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar — navigazione per ruolo */}
+          <Sidebar />
+          {/* Main content — padding dal Layer SPACE scale.
+              WP-088: padding steps down on narrow viewports so content keeps
+              a usable measure at ~375px instead of losing 80px to gutters. */}
+          <main
+            id="main-content"
+            aria-label="Contenuto principale"
+            className="flex-1 overflow-y-auto bg-kora-canvas px-4 py-5 sm:px-6 sm:py-6 lg:px-10 lg:py-8"
+          >
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarDrawerProvider>
   );
 }
 

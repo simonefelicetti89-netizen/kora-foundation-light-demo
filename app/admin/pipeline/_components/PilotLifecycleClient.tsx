@@ -53,6 +53,7 @@ import type { CanonicalDataIntakeStatus } from '@/lib/live/data-intake-status-vi
 import type { CanonicalDecisionPackStatus } from '@/lib/live/decision-pack-status-view';
 import type { CanonicalAccountProvisioningStatus } from '@/lib/live/account-provisioning-status-view';
 import type { CanonicalWorkerProvisioningStatus } from '@/lib/live/worker-provisioning-status-view';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 import {
   LIFECYCLE_STEPS,
   deriveAllStepStatuses,
@@ -171,7 +172,7 @@ function StepCard({
               fontSize: 11, color: 'rgba(6,3,43,0.62)', fontStyle: 'italic',
               display: 'flex', alignItems: 'flex-start', gap: 5,
             }}>
-              <span style={{ color: '#C76F3D', fontWeight: 700, fontStyle: 'normal', flexShrink: 0 }}>→</span>
+              <span style={{ color: TOKENS.accent, fontWeight: 700, fontStyle: 'normal', flexShrink: 0 }}>→</span>
               {step.nextAction}
             </div>
           )}
@@ -184,7 +185,7 @@ function StepCard({
             href={step.route}
             data-testid={`step-link-${step.id}`}
             style={{
-              fontSize: 11, fontWeight: 600, color: '#4A7FE0',
+              fontSize: 11, fontWeight: 600, color: BADGE_TOKENS.info.text,
               textDecoration: 'none', flexShrink: 0,
               display: 'flex', alignItems: 'center', gap: 4,
             }}
@@ -202,8 +203,8 @@ function StepCard({
 function RoleContextLinks() {
   const links = [
     { label: 'KORA Admin — Company Console',   href: '/admin/companies',   badge: 'LIVE · KORA Admin',   badgeColor: 'rgba(6,3,43,0.65)',  badgeBg: 'rgba(6,3,43,0.07)',  badgeBdr: 'rgba(6,3,43,0.14)' },
-    { label: 'Company Workspace',              href: '/company',            badge: 'PREVIEW · Company',   badgeColor: '#7A4019',            badgeBg: 'rgba(199,111,61,0.09)', badgeBdr: 'rgba(199,111,61,0.25)' },
-    { label: 'My KORA Preview (Worker Space)', href: '/admin/preview/worker', badge: 'PREVIEW · Lavoratore', badgeColor: '#2F7D55',           badgeBg: 'rgba(47,125,85,0.09)', badgeBdr: 'rgba(47,125,85,0.28)' },
+    { label: 'Company Workspace',              href: '/company',            badge: 'PREVIEW · Company',   badgeColor: BADGE_TOKENS.limited.text,            badgeBg: 'rgba(199,111,61,0.09)', badgeBdr: 'rgba(199,111,61,0.25)' },
+    { label: 'My KORA Preview (Worker Space)', href: '/admin/preview/worker', badge: 'PREVIEW · Lavoratore', badgeColor: TOKENS.success,           badgeBg: 'rgba(47,125,85,0.09)', badgeBdr: 'rgba(47,125,85,0.28)' },
   ];
 
   return (
@@ -230,7 +231,7 @@ function RoleContextLinks() {
                 {badge}
               </span>
               <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(6,3,43,0.78)' }}>{label}</span>
-              <span style={{ fontSize: 11, color: '#4A7FE0' }}>→</span>
+              <span style={{ fontSize: 11, color: BADGE_TOKENS.info.text }}>→</span>
             </div>
           </Link>
         ))}
@@ -284,7 +285,7 @@ export function PilotLifecycleClient({ tenant, dataIntake, decisionPack, account
           KORA Admin — Pilot Lifecycle Orchestrator
         </p>
         <div className="flex items-end gap-4 mt-1 flex-wrap">
-          <h1 className="text-2xl font-bold text-[#06032B]">Pilot Lifecycle</h1>
+          <h1 className="text-2xl font-bold text-kora-ink">Pilot Lifecycle</h1>
           {tenant && (
             <span className="text-[11px] font-semibold text-[rgba(6,3,43,0.52)] mb-0.5">
               {tenant.company_name}
@@ -331,7 +332,7 @@ export function PilotLifecycleClient({ tenant, dataIntake, decisionPack, account
       <RoleContextLinks />
 
       {/* ── Company quick links ──────────────────────────────────────────────── */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper p-4">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-3">
           Accesso diretto — {tenant?.company_name ?? DEMO_COMPANY_ID}
         </p>

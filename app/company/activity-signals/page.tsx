@@ -83,7 +83,7 @@ function Tag({ children, tone }: { children: React.ReactNode; tone?: 'default' |
       style={{
         display: 'inline-block', fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999,
         background: isAccent ? 'rgba(97,86,245,0.10)' : 'rgba(6,3,43,0.05)',
-        color: isAccent ? '#6156F5' : TOKENS.inkSecondary,
+        color: isAccent ? TOKENS.violet : TOKENS.inkSecondary,
         border: `1px solid ${isAccent ? 'rgba(97,86,245,0.30)' : TOKENS.inkBorder}`,
       }}
     >
@@ -125,7 +125,7 @@ function SignalCard({ s }: { s: ActivationSignalPreview }) {
         <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkSecondary, border: `1px solid ${TOKENS.inkBorder}` }}>
           {AGGREGATION_LEVEL_LABELS[s.aggregationLevel]}
         </span>
-        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: 'rgba(97,86,245,0.10)', color: '#6156F5' }}>
+        <span style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: 'rgba(97,86,245,0.10)', color: TOKENS.violet }}>
           {INDEX_COMPONENT_PREVIEW_LABELS[s.indexComponentPreview]}
         </span>
       </div>
@@ -203,7 +203,7 @@ export default function CompanyActivitySignalsPage() {
 
       {/* Preview banner */}
       <div style={{ background: 'rgba(97,86,245,0.06)', border: `1px dashed rgba(97,86,245,0.35)`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 18px' }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#6156F5' }}>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: TOKENS.violet }}>
           Anteprima design — dati mock aggregati, nessuna connessione a database o servizi esterni.
         </p>
         <p style={{ margin: '6px 0 0', fontSize: 12, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
@@ -281,7 +281,7 @@ export default function CompanyActivitySignalsPage() {
       </Panel>
 
       {/* 6. Privacy threshold panel */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Soglie di privacy</SectionLabel>
         <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>Le soglie di privacy non sono decise in questo sprint — nessuna regola finale DPO/legale è risolta qui.</li>
@@ -331,7 +331,7 @@ export default function CompanyActivitySignalsPage() {
             <thead>
               <tr>
                 {['Tipo di segnale', 'Aggregazione', 'Pilastro', 'Categoria fiscale', 'Componente KORA Index (anteprima)', 'Metrica (anteprima)', 'Soglia privacy', 'Eleggibilità', 'Confine Contribution'].map((h) => (
-                  <th key={h} style={{ textAlign: 'left', padding: '6px 10px', color: TOKENS.inkHint, fontWeight: 700, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{h}</th>
+                  <th scope="col" key={h} style={{ textAlign: 'left', padding: '6px 10px', color: TOKENS.inkHint, fontWeight: 700, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -355,7 +355,7 @@ export default function CompanyActivitySignalsPage() {
       </Panel>
 
       {/* 9. Relationship to KORA Index */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Relazione con il KORA Index</SectionLabel>
         <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>I segnali Fase 2 potranno in futuro diventare input aggregati per il KORA Index.</li>
@@ -365,7 +365,7 @@ export default function CompanyActivitySignalsPage() {
       </div>
 
       {/* 10. Relationship to KORA Contribution */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Relazione con KORA Contribution</SectionLabel>
         <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>I segnali di Attività Partner non alimentano mai direttamente KORA Contribution.</li>

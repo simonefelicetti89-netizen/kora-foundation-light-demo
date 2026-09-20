@@ -7,6 +7,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { founderValidationService } from '@/services/founder-validation/FounderValidationService';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 import {
   STAGE_META,
   INTEREST_META,
@@ -24,24 +25,24 @@ const C = {
   inkSec:   'rgba(6,3,43,0.55)',
   inkHint:  'rgba(6,3,43,0.38)',
   inkBdr:   'rgba(6,3,43,0.08)',
-  surface:  '#F8F6F1',
-  accent:   '#C76F3D',
-  green:    '#2F7D55',
-  blue:     '#1E4DA0',
-  amber:    '#8A5A00',
+  surface:  TOKENS.surface,
+  accent:   TOKENS.accent,
+  green:    TOKENS.success,
+  blue:     BADGE_TOKENS.info.text,
+  amber:    TOKENS.safeguard.watch.text,
 };
 
 // ── Stage pills ────────────────────────────────────────────────────────────────
 
 const STAGE_PILL: Record<ValidationStage, string> = {
   contacted:         'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.55)] border-[rgba(6,3,43,0.12)]',
-  meeting_scheduled: 'bg-[rgba(74,127,224,0.08)] text-[#1E4DA0] border-[rgba(74,127,224,0.25)]',
-  meeting_done:      'bg-[rgba(74,127,224,0.12)] text-[#1E4DA0] border-[rgba(74,127,224,0.30)]',
-  pilot_interested:  'bg-[rgba(199,111,61,0.10)] text-[#C76F3D] border-[rgba(199,111,61,0.28)]',
-  loi_discussed:     'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.30)]',
-  loi_signed:        'bg-[rgba(47,125,85,0.12)] text-[#2F7D55] border-[rgba(47,125,85,0.30)]',
+  meeting_scheduled: 'bg-[rgba(74,127,224,0.08)] text-kora-info-text border-[rgba(74,127,224,0.25)]',
+  meeting_done:      'bg-[rgba(74,127,224,0.12)] text-kora-info-text border-[rgba(74,127,224,0.30)]',
+  pilot_interested:  'bg-[rgba(199,111,61,0.10)] text-kora-accent border-[rgba(199,111,61,0.28)]',
+  loi_discussed:     'bg-[rgba(217,154,43,0.12)] text-kora-warning-text border-[rgba(217,154,43,0.30)]',
+  loi_signed:        'bg-[rgba(47,125,85,0.12)] text-kora-success border-[rgba(47,125,85,0.30)]',
   not_now:           'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.40)] border-[rgba(6,3,43,0.08)]',
-  lost:              'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.18)]',
+  lost:              'bg-[rgba(158,59,47,0.06)] text-kora-critical border-[rgba(158,59,47,0.18)]',
 };
 
 function StagePill({ stage }: { stage: ValidationStage }) {
@@ -124,8 +125,8 @@ function FunnelRow({ label, count, total, rate, isLast }: {
 
 function UrgencyBadge({ urgency }: { urgency: 'urgent' | 'normal' | 'low' }) {
   const cfg = {
-    urgent: { label: 'URGENTE', cls: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.25)]' },
-    normal: { label: 'QUESTA SETTIMANA', cls: 'bg-[rgba(217,154,43,0.10)] text-[#8A5A00] border-[rgba(217,154,43,0.28)]' },
+    urgent: { label: 'URGENTE', cls: 'bg-[rgba(158,59,47,0.10)] text-kora-critical border-[rgba(158,59,47,0.25)]' },
+    normal: { label: 'QUESTA SETTIMANA', cls: 'bg-[rgba(217,154,43,0.10)] text-kora-warning-text border-[rgba(217,154,43,0.28)]' },
     low:    { label: 'IN PROGRAMMA', cls: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.45)] border-[rgba(6,3,43,0.10)]' },
   }[urgency];
   return (
@@ -197,7 +198,7 @@ export default function FounderValidationPage() {
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div style={{
-        borderRadius: 14, background: '#06032B',
+        borderRadius: 14, background: TOKENS.ink,
         padding: '22px 28px', marginBottom: 20,
         display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12,
       }}>
@@ -213,7 +214,7 @@ export default function FounderValidationPage() {
           </p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'flex-end', gap: 6 }}>
-          <span style={{ borderRadius: 6, padding: '3px 10px', fontSize: 9, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase' as const, background: 'rgba(199,111,61,0.20)', color: '#C76F3D', border: '1px solid rgba(199,111,61,0.40)' }}>
+          <span style={{ borderRadius: 6, padding: '3px 10px', fontSize: 9, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase' as const, background: 'rgba(199,111,61,0.20)', color: TOKENS.accent, border: '1px solid rgba(199,111,61,0.40)' }}>
             FOUNDER TOOL
           </span>
           <span style={{ borderRadius: 6, padding: '3px 10px', fontSize: 9, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase' as const, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.10)' }}>
@@ -338,7 +339,7 @@ export default function FounderValidationPage() {
             <thead>
               <tr style={{ borderBottom: `1px solid ${C.inkBdr}`, background: C.surface }}>
                 {['Azienda', 'Settore', 'Dimensione', 'Ruolo', 'Stage', 'Interesse', 'Pilot', 'Prossima azione'].map((h) => (
-                  <th key={h} style={{ padding: '8px 14px', textAlign: 'left' as const, fontSize: 9, fontWeight: 700, color: C.inkHint, textTransform: 'uppercase' as const, letterSpacing: '0.07em', whiteSpace: 'nowrap' as const }}>
+                  <th scope="col" key={h} style={{ padding: '8px 14px', textAlign: 'left' as const, fontSize: 9, fontWeight: 700, color: C.inkHint, textTransform: 'uppercase' as const, letterSpacing: '0.07em', whiteSpace: 'nowrap' as const }}>
                     {h}
                   </th>
                 ))}

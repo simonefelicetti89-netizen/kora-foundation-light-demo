@@ -16,7 +16,7 @@ export default function GlobalError({
 
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 bg-[#F6F4EF] text-[#211F1A]"
+      className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 bg-kora-canvas text-kora-ink-warm"
       data-testid="root-error-boundary"
     >
       <p className="font-['Hanken_Grotesk'] text-base text-[rgba(6,3,43,0.64)]">
@@ -24,7 +24,7 @@ export default function GlobalError({
       </p>
       <button
         onClick={reset}
-        className="px-4 py-2 rounded-lg bg-[#B5512E] text-white font-['Hanken_Grotesk'] text-sm hover:opacity-90 transition-opacity"
+        className="px-4 py-2 rounded-lg bg-kora-cotto text-white font-['Hanken_Grotesk'] text-sm hover:opacity-90 transition-opacity"
       >
         Riprova
       </button>

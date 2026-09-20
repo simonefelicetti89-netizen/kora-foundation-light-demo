@@ -58,13 +58,17 @@ function makeMockClient(tableData: Record<string, QueryResult>) {
 let pdfDataTables: Record<string, QueryResult> = {};
 let serverClientTables: Record<string, QueryResult> = {};
 
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: () => makeMockClient(pdfDataTables),
-}));
-
+// KORA-WP-003 consolidated fetchPdfData() onto the canonical
+// getSupabaseServiceClient() factory (it previously called
+// @supabase/supabase-js's createClient() directly) — pdfDataTables now feeds
+// getSupabaseServiceClient specifically, kept as a separate mock table from
+// serverClientTables (which feeds getSupabaseServerClient, the route
+// handlers' own session-respecting auth/tenant queries) so each test case's
+// existing pdfDataTables/serverClientTables assignments keep meaning exactly
+// what they did before this WP — only the wiring underneath changed.
 vi.mock('@/lib/supabase/server', () => ({
   getSupabaseServerClient: async () => makeMockClient(serverClientTables),
-  getSupabaseServiceClient: () => makeMockClient(serverClientTables),
+  getSupabaseServiceClient: () => makeMockClient(pdfDataTables),
 }));
 
 const mockRequireCompanyUser = vi.fn();

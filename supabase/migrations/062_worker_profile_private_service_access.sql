@@ -1,0 +1,66 @@
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- KORA — Migration 062: worker_profile_private service_role SELECT access
+-- Migration:   062_worker_profile_private_service_access
+-- Created:     2026-09-13
+-- Authorized:  Consolidation Audit Wave 2, Item 10b (AUD-W2-ITEM-10b),
+--              Founder-approved narrow remediation. See
+--              .kora-audit/output/127_KORA_CONSOLIDATION_AUDIT_IMPLEMENTATION_WAVE_2.md.
+-- Gate status: Gate 2 CLOSED WITH CONDITIONS (2026-06-22) — staging apply
+--              authorized under those conditions; production remains
+--              blocked by Gate 3/5 (both OPEN), unaffected by this change.
+-- ───────────────────────────────────────────────────────────────────────────────
+-- ROOT CAUSE (found during Consolidation Audit Wave 2, empirically
+-- reproduced against clean local Postgres before this migration was
+-- written): migration 007 created personal.worker_profile_private and
+-- granted `authenticated` SELECT/INSERT/UPDATE — service_role was never
+-- granted anything on this table at all. Migration 002's blanket
+-- `GRANT ALL ON ALL TABLES IN SCHEMA personal TO service_role` pre-dates
+-- this table's own creation (007), so it never covered it — the exact
+-- same root cause, and the exact same fix shape, as migration 033's own
+-- fix for personal.worker_identity (which migration 033's own header
+-- explicitly scoped to that one table only: "does not touch any other
+-- personal.* table").
+--
+-- CONFIRMED REAL RUNTIME DEPENDENT: app/api/admin/trial-readiness/route.ts
+-- (a pre-existing, unrelated-to-this-audit-wave KORA_ADMIN reporting
+-- route) reads this table via getSupabaseServiceClient() to report
+-- per-tenant worker onboarding-completion counts. Before this migration,
+-- that query failed with `42501 permission denied for table
+-- worker_profile_private` — reproduced directly against clean local
+-- Postgres, independent of the separate query-contract defect
+-- (AUD-W2-ITEM-10a, corrected in application code, not here) that had
+-- been masking this privilege gap until now.
+--
+-- MINIMUM PRIVILEGE ONLY: the confirmed runtime need is read-only
+-- (trial-readiness never writes to this table). This migration grants
+-- SELECT only — no INSERT, UPDATE, or DELETE — deliberately narrower than
+-- migration 007's own `authenticated` grant (SELECT, INSERT, UPDATE) and
+-- narrower than migration 033's own `worker_identity` precedent (SELECT,
+-- INSERT, UPDATE), because no confirmed service_role writer of this table
+-- exists anywhere in the codebase (verified by repo-wide search before
+-- writing this migration).
+--
+-- What this migration does NOT do:
+--   - Does not create or alter any table.
+--   - Does not add, remove, or change any RLS policy (RLS/FORCE RLS on
+--     this table, migration 007, is completely unaffected — GRANTs and
+--     RLS are independent layers; service_role already bypasses RLS by
+--     role attribute, exactly as documented throughout this engagement —
+--     this migration only touches the GRANT layer, which RLS bypass does
+--     not substitute for).
+--   - Does not grant anything to `authenticated`, `anon`, `COMPANY_ADMIN`,
+--     `ADVISOR`, `PARTNER`, or PUBLIC — Company/Advisor/Partner roles gain
+--     zero new access to worker-private data; no employer-visibility
+--     expansion of any kind.
+--   - Does not touch migration 007 or any other existing migration.
+--   - Does not add a tenant_id column or any denormalized field — the
+--     separate query-contract fix (AUD-W2-ITEM-10a) resolves tenant
+--     attribution in application code via the existing worker_id ->
+--     personal.worker_identity.tenant_id relationship.
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+GRANT SELECT ON personal.worker_profile_private TO service_role;
+
+-- ── Reload PostgREST schema cache ───────────────────────────────────────────
+
+NOTIFY pgrst, 'reload schema';

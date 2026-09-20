@@ -13,6 +13,7 @@ import { KoraLogo } from '@/components/brand/KoraLogo';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { ADMIN_NAV_GROUPS } from '@/lib/navigation/admin-nav-groups';
+import { useSidebarDrawer, SIDEBAR_DRAWER_ID } from '@/components/layout/SidebarDrawerContext';
 
 const ENV_LABEL: Record<string, string> = {
   demo:   'DEMO',
@@ -37,7 +38,7 @@ const BADGE: Record<string, React.CSSProperties> = {
   ADMIN:     { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.48)', border: '1px solid rgba(255,255,255,0.14)' },
   STRATEGIA: { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.48)', border: '1px solid rgba(255,255,255,0.14)' },
   ROADMAP:   { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.10)' },
-  SYNTHETIC: { background: 'rgba(199,111,61,0.18)',  color: '#C76F3D',                border: '1px solid rgba(199,111,61,0.38)' },
+  SYNTHETIC: { background: 'rgba(199,111,61,0.18)',  color: TOKENS.accent,                border: '1px solid rgba(199,111,61,0.38)' },
   FOUNDER:   { background: 'rgba(199,111,61,0.14)',  color: 'rgba(220,140,80,0.90)',  border: '1px solid rgba(199,111,61,0.30)' },
 };
 
@@ -99,10 +100,12 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         heading: 'Intelligence',
         items: [
           { href: '/company/opportunities', label: 'Opportunità', preview: true },
+          { href: '/company/living-koral',  label: 'Living KORAL', description: 'Identità organizzativa costruita da trasformazioni riconosciute' },
           { href: '/company/financial',    label: 'Budget-to-Human-Impact™' },
           { href: '/company/activation',   label: 'Activation Intelligence™' },
           { href: '/company/contribution', label: 'KORA Contribution™' },
           { href: '/company/pillars',      label: 'Pillar Analysis' },
+          { href: '/company/needs',        label: 'Bisogni Aziendali', description: 'Ipotesi di bisogno rilevate — non ancora confermate' },
           { href: '/company/activity-selection', label: 'Selezione Attività', description: 'Anteprima design — Fase 2 Activation Intelligence', preview: true },
           { href: '/company/activity-signals', label: 'Segnali Attivazione', description: 'Anteprima design — segnali aggregati, Fase 2 Activation Intelligence', preview: true },
         ],
@@ -118,6 +121,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Network',
         items: [
+          { href: '/company/advisor', label: 'Il tuo Advisor', description: 'Advisor assegnato e messaggi' },
           { href: '/company/commons', label: 'KORA Space' },
           { href: '/company/kora-link', label: 'KORA Link' },
           { href: '/company/kora-link/campaigns', label: 'Campagne KORA Link', description: 'Anteprima design — nessuna campagna reale', preview: true },
@@ -363,12 +367,50 @@ export function Sidebar() {
     setExpandedGroups((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
+  // ── WP-088 responsive drawer (presentation only) ──────────────────────────
+  // Below `md` the sidebar is an off-canvas drawer: the 264px column would
+  // otherwise consume ~70% of a 375px viewport, leaving every authenticated
+  // screen unusable. At `md`+ the original static column is unchanged.
+  // Navigation structure, ordering, labels and route architecture are
+  // untouched (frozen by KORA-WP-073).
+  const drawer = useSidebarDrawer();
+  const closeDrawer = drawer.close;
+  const drawerOpen = drawer.open;
+
+  // Close the drawer on navigation — otherwise it stays over the new page.
+  useEffect(() => { closeDrawer(); }, [pathname, closeDrawer]);
+
+  // Escape closes the drawer (standard dismissal for an overlay surface).
+  useEffect(() => {
+    if (!drawerOpen) return;
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') closeDrawer(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [drawerOpen, closeDrawer]);
+
   return (
+    <>
+    {/* Backdrop — mobile only, dismisses the drawer on tap. Decorative: the
+        drawer itself is reachable and dismissable via keyboard (Escape). */}
+    {drawer.open && (
+      <div
+        aria-hidden="true"
+        onClick={drawer.close}
+        className="fixed inset-0 z-40 bg-black/40 md:hidden"
+      />
+    )}
     <aside
-      className="flex flex-col bg-kora-sidebar"
+      id={SIDEBAR_DRAWER_ID}
+      className={[
+        'flex flex-col bg-kora-sidebar',
+        'w-[264px] min-w-[264px] shrink-0',
+        // mobile: fixed off-canvas drawer
+        'fixed inset-y-0 left-0 z-50 overflow-y-auto transition-transform duration-200',
+        drawer.open ? 'translate-x-0' : '-translate-x-full',
+        // md+: original static column, always visible
+        'md:static md:z-auto md:translate-x-0 md:overflow-visible md:transition-none',
+      ].join(' ')}
       style={{
-        width:       '264px',
-        minWidth:    '264px',
         borderRight: '1px solid rgba(255,255,255,0.06)',
       }}
     >
@@ -644,8 +686,8 @@ export function Sidebar() {
             aria-hidden="true"
             style={{
               background:  'rgba(199,111,61,0.20)',
-              border:      '1.5px solid #C76F3D',
-              color:       '#C76F3D',
+              border:      `1.5px solid ${TOKENS.accent}`,
+              color:       TOKENS.accent,
               fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             }}
           >
@@ -671,5 +713,6 @@ export function Sidebar() {
         )}
       </div>
     </aside>
+    </>
   );
 }

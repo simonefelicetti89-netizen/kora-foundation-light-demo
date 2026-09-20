@@ -91,23 +91,23 @@ export default function AdminWorkforceBaselinePage() {
       <div className="space-y-6 max-w-5xl">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">KORA Admin — Validazione Workforce</p>
-          <h1 className="text-xl font-bold text-[#06032B] mt-0.5">Workforce Baseline</h1>
+          <h1 className="text-xl font-bold text-kora-ink mt-0.5">Workforce Baseline</h1>
         </div>
-        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-2">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper p-4 space-y-2">
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Azienda cliente</p>
           <div className="flex flex-wrap gap-2">
             {tenants.map((t) => {
               const hasBaseline = tenantIdsWithBaseline.has(t.id);
               return (
                 <button key={t.id} type="button" onClick={() => setSelectedTenantId(t.id)}
-                  className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${selectedTenantId === t.id ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'}`}>
+                  className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${selectedTenantId === t.id ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]' : 'border-[rgba(6,3,43,0.08)] bg-kora-paper text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'}`}>
                   {t.companyName}{!hasBaseline && <span className="ml-1 text-[9px] text-[rgba(6,3,43,0.40)]">(nessuna baseline)</span>}
                 </button>
               );
             })}
           </div>
         </div>
-        <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-5 text-xs text-[#8A5A00] space-y-2">
+        <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-5 text-xs text-kora-warning-text space-y-2">
           <p className="font-semibold">Baseline non ancora caricata</p>
           <p>{selectedTenant?.companyName ?? 'Azienda selezionata'} non ha ancora una workforce baseline.</p>
           <p>Onboarding status: {selectedTenant?.onboardingStatus?.replace(/_/g, ' ') ?? 'non avviato'}</p>
@@ -124,7 +124,7 @@ export default function AdminWorkforceBaselinePage() {
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
           KORA Admin — Validazione Workforce Azienda Cliente
         </p>
-        <h1 className="text-xl font-bold text-[#06032B] mt-0.5">Workforce Baseline</h1>
+        <h1 className="text-xl font-bold text-kora-ink mt-0.5">Workforce Baseline</h1>
         <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">
           Validazione aggregata della popolazione aziendale — gestita lato KORA Admin.
         </p>
@@ -143,7 +143,7 @@ export default function AdminWorkforceBaselinePage() {
       </div>
 
       {/* ── Company selector ── */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-2">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper p-4 space-y-2">
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Azienda cliente</p>
         <div className="flex flex-wrap gap-2">
           {tenants.map((t) => {
@@ -156,7 +156,7 @@ export default function AdminWorkforceBaselinePage() {
                 className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${
                   selectedTenantId === t.id
                     ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]'
-                    : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'
+                    : 'border-[rgba(6,3,43,0.08)] bg-kora-paper text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'
                 }`}
               >
                 {t.companyName}
@@ -168,13 +168,13 @@ export default function AdminWorkforceBaselinePage() {
       </div>
 
       {/* ── Validation result ── */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper p-5 space-y-3">
         <div className="flex items-center gap-2">
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Validazione</p>
           <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
             baseline.minimumCompanyThresholdMet
-              ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]'
-              : 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]'
+              ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-kora-success'
+              : 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-kora-critical'
           )}>
             {baseline.minimumCompanyThresholdMet ? 'SOGLIA SODDISFATTA' : 'SOTTO SOGLIA'}
           </span>
@@ -218,8 +218,8 @@ export default function AdminWorkforceBaselinePage() {
                   className={cn(
                     'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
                     activeDimension === dim
-                      ? 'border-[rgba(6,3,43,0.35)] bg-[#06032B] text-white'
-                      : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]',
+                      ? 'border-[rgba(6,3,43,0.35)] bg-kora-ink text-white'
+                      : 'border-[rgba(6,3,43,0.08)] bg-kora-paper text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]',
                   )}
                 >
                   {DIMENSION_LABELS[dim] ?? dim}
@@ -231,7 +231,7 @@ export default function AdminWorkforceBaselinePage() {
             {visibleGroups.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {visibleGroups.map((g) => (
-                  <div key={g.group_id} className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[#F8F6F1] p-3 space-y-2">
+                  <div key={g.group_id} className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-kora-paper p-3 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)]">{g.group_label}</p>
@@ -241,7 +241,7 @@ export default function AdminWorkforceBaselinePage() {
                     </div>
                     <div className="h-1.5 rounded-full bg-[rgba(6,3,43,0.05)]">
                       <div
-                        className="h-1.5 rounded-full bg-[#C76F3D]"
+                        className="h-1.5 rounded-full bg-kora-accent"
                         style={{ width: `${Math.min(g.share_of_workforce * 100, 100)}%` }}
                       />
                     </div>

@@ -28,13 +28,15 @@
 // canonical — see lib/architecture/registry.ts for their recorded status.
 //
 // Reads persisted scoring results from Supabase for any tenant — NO scoring recalculation.
-// Uses service_role server-side only (never exposed to client).
+// Uses service_role server-side only (never exposed to client), via the
+// canonical getSupabaseServiceClient() factory (lib/supabase/server.ts) —
+// previously an inline createClient() call, consolidated in KORA-WP-003.
 // isLiveData = true for all non-OP-001 tenants (OP-001 is synthetic demo only).
 
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/lib/supabase/types';
+import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { computeExecutiveIntelligence } from '@/services/executive-intelligence/ExecutiveIntelligenceService';
 import { getNormativeMappingLight, type NormativeMappingLight } from '@/lib/normative-mapping/normative-mapping-light';
+import { getDecisionSpineForTenant, type DecisionSpineEntry } from '@/lib/decision-pack/decision-spine';
 
 export interface PdfComponent {
   code: string;
@@ -229,17 +231,22 @@ export interface PdfData {
     pillarSplit:             { IMPACT: number; CONNECTION: number; LEGACY: number } | null;
     evidenceDistribution:    { L0: number; L1: number; L2: number; L3: number; L4: number } | null;
   } | null;
+  // KORA-WP-025 (CORE-012, MODIFY) — Decision Pack Extension: the existing
+  // Decision Pack now also reflects real Commitment/Evidence Plan/Review
+  // linkage data (KORA-WP-023's own commitment_decision_trace, enriched
+  // with each linked object's own content fields). Pure read-layer
+  // extension — no recomputation, no new methodology, no new table. Null
+  // when the tenant has no Commitments yet (Decision Spine not started),
+  // same "null = not yet available" convention as bti/enrichment/etc.
+  // above. See lib/decision-pack/decision-spine.ts for the full contract.
+  decisionSpine: DecisionSpineEntry[] | null;
 }
 
 export async function fetchPdfData(
   tenantCode: string,
   reportingPeriod: string,
 ): Promise<PdfData | null> {
-  const db = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  const db = getSupabaseServiceClient();
 
   const { data: tenant } = await db.schema('analytics').from('tenant')
     .select('id,company_name').eq('tenant_code', tenantCode).maybeSingle();
@@ -266,6 +273,19 @@ export async function fetchPdfData(
     .eq('tenant_id', (tenant as { id: string }).id)
     .order('created_at', { ascending: false })
     .limit(10);
+
+  // ── KORA-WP-025: Decision Spine (Commitment/Evidence Plan/Review linkage) ──
+  // Read-layer extension only — see lib/decision-pack/decision-spine.ts.
+  // Never blocks PdfData on failure: a Decision Spine read error degrades
+  // to null (same "renders without this block" convention as bti/
+  // enrichment/reportingAlignment above), never fails the whole pack.
+  let decisionSpine: PdfData['decisionSpine'] = null;
+  try {
+    const spine = await getDecisionSpineForTenant((tenant as { id: string }).id);
+    decisionSpine = spine.length > 0 ? spine : null;
+  } catch (spineErr) {
+    console.error('[fetchPdfData] decision spine fetch failed:', spineErr instanceof Error ? spineErr.message : spineErr);
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const actRow = (ki as any).activation_result as {
@@ -731,6 +751,7 @@ export async function fetchPdfData(
     // B79-B: KORA Contribution™ — not persisted in KORA Foundation Light.
     // Will be populated post-Contribution pipeline implementation.
     contributionSummary: null,
+    decisionSpine,
     executiveBrief: (() => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const kiVal    = (ki as any).kora_index_value ?? 0;

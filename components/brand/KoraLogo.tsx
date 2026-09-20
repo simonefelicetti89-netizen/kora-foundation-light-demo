@@ -1,4 +1,5 @@
 'use client';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface KoraLogoProps {
   variant?: 'on-dark' | 'on-light';
@@ -9,8 +10,8 @@ interface KoraLogoProps {
 //   brandmark: always #C76F3D (terracotta) — primary brand color
 //   wordmark:  on-dark → #FFFFFF (sidebar), on-light → #06032B (light bg)
 export function KoraLogo({ variant = 'on-dark', className }: KoraLogoProps) {
-  const wordmark  = variant === 'on-dark' ? '#FFFFFF' : '#06032B';
-  const brandmark = '#C76F3D';
+  const wordmark  = variant === 'on-dark' ? '#FFFFFF' : TOKENS.ink;
+  const brandmark = TOKENS.accent;
   const t         = wordmark;
 
   return (

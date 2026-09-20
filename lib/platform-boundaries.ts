@@ -1,4 +1,5 @@
 // lib/platform-boundaries.ts
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 // B80-B: Canonical boundary definitions for the KORA platform.
 // Consumed by BoundaryBadge, BoundaryBanner, and all page-level boundary labels.
 // Never import scoring, methodology, or DB config from this file.
@@ -37,14 +38,14 @@ export const BOUNDARY_BADGE_STYLE_DARK: Record<BoundaryMode, React.CSSProperties
 
 // Inline style tokens for light background context — company pages, reports
 export const BOUNDARY_BADGE_STYLE_LIGHT: Record<BoundaryMode, React.CSSProperties> = {
-  LIVE:         { background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' },
-  DEMO:         { background: '#fff7ed', color: '#9a3412', border: '1px solid #fed7aa' },
-  PREVIEW:      { background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' },
-  FUTURE_VISION:{ background: '#f3f4f6', color: '#6b7280', border: '1px solid #e5e7eb' },
+  LIVE:         { background: BADGE_TOKENS.eligible.bg, color: BADGE_TOKENS.eligible.text, border: `1px solid ${BADGE_TOKENS.eligible.border}` },
+  DEMO:         { background: BADGE_TOKENS.limited.bg, color: BADGE_TOKENS.blocked.text, border: `1px solid ${BADGE_TOKENS.limited.border}` },
+  PREVIEW:      { background: BADGE_TOKENS.info.bg, color: BADGE_TOKENS.info.text, border: `1px solid ${BADGE_TOKENS.info.border}` },
+  FUTURE_VISION:{ background: TOKENS.surface, color: TOKENS.inkSecondary, border: `1px solid ${TOKENS.inkBorder}` },
 };
 
 // Banner background/text for dual-path pages (light bg context)
 export const BOUNDARY_BANNER_STYLE: Record<'LIVE' | 'DEMO', React.CSSProperties> = {
-  LIVE: { background: '#f0fdf4', borderColor: '#86efac', color: '#166534' },
-  DEMO: { background: '#fffbeb', borderColor: '#fcd34d', color: '#92400e' },
+  LIVE: { background: BADGE_TOKENS.eligible.bg, borderColor: BADGE_TOKENS.eligible.border, color: BADGE_TOKENS.eligible.text },
+  DEMO: { background: BADGE_TOKENS.limited.bg, borderColor: BADGE_TOKENS.limited.border, color: BADGE_TOKENS.limited.text },
 };

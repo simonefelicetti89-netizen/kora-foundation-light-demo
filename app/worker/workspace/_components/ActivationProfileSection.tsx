@@ -5,14 +5,8 @@
 // NEVER shows rankings, percentiles, or comparisons with other workers.
 
 import type { WorkerActivationProfile, PillarDistributionEntry } from '@/app/api/worker/activation-profile/route';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE:       '#16a34a',
-  GROWTH:     '#2563eb',
-  CONNECTION: '#9333ea',
-  IMPACT:     '#dc2626',
-  LEGACY:     '#ca8a04',
-};
 
 const PILLAR_LABELS: Record<string, string> = {
   LIFE:       'Life',
@@ -45,7 +39,7 @@ function PillarBar({ entry, max }: { entry: PillarDistributionEntry; max: number
             flexShrink: 0, display: 'inline-block',
           }} />
           <span style={{
-            fontSize: 11, fontWeight: 700, color: hasActivity ? '#06032B' : 'rgba(6,3,43,0.35)',
+            fontSize: 11, fontWeight: 700, color: hasActivity ? TOKENS.ink : 'rgba(6,3,43,0.35)',
           }}>
             {PILLAR_LABELS[entry.pillar] ?? entry.pillar}
           </span>
@@ -79,7 +73,7 @@ function StatCell({ label, value }: { label: string; value: number }) {
       background: 'rgba(6,3,43,0.03)', border: '1px solid rgba(6,3,43,0.07)',
       borderRadius: 7, padding: '10px 12px', textAlign: 'center',
     }}>
-      <div style={{ fontSize: 18, fontWeight: 800, color: '#06032B', lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: TOKENS.ink, lineHeight: 1 }}>{value}</div>
       <div style={{ fontSize: 9, color: 'rgba(6,3,43,0.45)', marginTop: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
     </div>
   );
@@ -143,7 +137,7 @@ export function ActivationProfileSection({ profile }: { profile: WorkerActivatio
         borderRadius: 10, padding: '18px 20px',
       }}>
         <h3 style={subheadingStyle}>Riepilogo attività</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
           <StatCell label="Interessi" value={activitySummary.total_interested} />
           <StatCell label="Iscrizioni" value={activitySummary.total_registered} />
           <StatCell label="Presenze" value={activitySummary.total_attended} />
@@ -206,7 +200,7 @@ function PrivacyCard() {
       background: 'rgba(47,125,85,0.06)', border: '1px solid rgba(47,125,85,0.18)',
       borderRadius: 8, padding: '12px 16px',
     }}>
-      <p style={{ fontSize: 11, color: '#1a4731', margin: 0, lineHeight: 1.6 }}>
+      <p style={{ fontSize: 11, color: BADGE_TOKENS.eligible.text, margin: 0, lineHeight: 1.6 }}>
         <strong>Profilo privato.</strong>{' '}
         Il tuo datore di lavoro vede solo dati aggregati sopra soglia — mai questo profilo individuale.
         Non è una valutazione individuale e non genera ranking.
@@ -229,7 +223,7 @@ function InsightRow({
       }}>
         {label}
       </span>
-      <span style={{ fontSize: 11, color: muted ? 'rgba(6,3,43,0.40)' : '#06032B', fontStyle: muted ? 'italic' : 'normal' }}>
+      <span style={{ fontSize: 11, color: muted ? 'rgba(6,3,43,0.40)' : TOKENS.ink, fontStyle: muted ? 'italic' : 'normal' }}>
         <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: color, marginRight: 5, verticalAlign: 'middle' }} />
         {value}
       </span>

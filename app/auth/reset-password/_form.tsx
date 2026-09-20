@@ -155,7 +155,7 @@ export function ResetPasswordForm() {
         </div>
 
         {status === 'success' ? (
-          <p style={{ fontFamily: FONT, fontSize: 13, color: '#2F7D55', textAlign: 'center' }}>
+          <p style={{ fontFamily: FONT, fontSize: 13, color: TOKENS.success, textAlign: 'center' }}>
             Password aggiornata. Accesso in corso…
           </p>
         ) : (

@@ -1,0 +1,72 @@
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- KORA — Migration 074: commons.contribution_event — restore authenticated least privilege
+-- Migration:   074_commons_contribution_authenticated_least_privilege
+-- Created:     2026-09-15
+-- Block:       COMMONS AUTHENTICATED OVER-GRANT REMEDIATION (drift correction,
+--              not a numbered WP advancement)
+-- Gate:        Gate 2 CLOSED WITH CONDITIONS (staging authorized) — written and
+--              validated LOCAL/disposable-DB only by this task. NOT applied to
+--              staging or production by this migration file.
+-- ───────────────────────────────────────────────────────────────────────────────
+-- SCOPO
+-- ─────
+-- Migration 025's own executable SQL already establishes the canonical intent
+-- for this table, verbatim (§7 "M025-5: Restrict contribution_event grants"):
+--
+--   GRANT SELECT ON commons.contribution_event TO authenticated;
+--   REVOKE INSERT, UPDATE ON commons.contribution_event FROM authenticated;
+--   REVOKE INSERT, UPDATE, DELETE ON commons.contribution_event FROM anon;
+--
+-- with its own comment stating the invariant directly: "authenticated
+-- (company/worker) may only SELECT — enforced by company_own_select RLS
+-- policy. All INSERTs and UPDATEs to contribution_event must go through
+-- SECURITY DEFINER functions called by service_role... This enforces the
+-- invariant that contribution signals are not self-reported by tenants."
+--
+-- The 072/073 staging-rollout verification task independently discovered
+-- that staging currently holds `authenticated = SELECT, INSERT, UPDATE` on
+-- this table — wider than 025's own REVOKE, and wider than local disposable
+-- Postgres (SELECT only) — an out-of-band drift, not written by any
+-- migration file (grepped exhaustively: no migration after 025 ever
+-- re-grants INSERT/UPDATE to authenticated on this table; migration 046's
+-- own comment merely *describes* SELECT/INSERT/UPDATE without an executable
+-- grant statement to match). This migration restores 025's own already-
+-- canonical intent — it does not invent a new policy.
+--
+-- PRE-CHECK (this task, re-confirmed independently of any prior task's
+-- conclusions): every `.schema('commons').from('contribution_event')` call
+-- site in the repository was re-enumerated. Exactly two write paths exist,
+-- both in lib/commons/cross-company-attribution.ts
+-- (attributeContributionForBooking, attributeContributionForExternalParticipants),
+-- both typed ServiceDb and invoked only via BookingService.markAttended()'s
+-- own `serviceDb` (service_role) parameter — never `authenticated`. Every
+-- other call site (services/kora-contribution/KoraContributionService.ts,
+-- 4 functions) is a plain .select(...) read, confirmed via source
+-- inspection, none in this repository ever attempts an authenticated
+-- INSERT/UPDATE/DELETE on this table. No real authenticated write consumer
+-- exists — the REVOKE below removes zero live functionality.
+--
+-- SCOPE: exactly the two REVOKEs 025 already intended, nothing else.
+-- Does NOT touch: SELECT (authenticated keeps read access, RLS-scoped by
+-- contribution_event_company_own_select), service_role (untouched, keeps
+-- its own INSERT-only grant from migration 073), schema USAGE (either
+-- role), RLS, FORCE RLS, policies, functions, or any other table.
+--
+-- IDEMPOTENTE: REVOKE is naturally idempotent in Postgres (no error if the
+-- privilege is already absent) — same discipline as every other grant/revoke
+-- migration in this repository (046, 072, 073).
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+REVOKE INSERT ON commons.contribution_event FROM authenticated;
+REVOKE UPDATE ON commons.contribution_event FROM authenticated;
+
+-- ── Reload schema PostgREST ───────────────────────────────────────────────────
+
+NOTIFY pgrst, 'reload schema';
+
+-- ── ROLLBACK ─────────────────────────────────────────────────────────────────
+-- GRANT INSERT, UPDATE ON commons.contribution_event TO authenticated;
+-- NOTIFY pgrst, 'reload schema';
+-- Rollback is safe at any time — no object, policy, trigger, or function
+-- depends on authenticated holding INSERT/UPDATE here; reverting only
+-- restores the pre-074 drift (not a new failure mode).

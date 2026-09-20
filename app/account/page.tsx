@@ -16,6 +16,7 @@ import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { getRoleHome } from '@/lib/auth/role-home';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Il tuo account · KORA' };
 
@@ -26,7 +27,7 @@ const ROLE_INFO: Record<string, { label: string; spaceLabel: string; description
     label:       'KORA Admin',
     spaceLabel:  'Piattaforma KORA',
     description: 'Accesso completo alla piattaforma. Puoi gestire company, advisor, partner e configurazioni metodologia.',
-    color:       '#3b30c9',
+    color:       TOKENS.violet,
     bg:          'rgba(97,86,245,0.10)',
     border:      'rgba(97,86,245,0.28)',
   },
@@ -34,7 +35,7 @@ const ROLE_INFO: Record<string, { label: string; spaceLabel: string; description
     label:       'Company Admin',
     spaceLabel:  'Workspace aziendale',
     description: 'Accesso al workspace aziendale. KORA Index, ingestion dati, report aggregati. Nessun dato individuale lavoratore è visibile a questo ruolo.',
-    color:       '#166534',
+    color:       BADGE_TOKENS.eligible.text,
     bg:          'rgba(22,101,52,0.10)',
     border:      'rgba(22,101,52,0.28)',
   },
@@ -42,7 +43,7 @@ const ROLE_INFO: Record<string, { label: string; spaceLabel: string; description
     label:       'Worker',
     spaceLabel:  'Spazio personale — My KORA',
     description: 'Il tuo spazio personale è privato. I tuoi dati di attivazione non sono visibili al datore di lavoro — l\'azienda vede solo medie aggregate anonime.',
-    color:       '#1e4a8a',
+    color:       TOKENS.info.text,
     bg:          'rgba(37,99,235,0.10)',
     border:      'rgba(37,99,235,0.28)',
   },
@@ -50,7 +51,7 @@ const ROLE_INFO: Record<string, { label: string; spaceLabel: string; description
     label:       'Partner',
     spaceLabel:  'Area Partner KORA',
     description: 'Il tuo workspace partner. Puoi vedere il tuo profilo e lo stato di visibilità nel catalogo opportunità. Nessun accesso a dati individuali worker o KORA Index aziendale.',
-    color:       '#8A5A00',
+    color:       TOKENS.safeguard.watch.text,
     bg:          'rgba(192,125,42,0.10)',
     border:      'rgba(192,125,42,0.28)',
   },
@@ -92,7 +93,7 @@ export default async function AccountPage() {
       </Link>
 
       {/* Page title */}
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: '0 0 4px' }}>
+      <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: '0 0 4px' }}>
         Il tuo account
       </h1>
       <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.45)', margin: '0 0 32px' }}>
@@ -114,7 +115,7 @@ export default async function AccountPage() {
           </p>
           <p
             data-testid="account-email"
-            style={{ fontSize: 14, fontWeight: 600, color: '#06032B', margin: '0 0 10px', wordBreak: 'break-all' }}
+            style={{ fontSize: 14, fontWeight: 600, color: TOKENS.ink, margin: '0 0 10px', wordBreak: 'break-all' }}
           >
             {user.email}
           </p>
@@ -141,7 +142,7 @@ export default async function AccountPage() {
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: '0 0 6px' }}>
             Spazio di accesso
           </p>
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#06032B', margin: '0 0 4px' }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: TOKENS.ink, margin: '0 0 4px' }}>
             {roleInfo.spaceLabel}
           </p>
           <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', margin: 0, lineHeight: 1.6 }}>
@@ -169,7 +170,7 @@ export default async function AccountPage() {
               display:        'inline-block',
               fontSize:       12,
               fontWeight:     600,
-              color:          '#3b30c9',
+              color:          TOKENS.violet,
               textDecoration: 'none',
               padding:        '7px 14px',
               border:         '1px solid rgba(97,86,245,0.28)',
@@ -190,7 +191,7 @@ export default async function AccountPage() {
                 display:        'inline-block',
                 fontSize:       12,
                 fontWeight:     600,
-                color:          '#2F7D55',
+                color:          TOKENS.success,
                 textDecoration: 'none',
                 padding:        '7px 14px',
                 border:         '1px solid rgba(47,125,85,0.25)',
@@ -212,7 +213,7 @@ export default async function AccountPage() {
                 display:        'inline-block',
                 fontSize:       12,
                 fontWeight:     600,
-                color:          '#8A5A00',
+                color:          TOKENS.safeguard.watch.text,
                 textDecoration: 'none',
                 padding:        '7px 14px',
                 border:         '1px solid rgba(192,125,42,0.28)',
@@ -234,7 +235,7 @@ export default async function AccountPage() {
                 fontFamily:   FONT,
                 fontSize:     12,
                 fontWeight:   600,
-                color:        '#9E3B2F',
+                color:        TOKENS.critical,
                 background:   'rgba(158,59,47,0.06)',
                 border:       '1px solid rgba(158,59,47,0.20)',
                 borderRadius: 8,

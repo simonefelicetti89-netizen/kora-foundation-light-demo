@@ -199,10 +199,14 @@ describe('CC-00 DEMO_VIEWER retirement — real role access unchanged', () => {
     expect(session).toContain("koraRole !== 'PARTNER'");
   });
 
-  it('ADVISOR remains unenforced (no session guard) exactly as before — this slice does not touch ADVISOR', () => {
+  // KORA-WP-002 (2026-09-12) deliberately added ADVISOR's session guard —
+  // unrelated to, and after, this CC-00 slice. Updated here rather than
+  // left stale; see tests/unit/kora-wp-002-advisor-guard.test.ts for the
+  // guard's own full behavioral coverage.
+  it('ADVISOR now has a session guard (KORA-WP-002) — this slice (CC-00) did not touch it either way', () => {
     const session = read('lib/auth/kora-session.ts');
     const exportNames = session.match(/export (?:async )?function (\w+)/g) ?? [];
-    expect(exportNames.some((n) => n.includes('AdvisorUser'))).toBe(false);
+    expect(exportNames.some((n) => n.includes('AdvisorUser'))).toBe(true);
   });
 
   it('middleware.ts role-redirect blocks for COMPANY_ADMIN/WORKER/PARTNER/KORA_ADMIN are unchanged', () => {

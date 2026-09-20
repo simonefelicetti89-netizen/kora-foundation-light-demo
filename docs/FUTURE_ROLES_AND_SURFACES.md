@@ -41,7 +41,7 @@ Concise, not a manifesto. See `docs/PILOT_SAAS_READINESS.md` for pilot-v1 scope,
 **What "Advisor" means in KORA (recommendation, not yet a formal decision):** primarily a **welfare/HR or organizational (HSE) advisor** reviewing a client company's Decision Pack and methodology outputs on KORA's or the client's behalf — not a research reviewer, not a KORA-internal ecosystem expert (that's closer to KORA_ADMIN's own role). This reading is consistent with the one DB artifact that already exists for this role (`fn_advisor_uef_read()`, scoped per-tenant, built for reviewing UEF data, not for cross-tenant research).
 
 **Current state:**
-- `ADVISOR` exists as a string in `lib/constants/kora.ts`'s `KORA_ROLES` and routes through `lib/permissions/index.ts` — but has **no session guard** in `lib/auth/kora-session.ts`, **no login**, and **no real route** (`/advisor` permanently redirects to `/demo/advisor`, a static showcase).
+- `ADVISOR` exists as a string in `lib/constants/kora.ts`'s `KORA_ROLES` and routes through `lib/permissions/index.ts`. **Update (KORA-WP-002, 2026-09-12):** it now has a **session guard** — `requireAdvisorUser()` / `isAdvisorUser()` / `getCurrentAdvisorUser()` in `lib/auth/kora-session.ts`, mirroring the existing `require*User()` pattern exactly, plus a `middleware.ts` block preventing an ADVISOR session from reaching `/worker/*` (same defense-in-depth layer as `KORA_ADMIN`, B168-P3). It still has **no login/provisioning path**, **no Identity table** (`KORA-WP-030`), and **no real route** (`/advisor` still permanently redirects to `/demo/advisor`, a static showcase) — the guard recognizes a session type only, and `ADVISOR` remains in `FUTURE_KORA_ROLES`, not `ACTIVE_KORA_ROLES`.
 - DB-layer work is already done and hardened, proactively, ahead of any UI: migration `001` originally had a direct `advisor_tenant_uef_read` RLS policy on `analytics.uef_record`; migration `030` **replaced it** with `fn_advisor_uef_read()` — a tenant-scoped, `SECURITY DEFINER` function that excludes the raw payload, specifically because the original direct-table policy was a security finding (raw payload exposure). The migration's own comment states no app route currently depends on this.
 - `tenant.assigned_advisor` is displayed as an info field on the admin company detail page today — advisory *relationships* are already tracked informally at the data level, even without an advisor login.
 
@@ -54,8 +54,9 @@ Concise, not a manifesto. See `docs/PILOT_SAAS_READINESS.md` for pilot-v1 scope,
 **Privacy red lines:** advisor access is always tenant-scoped (never cross-tenant without a separate, explicit KORA_ADMIN-equivalent grant); never raw/individual worker data; anonymized/aggregated views only unless a specific engagement explicitly authorizes more (and that authorization mechanism doesn't exist yet — would need its own design pass, likely mirroring Gate 3's DPO/legal review pattern).
 
 **Missing foundations for the next increment:**
-- `requireAdvisorUser()` + a `KoraAdvisorUser` type in `lib/auth/kora-session.ts` (mirrors the existing `require*User()` pattern exactly — low-risk to add when the time comes).
+- ~~`requireAdvisorUser()` + a `KoraAdvisorUser` type in `lib/auth/kora-session.ts` (mirrors the existing `require*User()` pattern exactly — low-risk to add when the time comes).~~ — **done in KORA-WP-002** (2026-09-12).
 - ~~A row in `docs/access-matrix.md`'s `canAccess()` implementation (`ADVISOR` needs adding to `lib/auth/access-matrix.ts`'s `KoraRole`)~~ — **done in ROLE-01** (2026-07-04): `ADVISOR` now has an explicit `DENY` row on every resource in `MATRIX`, ready to flip to real rules once a real guard exists.
+- The Advisor Identity table (`KORA-WP-030`, explicitly deferred by KORA-WP-002) — no `advisor_identity`/qualification/assignment model exists yet, so the session guard added in KORA-WP-002 has no DB-backed existence check to perform.
 - A real `/advisor` route replacing the permanent redirect to `/demo/advisor`.
 
 ---
@@ -72,7 +73,7 @@ Treating either as a "sub-mode" of Company or Worker would blur exactly the priv
 
 1. ~~Reconcile the two `KoraRole` type definitions (prerequisite for both)~~ — **done in ROLE-01** (2026-07-04, see `access-matrix.md`).
 2. Partner: decide `/partner` vs. `/partner/workspace` as home, then build initiative-participation read views on the existing `partner_profile` model.
-3. Advisor: add `requireAdvisorUser()` + a real `/advisor` route consuming `fn_advisor_uef_read()`, read-only, single-tenant.
+3. Advisor: ~~add `requireAdvisorUser()`~~ (done, KORA-WP-002) + a real `/advisor` route consuming `fn_advisor_uef_read()`, read-only, single-tenant, on top of an Advisor Identity table (`KORA-WP-030`).
 4. Only after both are stable: consider scan-point/service-offering (Partner) or comment/suggestion features (Advisor) — genuinely new surfaces, not extensions of what exists.
 
 ## What not to build yet

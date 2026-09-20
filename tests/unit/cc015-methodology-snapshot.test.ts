@@ -271,6 +271,15 @@ function recordInsert(table: string, payload: Record<string, unknown>) {
   return makeInsertResult(`${table}-${++nextId}`);
 }
 
+// KORA-WP-003 consolidated fetchPdfData() (lib/decision-pack/pdf-data.ts) onto
+// this same getSupabaseServiceClient() factory (it previously called
+// @supabase/supabase-js's createClient() directly, mocked separately below at
+// what was §7-9's sibling §8 block). One mock factory per module is all
+// Vitest allows, so insert/update (this section's own need) and the
+// select/eq/order/limit/maybeSingle/then chain (§8's need, backed by
+// pdfDataTables, declared further below) now live on the same `.from(table)`
+// result — each describe block only ever calls the methods relevant to its
+// own scenario, so there is no real collision.
 vi.mock('@/lib/supabase/server', () => ({
   getSupabaseServiceClient: () => ({
     schema: (_schemaName: string) => ({
@@ -284,6 +293,7 @@ vi.mock('@/lib/supabase/server', () => ({
           return recordInsert(table, payload);
         },
         update: (_payload: Record<string, unknown>) => makeChainableUpdate(),
+        ...makePdfBuilder(pdfDataTables[table] ?? { data: null, error: null }),
       }),
     }),
   }),
@@ -447,9 +457,9 @@ describe('CC-015 — historical provenance: migration is additive-only, never re
 // 8. DECISION PACK CONSUMES PERSISTED SNAPSHOT METADATA (behavioral, extends CC-013's harness)
 // ═════════════════════════════════════════════════════════════════════════════
 
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: () => makePdfDataMockClient(pdfDataTables),
-}));
+// KORA-WP-003: fetchPdfData() now reads through getSupabaseServiceClient()
+// (§7-9's mock above), not a separate @supabase/supabase-js mock — pdfDataTables
+// and makePdfBuilder feed that shared factory's `.from(table)` result.
 
 type PdfQueryResult = { data: unknown; error: { message: string } | null };
 let pdfDataTables: Record<string, PdfQueryResult> = {};
@@ -470,9 +480,6 @@ function makePdfBuilder(result: PdfQueryResult): PdfQueryBuilder {
     then: (resolve) => resolve(result),
   };
   return builder;
-}
-function makePdfDataMockClient(tableData: Record<string, PdfQueryResult>) {
-  return { schema: (_s: string) => ({ from: (table: string) => makePdfBuilder(tableData[table] ?? { data: null, error: null }) }) };
 }
 
 describe('CC-015 — Decision Pack reads the persisted Methodology Snapshot, never invents one', () => {

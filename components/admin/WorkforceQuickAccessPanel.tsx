@@ -41,7 +41,7 @@ export function WorkforceQuickAccessPanel({
       data-testid="workforce-quick-access-panel"
       className="max-w-[1100px] mx-auto px-3 pt-5 pb-0"
     >
-      <div className="rounded-xl border border-[rgba(6,3,43,0.10)] bg-[#F8F6F1] p-5">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.10)] bg-kora-paper p-5">
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-4 flex-wrap">
@@ -98,7 +98,7 @@ export function WorkforceQuickAccessPanel({
                     <p className="text-[8.5px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
                       My KORA attivi
                     </p>
-                    <p className={`text-lg font-bold mt-0.5 ${myKoraEnabled > 0 ? 'text-[#2F7D55]' : 'text-[rgba(6,3,43,0.45)]'}`}>
+                    <p className={`text-lg font-bold mt-0.5 ${myKoraEnabled > 0 ? 'text-kora-success' : 'text-[rgba(6,3,43,0.45)]'}`}>
                       {myKoraEnabled}
                     </p>
                   </div>
@@ -106,7 +106,7 @@ export function WorkforceQuickAccessPanel({
 
                 {/* Worker Space status */}
                 <div className="flex items-center gap-1.5">
-                  <span className={`inline-block rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${capability.enabled ? 'border-[rgba(47,125,85,0.28)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]' : 'border-[rgba(6,3,43,0.10)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.45)]'}`}>
+                  <span className={`inline-block rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${capability.enabled ? 'border-[rgba(47,125,85,0.28)] bg-[rgba(47,125,85,0.08)] text-kora-success' : 'border-[rgba(6,3,43,0.10)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.45)]'}`}>
                     Worker Space: {capability.enabled ? 'Abilitato' : 'Non abilitato'}
                   </span>
                 </div>
@@ -117,7 +117,7 @@ export function WorkforceQuickAccessPanel({
                 <Link
                   href="/admin/workers"
                   data-testid={`gestisci-workforce-${tenant.tenant_code}`}
-                  className="mt-auto block rounded-md bg-[#06032B] px-3 py-2 text-center text-[11px] font-semibold text-white hover:bg-[rgba(6,3,43,0.82)] transition-colors"
+                  className="mt-auto block rounded-md bg-kora-ink px-3 py-2 text-center text-[11px] font-semibold text-white hover:bg-[rgba(6,3,43,0.82)] transition-colors"
                 >
                   Worker Provisioning (live) →
                 </Link>

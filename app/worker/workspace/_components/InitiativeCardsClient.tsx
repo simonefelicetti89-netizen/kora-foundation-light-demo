@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase/types';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export type InitiativeItem = {
   id: string;
@@ -21,10 +22,6 @@ export type InitiativeItem = {
   participation_status: WorkerParticipationRow['status'] | null;
 };
 
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE: '#16a34a', GROWTH: '#2563eb', CONNECTION: '#9333ea',
-  IMPACT: '#dc2626', LEGACY: '#ca8a04',
-};
 
 const PILLAR_LABELS: Record<string, string> = {
   LIFE: 'Life', GROWTH: 'Growth', CONNECTION: 'Connection',
@@ -87,9 +84,9 @@ function CTAButton({
     opacity: disabled ? 0.6 : 1, transition: 'opacity 0.1s',
   };
   const variants: Record<string, React.CSSProperties> = {
-    primary:   { background: '#06032B', color: '#fff', border: 'none' },
-    secondary: { background: 'transparent', color: '#06032B', border: '1px solid rgba(6,3,43,0.25)' },
-    danger:    { background: 'transparent', color: '#9e3b2f', border: '1px solid rgba(158,59,47,0.30)' },
+    primary:   { background: TOKENS.ink, color: '#fff', border: 'none' },
+    secondary: { background: 'transparent', color: TOKENS.ink, border: '1px solid rgba(6,3,43,0.25)' },
+    danger:    { background: 'transparent', color: TOKENS.critical, border: '1px solid rgba(158,59,47,0.30)' },
   };
   return (
     <button onClick={onClick} disabled={disabled} style={{ ...base, ...variants[variant] }}>
@@ -153,13 +150,13 @@ function InitiativeCard({
             {init.eligibility_class && init.eligibility_class !== 'eligible' && (
               <span style={{
                 fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-                background: '#fef9c3', color: '#854d0e', borderRadius: 4, padding: '1px 5px',
+                background: BADGE_TOKENS.limited.bg, color: BADGE_TOKENS.limited.text, borderRadius: 4, padding: '1px 5px',
               }}>
                 {ELIGIBILITY_LABELS[init.eligibility_class] ?? init.eligibility_class}
               </span>
             )}
           </div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#06032B', marginBottom: 2 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, marginBottom: 2 }}>
             {init.title}
           </div>
           {init.description && (
@@ -181,8 +178,8 @@ function InitiativeCard({
         {currentStatus && (
           <span style={{
             fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-            background: currentStatus === 'attended' ? '#dcfce7' : currentStatus === 'registered' ? '#dbeafe' : currentStatus === 'interested' ? 'rgba(6,3,43,0.06)' : '#f3f4f6',
-            color: currentStatus === 'attended' ? '#15803d' : currentStatus === 'registered' ? '#1d4ed8' : currentStatus === 'interested' ? 'rgba(6,3,43,0.60)' : '#6b7280',
+            background: currentStatus === 'attended' ? BADGE_TOKENS.eligible.bg : currentStatus === 'registered' ? BADGE_TOKENS.info.bg : currentStatus === 'interested' ? 'rgba(6,3,43,0.06)' : TOKENS.surface,
+            color: currentStatus === 'attended' ? BADGE_TOKENS.eligible.text : currentStatus === 'registered' ? BADGE_TOKENS.info.text : currentStatus === 'interested' ? 'rgba(6,3,43,0.60)' : TOKENS.inkSecondary,
             borderRadius: 4, padding: '2px 7px', flexShrink: 0, marginLeft: 10,
           }}>
             {STATUS_LABELS[currentStatus]}
@@ -223,7 +220,7 @@ function InitiativeCard({
             </span>
           )}
           {saved && !loading && (
-            <span data-testid="initiative-saved-feedback" style={{ fontSize: 10, color: '#16a34a', fontStyle: 'italic' }}>
+            <span data-testid="initiative-saved-feedback" style={{ fontSize: 10, color: BADGE_TOKENS.eligible.text, fontStyle: 'italic' }}>
               Aggiornamento salvato
             </span>
           )}
@@ -231,7 +228,7 @@ function InitiativeCard({
       )}
 
       {error && (
-        <p style={{ fontSize: 10, color: '#dc2626', marginTop: 8, marginBottom: 0 }}>{error}</p>
+        <p style={{ fontSize: 10, color: BADGE_TOKENS.blocked.text, marginTop: 8, marginBottom: 0 }}>{error}</p>
       )}
     </div>
   );

@@ -4,6 +4,7 @@
 // Actions: publish, reject, archive. No individual worker data.
 
 import { useState } from 'react';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -18,10 +19,10 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
   draft:          { label: 'Bozza',        color: 'rgba(6,3,43,0.50)', bg: 'rgba(6,3,43,0.06)'      },
-  pending_review: { label: 'In revisione', color: '#8A5A00',           bg: 'rgba(192,125,42,0.10)'   },
-  published:      { label: 'Pubblicato',   color: '#2F7D55',           bg: 'rgba(47,125,85,0.08)'    },
+  pending_review: { label: 'In revisione', color: TOKENS.safeguard.watch.text,           bg: 'rgba(192,125,42,0.10)'   },
+  published:      { label: 'Pubblicato',   color: TOKENS.success,           bg: 'rgba(47,125,85,0.08)'    },
   archived:       { label: 'Archiviato',   color: 'rgba(6,3,43,0.40)', bg: 'rgba(6,3,43,0.04)'      },
-  rejected:       { label: 'Rifiutato',    color: '#9E3B2F',           bg: 'rgba(158,59,47,0.08)'    },
+  rejected:       { label: 'Rifiutato',    color: TOKENS.critical,           bg: 'rgba(158,59,47,0.08)'    },
 };
 
 type FilterStatus = 'all' | 'pending_review' | 'published' | 'draft' | 'rejected' | 'archived';
@@ -125,7 +126,7 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
                 padding:      '6px 12px',
                 borderRadius: 8,
                 border:       '1px solid rgba(6,3,43,0.12)',
-                background:   filter === value ? '#06032B' : 'transparent',
+                background:   filter === value ? TOKENS.ink : 'transparent',
                 color:        filter === value ? '#FFFFFF' : 'rgba(6,3,43,0.60)',
                 fontSize:     12,
                 fontWeight:   filter === value ? 700 : 500,
@@ -165,7 +166,7 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
       </div>
 
       {actionError && (
-        <p style={{ fontSize: 12, color: '#9E3B2F', marginBottom: 12, fontFamily: FONT }}>
+        <p style={{ fontSize: 12, color: TOKENS.critical, marginBottom: 12, fontFamily: FONT }}>
           Errore: {actionError}
         </p>
       )}
@@ -204,7 +205,7 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
                     {CATEGORY_LABELS[post.category] ?? post.category}
                   </span>
                   {post.pillar && (
-                    <span style={{ fontSize: 10, fontWeight: 600, color: '#C07D2A', padding: '2px 6px', borderRadius: 4, background: 'rgba(192,125,42,0.08)' }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: BADGE_TOKENS.limited.text, padding: '2px 6px', borderRadius: 4, background: 'rgba(192,125,42,0.08)' }}>
                       {post.pillar}
                     </span>
                   )}
@@ -212,7 +213,7 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
                   {post.opening_grade && (
                     <span
                       data-testid={`admin-opening-grade-${post.opening_grade}`}
-                      style={{ fontSize: 10, fontWeight: 600, color: '#3B6EBA', padding: '2px 6px', borderRadius: 4, background: 'rgba(59,110,186,0.08)', border: '1px solid rgba(59,110,186,0.20)' }}
+                      style={{ fontSize: 10, fontWeight: 600, color: TOKENS.info.base, padding: '2px 6px', borderRadius: 4, background: 'rgba(59,110,186,0.08)', border: '1px solid rgba(59,110,186,0.20)' }}
                     >
                       {OPENING_GRADE_LABELS[post.opening_grade] ?? post.opening_grade}
                     </span>
@@ -242,10 +243,10 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
                     {post.location_address && (
                       <span>📍 {post.location_address}
                         {post.location_lat != null && post.location_lng != null && (
-                          <span style={{ color: '#2F7D55', marginLeft: 4 }}>✓ geocodificato</span>
+                          <span style={{ color: TOKENS.success, marginLeft: 4 }}>✓ geocodificato</span>
                         )}
                         {post.location_lat == null && post.opening_grade && (
-                          <span style={{ color: '#C07D2A', marginLeft: 4 }}>⚠ non geocodificato</span>
+                          <span style={{ color: BADGE_TOKENS.limited.text, marginLeft: 4 }}>⚠ non geocodificato</span>
                         )}
                       </span>
                     )}
@@ -268,7 +269,7 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
                   </div>
                 )}
 
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#06032B', margin: '0 0 6px', lineHeight: 1.3, fontFamily: FONT }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: TOKENS.ink, margin: '0 0 6px', lineHeight: 1.3, fontFamily: FONT }}>
                   {post.title}
                 </p>
                 <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', margin: '0 0 12px', lineHeight: 1.55, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontFamily: FONT }}>
@@ -285,7 +286,7 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
                       data-testid={`admin-publish-${post.id}`}
                       disabled={isLoading}
                       onClick={() => doAction(post.id, 'published')}
-                      style={{ padding: '7px 14px', borderRadius: 7, border: 'none', background: '#2F7D55', color: '#FFFFFF', fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: isLoading ? 'not-allowed' : 'pointer' }}
+                      style={{ padding: '7px 14px', borderRadius: 7, border: 'none', background: TOKENS.success, color: '#FFFFFF', fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: isLoading ? 'not-allowed' : 'pointer' }}
                     >
                       ✓ Pubblica
                     </button>
@@ -293,7 +294,7 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
                       data-testid={`admin-reject-${post.id}`}
                       disabled={isLoading}
                       onClick={() => doAction(post.id, 'rejected')}
-                      style={{ padding: '7px 14px', borderRadius: 7, border: '1px solid rgba(158,59,47,0.25)', background: 'rgba(158,59,47,0.06)', color: '#9E3B2F', fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: isLoading ? 'not-allowed' : 'pointer' }}
+                      style={{ padding: '7px 14px', borderRadius: 7, border: '1px solid rgba(158,59,47,0.25)', background: 'rgba(158,59,47,0.06)', color: TOKENS.critical, fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: isLoading ? 'not-allowed' : 'pointer' }}
                     >
                       ✕ Rifiuta
                     </button>

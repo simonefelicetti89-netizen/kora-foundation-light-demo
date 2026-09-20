@@ -1,4 +1,5 @@
 // lib/founder-validation/types.ts
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 // B96-B — Founder Validation Data Model
 // Pure types and config. No React, no services, no side effects.
 // Founder tool only — not part of KORA Index, IU formula, or product methodology.
@@ -132,9 +133,9 @@ export const STAGE_META: Record<ValidationStage, { label: string; funnel: boolea
 
 export const INTEREST_META: Record<InterestLevel, { label: string; color: string }> = {
   low:       { label: 'Basso',      color: 'rgba(6,3,43,0.38)' },
-  medium:    { label: 'Medio',      color: '#8A5A00' },
-  high:      { label: 'Alto',       color: '#1E4DA0' },
-  strategic: { label: 'Strategico', color: '#2F7D55' },
+  medium:    { label: 'Medio',      color: TOKENS.safeguard.watch.text },
+  high:      { label: 'Alto',       color: BADGE_TOKENS.info.text },
+  strategic: { label: 'Strategico', color: TOKENS.success },
 };
 
 export const PILOT_META: Record<PilotPotential, { label: string }> = {
@@ -146,9 +147,9 @@ export const PILOT_META: Record<PilotPotential, { label: string }> = {
 
 export const INVESTMENT_META: Record<InvestmentSignal, { label: string; color: string }> = {
   none:              { label: 'Nessuno',           color: 'rgba(6,3,43,0.38)' },
-  curious:           { label: 'Curioso',           color: '#8A5A00' },
-  soft_commitment:   { label: 'Interesse soft',    color: '#1E4DA0' },
-  formal_interest:   { label: 'Interesse formale', color: '#2F7D55' },
+  curious:           { label: 'Curioso',           color: TOKENS.safeguard.watch.text },
+  soft_commitment:   { label: 'Interesse soft',    color: BADGE_TOKENS.info.text },
+  formal_interest:   { label: 'Interesse formale', color: TOKENS.success },
 };
 
 export const OBJECTION_LABELS: Record<ObjectionType, string> = {

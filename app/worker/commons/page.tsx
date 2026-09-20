@@ -23,6 +23,7 @@ import { OPENING_GRADE_LABELS, OPENING_GRADE_COLORS } from '@/lib/commons/types'
 import { InitiativesMapClient } from '@/components/commons/InitiativesMapClient';
 import { WorkerBookingButton } from '@/components/commons/WorkerBookingButton';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { BADGE_TOKENS, PILLAR_SURFACE, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'KORA Space · Worker' };
 
@@ -38,11 +39,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const PILLAR_COLORS: Record<string, { text: string; bg: string }> = {
-  LIFE:       { text: '#2F7D55', bg: 'rgba(47,125,85,0.08)'   },
-  GROWTH:     { text: '#3B6EBA', bg: 'rgba(59,110,186,0.08)'  },
-  CONNECTION: { text: '#7C3D8F', bg: 'rgba(124,61,143,0.08)'  },
-  IMPACT:     { text: '#C07D2A', bg: 'rgba(192,125,42,0.08)'  },
-  LEGACY:     { text: '#5A4A3F', bg: 'rgba(90,74,63,0.08)'    },
+  LIFE:       { text: PILLAR_SURFACE.LIFE.color, bg: PILLAR_SURFACE.LIFE.bg },
+  GROWTH:     { text: PILLAR_SURFACE.GROWTH.color, bg: PILLAR_SURFACE.GROWTH.bg },
+  CONNECTION: { text: PILLAR_SURFACE.CONNECTION.color, bg: PILLAR_SURFACE.CONNECTION.bg },
+  IMPACT:     { text: PILLAR_SURFACE.IMPACT.color, bg: PILLAR_SURFACE.IMPACT.bg },
+  LEGACY:     { text: PILLAR_SURFACE.LEGACY.color, bg: PILLAR_SURFACE.LEGACY.bg },
 };
 
 const INITIATIVE_SELECT = [
@@ -123,7 +124,7 @@ export default async function WorkerCommonsPage() {
         <div style={{ marginBottom: 8 }}>
           <BoundaryBadge mode="LIVE" variant="light" />
         </div>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: '0 0 8px' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: '0 0 8px' }}>
           KORA Space
         </h1>
         <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}>
@@ -146,7 +147,7 @@ export default async function WorkerCommonsPage() {
         }}
       >
         <span style={{ fontSize: 14, lineHeight: 1.2, flexShrink: 0 }}>&#128274;</span>
-        <p style={{ fontSize: 12, color: '#2F7D55', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 12, color: TOKENS.success, margin: 0, lineHeight: 1.6 }}>
           KORA Space mostra contenuti approvati per il tuo tenant e iniziative aperte alla rete.
           La partecipazione è sempre volontaria e non genera classifiche individuali.
           La tua visualizzazione non viene mostrata al datore di lavoro come dato individuale — l&apos;azienda vede solo segnali aggregati.
@@ -164,10 +165,10 @@ export default async function WorkerCommonsPage() {
             borderRadius: 10, padding: '12px 16px', marginBottom: 20,
           }}
         >
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#2F5A42', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: BADGE_TOKENS.eligible.text, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Come funziona la partecipazione
           </p>
-          <ol style={{ fontSize: 11, color: '#2F5A42', margin: 0, paddingLeft: 16, lineHeight: 1.9 }}>
+          <ol style={{ fontSize: 11, color: BADGE_TOKENS.eligible.text, margin: 0, paddingLeft: 16, lineHeight: 1.9 }}>
             <li>Richiedi partecipazione su KORA Space</li>
             <li>KORA esamina la richiesta</li>
             <li>Ricevi conferma (partecipazione confermata)</li>
@@ -184,7 +185,7 @@ export default async function WorkerCommonsPage() {
           data-testid="worker-commons-initiatives"
           style={{ marginBottom: 40 }}
         >
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#06032B', letterSpacing: '-0.02em', margin: '0 0 16px' }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: TOKENS.ink, letterSpacing: '-0.02em', margin: '0 0 16px' }}>
             Iniziative partecipabili
           </h2>
 
@@ -242,7 +243,7 @@ export default async function WorkerCommonsPage() {
                   </div>
 
                   {/* Title */}
-                  <h3 style={{ fontSize: 14, fontWeight: 700, color: '#06032B', margin: '0 0 6px', lineHeight: 1.35 }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: TOKENS.ink, margin: '0 0 6px', lineHeight: 1.35 }}>
                     {initiative.title}
                   </h3>
 
@@ -294,7 +295,7 @@ export default async function WorkerCommonsPage() {
 
       {/* ── Sezione Post generici ─────────────────────────────────────────── */}
       <section>
-        <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#06032B', letterSpacing: '-0.02em', margin: '0 0 16px' }}>
+        <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: TOKENS.ink, letterSpacing: '-0.02em', margin: '0 0 16px' }}>
           Contenuti
         </h2>
 
@@ -309,7 +310,7 @@ export default async function WorkerCommonsPage() {
               border:       '1px dashed rgba(6,3,43,0.10)',
             }}
           >
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#06032B', margin: '0 0 8px' }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: TOKENS.ink, margin: '0 0 8px' }}>
               Nessun contenuto ancora
             </p>
             <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', margin: 0 }}>
@@ -344,7 +345,7 @@ export default async function WorkerCommonsPage() {
                       </span>
                     )}
                   </div>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#06032B', margin: '0 0 8px', lineHeight: 1.35 }}>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: TOKENS.ink, margin: '0 0 8px', lineHeight: 1.35 }}>
                     {post.title}
                   </h2>
                   <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.65)', margin: '0 0 12px', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>

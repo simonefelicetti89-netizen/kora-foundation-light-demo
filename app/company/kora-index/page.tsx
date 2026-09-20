@@ -19,7 +19,7 @@ import { computeExecutiveIntelligence }           from '@/services/executive-int
 import { ExecutiveIntelligencePanel }             from '@/components/executive-intelligence/ExecutiveIntelligencePanel';
 import type { UEFReviewSummary, ImpactUnitComputationSummary } from '@/lib/types';
 import type { LiveEligibilityContext }            from '@/app/api/company/live-eligibility/route';
-import { TOKENS }                                 from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS }                                 from '@/lib/design/kora-design-tokens';
 import type { MacroblockScore }                   from '@/lib/types';
 
 import { HeroDiagnosis, generateDiagnosisSentence } from '@/components/kora-index/HeroDiagnosis';
@@ -95,14 +95,14 @@ function NoDataState({ companyName }: { companyName?: string | null }) {
         borderRadius: TOKENS.cardRadius,
         padding:      '24px 28px',
       }}>
-        <p style={{ fontSize: '13px', fontWeight: 700, color: '#5C3509', marginBottom: 8 }}>
+        <p style={{ fontSize: '13px', fontWeight: 700, color: BADGE_TOKENS.limited.text, marginBottom: 8 }}>
           Dati non ancora disponibili
         </p>
-        <p style={{ fontSize: '12px', color: '#7A4A1A', lineHeight: 1.6, maxWidth: 480 }}>
+        <p style={{ fontSize: '12px', color: BADGE_TOKENS.limited.text, lineHeight: 1.6, maxWidth: 480 }}>
           Completa il data intake e la review delle evidenze per generare il KORA Index™.
           Contatta il tuo referente KORA per procedere.
         </p>
-        <p style={{ fontSize: '11px', color: '#7A4A1A', lineHeight: 1.6, maxWidth: 480, marginTop: 8, opacity: 0.85 }}>
+        <p style={{ fontSize: '11px', color: BADGE_TOKENS.limited.text, lineHeight: 1.6, maxWidth: 480, marginTop: 8, opacity: 0.85 }}>
           Quando disponibile, il KORA Index™ mostrerà solo dati aggregati e privacy-safe — mai informazioni
           individuali sui singoli lavoratori.
         </p>
@@ -176,7 +176,7 @@ export default function KoraIndexDetail() {
   // B143: COMPANY_VIEWER rimosso. Se koraRole è null la sessione è in errore — non assumere alcun ruolo.
   if (!koraRole) {
     return (
-      <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-4 py-6 text-xs text-[#9E3B2F] text-center">
+      <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-4 py-6 text-xs text-kora-critical text-center">
         Sessione non disponibile. Ricaricare la pagina o effettuare nuovamente il login.
       </div>
     );

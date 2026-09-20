@@ -5,6 +5,7 @@ import type {
 } from '@/lib/types';
 import { MACROBLOCK_COMPONENTS, COMPONENT_EXTERNAL } from '@/lib/constants/kora';
 import rawConfig from '@/data/methodology/methodology-config.json';
+import { BADGE_TOKENS } from '@/lib/design/kora-design-tokens';
 
 const config: MethodologyConfig = rawConfig as MethodologyConfig;
 
@@ -377,9 +378,9 @@ export interface MacroblockStatusEntry {
 // Provvisorie, da calibrare post-Delphi.
 export function getMacroblockStatusThresholds(): { buono: MacroblockStatusEntry; sviluppo: MacroblockStatusEntry; critico: MacroblockStatusEntry } {
   return config.macroblock_status_thresholds ?? {
-    buono:    { min: 70, label: 'Buono',       bg: '#dcfce7', color: '#166534' },
-    sviluppo: { min: 50, label: 'In sviluppo', bg: '#fffbeb', color: '#92400e' },
-    critico:  { min:  0, label: 'Critico',     bg: '#fee2e2', color: '#991b1b' },
+    buono:    { min: 70, label: 'Buono',       bg: BADGE_TOKENS.eligible.bg, color: BADGE_TOKENS.eligible.text },
+    sviluppo: { min: 50, label: 'In sviluppo', bg: BADGE_TOKENS.limited.bg, color: BADGE_TOKENS.limited.text },
+    critico:  { min:  0, label: 'Critico',     bg: BADGE_TOKENS.blocked.bg, color: BADGE_TOKENS.blocked.text },
   };
 }
 

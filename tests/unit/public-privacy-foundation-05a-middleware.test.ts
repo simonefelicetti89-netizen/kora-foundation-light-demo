@@ -132,8 +132,8 @@ describe('nessuna regressione sulle route private — le quattro allowlist per-r
   // accurately, at the time this test was written. CC-00 DEMO_VIEWER role
   // retirement (2026-09-26) removed that redirect entirely — removed from
   // this list, not replaced.
-  it('nessuna nuova autorizzazione/ruolo/tenant-boundary introdotta: canAccess() e i redirect esistenti restano invariati (historical note: used to also check the /demo redirect)', () => {
-    expect(mw).toContain("canAccess('KORA_ADMIN', 'worker_individual_pib', 'live')");
+  it('nessuna nuova autorizzazione/ruolo/tenant-boundary introdotta: canAccess() e i redirect esistenti restano invariati (historical note: used to also check the /demo redirect; canAccess() KORA_ADMIN|ADVISOR ternary added by KORA-WP-002)', () => {
+    expect(mw).toContain("canAccess(isKoraAdmin ? 'KORA_ADMIN' : 'ADVISOR', 'worker_individual_pib', 'live')");
     expect(mw).toContain("NextResponse.redirect(new URL('/company/workspace', request.url))");
     expect(mw).toContain("NextResponse.redirect(new URL('/worker/workspace', request.url))");
     expect(mw).toContain("NextResponse.redirect(new URL('/partner/workspace', request.url))");

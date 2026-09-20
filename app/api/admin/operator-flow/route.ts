@@ -10,7 +10,9 @@
 //   x-kora-operator-secret fallback has been removed (TODO-002 DONE).
 //   Production and dev: KORA_ADMIN session is the only valid access path.
 //
-// Uses service_role server-side only — SUPABASE_SERVICE_ROLE_KEY never exposed to client.
+// Uses service_role server-side only, via the canonical getSupabaseServiceClient()
+// factory (lib/supabase/server.ts) — previously two inline createClient() calls,
+// consolidated in KORA-WP-003. SUPABASE_SERVICE_ROLE_KEY never exposed to client.
 //
 // POST /api/admin/operator-flow
 //   Body: { tenantCode, reportingPeriod, workforcePopulation?, segmentBreakdown?, batchLabel? }
@@ -19,8 +21,7 @@
 //   Returns current kora_index_result for the tenant.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/lib/supabase/types';
+import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { runKoraPipeline } from '@/lib/kora-engine';
@@ -92,11 +93,7 @@ export async function POST(request: NextRequest) {
   const segmentBreakdown  = body.segmentBreakdown ?? DEFAULT_SEGMENT_BREAKDOWN;
   const batchLabel        = body.batchLabel ?? `[SYNTHETIC] Operator batch ${new Date().toISOString().slice(0,10)}`;
 
-  const db = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  const db = getSupabaseServiceClient();
 
   const auditRows: ReturnType<typeof auditEvent>[] = [];
 
@@ -349,11 +346,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'tenantCode and reportingPeriod required' }, { status: 400 });
   }
 
-  const db = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  const db = getSupabaseServiceClient();
 
   const { data: tenant } = await db.schema('analytics').from('tenant')
     .select('id').eq('tenant_code', tenantCode).maybeSingle();

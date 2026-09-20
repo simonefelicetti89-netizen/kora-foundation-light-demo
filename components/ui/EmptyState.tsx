@@ -39,7 +39,7 @@ export function EmptyState({ title, body, action, icon, variant = 'default' }: E
       }}
     >
       {icon && (
-        <div style={{ fontSize: 36, opacity: 0.5 }}>{icon}</div>
+        <div aria-hidden="true" style={{ fontSize: 36, opacity: 0.5 }}>{icon}</div>
       )}
       <p style={{
         fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',

@@ -6,13 +6,10 @@
 
 import { useState } from 'react';
 import type { PartnerItem } from '../page';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS, type PillarColorKey } from '@/lib/design/kora-design-tokens';
 
 const PILLARS   = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE: '#16a34a', GROWTH: '#2563eb', CONNECTION: '#9333ea',
-  IMPACT: '#dc2626', LEGACY: '#ca8a04',
-};
 
 const PILLAR_LABELS: Record<string, string> = {
   LIFE: 'Life', GROWTH: 'Growth', CONNECTION: 'Connection',
@@ -95,7 +92,7 @@ export function PartnerCatalogClient({ partners }: { partners: PartnerItem[] }) 
 }
 
 function PartnerCard({ partner }: { partner: PartnerItem }) {
-  const pillarColor = PILLAR_COLORS[partner.pillar] ?? '#555';
+  const pillarColor = PILLAR_COLORS[partner.pillar as PillarColorKey] ?? TOKENS.inkHint;
 
   return (
     <div
@@ -119,7 +116,7 @@ function PartnerCard({ partner }: { partner: PartnerItem }) {
               {PILLAR_DESCRIPTIONS[partner.pillar]}
             </span>
           </div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#06032B', marginBottom: 2 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, marginBottom: 2 }}>
             {partner.name}
           </div>
           {partner.category && (
@@ -157,7 +154,7 @@ function PartnerCard({ partner }: { partner: PartnerItem }) {
             target="_blank"
             rel="noreferrer noopener"
             style={{
-              fontSize: 11, fontWeight: 600, color: '#2563eb',
+              fontSize: 11, fontWeight: 600, color: BADGE_TOKENS.info.text,
               textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4,
             }}
           >
@@ -181,9 +178,9 @@ function FilterChip({
       style={{
         padding: '4px 14px', borderRadius: 99, fontSize: 11, fontWeight: 600,
         cursor: 'pointer', border: '1px solid',
-        background: active ? (color ?? '#06032B') : 'transparent',
+        background: active ? (color ?? TOKENS.ink) : 'transparent',
         color: active ? '#fff' : (color ?? 'rgba(6,3,43,0.55)'),
-        borderColor: active ? (color ?? '#06032B') : 'rgba(6,3,43,0.15)',
+        borderColor: active ? (color ?? TOKENS.ink) : 'rgba(6,3,43,0.15)',
         transition: 'all 0.1s',
       }}
     >

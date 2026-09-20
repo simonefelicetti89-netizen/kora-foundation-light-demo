@@ -325,11 +325,22 @@ describe('RLS-02 — company-facing policies must reference tenant scoping', () 
     expect(companyFacingPolicies.length).toBeGreaterThan(0);
   });
 
+  // KORA-WP-010: a COMPANY_ADMIN/COMPANY_VIEWER-facing policy is safe against
+  // cross-tenant leakage if it EITHER scopes by tenant_id (Pattern A,
+  // referencesTenant) OR binds to the caller's own verified identity via
+  // auth.uid() (Pattern B, referencesWorkerOwnership already detects this —
+  // see docs/RLS_COMPANY_SCOPED_PATTERN.md). Identity-binding is not weaker:
+  // it returns only the caller's own row(s) regardless of any tenant claim,
+  // which is what analytics.company_memberships needs (migration 052) —
+  // gating that table on a tenant claim would be circular, since the table
+  // itself is what establishes whether a tenant claim is legitimate. Only a
+  // policy with NEITHER guard (the original invariant's actual target: a
+  // truly unscoped COMPANY_ADMIN policy) should fail here.
   for (const { t, p } of companyFacingPolicies) {
-    it(`${t.table} :: ${p.name} (COMPANY_ADMIN/COMPANY_VIEWER policy) references tenant scoping`, () => {
+    it(`${t.table} :: ${p.name} (COMPANY_ADMIN/COMPANY_VIEWER policy) references tenant scoping or identity binding`, () => {
       expect(
-        p.referencesTenant,
-        `${t.table} :: ${p.name} grants COMPANY_ADMIN/COMPANY_VIEWER access without a tenant_id reference — this is the pattern that would cause a real cross-tenant leak`,
+        p.referencesTenant || p.referencesWorkerOwnership,
+        `${t.table} :: ${p.name} grants COMPANY_ADMIN/COMPANY_VIEWER access without a tenant_id reference or an identity-binding (auth.uid()) check — this is the pattern that would cause a real cross-tenant leak`,
       ).toBe(true);
     });
   }

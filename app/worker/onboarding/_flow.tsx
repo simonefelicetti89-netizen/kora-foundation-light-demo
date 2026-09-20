@@ -8,20 +8,21 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
-const INK = '#06032B';
+const INK = TOKENS.ink;
 
 const TOTAL_STEPS = 5;
 
 // ── Pillar colors (informational, not scoring) ────────────────────────────────
 
 const PILLAR_ITEMS = [
-  { code: 'LIFE',       label: 'Life',       color: '#16a34a', desc: 'Salute, benessere, prevenzione' },
-  { code: 'GROWTH',     label: 'Growth',     color: '#2563eb', desc: 'Formazione, competenze, sviluppo' },
-  { code: 'CONNECTION', label: 'Connection', color: '#9333ea', desc: 'Mentoring, collaborazione' },
-  { code: 'IMPACT',     label: 'Impact',     color: '#dc2626', desc: 'Volontariato, iniziative sociali' },
-  { code: 'LEGACY',     label: 'Legacy',     color: '#ca8a04', desc: 'Trasmissione conoscenza' },
+  { code: 'LIFE',       label: 'Life',       color: PILLAR_COLORS.LIFE,       desc: 'Salute, benessere, prevenzione' },
+  { code: 'GROWTH',     label: 'Growth',     color: PILLAR_COLORS.GROWTH,     desc: 'Formazione, competenze, sviluppo' },
+  { code: 'CONNECTION', label: 'Connection', color: PILLAR_COLORS.CONNECTION, desc: 'Mentoring, collaborazione' },
+  { code: 'IMPACT',     label: 'Impact',     color: PILLAR_COLORS.IMPACT,     desc: 'Volontariato, iniziative sociali' },
+  { code: 'LEGACY',     label: 'Legacy',     color: PILLAR_COLORS.LEGACY,     desc: 'Trasmissione conoscenza' },
 ];
 
 // ── Shared UI atoms ───────────────────────────────────────────────────────────
@@ -92,7 +93,7 @@ function PrivacyChip({ text, positive }: { text: string; positive: boolean }) {
       borderRadius: 8, padding: '10px 12px',
     }}>
       <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{positive ? '✓' : '·'}</span>
-      <span style={{ fontFamily: FONT, fontSize: 12, color: positive ? '#1a4731' : 'rgba(6,3,43,0.60)', lineHeight: 1.5 }}>
+      <span style={{ fontFamily: FONT, fontSize: 12, color: positive ? BADGE_TOKENS.eligible.text : 'rgba(6,3,43,0.60)', lineHeight: 1.5 }}>
         {text}
       </span>
     </div>
@@ -294,7 +295,7 @@ function Step4Consenso({
             type="checkbox"
             checked={accepted}
             onChange={(e) => setAccepted(e.target.checked)}
-            style={{ width: 18, height: 18, accentColor: '#166534', marginTop: 2, flexShrink: 0, cursor: 'pointer' }}
+            style={{ width: 18, height: 18, accentColor: BADGE_TOKENS.eligible.text, marginTop: 2, flexShrink: 0, cursor: 'pointer' }}
             aria-label="Accetta il boundary privacy KORA"
           />
           <span style={{ fontFamily: FONT, fontSize: 13, color: INK, lineHeight: 1.65 }}>
@@ -364,12 +365,13 @@ function Step5Profilo({
           <input
             type="text"
             placeholder="Es. Mario R."
+            aria-label="Nome visualizzato (opzionale)"
             maxLength={80}
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             disabled={loading}
             style={inputStyle}
-            onFocus={(e) => { e.currentTarget.style.borderColor = '#C76F3D'; }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = TOKENS.accent; }}
             onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(6,3,43,0.14)'; }}
           />
           <p style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(6,3,43,0.35)', marginTop: 5 }}>
@@ -381,13 +383,14 @@ function Step5Profilo({
           <label style={{ display: 'block', fontFamily: FONT, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)', marginBottom: 6 }}>
             Lingua preferita
           </label>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div role="group" aria-label="Lingua preferita" style={{ display: 'flex', gap: 8 }}>
             {(['it', 'en'] as const).map((l) => (
               <button
                 key={l}
                 type="button"
                 onClick={() => setLang(l)}
                 disabled={loading}
+                aria-pressed={lang === l}
                 style={{
                   fontFamily: FONT, fontSize: 12, fontWeight: 600,
                   padding: '8px 18px', borderRadius: 8, cursor: 'pointer',
@@ -409,7 +412,7 @@ function Step5Profilo({
             style={{
               borderRadius: 8, border: '1px solid rgba(158,59,47,0.30)',
               background: 'rgba(158,59,47,0.07)', padding: '10px 14px',
-              fontFamily: FONT, fontSize: 12, color: '#9E3B2F', lineHeight: 1.5,
+              fontFamily: FONT, fontSize: 12, color: TOKENS.critical, lineHeight: 1.5,
             }}
           >
             {error}
@@ -438,7 +441,7 @@ function ReviewMode({ initialDisplayName }: { initialDisplayName: string | null 
         background: 'rgba(22,101,52,0.07)', border: '1px solid rgba(22,101,52,0.20)',
         borderRadius: 8, padding: '12px 16px', marginBottom: 24,
       }}>
-        <p style={{ fontFamily: FONT, fontSize: 12, color: '#1a4731', lineHeight: 1.5, margin: 0 }}>
+        <p style={{ fontFamily: FONT, fontSize: 12, color: BADGE_TOKENS.eligible.text, lineHeight: 1.5, margin: 0 }}>
           <strong>Privacy boundary attivo.</strong> Hai già completato l&apos;onboarding KORA.
           Questa è una revisione del boundary privacy — nessun nuovo consenso richiesto.
         </p>
@@ -541,7 +544,7 @@ export function OnboardingFlow({ reviewMode, initialDisplayName, initialLang }: 
   return (
     <div style={{ maxWidth: 600, margin: '0 auto', padding: '40px 24px', fontFamily: FONT }}>
       <div style={{ marginBottom: 20 }}>
-        <p style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#C76F3D', marginBottom: 4 }}>
+        <p style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: TOKENS.accent, marginBottom: 4 }}>
           My KORA · Primo accesso
         </p>
         <h1 style={{ fontFamily: FONT, fontSize: '1.8rem', fontWeight: 800, color: INK, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 4 }}>

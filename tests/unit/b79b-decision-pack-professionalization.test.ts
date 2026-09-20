@@ -164,6 +164,7 @@ function makeFixture(overrides?: Partial<PdfData>): PdfData {
     auditSummary:         [],
     executiveBrief:       FIXTURE_BRIEF,
     contributionSummary:  null,
+    decisionSpine:        null,
     ...overrides,
   };
 }

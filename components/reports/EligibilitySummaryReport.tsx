@@ -16,7 +16,7 @@ export function EligibilitySummaryReport({ summary }: Props) {
       pct: total_row_count > 0 ? Math.round((eligible_row_count / total_row_count) * 100) : 0,
       description: 'Azioni idonee: possono generare Impact Units e contribuire al KORA Index.',
       effect: 'Genera IU verificate · Alimenta KORA Index · Alimenta PIB',
-      color: { badge: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]', bar: 'bg-[rgba(47,125,85,0.08)]0', row: 'border-l-[#2F7D55]' },
+      color: { badge: 'bg-[rgba(47,125,85,0.10)] text-kora-success border-[rgba(47,125,85,0.22)]', bar: 'bg-kora-success', row: 'border-l-kora-success' },
     },
     {
       label: 'Limited — Economic Relief',
@@ -24,7 +24,7 @@ export function EligibilitySummaryReport({ summary }: Props) {
       pct: total_row_count > 0 ? Math.round((limited_count / total_row_count) * 100) : 0,
       description: limited_note || 'Non è spesa sbagliata. È spesa che può diventare più intelligente.',
       effect: 'IU = 0 · Classificata economic_relief_spend · Non inflaziona Activation Quality',
-      color: { badge: 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]', bar: 'bg-[#D99A2B]', row: 'border-l-[#D99A2B]' },
+      color: { badge: 'bg-[rgba(217,154,43,0.12)] text-kora-warning-text border-[rgba(217,154,43,0.25)]', bar: 'bg-kora-warning', row: 'border-l-kora-warning' },
     },
     {
       label: 'Blocked — Compliance / HSE / Legal',
@@ -32,12 +32,12 @@ export function EligibilitySummaryReport({ summary }: Props) {
       pct: total_row_count > 0 ? Math.round((blocked_count / total_row_count) * 100) : 0,
       description: blocked_note || 'KORA non trasforma la compliance in impatto. La conformità legale è una baseline, non impatto.',
       effect: null,
-      color: { badge: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]', bar: 'bg-[#9E3B2F]', row: 'border-l-[#9E3B2F]' },
+      color: { badge: 'bg-[rgba(158,59,47,0.10)] text-kora-critical border-[rgba(158,59,47,0.20)]', bar: 'bg-kora-critical', row: 'border-l-kora-critical' },
     },
   ];
 
   return (
-    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-6 space-y-5">
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">C — Eligibility Gate Summary</p>
         <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1">
@@ -47,7 +47,7 @@ export function EligibilitySummaryReport({ summary }: Props) {
 
       <div className="space-y-4">
         {rows.map((r) => (
-          <div key={r.label} className={`rounded-lg border bg-[#F8F6F1] pl-4 pr-4 py-4 border-l-4 ${r.color.row}`}>
+          <div key={r.label} className={`rounded-lg border bg-kora-paper pl-4 pr-4 py-4 border-l-4 ${r.color.row}`}>
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -73,10 +73,10 @@ export function EligibilitySummaryReport({ summary }: Props) {
       {/* Blocked zero-indicators */}
       {blocked_count > 0 && (
         <div className="rounded-lg border border-[rgba(158,59,47,0.12)] bg-[rgba(158,59,47,0.06)] px-4 py-3 space-y-2">
-          <p className="text-xs font-semibold text-[#9E3B2F]">Blocked by Design — zero-indicator obbligatorio</p>
+          <p className="text-xs font-semibold text-kora-critical">Blocked by Design — zero-indicator obbligatorio</p>
           <div className="flex flex-wrap gap-2">
             {ZERO_INDICATORS.map((zi) => (
-              <span key={zi} className="rounded border border-[rgba(158,59,47,0.20)] bg-[#F8F6F1] px-2 py-0.5 text-[11px] font-mono font-semibold text-[rgba(158,59,47,0.90)]">
+              <span key={zi} className="rounded border border-[rgba(158,59,47,0.20)] bg-kora-paper px-2 py-0.5 text-[11px] font-mono font-semibold text-[rgba(158,59,47,0.90)]">
                 {zi}
               </span>
             ))}

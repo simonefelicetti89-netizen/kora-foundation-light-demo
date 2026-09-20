@@ -79,8 +79,8 @@ export default async function AdminCompanyWorkspacePage({
 
   return (
     <div className="max-w-[900px] mx-auto py-6 px-3 space-y-5">
-      <div className="rounded-xl bg-[#06032B] px-6 py-5">
-        <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">
+      <div className="rounded-xl bg-kora-ink px-6 py-5">
+        <p className="text-xs font-semibold tracking-widest uppercase text-kora-accent mb-1">
           KORA Admin · Company Workspace
         </p>
         <h1 className="text-xl font-bold text-white tracking-tight">Stato Pilot Azienda</h1>
@@ -90,7 +90,7 @@ export default async function AdminCompanyWorkspacePage({
       </div>
 
       {!tenantId ? (
-        <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-4 text-sm text-[#8A5A00]">
+        <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-4 text-sm text-kora-warning-text">
           Nessun <code>tenantId</code> specificato nell&apos;URL. Apri questa pagina da{' '}
           <Link href="/admin/companies/new" className="font-semibold underline">
             Crea Azienda
@@ -99,7 +99,7 @@ export default async function AdminCompanyWorkspacePage({
           <code>?tenantId=&lt;uuid&gt;</code> manualmente.
         </div>
       ) : lookupError ? (
-        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-4 text-sm text-[#9E3B2F]">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-4 text-sm text-kora-critical">
           ⚠ {lookupError}
         </div>
       ) : (
@@ -107,13 +107,13 @@ export default async function AdminCompanyWorkspacePage({
       )}
 
       <div className="flex gap-4 text-xs">
-        <Link href="/admin/companies/new" className="font-semibold text-[#C76F3D] hover:underline">
+        <Link href="/admin/companies/new" className="font-semibold text-kora-accent hover:underline">
           ← Crea Azienda
         </Link>
         {tenantId && (
           <Link
             href={`/admin/company-users-live?tenantId=${encodeURIComponent(tenantId)}`}
-            className="font-semibold text-[#C76F3D] hover:underline"
+            className="font-semibold text-kora-accent hover:underline"
           >
             ← Company Users
           </Link>

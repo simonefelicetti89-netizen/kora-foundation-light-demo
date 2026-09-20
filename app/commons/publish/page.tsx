@@ -11,23 +11,24 @@ import {
   type InitiativeType,
   type CommonsInitiative,
 } from '@/lib/commons/types';
+import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 
 const PILLARS = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 const ALL_TYPES = Object.keys(INITIATIVE_TYPE_LABELS) as InitiativeType[];
 
 const PILLAR_ACCENT: Record<string, string> = {
-  LIFE:       '#C76F3D',
-  GROWTH:     '#2F7D55',
-  CONNECTION: '#D99767',
-  IMPACT:     '#4A7FE0',
-  LEGACY:     '#8A7562',
+  LIFE:       PILLAR_COLORS.LIFE,
+  GROWTH:     PILLAR_COLORS.GROWTH,
+  CONNECTION: PILLAR_COLORS.CONNECTION,
+  IMPACT:     PILLAR_COLORS.IMPACT,
+  LEGACY:     PILLAR_COLORS.LEGACY,
 };
 const PILLAR_BG: Record<string, string> = {
-  LIFE:       'rgba(199,111,61,0.10)',
-  GROWTH:     'rgba(47,125,85,0.10)',
-  CONNECTION: 'rgba(217,151,103,0.12)',
-  IMPACT:     'rgba(74,127,224,0.10)',
-  LEGACY:     'rgba(138,117,98,0.10)',
+  LIFE:       PILLAR_COLORS.LIFE,
+  GROWTH:     PILLAR_COLORS.GROWTH,
+  CONNECTION: PILLAR_COLORS.CONNECTION,
+  IMPACT:     PILLAR_COLORS.IMPACT,
+  LEGACY:     PILLAR_COLORS.LEGACY,
 };
 
 type FormData = {
@@ -99,7 +100,7 @@ function PreviewCard({ data }: { data: FormData }) {
           fontSize:     10,
           fontWeight:   700,
           background:   'rgba(47,125,85,0.10)',
-          color:        '#2F7D55',
+          color:        TOKENS.success,
           fontFamily:   'Plus Jakarta Sans, system-ui, sans-serif',
         }}>
           Aperta
@@ -109,7 +110,7 @@ function PreviewCard({ data }: { data: FormData }) {
       <h3 style={{
         fontWeight:  700,
         fontSize:    15,
-        color:       '#06032B',
+        color:       TOKENS.ink,
         margin:      '0 0 8px 0',
         fontFamily:  'Plus Jakarta Sans, system-ui, sans-serif',
       }}>
@@ -190,9 +191,9 @@ export default function PublishPage() {
     padding:      '9px 12px',
     borderRadius: 8,
     border:       '1px solid rgba(6,3,43,0.14)',
-    background:   '#FAFAFA',
+    background:   TOKENS.surface,
     fontSize:     13,
-    color:        '#06032B',
+    color:        TOKENS.ink,
     fontFamily:   'Plus Jakarta Sans, system-ui, sans-serif',
     boxSizing:    'border-box',
   };
@@ -206,7 +207,7 @@ export default function PublishPage() {
   };
   const errorStyle: React.CSSProperties = {
     fontSize:   11,
-    color:      '#9E3B2F',
+    color:      TOKENS.critical,
     marginTop:  4,
     fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
   };
@@ -255,7 +256,7 @@ export default function PublishPage() {
         }}>
           <span style={{ fontSize: 20 }}>✓</span>
           <div>
-            <p style={{ fontWeight: 700, fontSize: 13.5, color: '#2F7D55', margin: 0 }}>
+            <p style={{ fontWeight: 700, fontSize: 13.5, color: TOKENS.success, margin: 0 }}>
               Anteprima generata — nessuna pubblicazione reale
             </p>
             <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', margin: '3px 0 0 0' }}>
@@ -264,7 +265,7 @@ export default function PublishPage() {
           </div>
         </div>
 
-        <h2 style={{ fontWeight: 800, fontSize: 18, color: '#06032B', marginBottom: 16 }}>
+        <h2 style={{ fontWeight: 800, fontSize: 18, color: TOKENS.ink, marginBottom: 16 }}>
           Anteprima iniziativa
         </h2>
         <PreviewCard data={form} />
@@ -279,7 +280,7 @@ export default function PublishPage() {
               borderRadius: 9,
               border:       '1px solid rgba(6,3,43,0.14)',
               background:   'transparent',
-              color:        '#06032B',
+              color:        TOKENS.ink,
               cursor:       'pointer',
               fontFamily:   'Plus Jakarta Sans, system-ui, sans-serif',
             }}
@@ -292,7 +293,7 @@ export default function PublishPage() {
             padding:      '10px 20px',
             borderRadius: 9,
             border:       'none',
-            background:   '#06032B',
+            background:   TOKENS.ink,
             color:        '#FFFFFF',
             textDecoration: 'none',
             fontFamily:   'Plus Jakarta Sans, system-ui, sans-serif',
@@ -351,7 +352,7 @@ export default function PublishPage() {
         <h1 style={{
           fontWeight:    800,
           fontSize:      28,
-          color:         '#06032B',
+          color:         TOKENS.ink,
           letterSpacing: '-0.03em',
           lineHeight:    1.1,
           margin:        0,
@@ -523,7 +524,7 @@ export default function PublishPage() {
               padding:      '11px 24px',
               borderRadius: 9,
               border:       'none',
-              background:   '#06032B',
+              background:   TOKENS.ink,
               color:        '#FFFFFF',
               cursor:       'pointer',
               fontFamily:   'Plus Jakarta Sans, system-ui, sans-serif',

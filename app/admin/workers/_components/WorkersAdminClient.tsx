@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface WorkerRow {
   workerId:  string;
@@ -93,7 +94,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
   return (
     <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 24px', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em' }}>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em' }}>
           Provisioning Worker
         </h1>
         <BoundaryBadge mode="LIVE" variant="light" />
@@ -103,8 +104,8 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
       </p>
 
       {/* Provision form */}
-      <section style={{ background: '#f9f9fb', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10, padding: '24px', marginBottom: 32 }}>
-        <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#06032B', marginBottom: 16 }}>
+      <section style={{ background: TOKENS.surface, border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10, padding: '24px', marginBottom: 32 }}>
+        <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: TOKENS.ink, marginBottom: 16 }}>
           Invita un nuovo worker
         </h2>
         <form onSubmit={handleProvision}>
@@ -117,6 +118,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
                 value={tenantCode}
                 onChange={e => setTenantCode(e.target.value.toUpperCase())}
                 placeholder="es. KORA-TEST-COMPANY-1"
+                aria-label="Tenant Code"
                 required
                 style={{ width: '100%', padding: '8px 12px', border: '1px solid rgba(6,3,43,0.15)', borderRadius: 6, fontSize: 13, background: '#fff', boxSizing: 'border-box' }}
               />
@@ -130,6 +132,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="worker@azienda.it"
+                aria-label="Email worker"
                 required
                 style={{ width: '100%', padding: '8px 12px', border: '1px solid rgba(6,3,43,0.15)', borderRadius: 6, fontSize: 13, background: '#fff', boxSizing: 'border-box' }}
               />
@@ -142,6 +145,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
                 value={workerRef}
                 onChange={e => setWorkerRef(e.target.value)}
                 placeholder="es. WRK-001 (generato auto se vuoto)"
+                aria-label="Worker Ref (opzionale, pseudonimo interno)"
                 style={{ width: '100%', padding: '8px 12px', border: '1px solid rgba(6,3,43,0.15)', borderRadius: 6, fontSize: 13, background: '#fff', boxSizing: 'border-box' }}
               />
               <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', marginTop: 4 }}>
@@ -152,7 +156,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
             <button
               type="submit"
               disabled={loading}
-              style={{ padding: '10px 20px', background: '#06032B', color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, alignSelf: 'flex-start' }}
+              style={{ padding: '10px 20px', background: TOKENS.ink, color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, alignSelf: 'flex-start' }}
             >
               {loading ? 'Provisioning…' : '+ Invita worker'}
             </button>
@@ -160,12 +164,12 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
         </form>
 
         {result && (
-          <div style={{ marginTop: 16, padding: '12px 14px', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 6, fontSize: 12, color: '#15803d' }}>
+          <div style={{ marginTop: 16, padding: '12px 14px', background: BADGE_TOKENS.eligible.bg, border: `1px solid ${BADGE_TOKENS.eligible.border}`, borderRadius: 6, fontSize: 12, color: BADGE_TOKENS.eligible.text }}>
             ✓ {result}
           </div>
         )}
         {error && (
-          <div style={{ marginTop: 16, padding: '12px 14px', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 6, fontSize: 12, color: '#b91c1c' }}>
+          <div style={{ marginTop: 16, padding: '12px 14px', background: BADGE_TOKENS.blocked.bg, border: `1px solid ${BADGE_TOKENS.blocked.border}`, borderRadius: 6, fontSize: 12, color: BADGE_TOKENS.blocked.text }}>
             ✗ {error}
           </div>
         )}
@@ -173,8 +177,8 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
 
       {/* Worker list */}
       <section style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ padding: '16px 20px', background: '#f9f9fb', borderBottom: '1px solid rgba(6,3,43,0.08)', display: 'flex', gap: 10, alignItems: 'center' }}>
-          <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#06032B', margin: 0 }}>
+        <div style={{ padding: '16px 20px', background: TOKENS.surface, borderBottom: '1px solid rgba(6,3,43,0.08)', display: 'flex', gap: 10, alignItems: 'center' }}>
+          <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: TOKENS.ink, margin: 0 }}>
             Worker per tenant
           </h2>
           <input
@@ -186,7 +190,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
           <button
             onClick={() => loadWorkers(listTenant || tenantCode)}
             disabled={listLoading}
-            style={{ padding: '6px 14px', background: '#06032B', color: '#fff', border: 'none', borderRadius: 5, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+            style={{ padding: '6px 14px', background: TOKENS.ink, color: '#fff', border: 'none', borderRadius: 5, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
           >
             {listLoading ? '…' : 'Carica'}
           </button>
@@ -196,7 +200,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
           <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(6,3,43,0.07)' }}>
             {(['total', 'invited', 'active', 'pending', 'disabled'] as const).map(k => (
               <div key={k} style={{ flex: 1, padding: '10px 14px', textAlign: 'center', borderRight: k !== 'disabled' ? '1px solid rgba(6,3,43,0.06)' : 'none' }}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: '#06032B' }}>{summary[k]}</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: TOKENS.ink }}>{summary[k]}</div>
                 <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'rgba(6,3,43,0.45)' }}>{LABEL_MAP[k]}</div>
               </div>
             ))}
@@ -204,18 +208,19 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
         )}
 
         {workers.length > 0 ? (
+          <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ background: 'rgba(6,3,43,0.03)' }}>
-                <th style={{ padding: '8px 16px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)' }}>Worker Ref</th>
-                <th style={{ padding: '8px 16px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)' }}>Status</th>
-                <th style={{ padding: '8px 16px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)' }}>Creato</th>
+                <th scope="col" style={{ padding: '8px 16px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)' }}>Worker Ref</th>
+                <th scope="col" style={{ padding: '8px 16px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)' }}>Status</th>
+                <th scope="col" style={{ padding: '8px 16px', textAlign: 'left', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)' }}>Creato</th>
               </tr>
             </thead>
             <tbody>
               {workers.map((w, i) => (
-                <tr key={w.workerId} style={{ borderTop: '1px solid rgba(6,3,43,0.05)', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
-                  <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: '#06032B' }}>{w.workerRef}</td>
+                <tr key={w.workerId} style={{ borderTop: '1px solid rgba(6,3,43,0.05)', background: i % 2 === 0 ? '#fff' : TOKENS.surface }}>
+                  <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: TOKENS.ink }}>{w.workerRef}</td>
                   <td style={{ padding: '10px 16px' }}>
                     <span className={STATUS_COLOR[w.status] ?? 'bg-gray-100 text-gray-600'} style={{ fontSize: 10, fontWeight: 700, borderRadius: 4, padding: '2px 7px', display: 'inline-block' }}>
                       {w.status.toUpperCase()}
@@ -228,6 +233,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
               ))}
             </tbody>
           </table>
+          </div>
         ) : (
           <div style={{ padding: '32px', textAlign: 'center', color: 'rgba(6,3,43,0.35)', fontSize: 12 }}>
             Nessun worker trovato — inserisci un Tenant Code e clicca Carica.

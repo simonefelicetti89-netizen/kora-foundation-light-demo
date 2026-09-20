@@ -8,6 +8,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
@@ -36,7 +37,7 @@ export function DemoAccessBanner() {
           fontWeight:    700,
           letterSpacing: '0.10em',
           textTransform: 'uppercase' as const,
-          color:         '#C76F3D',
+          color:         TOKENS.accent,
           flexShrink:    0,
         }}
       >
@@ -54,7 +55,7 @@ export function DemoAccessBanner() {
           style={{
             fontSize:       12,
             fontWeight:     700,
-            color:          '#C76F3D',
+            color:          TOKENS.accent,
             textDecoration: 'none',
             padding:        '5px 12px',
             border:         '1px solid rgba(199,111,61,0.40)',

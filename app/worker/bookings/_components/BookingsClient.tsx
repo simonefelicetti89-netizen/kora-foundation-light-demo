@@ -11,7 +11,7 @@
 // before this component ever renders.
 
 import { useState, useEffect } from 'react';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
@@ -38,12 +38,12 @@ interface InitiativeSummary {
 const CANCELLABLE_STATUSES = new Set(['pending', 'requested', 'approved', 'confirmed']);
 
 const BOOKING_STATUS_COPY: Record<string, { label: string; color: string }> = {
-  pending:   { label: 'Richiesta inviata',          color: '#8A5A00'           },
-  requested: { label: 'Richiesta inviata',          color: '#8A5A00'           },
-  approved:  { label: 'Partecipazione confermata',  color: '#2F7D55'           },
-  confirmed: { label: 'Partecipazione confermata',  color: '#2F7D55'           },
-  rejected:  { label: 'Richiesta non approvata',    color: '#9E3B2F'           },
-  attended:  { label: 'Partecipazione completata',  color: '#3B6EBA'           },
+  pending:   { label: 'Richiesta inviata',          color: TOKENS.safeguard.watch.text           },
+  requested: { label: 'Richiesta inviata',          color: TOKENS.safeguard.watch.text           },
+  approved:  { label: 'Partecipazione confermata',  color: TOKENS.success           },
+  confirmed: { label: 'Partecipazione confermata',  color: TOKENS.success           },
+  rejected:  { label: 'Richiesta non approvata',    color: TOKENS.critical           },
+  attended:  { label: 'Partecipazione completata',  color: TOKENS.info.base           },
   cancelled: { label: 'Annullata',                  color: 'rgba(6,3,43,0.45)' },
 };
 
@@ -60,7 +60,7 @@ function PrivacyNotice() {
         borderRadius: 10, padding: '12px 16px', marginBottom: 20,
       }}
     >
-      <p style={{ fontFamily: FONT, fontSize: 12, color: '#2F7D55', margin: 0, lineHeight: 1.7 }}>
+      <p style={{ fontFamily: FONT, fontSize: 12, color: TOKENS.success, margin: 0, lineHeight: 1.7 }}>
         <strong>Il datore di lavoro non vede il tuo percorso individuale.</strong>{' '}
         Le tue prenotazioni sono private e non generano alcuna classifica individuale.
         La partecipazione confermata può contribuire
@@ -189,7 +189,7 @@ export function BookingsClient() {
                   )}
 
                   {booking.attended_at && (
-                    <p style={{ fontSize: 10, color: '#2F7D55', margin: '4px 0 0' }}>
+                    <p style={{ fontSize: 10, color: TOKENS.success, margin: '4px 0 0' }}>
                       Partecipazione confermata il {new Date(booking.attended_at).toLocaleDateString('it-IT')}
                     </p>
                   )}
@@ -213,7 +213,7 @@ export function BookingsClient() {
                           borderRadius: 7,
                           border:       '1px solid rgba(158,59,47,0.25)',
                           background:   'rgba(158,59,47,0.06)',
-                          color:        '#9E3B2F',
+                          color:        TOKENS.critical,
                           cursor:       cancellingId === booking.id ? 'not-allowed' : 'pointer',
                           fontFamily:   FONT,
                         }}
@@ -221,7 +221,7 @@ export function BookingsClient() {
                         {cancellingId === booking.id ? 'Annullamento…' : 'Annulla richiesta'}
                       </button>
                       {cancelErrors[booking.id] && (
-                        <p style={{ fontSize: 10, color: '#9E3B2F', margin: '4px 0 0', fontFamily: FONT }}>
+                        <p style={{ fontSize: 10, color: TOKENS.critical, margin: '4px 0 0', fontFamily: FONT }}>
                           {cancelErrors[booking.id]}
                         </p>
                       )}
@@ -248,17 +248,17 @@ export function BookingsClient() {
                         padding: '10px 14px',
                       }}
                     >
-                      <p style={{ fontSize: 11, fontWeight: 700, color: '#3B5A8A', margin: '0 0 6px', fontFamily: FONT }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: BADGE_TOKENS.info.text, margin: '0 0 6px', fontFamily: FONT }}>
                         Traccia privata My KORA
                       </p>
-                      <p style={{ fontSize: 11, color: '#3B5A8A', margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
+                      <p style={{ fontSize: 11, color: BADGE_TOKENS.info.text, margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
                         Questa partecipazione è una traccia privata del tuo percorso My KORA.
                       </p>
-                      <p style={{ fontSize: 11, color: '#3B5A8A', margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
+                      <p style={{ fontSize: 11, color: BADGE_TOKENS.info.text, margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
                         Il datore di lavoro non vede il tuo percorso individuale.
                         Eventuali segnali verso l&apos;organizzazione sono aggregati.
                       </p>
-                      <p style={{ fontSize: 11, color: '#3B5A8A', margin: '0 0 6px', lineHeight: 1.6, fontFamily: FONT }}>
+                      <p style={{ fontSize: 11, color: BADGE_TOKENS.info.text, margin: '0 0 6px', lineHeight: 1.6, fontFamily: FONT }}>
                         La partecipazione completata può contribuire al tuo Personal Impact Balance quando disponibile.
                       </p>
                       <p style={{ fontSize: 10, color: 'rgba(59,110,186,0.65)', margin: 0, lineHeight: 1.55, fontFamily: FONT }}>

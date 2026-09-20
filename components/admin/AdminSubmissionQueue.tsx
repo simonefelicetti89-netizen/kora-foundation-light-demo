@@ -61,9 +61,9 @@ const STATUS_LABEL: Record<string, string> = {
 
 const STATUS_CLS: Record<string, string> = {
   submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
-  submission_pending:             'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  submission_needs_clarification: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
-  submission_accepted:            'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  submission_pending:             'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
+  submission_needs_clarification: 'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.22)]',
+  submission_accepted:            'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
   submission_rejected:            'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]',
   submission_archived:            'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
 };
@@ -160,7 +160,7 @@ function ReviewPanel({ sub, onDone }: { sub: Submission; onDone: () => void }) {
       <button
         onClick={submit}
         disabled={!action || status === 'loading' || status === 'done'}
-        className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-[10px] font-semibold hover:bg-[#1a1756] disabled:opacity-50 transition-colors"
+        className="rounded-lg bg-kora-ink text-white px-4 py-1.5 text-[10px] font-semibold hover:bg-kora-ink-hover disabled:opacity-50 transition-colors"
       >
         {status === 'loading' ? '⏳ Salvataggio…' : 'Conferma azione'}
       </button>
@@ -203,9 +203,9 @@ export function AdminSubmissionQueue({ userEmail, initialTenantCode }: QueueProp
     <div className="max-w-4xl mx-auto py-6 px-3 space-y-5">
 
       {/* Header */}
-      <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between gap-4 flex-wrap">
+      <div className="rounded-xl bg-kora-ink px-6 py-5 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA Admin · Review Queue</p>
+          <p className="text-xs font-semibold tracking-widest uppercase text-kora-accent mb-1">KORA Admin · Review Queue</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Company Submissions</h1>
           <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">
@@ -213,14 +213,14 @@ export function AdminSubmissionQueue({ userEmail, initialTenantCode }: QueueProp
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 shrink-0">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">KORA_ADMIN</span>
+          <span className="rounded border border-kora-accent/60 bg-kora-accent/15 px-2 py-0.5 text-xs font-semibold text-white">KORA_ADMIN</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <button onClick={load} className="text-[9px] text-white/30 hover:text-white/60 underline">↻ Aggiorna</button>
         </div>
       </div>
 
       {/* Caveat */}
-      <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2 text-[10.5px] text-[#8A5A00]">
+      <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2 text-[10.5px] text-kora-warning-text">
         Accepted_for_intake non avvia scoring, non crea UEF e non bypassa Match Review o UEF Review.
         Dopo aver accettato una submission, aprire Data Intake per creare il batch ufficiale manualmente.
       </div>
@@ -233,12 +233,12 @@ export function AdminSubmissionQueue({ userEmail, initialTenantCode }: QueueProp
           {/* Summary */}
           <div className="grid grid-cols-4 gap-3">
             {[
-              { label: 'In attesa',     value: data.summary.pending,             cls: 'text-[#8A5A00]' },
-              { label: 'Chiarimento',   value: data.summary.needs_clarification, cls: data.summary.needs_clarification > 0 ? 'text-[#D99A2B]' : '' },
+              { label: 'In attesa',     value: data.summary.pending,             cls: 'text-kora-warning-text' },
+              { label: 'Chiarimento',   value: data.summary.needs_clarification, cls: data.summary.needs_clarification > 0 ? 'text-kora-warning' : '' },
               { label: 'Accettati',     value: data.summary.accepted,            cls: 'text-green-700' },
               { label: 'Rifiutati',     value: data.summary.rejected,            cls: '' },
             ].map(({ label, value, cls }) => (
-              <div key={label} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2.5 text-center">
+              <div key={label} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-2.5 text-center">
                 <p className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{label}</p>
                 <p className={`text-xl font-bold text-[rgba(6,3,43,0.90)] mt-0.5 ${cls}`}>{value}</p>
               </div>
@@ -262,7 +262,7 @@ export function AdminSubmissionQueue({ userEmail, initialTenantCode }: QueueProp
 
           {/* Empty state */}
           {data.submissions.length === 0 && (
-            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-10 text-center">
+            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper px-6 py-10 text-center">
               <p className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Nessuna submission ricevuta.</p>
               <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1">Le submission aziendali appariranno qui quando le aziende invieranno dati dal workspace.</p>
             </div>
@@ -271,7 +271,7 @@ export function AdminSubmissionQueue({ userEmail, initialTenantCode }: QueueProp
           {/* Submissions list */}
           <div className="space-y-3">
             {filtered.map((sub) => (
-              <div key={sub.submissionId} className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+              <div key={sub.submissionId} className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper overflow-hidden">
                 {/* Row header */}
                 <button
                   onClick={() => setExpanded(expanded === sub.submissionId ? null : sub.submissionId)}
@@ -319,7 +319,7 @@ export function AdminSubmissionQueue({ userEmail, initialTenantCode }: QueueProp
                               <span className="truncate">{f.safeName}</span>
                               <span className="text-[rgba(6,3,43,0.40)] shrink-0">{Math.round(f.fileSizeBytes / 1024)} KB</span>
                               <span className="text-[rgba(6,3,43,0.40)] shrink-0">{f.purpose}</span>
-                              <Badge label={f.storageStatus === 'stored_private' ? 'Archiviato' : 'Solo metadata'} cls="border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.52)]" />
+                              <Badge label={f.storageStatus === 'stored_private' ? 'Archiviato' : 'Solo metadata'} cls="border-[rgba(6,3,43,0.08)] bg-kora-paper text-[rgba(6,3,43,0.52)]" />
                             </div>
                           ))}
                         </div>
@@ -341,7 +341,7 @@ export function AdminSubmissionQueue({ userEmail, initialTenantCode }: QueueProp
 
                     {/* Quick actions */}
                     <div className="flex gap-2 flex-wrap text-[10px]">
-                      <Link href={sub.quickActions.workspace} className="text-[#C76F3D] hover:underline">Workspace azienda →</Link>
+                      <Link href={sub.quickActions.workspace} className="text-kora-accent hover:underline">Workspace azienda →</Link>
                       <Link href={sub.quickActions.dataIntake} className="text-blue-600 hover:underline">Data Intake (manuale) →</Link>
                     </div>
 

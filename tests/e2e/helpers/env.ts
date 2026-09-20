@@ -45,6 +45,44 @@ export function getCompanyBCredentials(): CompanyCredentials | null {
   return { email, password, tenantCode: readEnv('E2E_COMPANY_B_TENANT_CODE') };
 }
 
+/**
+ * KORA-WP-088 — Worker / Partner / Advisor credential readers.
+ *
+ * Same contract as the admin/company readers above: process.env only, never
+ * returns or logs a raw secret, missing credentials resolve to `null` so the
+ * caller skips instead of throwing. Added so the Founder-mandated authenticated
+ * multi-viewport validation can cover all FIVE role environments, not just the
+ * three GOLDEN-02 covered. NO CREDENTIAL IS FABRICATED OR STORED HERE — these
+ * are readers only; the values must come from the authorized environment.
+ */
+export function getWorkerCredentials(): Credentials | null {
+  // Naming compatibility (KORA-WP-088): scripts/e2e/seed-local-golden-path.ts
+  // predates this reader and writes E2E_WORKER_A_* (the "_A" mirrors the
+  // COMPANY_A/COMPANY_B tenant pair, though only one worker is ever seeded).
+  // E2E_WORKER_* is the canonical WP-088 name and ALWAYS wins; E2E_WORKER_A_*
+  // is accepted only as a fallback so the existing local seed output works
+  // unmodified. This is a single ordered precedence, not dual semantics: there
+  // is exactly one worker identity, reachable under either spelling.
+  const email = readEnv('E2E_WORKER_EMAIL') ?? readEnv('E2E_WORKER_A_EMAIL');
+  const password = readEnv('E2E_WORKER_PASSWORD') ?? readEnv('E2E_WORKER_A_PASSWORD');
+  if (!email || !password) return null;
+  return { email, password };
+}
+
+export function getPartnerCredentials(): Credentials | null {
+  const email = readEnv('E2E_PARTNER_EMAIL');
+  const password = readEnv('E2E_PARTNER_PASSWORD');
+  if (!email || !password) return null;
+  return { email, password };
+}
+
+export function getAdvisorCredentials(): Credentials | null {
+  const email = readEnv('E2E_ADVISOR_EMAIL');
+  const password = readEnv('E2E_ADVISOR_PASSWORD');
+  if (!email || !password) return null;
+  return { email, password };
+}
+
 export function getBaseUrl(): string {
   return readEnv('E2E_BASE_URL') ?? 'http://localhost:3000';
 }

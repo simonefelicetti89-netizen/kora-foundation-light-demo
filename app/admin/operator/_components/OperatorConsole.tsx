@@ -81,9 +81,9 @@ type StepState = 'pending' | 'running' | 'completed';
 // ── Formatting helpers ────────────────────────────────────────────────────────
 
 const SAFEGUARD: Record<string, { label: string; cls: string }> = {
-  CLEAR:   { label: 'CLEAR',   cls: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' },
-  WARNING: { label: 'WARNING', cls: 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]' },
-  FLAGGED: { label: 'FLAGGED', cls: 'bg-[rgba(158,59,47,0.10)]  text-[#9E3B2F]   border-[rgba(158,59,47,0.22)]'  },
+  CLEAR:   { label: 'CLEAR',   cls: 'bg-[rgba(47,125,85,0.10)] text-kora-success border-[rgba(47,125,85,0.22)]' },
+  WARNING: { label: 'WARNING', cls: 'bg-[rgba(217,154,43,0.12)] text-kora-warning-text border-[rgba(217,154,43,0.25)]' },
+  FLAGGED: { label: 'FLAGGED', cls: 'bg-[rgba(158,59,47,0.10)]  text-kora-critical   border-[rgba(158,59,47,0.22)]'  },
 };
 
 const AUDIT_ICON: Record<string, string> = {
@@ -233,7 +233,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-lg font-bold text-[#06032B]">Operator Flow</h1>
+            <h1 className="text-lg font-bold text-kora-ink">Operator Flow</h1>
             <BoundaryBadge mode="DEMO" variant="light" suffix="· dati sintetici" />
           </div>
           <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">Synthetic OP-001 · 2026-Q1 · Foundation Light</p>
@@ -246,7 +246,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
       </div>
 
       {/* ── Auth bar ── */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-2.5 flex items-center gap-3 text-sm">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-2.5 flex items-center gap-3 text-sm">
         <span className="text-[rgba(6,3,43,0.40)] text-xs">Operatore</span>
         <span className="font-medium text-[rgba(6,3,43,0.90)]">{userEmail}</span>
         <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700">{userRole}</span>
@@ -258,11 +258,11 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
       </div>
 
       {/* ── Action bar — always visible ── */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 space-y-2.5">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-3 space-y-2.5">
         <p className="text-xs font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Controlli pipeline</p>
         <div className="flex gap-3 flex-wrap">
           <button onClick={handleRun} disabled={isLoading}
-            className="flex-1 bg-[#06032B] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[rgba(6,3,43,0.88)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            className="flex-1 bg-kora-ink text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[rgba(6,3,43,0.88)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             {status === 'running' ? '⏳ Esecuzione pipeline…' : '▶ Run KORA Flow'}
           </button>
           <button onClick={handleRead} disabled={isLoading}
@@ -271,7 +271,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
           </button>
         </div>
         {status === 'error' && errorMsg && (
-          <div className="flex gap-2 rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-3 py-2 text-xs text-[#9E3B2F]">
+          <div className="flex gap-2 rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-3 py-2 text-xs text-kora-critical">
             <span className="flex-shrink-0">⚠</span><span>{errorMsg}</span>
           </div>
         )}
@@ -304,7 +304,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
                 <Kv label="Workers" value={<span className="font-semibold text-[rgba(6,3,43,0.90)] tabular-nums">50</span>} />
                 <span className="text-green-700 font-medium">✓ N≥10 enforced</span>
                 {runResult?.privacy?.segment_breakdown_safe != null && (
-                  <span className={runResult.privacy.segment_breakdown_safe ? 'text-green-700 font-medium' : 'text-[#8A5A00] font-medium'}>
+                  <span className={runResult.privacy.segment_breakdown_safe ? 'text-green-700 font-medium' : 'text-kora-warning-text font-medium'}>
                     {runResult.privacy.segment_breakdown_safe ? '✓ Segments safe' : '⚠ Verifica segments'}
                   </span>
                 )}
@@ -339,7 +339,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
                 <span className="text-[rgba(6,3,43,0.52)]">Review mode: read-only</span>
               </div>
             )}
-            <p className="text-xs border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded px-2 py-1 text-[#8A5A00]">
+            <p className="text-xs border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded px-2 py-1 text-kora-warning-text">
               Editable UEF Review (accept / reject / edit) scheduled for B5.
             </p>
           </div>
@@ -352,12 +352,12 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
             <div className="space-y-3">
               <MetricGrid>
                 <Metric label="KORA Index"
-                  value={<span className="text-2xl font-bold tabular-nums text-[#06032B]">{kiValue}</span>} />
+                  value={<span className="text-2xl font-bold tabular-nums text-kora-ink">{kiValue}</span>} />
                 <Metric label="Activation Safeguard" value={badge(safeguard)} />
                 <Metric label="Confidence Score"
                   value={<span className="text-xl font-semibold tabular-nums text-[rgba(6,3,43,0.90)]">{csValue ?? '—'}</span>} />
                 <Metric label="Calibration"
-                  value={<span className="text-xs text-[#8A5A00] bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)] rounded px-1.5 py-0.5">
+                  value={<span className="text-xs text-kora-warning-text bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)] rounded px-1.5 py-0.5">
                     {readResult?.kora_index?.calibration ?? 'pre_empirical_calibration'}
                   </span>} />
                 {arValue != null && (
@@ -402,11 +402,11 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
             {/* Export CTAs — always visible */}
             <div className="flex gap-2 flex-wrap">
               <a href={pdfUrl} download={`kora-decision-pack-${TENANT}-${PERIOD}.pdf`}
-                className="inline-flex items-center gap-1.5 bg-[#06032B] text-white rounded px-3 py-1.5 text-xs font-medium hover:bg-[#1a1756] transition-colors">
+                className="inline-flex items-center gap-1.5 bg-kora-ink text-white rounded px-3 py-1.5 text-xs font-medium hover:bg-kora-ink-hover transition-colors">
                 ↓ Download PDF
               </a>
               <a href={previewUrl} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 border border-[#C76F3D] text-[#C76F3D] rounded px-3 py-1.5 text-xs font-medium hover:bg-[#f5f4ff] transition-colors">
+                className="inline-flex items-center gap-1.5 border border-kora-accent text-kora-accent rounded px-3 py-1.5 text-xs font-medium hover:bg-kora-accent/8 transition-colors">
                 ↗ HTML Preview
               </a>
             </div>
@@ -435,7 +435,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
                   <p className="text-xs font-medium text-green-700">✓ Status aggiornato con successo.</p>
                 )}
                 {promoStatus === 'promo-error' && promoError && (
-                  <p className="text-xs text-[#9E3B2F]">⚠ {promoError}</p>
+                  <p className="text-xs text-kora-critical">⚠ {promoError}</p>
                 )}
               </div>
             )}
@@ -475,7 +475,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
         <p className="text-xs font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-2">Note di sicurezza</p>
         <div className="flex flex-wrap gap-2">
           {(['Synthetic data only', 'No real people data', 'N≥10 enforced', 'KORA_ADMIN session required', 'pre_empirical_calibration'] as const).map(n => (
-            <span key={n} className="text-xs border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] rounded px-2 py-0.5 text-[rgba(6,3,43,0.52)]">{n}</span>
+            <span key={n} className="text-xs border border-[rgba(6,3,43,0.08)] bg-kora-paper rounded px-2 py-0.5 text-[rgba(6,3,43,0.52)]">{n}</span>
           ))}
         </div>
       </div>
@@ -488,8 +488,8 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
 
 // WizardStep — step card with status indicator. B3 addition.
 const STEP_STYLE: Record<StepState, { dot: string; badge: string; label: string; headerBorder: string }> = {
-  completed: { dot: 'bg-green-500', badge: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]', label: 'Completato', headerBorder: 'border-green-100' },
-  running:   { dot: 'bg-[#D99A2B]', badge: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]', label: 'In esecuzione…', headerBorder: 'border-amber-100' },
+  completed: { dot: 'bg-green-500', badge: 'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]', label: 'Completato', headerBorder: 'border-green-100' },
+  running:   { dot: 'bg-kora-warning', badge: 'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]', label: 'In esecuzione…', headerBorder: 'border-amber-100' },
   pending:   { dot: 'bg-[rgba(6,3,43,0.18)]', badge: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]', label: 'In attesa', headerBorder: 'border-[rgba(6,3,43,0.05)]' },
 };
 
@@ -500,7 +500,7 @@ function WizardStep({
 }) {
   const s = STEP_STYLE[state];
   return (
-    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper overflow-hidden">
       <div className={`flex items-center gap-3 px-4 py-2.5 border-b ${s.headerBorder}`}>
         <div className="flex items-center gap-2 w-10 flex-shrink-0">
           <div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
@@ -529,7 +529,7 @@ function Kv({ label, value }: { label: string; value: React.ReactNode }) {
 // Section, SubSection, MetricGrid, Metric — unchanged from B2
 function Section({ title, accent, children }: { title: string; accent: 'green' | 'blue' | 'slate'; children: React.ReactNode }) {
   const border = accent === 'green' ? 'border-[rgba(47,125,85,0.22)]' : accent === 'blue' ? 'border-blue-200' : 'border-[rgba(6,3,43,0.08)]';
-  const bg     = accent === 'green' ? 'bg-green-50'    : accent === 'blue' ? 'bg-blue-50'    : 'bg-[#F8F6F1]';
+  const bg     = accent === 'green' ? 'bg-green-50'    : accent === 'blue' ? 'bg-blue-50'    : 'bg-kora-paper';
   const color  = accent === 'green' ? 'text-green-700'  : accent === 'blue' ? 'text-blue-700'  : 'text-[rgba(6,3,43,0.62)]';
   return (
     <div className={`rounded-lg border ${border} ${bg} px-4 py-4 space-y-3`}>
@@ -563,13 +563,13 @@ function Metric({ label, value }: { label: string; value: React.ReactNode }) {
 
 // DP status badge + description — unchanged from B2
 const DP_STATUS_STYLE: Record<string, { bg: string; text: string; border: string }> = {
-  draft:                   { bg: 'bg-[rgba(217,154,43,0.08)]',  text: 'text-[#8A5A00]',  border: 'border-[rgba(217,154,43,0.25)]'  },
+  draft:                   { bg: 'bg-[rgba(217,154,43,0.08)]',  text: 'text-kora-warning-text',  border: 'border-[rgba(217,154,43,0.25)]'  },
   ready:                   { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' },
   exported:                { bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-[rgba(47,125,85,0.22)]'  },
-  data_review_required:    { bg: 'bg-[rgba(158,59,47,0.06)]',    text: 'text-[#9E3B2F]',    border: 'border-[rgba(158,59,47,0.22)]'    },
-  advisor_review_required: { bg: 'bg-[rgba(217,154,43,0.08)]', text: 'text-[#8A5A00]', border: 'border-[rgba(217,154,43,0.22)]' },
+  data_review_required:    { bg: 'bg-[rgba(158,59,47,0.06)]',    text: 'text-kora-critical',    border: 'border-[rgba(158,59,47,0.22)]'    },
+  advisor_review_required: { bg: 'bg-[rgba(217,154,43,0.08)]', text: 'text-kora-warning-text', border: 'border-[rgba(217,154,43,0.22)]' },
   archived:                { bg: 'bg-[rgba(6,3,43,0.05)]', text: 'text-[rgba(6,3,43,0.62)]',  border: 'border-[rgba(6,3,43,0.08)]'  },
-  blocked:                 { bg: 'bg-[rgba(158,59,47,0.10)]',   text: 'text-[#9E3B2F]',    border: 'border-[rgba(158,59,47,0.25)]'    },
+  blocked:                 { bg: 'bg-[rgba(158,59,47,0.10)]',   text: 'text-kora-critical',    border: 'border-[rgba(158,59,47,0.25)]'    },
 };
 
 function DpStatusBadge({ status }: { status: string }) {
@@ -594,7 +594,7 @@ function dpStatusDescription(status: string): string {
 
 function StatusPill({ status }: { status?: string }) {
   return (
-    <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-xs text-[rgba(6,3,43,0.52)]">
+    <span className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-1.5 py-0.5 text-xs text-[rgba(6,3,43,0.52)]">
       {status ?? 'unknown'}
     </span>
   );

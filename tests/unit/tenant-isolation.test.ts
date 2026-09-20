@@ -152,7 +152,24 @@ describe('Tenant Isolation — company routes: filtro tenant_id nelle query', ()
         // — tenantId is the same session-sourced value destructured above (see check
         // #3, pattern A); the .eq('tenant_id', tenantId) filter lives inside the
         // service, not the route (services/worker-pillar-adoption/WorkerPillarAdoptionService.ts).
-        /getCompanyPillarAdoption/.test(code);
+        /getCompanyPillarAdoption/.test(code) ||
+        // KORA-WP-018: listNeedHypothesesForTenant(auth.tenantId) — same pattern as
+        // getCompanyPillarAdoption above; the .eq('tenant_id', tenantId) filter lives
+        // inside lib/needs-map/need-hypothesis-service.ts, not the route.
+        /listNeedHypothesesForTenant/.test(code) ||
+        // KORA-WP-033: getCompanyAssignedAdvisor(auth.tenantId) — same pattern; the
+        // .eq('company_id', tenantId) filter lives inside
+        // lib/advisor-portal/advisor-portal-service.ts, not the route.
+        /getCompanyAssignedAdvisor/.test(code) ||
+        // KORA-WP-036: listContentForCompany(auth.tenantId, assignmentId) — the
+        // caller's trusted tenantId is checked against the Assignment's own
+        // company_id inside lib/advisor-portal/advisor-content-service.ts.
+        /listContentForCompany/.test(code) ||
+        // KORA-WP-033: sendContactMessage({..., callerTenantId: auth.tenantId}) and
+        // listContactMessages({..., callerTenantId: auth.tenantId}) — the caller's
+        // trusted tenantId is passed through and checked against the Assignment's
+        // own company_id inside lib/advisor-portal/advisor-portal-service.ts.
+        /callerTenantId:\s*auth\.tenantId/.test(codeNC);
 
       expect(hasTenantFilter, `${route}: nessun filtro tenant_id trovato`).toBe(true);
     });
@@ -305,10 +322,17 @@ describe('Tenant Isolation — commons/posts: contratto tenant per ruolo', () =>
 // ── 10. Sanity check: count delle route coperte ───────────────────────────────
 
 describe('Tenant Isolation — copertura routes', () => {
-  it('copre tutte le 18 company routes', () => {
+  it('copre tutte le 19 company routes', () => {
     // P1 sprint added: /api/company/data-submissions/history, /api/company/initiatives/explainability
     // CC-018/B-TRUTH added: /api/company/pillar-adoption (seed group #1)
-    expect(COMPANY_ROUTES.length).toBe(18);
+    // KORA-WP-018 added: /api/company/needs
+    // KORA-WP-028 added: /api/company/data-ingest (Ingestion Hardening — new, additive Company-scoped route)
+    // KORA-WP-027 added: /api/company/readiness (KORA Ready automated evaluation)
+    // KORA-WP-115 added: /api/company/living-koral/editions (KORAL Edition
+    // archive/create) — already scanned and passing every dynamic
+    // tenant-isolation check above (tenantId derived from
+    // requireCompanyUser() only, never searchParams or request body).
+    expect(COMPANY_ROUTES.length).toBe(26);
   });
 
   it('copre tutte le admin routes (baseline: ≥45)', () => {

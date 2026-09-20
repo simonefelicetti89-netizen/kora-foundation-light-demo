@@ -76,8 +76,13 @@ describe('B141-B — middleware.ts unchanged, kora-session.ts WORKER guard prese
 
 describe('B141-B2 — Sidebar KORA_ADMIN has Worker Preview links', () => {
   const adminNavStart = sidebarSrc.indexOf("if (isAdminRole(role");
+  // Window bumped 3500 -> 3800 (KORA-WP-033): an unrelated single-line
+  // COMPANY_ADMIN nav addition earlier in the file ('/company/advisor')
+  // pushed this fixed-offset window's target strings a few dozen
+  // characters past the old boundary — same class of fragile-window
+  // breakage as this session's tenant-isolation.test.ts route-count bump.
   const adminNavSection = adminNavStart > -1
-    ? sidebarSrc.substring(adminNavStart, adminNavStart + 3500)
+    ? sidebarSrc.substring(adminNavStart, adminNavStart + 3800)
     : sidebarSrc;
 
   it('19. KORA_ADMIN sidebar Worker Preview no longer links to /my-kora — repointed to the admin preview hub', () => {

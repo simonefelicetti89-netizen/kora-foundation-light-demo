@@ -29,15 +29,15 @@ interface InspectResult {
 interface ActionResult { ok: boolean; message?: string; archivedDPCount?: number; deletedUploadedCount?: number; deletedUefCount?: number; error?: string; hint?: string; }
 
 const RISK_CLS: Record<string, string> = {
-  safe:            'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  active_results:  'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  exported_report: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
+  safe:            'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
+  active_results:  'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
+  exported_report: 'bg-[rgba(158,59,47,0.06)] text-kora-critical border-[rgba(158,59,47,0.22)]',
 };
 const STATUS_CLS: Record<string, string> = {
-  pending:    'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  processing: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  approved:   'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  rejected:   'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
+  pending:    'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
+  processing: 'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]',
+  approved:   'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
+  rejected:   'bg-[rgba(158,59,47,0.06)] text-kora-critical border-[rgba(158,59,47,0.22)]',
   partial:    'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
   archived:   'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
@@ -116,19 +116,19 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
     <div className="max-w-5xl mx-auto py-6 px-3 space-y-5">
 
       {/* Header */}
-      <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
+      <div className="rounded-xl bg-kora-ink px-6 py-5 flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
+          <p className="text-xs font-semibold tracking-widest uppercase text-kora-accent mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Data Lifecycle</h1>
           <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">B10 — Inspect · Archive · Controlled Delete</p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
+          <span className="rounded border border-kora-accent/60 bg-kora-accent/15 px-2 py-0.5 text-xs font-semibold text-white">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <div className="flex flex-wrap gap-1">
             {['No company delete', 'No PII', 'Audit required'].map(m => (
-              <span key={m} className="rounded border border-white/12 bg-[#F8F6F1]/5 px-2 py-0.5 text-[10px] text-white/38">{m}</span>
+              <span key={m} className="rounded border border-white/12 bg-kora-paper/5 px-2 py-0.5 text-[10px] text-white/38">{m}</span>
             ))}
           </div>
         </div>
@@ -148,9 +148,9 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
           {batches.map(b => (
             <div key={b.batchId}
               onClick={() => handleInspect(b.batchId)}
-              className={`rounded-lg border px-4 py-3 cursor-pointer space-y-1.5 transition-colors ${selectedId===b.batchId?'border-[#C76F3D] bg-[#f5f4ff]':'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] hover:border-[rgba(6,3,43,0.14)]'}`}>
+              className={`rounded-lg border px-4 py-3 cursor-pointer space-y-1.5 transition-colors ${selectedId===b.batchId?'border-kora-accent bg-kora-accent/8':'border-[rgba(6,3,43,0.08)] bg-kora-paper hover:border-[rgba(6,3,43,0.14)]'}`}>
               {b.companyName && (
-                <p className="text-[10px] font-semibold text-[#C76F3D]">{b.companyName} <span className="font-mono opacity-70">· {b.tenantCode}</span></p>
+                <p className="text-[10px] font-semibold text-kora-accent">{b.companyName} <span className="font-mono opacity-70">· {b.tenantCode}</span></p>
               )}
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)] truncate">{b.sourceName ?? b.batchId.slice(0,12)+'…'}</p>
@@ -176,7 +176,7 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
           {inspecting && <p className="text-xs text-[rgba(6,3,43,0.40)]">Loading inspection…</p>}
 
           {inspect?.ok && inspect.counts && (
-            <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4 space-y-4">
+            <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-5 py-4 space-y-4">
 
               {/* Overview */}
               <div className="flex items-start justify-between flex-wrap gap-2">
@@ -216,7 +216,7 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
 
               {/* Recommended action */}
               {inspect.blockingReason && (
-                <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-[#8A5A00]">
+                <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-kora-warning-text">
                   ⚠ {inspect.blockingReason}
                 </div>
               )}
@@ -234,22 +234,22 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
                     <p className="text-[10px] text-green-700 mt-1">✓ {archiveResult.message}</p>
                   )}
                   {archiveStatus==='error' && archiveResult && (
-                    <p className="text-[10px] text-[#9E3B2F] mt-1">⚠ {archiveResult.error}</p>
+                    <p className="text-[10px] text-kora-critical mt-1">⚠ {archiveResult.error}</p>
                   )}
                 </div>
 
                 {/* Delete */}
                 <div className="space-y-2">
-                  <p className="text-[10px] font-semibold text-[#9E3B2F] uppercase tracking-wide">⚠ Delete Batch Data</p>
+                  <p className="text-[10px] font-semibold text-kora-critical uppercase tracking-wide">⚠ Delete Batch Data</p>
                   <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Permanently deletes uploaded_record + uef_record. Type DELETE_BATCH to confirm.</p>
                   <div className="flex gap-2 flex-wrap">
                     <input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
-                      placeholder="DELETE_BATCH"
-                      className="rounded border border-[rgba(158,59,47,0.25)] px-2.5 py-1.5 text-xs font-mono text-[#9E3B2F] w-36 focus:outline-none focus:ring-1 focus:ring-[#9E3B2F]"
+                      placeholder="DELETE_BATCH" aria-label="Conferma eliminazione: digitare DELETE_BATCH"
+                      className="rounded border border-[rgba(158,59,47,0.25)] px-2.5 py-1.5 text-xs font-mono text-kora-critical w-36 focus:outline-none focus:ring-1 focus:ring-kora-critical"
                     />
                     <button onClick={handleDelete}
                       disabled={deleteConfirm !== 'DELETE_BATCH' || deleteStatus==='loading'}
-                      className="rounded border border-[#9E3B2F] bg-[rgba(158,59,47,0.06)] px-4 py-1.5 text-xs font-semibold text-[#9E3B2F] hover:bg-[rgba(158,59,47,0.10)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                      className="rounded border border-kora-critical bg-[rgba(158,59,47,0.06)] px-4 py-1.5 text-xs font-semibold text-kora-critical hover:bg-[rgba(158,59,47,0.10)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                       {deleteStatus==='loading' ? '⏳ Deleting…' : '✕ Delete batch data'}
                     </button>
                   </div>
@@ -257,7 +257,7 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
                     <p className="text-[10px] text-green-700">✓ {deleteResult.message}</p>
                   )}
                   {deleteStatus==='error' && deleteResult && (
-                    <div className="text-[10px] text-[#9E3B2F]">
+                    <div className="text-[10px] text-kora-critical">
                       <p>⚠ {deleteResult.error}</p>
                       {deleteResult.hint && <p className="text-[rgba(6,3,43,0.52)] mt-0.5">{deleteResult.hint}</p>}
                     </div>
@@ -269,7 +269,7 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
           )}
 
           {inspect && !inspect.ok && (
-            <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-[#9E3B2F]">
+            <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-kora-critical">
               ⚠ {inspect.error}
             </div>
           )}

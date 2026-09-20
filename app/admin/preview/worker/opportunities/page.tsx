@@ -16,6 +16,7 @@
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = {
   title: 'Worker Opportunities — Admin Preview · KORA',
@@ -33,11 +34,11 @@ type PartnerItem = {
 };
 
 const PILLAR_COLOR: Record<string, string> = {
-  LIFE:       '#2F7D55',
-  GROWTH:     '#3B6EBA',
-  CONNECTION: '#7C3D8F',
-  IMPACT:     '#C07D2A',
-  LEGACY:     '#5A4A3F',
+  LIFE:       PILLAR_COLORS.LIFE,
+  GROWTH:     PILLAR_COLORS.GROWTH,
+  CONNECTION: PILLAR_COLORS.CONNECTION,
+  IMPACT:     PILLAR_COLORS.IMPACT,
+  LEGACY:     PILLAR_COLORS.LEGACY,
 };
 
 const DELIVERY_LABEL: Record<string, string> = {
@@ -93,7 +94,7 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
       >
         <span style={{ fontSize: 18, lineHeight: 1 }}>👁</span>
         <div>
-          <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: '#8B4513', margin: 0, marginBottom: 4 }}>
+          <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: BADGE_TOKENS.limited.text, margin: 0, marginBottom: 4 }}>
             KORA Admin Preview — non sei loggato come worker reale
           </p>
           <p style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(139,69,19,0.80)', margin: 0, lineHeight: 1.6 }}>
@@ -111,7 +112,7 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
         >
           ← Admin Dashboard
         </a>
-        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: 0, marginBottom: 6 }}>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: 0, marginBottom: 6 }}>
           Opportunità & Partner
         </h1>
         <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.55)', margin: 0 }}>
@@ -126,7 +127,7 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
           borderRadius: 10, padding: '14px 18px', marginBottom: 24,
         }}
       >
-        <p style={{ fontSize: 12, color: '#1a4731', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 12, color: BADGE_TOKENS.eligible.text, margin: 0, lineHeight: 1.6 }}>
           <strong>Privacy (come la vede il lavoratore):</strong>{' '}
           La navigazione tra i partner non viene mostrata al datore di lavoro.
           L&apos;azienda vede solo dati aggregati anonimi, non le scelte individuali.
@@ -147,7 +148,7 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
           </p>
           <p style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(6,3,43,0.30)', margin: 0 }}>
             Pubblica un partner in{' '}
-            <a href="/admin/partners" style={{ color: '#C76F3D', textDecoration: 'none' }}>
+            <a href="/admin/partners" style={{ color: TOKENS.accent, textDecoration: 'none' }}>
               Admin → Partner Catalog
             </a>{' '}
             per vederlo qui.
@@ -162,7 +163,7 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
                 border: '1px solid rgba(6,3,43,0.10)',
                 borderRadius: 12,
                 padding: '16px 18px',
-                background: '#FAFAFA',
+                background: TOKENS.surface,
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
@@ -171,12 +172,12 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
                     display: 'inline-block',
                     fontFamily: FONT, fontWeight: 700, fontSize: 9,
                     letterSpacing: '0.12em', textTransform: 'uppercase',
-                    color: PILLAR_COLOR[p.pillar] ?? '#06032B',
+                    color: PILLAR_COLOR[p.pillar] ?? TOKENS.ink,
                     marginBottom: 4,
                   }}>
                     {p.pillar}
                   </span>
-                  <h3 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: '#06032B', margin: 0 }}>
+                  <h3 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: TOKENS.ink, margin: 0 }}>
                     {p.name}
                   </h3>
                 </div>

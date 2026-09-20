@@ -12,7 +12,7 @@ export default function UEFReviewBoundary() {
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
           Operator Review Queue
         </p>
-        <h1 className="text-xl font-bold text-[#06032B] mt-0.5">
+        <h1 className="text-xl font-bold text-kora-ink mt-0.5">
           UEF Review è uno strumento KORA Admin.
         </h1>
       </div>
@@ -35,13 +35,13 @@ export default function UEFReviewBoundary() {
       <div className="flex items-center gap-4 flex-wrap">
         <Link
           href="/company/workspace"
-          className="rounded-md bg-[#06032B] px-4 py-2 text-sm font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors"
+          className="rounded-md bg-kora-ink px-4 py-2 text-sm font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors"
         >
           Torna al Workspace
         </Link>
         <Link
           href="/company/kora-index"
-          className="rounded-md border border-[rgba(6,3,43,0.14)] bg-[#F8F6F1] px-4 py-2 text-sm font-semibold text-[rgba(6,3,43,0.78)] hover:bg-[rgba(6,3,43,0.03)] transition-colors"
+          className="rounded-md border border-[rgba(6,3,43,0.14)] bg-kora-paper px-4 py-2 text-sm font-semibold text-[rgba(6,3,43,0.78)] hover:bg-[rgba(6,3,43,0.03)] transition-colors"
         >
           KORA Index →
         </Link>

@@ -19,6 +19,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { AdminCommonsModerationPanel } from '@/components/commons/AdminCommonsModerationPanel';
 import { AdminBookingModerationSection } from '@/components/commons/AdminBookingModerationSection';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'KORA Space — Moderazione · Admin' };
 
@@ -80,7 +81,7 @@ export default async function AdminCommonsPage() {
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: '0 0 8px' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: '0 0 8px' }}>
           KORA Space — Moderazione
         </h1>
         <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0 }}>
@@ -103,7 +104,7 @@ export default async function AdminCommonsPage() {
         }}
       >
         <span style={{ fontSize: 14, lineHeight: 1.2, flexShrink: 0 }}>&#9888;&#65039;</span>
-        <p style={{ fontSize: 12, color: '#C76F3D', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 12, color: TOKENS.accent, margin: 0, lineHeight: 1.6 }}>
           <strong>KORA Space è moderation-first.</strong>{' '}
           Non pubblicare dati personali, sanitari o valutazioni individuali.
           Questa console non espone dati individuali worker (no PIB, no Dynamic CV, no analytics di lettura).
@@ -113,13 +114,13 @@ export default async function AdminCommonsPage() {
       {/* Stats row */}
       <div
         data-testid="admin-commons-pending-queue"
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 32 }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 32 }}
       >
         {[
-          { label: 'In revisione', value: pending.length,   color: '#8A5A00', bg: 'rgba(192,125,42,0.10)', urgent: pending.length > 0 },
-          { label: 'Pubblicati',   value: published.length, color: '#2F7D55', bg: 'rgba(47,125,85,0.08)'  },
+          { label: 'In revisione', value: pending.length,   color: TOKENS.safeguard.watch.text, bg: 'rgba(192,125,42,0.10)', urgent: pending.length > 0 },
+          { label: 'Pubblicati',   value: published.length, color: TOKENS.success, bg: 'rgba(47,125,85,0.08)'  },
           { label: 'Bozze',        value: drafts.length,    color: 'rgba(6,3,43,0.50)', bg: 'rgba(6,3,43,0.04)' },
-          { label: 'Rifiutati',    value: rejected.length,  color: '#9E3B2F', bg: 'rgba(158,59,47,0.08)'  },
+          { label: 'Rifiutati',    value: rejected.length,  color: TOKENS.critical, bg: 'rgba(158,59,47,0.08)'  },
           { label: 'Archiviati',   value: archived.length,  color: 'rgba(6,3,43,0.40)', bg: 'rgba(6,3,43,0.04)' },
         ].map(({ label, value, color, bg, urgent }) => (
           <div key={label} style={{ background: bg, borderRadius: 10, padding: '14px 16px', textAlign: 'center', border: urgent ? '1.5px solid rgba(192,125,42,0.35)' : 'none' }}>

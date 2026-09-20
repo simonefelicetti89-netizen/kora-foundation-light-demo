@@ -90,6 +90,10 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
         </div>
       </div>
 
+      <div
+        role="img"
+        aria-label={`Grafico a barre: ${chartData.map((d) => `${d.fullLabel} ${d.value}%${d.weak ? ' (area di miglioramento)' : ''}`).join(', ')}`}
+      >
       <ResponsiveContainer width="100%" height={320}>
         <BarChart
           data={chartData}
@@ -127,6 +131,7 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
           </Bar>
         </BarChart>
       </ResponsiveContainer>
+      </div>
     </div>
   );
 }

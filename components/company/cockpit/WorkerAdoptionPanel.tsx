@@ -22,7 +22,7 @@
 // itself performs no fetch and has no synthetic dependency.
 
 import { useEffect, useState } from 'react';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { workerSpaceCapabilityService } from '@/services/worker-space/WorkerSpaceCapabilityService';
 import type { CanonicalWorkerProvisioningStatus } from '@/lib/live/worker-provisioning-status-view';
@@ -31,13 +31,6 @@ import type { PillarAdoptionResult } from '@/services/worker-pillar-adoption/Wor
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 const MONO = 'ui-monospace, monospace';
 
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE:       '#2F7D55',
-  GROWTH:     '#2B5CE6',
-  CONNECTION: '#C76F3D',
-  IMPACT:     '#6156F5',
-  LEGACY:     '#8A5A00',
-};
 
 const PILLAR_LABELS: Record<string, string> = {
   LIFE:       'LIFE',
@@ -50,7 +43,7 @@ const PILLAR_LABELS: Record<string, string> = {
 const STATUS_STYLE: Record<string, React.CSSProperties> = {
   ENABLED: {
     background: 'rgba(47,125,85,0.10)',
-    color:      '#2F7D55',
+    color:      TOKENS.success,
     border:     '1px solid rgba(47,125,85,0.25)',
   },
   NOT_ENABLED: {
@@ -60,7 +53,7 @@ const STATUS_STYLE: Record<string, React.CSSProperties> = {
   },
   PILOT_READY: {
     background: 'rgba(97,86,245,0.08)',
-    color:      '#4B40C8',
+    color:      TOKENS.violet,
     border:     '1px solid rgba(97,86,245,0.25)',
   },
 };
@@ -259,7 +252,7 @@ export function WorkerAdoptionPanel({ workerProvisioning: summary }: Props) {
           padding:      '12px 14px',
           marginBottom: 20,
         }}>
-          <p style={{ fontFamily: FONT, fontSize: '11px', fontWeight: 700, color: '#1B2A4A', marginBottom: 4 }}>
+          <p style={{ fontFamily: FONT, fontSize: '11px', fontWeight: 700, color: BADGE_TOKENS.info.text, marginBottom: 4 }}>
             Confine privacy
           </p>
           <p style={{ fontFamily: FONT, fontSize: '11px', color: 'rgba(30,74,138,0.85)', lineHeight: 1.6 }}>

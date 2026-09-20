@@ -14,6 +14,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getCurrentWorkerUser, getCurrentKoraUser } from '@/lib/auth/kora-session';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false, nocache: true,
@@ -63,7 +64,7 @@ export default async function WorkerLayout({ children }: { children: React.React
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fafafa' }}>
+    <div style={{ minHeight: '100vh', background: TOKENS.surface }}>
       {children}
     </div>
   );

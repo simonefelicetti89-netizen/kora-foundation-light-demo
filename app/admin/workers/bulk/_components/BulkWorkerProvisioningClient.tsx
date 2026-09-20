@@ -121,7 +121,7 @@ export function BulkWorkerProvisioningClient({
     <div className="space-y-4">
       <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-white px-4 py-3">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">Tenant</p>
-        <p className="text-sm font-bold text-[#06032B]">{companyName}</p>
+        <p className="text-sm font-bold text-kora-ink">{companyName}</p>
         <p className="text-xs font-mono text-[rgba(6,3,43,0.40)]">{tenantCode}</p>
       </div>
 
@@ -144,7 +144,7 @@ export function BulkWorkerProvisioningClient({
         <button
           onClick={handleAnalyze}
           disabled={!pasteText.trim()}
-          className="rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[rgba(6,3,43,0.82)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-lg bg-kora-ink text-white px-4 py-2 text-xs font-semibold hover:bg-[rgba(6,3,43,0.82)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Analizza
         </button>
@@ -160,27 +160,28 @@ export function BulkWorkerProvisioningClient({
             <div className="px-4 py-3 bg-[rgba(158,59,47,0.06)] border-b border-[rgba(158,59,47,0.15)]">
               <ul className="list-disc pl-4 space-y-0.5">
                 {batchErrors.map((e, i) => (
-                  <li key={i} className="text-xs text-[#9E3B2F]">{e}</li>
+                  <li key={i} className="text-xs text-kora-critical">{e}</li>
                 ))}
               </ul>
             </div>
           )}
 
           {rows.length > 0 && (
+            <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-left text-[10px] uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
-                  <th className="px-4 py-2 font-semibold">Riga</th>
-                  <th className="px-4 py-2 font-semibold">Nome</th>
-                  <th className="px-4 py-2 font-semibold">Email</th>
-                  <th className="px-4 py-2 font-semibold">Stato parsing</th>
+                  <th scope="col" className="px-4 py-2 font-semibold">Riga</th>
+                  <th scope="col" className="px-4 py-2 font-semibold">Nome</th>
+                  <th scope="col" className="px-4 py-2 font-semibold">Email</th>
+                  <th scope="col" className="px-4 py-2 font-semibold">Stato parsing</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.lineNumber} className="border-t border-[rgba(6,3,43,0.05)]">
                     <td className="px-4 py-2 text-[rgba(6,3,43,0.40)]">{r.lineNumber}</td>
-                    <td className="px-4 py-2 text-[#06032B]">
+                    <td className="px-4 py-2 text-kora-ink">
                       {[r.worker?.firstName, r.worker?.lastName].filter(Boolean).join(' ') || '—'}
                     </td>
                     <td className="px-4 py-2 text-[rgba(6,3,43,0.65)]">{r.worker?.email ?? '—'}</td>
@@ -199,13 +200,14 @@ export function BulkWorkerProvisioningClient({
                 ))}
               </tbody>
             </table>
+            </div>
           )}
 
           <div className="px-4 py-3 border-t border-[rgba(6,3,43,0.06)]">
             <button
               onClick={handleSubmit}
               disabled={!canSubmit}
-              className="rounded-lg bg-[#C76F3D] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4f44e0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-lg bg-kora-accent text-white px-4 py-2 text-xs font-semibold hover:bg-kora-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? 'Provisioning in corso…' : `Provisiona ${validWorkers.length} worker`}
             </button>
@@ -214,7 +216,7 @@ export function BulkWorkerProvisioningClient({
       )}
 
       {submitError && (
-        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-[#9E3B2F]">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-kora-critical">
           ⚠ {submitError}
         </div>
       )}
@@ -228,15 +230,15 @@ export function BulkWorkerProvisioningClient({
           <table className="w-full text-xs">
             <thead>
               <tr className="text-left text-[10px] uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
-                <th className="px-4 py-2 font-semibold">Email</th>
-                <th className="px-4 py-2 font-semibold">Esito</th>
-                <th className="px-4 py-2 font-semibold">Dettaglio</th>
+                <th scope="col" className="px-4 py-2 font-semibold">Email</th>
+                <th scope="col" className="px-4 py-2 font-semibold">Esito</th>
+                <th scope="col" className="px-4 py-2 font-semibold">Dettaglio</th>
               </tr>
             </thead>
             <tbody>
               {submitResult.results.map((r) => (
                 <tr key={r.email} className="border-t border-[rgba(6,3,43,0.05)]">
-                  <td className="px-4 py-2 text-[#06032B]">{r.email}</td>
+                  <td className="px-4 py-2 text-kora-ink">{r.email}</td>
                   <td className="px-4 py-2">
                     <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${OUTCOME_CLASSES[r.outcome]}`}>
                       {OUTCOME_LABEL[r.outcome]}

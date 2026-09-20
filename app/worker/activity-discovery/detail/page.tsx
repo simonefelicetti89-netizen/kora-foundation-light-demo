@@ -82,7 +82,7 @@ export default async function WorkerActivityDiscoveryDetailPage() {
 
       {/* Preview banner */}
       <div style={{ background: 'rgba(97,86,245,0.06)', border: `1px dashed rgba(97,86,245,0.35)`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 18px' }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#6156F5' }}>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: TOKENS.violet }}>
           Anteprima design — esempio statico, non un&apos;attività selezionabile dinamicamente. Non attivo.
         </p>
       </div>
@@ -133,7 +133,7 @@ export default async function WorkerActivityDiscoveryDetailPage() {
       </Panel>
 
       {/* What the company would never see */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Cosa non vedrebbe mai la tua azienda</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           La tua azienda non vedrebbe mai se hai scelto questa specifica attività, né alcun dettaglio della

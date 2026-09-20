@@ -84,7 +84,7 @@ import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { buildAdminPlatformAnalyticsView, buildIndexRegistryView, type CurrentKoraIndexResultRow, type SourceBatchStatusRowForAnalytics, type TenantIdentityRow } from '@/lib/live/admin-cross-company-view';
 import { PriorityQueue } from '@/components/admin/PriorityQueue';
 import type { PriorityItem } from '@/components/admin/PriorityQueue';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { ADMIN_QUICKSTART_STEPS } from '@/lib/feature-discovery';
 import type React from 'react';
@@ -106,7 +106,7 @@ function Panel({ title, n, children, href, hrefLabel, badgeLabel }: {
         <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '9px', fontWeight: 700, color: TOKENS.accent, letterSpacing: '0.06em' }}>{n}</span>
         <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '12.5px', color: TOKENS.ink }}>{title}</p>
         {badgeLabel && (
-          <span style={{ marginLeft: 'auto', borderRadius: 4, padding: '1px 6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: '#fff7ed', color: '#9a3412', border: '1px solid #fed7aa', whiteSpace: 'nowrap' }}>
+          <span style={{ marginLeft: 'auto', borderRadius: 4, padding: '1px 6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: BADGE_TOKENS.limited.bg, color: BADGE_TOKENS.blocked.text, border: `1px solid ${BADGE_TOKENS.limited.border}`, whiteSpace: 'nowrap' }}>
             {badgeLabel}
           </span>
         )}
@@ -126,12 +126,12 @@ function SectionHead({ label, badgeMode }: { label: string; badgeMode?: 'LIVE' |
         {label}
       </p>
       {badgeMode === 'DEMO' && (
-        <span style={{ borderRadius: 4, padding: '1px 6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: '#fff7ed', color: '#9a3412', border: '1px solid #fed7aa', whiteSpace: 'nowrap' }}>
+        <span style={{ borderRadius: 4, padding: '1px 6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: BADGE_TOKENS.limited.bg, color: BADGE_TOKENS.blocked.text, border: `1px solid ${BADGE_TOKENS.limited.border}`, whiteSpace: 'nowrap' }}>
           DEMO · sintetico
         </span>
       )}
       {badgeMode === 'LIVE' && (
-        <span style={{ borderRadius: 4, padding: '1px 6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', whiteSpace: 'nowrap' }}>
+        <span style={{ borderRadius: 4, padding: '1px 6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: BADGE_TOKENS.eligible.bg, color: BADGE_TOKENS.eligible.text, border: `1px solid ${BADGE_TOKENS.eligible.border}`, whiteSpace: 'nowrap' }}>
           LIVE
         </span>
       )}
@@ -256,14 +256,14 @@ export default async function KoraControlTower() {
       {/* SECTION 0: LIVE PLATFORM — real operational tools        */}
       {/* ════════════════════════════════════════════════════════ */}
 
-      <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: TOKENS.cardRadius, padding: '20px 24px', marginBottom: 24 }}>
+      <div style={{ background: BADGE_TOKENS.eligible.bg, border: `1px solid ${BADGE_TOKENS.eligible.border}`, borderRadius: TOKENS.cardRadius, padding: '20px 24px', marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
           <BoundaryBadge mode="LIVE" variant="light" />
-          <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '12px', color: '#166534', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+          <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '12px', color: BADGE_TOKENS.eligible.text, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
             Piattaforma Live
           </p>
         </div>
-        <p style={{ fontFamily: FONT, fontSize: '11.5px', color: '#166534', marginBottom: 14, lineHeight: 1.5 }}>
+        <p style={{ fontFamily: FONT, fontSize: '11.5px', color: BADGE_TOKENS.eligible.text, marginBottom: 14, lineHeight: 1.5 }}>
           Strumenti operativi reali — accesso diretto al tenant autenticato. Nessun dato sintetico.
         </p>
 
@@ -285,14 +285,14 @@ export default async function KoraControlTower() {
           }}
         >
           <div>
-            <p style={{ fontFamily: FONT, fontSize: '12.5px', fontWeight: 700, color: '#166534', margin: '0 0 2px' }}>
+            <p style={{ fontFamily: FONT, fontSize: '12.5px', fontWeight: 700, color: BADGE_TOKENS.eligible.text, margin: '0 0 2px' }}>
               Trial Control Center
             </p>
             <p style={{ fontFamily: FONT, fontSize: '11px', color: 'rgba(22,101,52,0.75)', margin: 0 }}>
               Guida il ciclo demo completo: data intake, scoring, company workspace, worker, wallboard, partner.
             </p>
           </div>
-          <span style={{ fontFamily: FONT, fontSize: '11px', fontWeight: 700, color: '#166534', whiteSpace: 'nowrap' }}>
+          <span style={{ fontFamily: FONT, fontSize: '11px', fontWeight: 700, color: BADGE_TOKENS.eligible.text, whiteSpace: 'nowrap' }}>
             Apri Control Center &#8594;
           </span>
         </Link>
@@ -308,7 +308,7 @@ export default async function KoraControlTower() {
             { href: '/admin/workers',                 label: 'Worker Provisioning · LIVE' },
             { href: '/admin/worker-diagnostics',      label: 'Worker Diagnostics · LIVE' },
           ] as const).map(({ href, label }) => (
-            <Link key={href} href={href} style={{ display: 'block', borderRadius: 8, padding: '8px 12px', background: 'rgba(22,101,52,0.08)', border: '1px solid rgba(22,101,52,0.20)', fontSize: '11px', fontWeight: 600, color: '#166534', textDecoration: 'none', fontFamily: FONT }}>
+            <Link key={href} href={href} style={{ display: 'block', borderRadius: 8, padding: '8px 12px', background: 'rgba(22,101,52,0.08)', border: '1px solid rgba(22,101,52,0.20)', fontSize: '11px', fontWeight: 600, color: BADGE_TOKENS.eligible.text, textDecoration: 'none', fontFamily: FONT }}>
               {label}
             </Link>
           ))}
@@ -321,9 +321,9 @@ export default async function KoraControlTower() {
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <div style={{ flex: 1, height: 1, background: TOKENS.inkBorder }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 6, border: '1px solid #fed7aa', background: '#fff7ed', padding: '5px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 6, border: `1px solid ${BADGE_TOKENS.limited.border}`, background: BADGE_TOKENS.limited.bg, padding: '5px 12px' }}>
           <BoundaryBadge mode="DEMO" variant="light" suffix="· dati sintetici" />
-          <p style={{ fontFamily: FONT, fontSize: '10.5px', color: '#9a3412', fontWeight: 600 }}>
+          <p style={{ fontFamily: FONT, fontSize: '10.5px', color: BADGE_TOKENS.blocked.text, fontWeight: 600 }}>
             Contenuto dimostrativo — nessun dato aziendale reale
           </p>
         </div>
@@ -401,7 +401,7 @@ export default async function KoraControlTower() {
               <p style={{ fontFamily: FONT, fontSize: '1.25rem', color: TOKENS.ink, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
                 Coda priorità
               </p>
-              <span style={{ borderRadius: 4, padding: '2px 7px', fontSize: '9px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' }}>
+              <span style={{ borderRadius: 4, padding: '2px 7px', fontSize: '9px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: BADGE_TOKENS.eligible.bg, color: BADGE_TOKENS.eligible.text, border: `1px solid ${BADGE_TOKENS.eligible.border}` }}>
                 LIVE
               </span>
             </div>

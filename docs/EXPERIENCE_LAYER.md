@@ -73,7 +73,9 @@ cardBorderHover:  1px solid rgba(199,111,61,0.45)
 | IMPACT | `PILLAR_COLORS.IMPACT` | `#D99A2B` |
 | LEGACY | `PILLAR_COLORS.LEGACY` | `#8A7562` |
 
-> **Nota open**: landing HTML usa colori diversi per i pillar (LIFE=blu, CONNECTION=viola). Decisione del founder richiesta prima di sincronizzare landing con token.
+> **RISOLTA (KORA-WP-088 — Founder colour adjudication).** La nota aperta qui sotto è chiusa: il Founder ha ratificato il sistema caldo corrente (`lib/design/kora-design-tokens.ts`) come canonico, inclusa la direzione corrente dei colori pillar. `PILLAR_COLORS` è quindi l'unica sorgente di verità per i colori pillar; i valori diversi usati dall'HTML di riferimento della landing non sono canonici e vanno normalizzati sui token. Nessuna palette esterna designer/Figma è richiesta. Testo originale conservato invariato qui sotto come record storico.
+>
+> **Nota open** *(storica, superata dall'adjudication sopra)*: landing HTML usa colori diversi per i pillar (LIFE=blu, CONNECTION=viola). Decisione del founder richiesta prima di sincronizzare landing con token.
 
 ### Chart Colors
 

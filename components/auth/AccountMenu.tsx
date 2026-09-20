@@ -9,14 +9,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { LogoutButton } from './LogoutButton';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
 const ROLE_BADGE: Record<string, { label: string; bg: string; color: string; border: string }> = {
-  KORA_ADMIN:     { label: 'KORA Admin',     bg: 'rgba(97,86,245,0.10)',  color: '#3b30c9', border: 'rgba(97,86,245,0.28)'  },
-  COMPANY_ADMIN:  { label: 'Company Admin',  bg: 'rgba(22,101,52,0.10)',  color: '#166534', border: 'rgba(22,101,52,0.28)'  },
-  WORKER:         { label: 'Worker',         bg: 'rgba(37,99,235,0.10)',  color: '#1e4a8a', border: 'rgba(37,99,235,0.28)'  },
-  PARTNER:        { label: 'Partner',        bg: 'rgba(192,125,42,0.10)', color: '#8A5A00', border: 'rgba(192,125,42,0.28)' },
+  KORA_ADMIN:     { label: 'KORA Admin',     bg: 'rgba(97,86,245,0.10)',  color: TOKENS.violet, border: 'rgba(97,86,245,0.28)'  },
+  COMPANY_ADMIN:  { label: 'Company Admin',  bg: 'rgba(22,101,52,0.10)',  color: BADGE_TOKENS.eligible.text, border: 'rgba(22,101,52,0.28)'  },
+  WORKER:         { label: 'Worker',         bg: 'rgba(37,99,235,0.10)',  color: TOKENS.info.text, border: 'rgba(37,99,235,0.28)'  },
+  PARTNER:        { label: 'Partner',        bg: 'rgba(192,125,42,0.10)', color: TOKENS.safeguard.watch.text, border: 'rgba(192,125,42,0.28)' },
 };
 
 function getInitials(emailStr: string): string {
@@ -33,6 +34,7 @@ export function AccountMenu() {
   const [email, setEmail]       = useState<string>('');
   const [open, setOpen]         = useState(false);
   const containerRef            = useRef<HTMLDivElement>(null);
+  const triggerRef              = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -55,8 +57,23 @@ export function AccountMenu() {
         setOpen(false);
       }
     }
-    if (open) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    // WP-073: keyboard users must be able to dismiss the open menu without a
+    // mouse click outside it — Escape is the standard dismissal key for any
+    // disclosure/popup pattern.
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
   }, [open]);
 
   // Only render for authenticated real sessions
@@ -73,8 +90,10 @@ export function AccountMenu() {
     >
       {/* Trigger button */}
       <button
+        ref={triggerRef}
         data-testid="account-menu-trigger"
         aria-label="Menu account"
+        aria-haspopup="true"
         aria-expanded={open}
         onClick={() => setOpen(v => !v)}
         style={{
@@ -150,7 +169,7 @@ export function AccountMenu() {
               style={{
                 fontSize:     12,
                 fontWeight:   600,
-                color:        '#06032B',
+                color:        TOKENS.ink,
                 margin:       '0 0 6px',
                 overflow:     'hidden',
                 textOverflow: 'ellipsis',
@@ -188,7 +207,7 @@ export function AccountMenu() {
                 padding:        '8px 16px',
                 fontSize:       12,
                 fontWeight:     500,
-                color:          '#06032B',
+                color:          TOKENS.ink,
                 textDecoration: 'none',
               }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(6,3,43,0.04)'; }}
@@ -205,7 +224,7 @@ export function AccountMenu() {
                 padding:        '8px 16px',
                 fontSize:       12,
                 fontWeight:     500,
-                color:          '#06032B',
+                color:          TOKENS.ink,
                 textDecoration: 'none',
               }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(6,3,43,0.04)'; }}

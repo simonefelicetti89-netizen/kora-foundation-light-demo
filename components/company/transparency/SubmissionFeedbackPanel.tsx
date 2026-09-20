@@ -17,6 +17,7 @@ import {
   type SubmissionStatusEntry,
 } from '@/lib/company-transparency/transparency-engine';
 import type { SubmissionFeedbackData } from '@/services/submission-feedback/SubmissionFeedbackService';
+import { BADGE_TOKENS } from '@/lib/design/kora-design-tokens';
 
 // ── Shared design tokens ──────────────────────────────────────────────────────
 
@@ -26,13 +27,13 @@ const COL = {
   muted:     'rgba(6,3,43,0.40)',
   border:    'rgba(6,3,43,0.08)',
   card:      'rgba(6,3,43,0.03)',
-  green:     '#22c55e',
+  green:     BADGE_TOKENS.eligible.text,
   greenBg:   'rgba(34,197,94,0.09)',
   greenBdr:  'rgba(34,197,94,0.25)',
-  amber:     '#f59e0b',
+  amber:     BADGE_TOKENS.limited.text,
   amberBg:   'rgba(245,158,11,0.09)',
   amberBdr:  'rgba(245,158,11,0.25)',
-  red:       '#ef4444',
+  red:       BADGE_TOKENS.blocked.text,
   redBg:     'rgba(239,68,68,0.09)',
   redBdr:    'rgba(239,68,68,0.25)',
   blue:      'rgba(74,127,224,0.90)',
@@ -406,10 +407,10 @@ export function SubmissionTransparencyCompact({
 
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {[
-          { label: 'Ricevuti',    value: feedback.recordsReceived, color: '#4A7FE0' },
-          { label: 'Idonei',      value: feedback.recordsAccepted, color: '#16a34a' },
-          { label: 'Limitati',    value: feedback.recordsLimited,  color: '#b45309' },
-          { label: 'Esclusi',     value: feedback.recordsBlocked,  color: '#dc2626' },
+          { label: 'Ricevuti',    value: feedback.recordsReceived, color: BADGE_TOKENS.info.text },
+          { label: 'Idonei',      value: feedback.recordsAccepted, color: BADGE_TOKENS.eligible.text },
+          { label: 'Limitati',    value: feedback.recordsLimited,  color: BADGE_TOKENS.limited.text },
+          { label: 'Esclusi',     value: feedback.recordsBlocked,  color: BADGE_TOKENS.blocked.text },
         ].map(({ label, value, color }) => (
           <div key={label} style={{
             padding: '5px 10px', borderRadius: 6, textAlign: 'center',
@@ -431,7 +432,7 @@ export function SubmissionTransparencyCompact({
         href="/company/status#submission-transparency"
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11,
-          color: '#4A7FE0', textDecoration: 'none', fontWeight: 600,
+          color: BADGE_TOKENS.info.text, textDecoration: 'none', fontWeight: 600,
         }}
       >
         Dettaglio completo nel Status Center →

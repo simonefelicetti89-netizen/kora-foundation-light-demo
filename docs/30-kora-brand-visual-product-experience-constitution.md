@@ -292,6 +292,25 @@ The dominant emotional effect of KORA's color system is: **calm**. Not boring �
 
 ## 6. Pillar Color System
 
+> ⚠️ **SECTION 6 SUPERSEDED ON COLOUR — FOUNDER ADJUDICATION (KORA-WP-088).**
+> The Founder has ratified the warm KORA colour system implemented in
+> `lib/design/kora-design-tokens.ts` as canonical, including the current
+> pillar colour direction. The cool blue-violet pillar restriction stated in
+> §6.1 below, the "currently wrong" annotations in §6.2, and the
+> "OFFICIAL HEX REQUIRED" pillar/colour-family statuses in §22.1/§22.2/§22.3
+> **no longer govern**: terracotta remains an allowed primary/accent role,
+> warm pillar colours remain allowed, and no external designer/Figma palette
+> is required. `#06032B` and `#6156F5` remain valid official brand colours in
+> their existing roles (both are present in the official brandmark assets);
+> violet is **not** promoted into the mandatory pillar family.
+> §6.2's specific violation list is additionally **stale** — the file it names
+> (`components/charts/PillarChart.tsx`) no longer exists and pillar colours
+> are already token-sourced.
+> Everything else in `docs/30` — typography, §21 accessibility, layout,
+> and all non-colour guidance — **remains fully governing.**
+> The original text below is preserved unmodified as historical record.
+> Record: `.kora-audit/output/201` (decision brief) and `/202` (implementation).
+
 ### 6.1 Canonical pillar color direction
 
 Each pillar requires a distinct visual identity that remains within the cool blue-violet color family defined by the brand palette. Warm colors (red, orange, gold) must not be assigned to pillars — they carry urgency and alarm associations incompatible with calm organizational intelligence.

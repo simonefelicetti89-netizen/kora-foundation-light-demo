@@ -110,6 +110,7 @@ function makeFixture(overrides?: Partial<PdfData>): PdfData {
     auditSummary:          [],
     executiveBrief:        null,
     contributionSummary:   null,
+    decisionSpine:         null,
     ...overrides,
   };
 }

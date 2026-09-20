@@ -5,6 +5,7 @@
 
 export const dynamic = 'force-dynamic';
 
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 import {
   getKoraLinkDemoLabRuntimeStatus,
   generateKoraLinkDemoLabLink,
@@ -21,9 +22,9 @@ const C = {
   inkSec:  'rgba(6,3,43,0.55)',
   inkHint: 'rgba(6,3,43,0.38)',
   inkBdr:  'rgba(6,3,43,0.08)',
-  surface: '#F8F6F1',
-  green:   '#2F7D55',
-  red:     '#B3261E',
+  surface: TOKENS.surface,
+  green:   TOKENS.success,
+  red:     BADGE_TOKENS.blocked.text,
 };
 
 export default function KoraLinkLabPage() {
@@ -289,7 +290,7 @@ function SafetyNotice() {
         border: `1px dashed ${C.inkBdr}`,
         borderRadius: 12,
         padding: '16px 20px',
-        background: '#fffaf5',
+        background: TOKENS.insetPanel,
       }}
     >
       <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.inkHint, margin: '0 0 10px' }}>

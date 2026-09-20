@@ -29,7 +29,7 @@ import { LandingMotion } from '@/components/landing/LandingMotion';
 import { MarketingNav } from '@/components/landing/MarketingNav';
 import { MarketingFooter } from '@/components/landing/MarketingFooter';
 import { RecoveryHashHandler } from '@/components/auth/RecoveryHashHandler';
-import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 import { PACKAGES } from '@/lib/landing/packages';
 import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
 import styles from './landing.module.css';
@@ -64,13 +64,14 @@ const CANONICAL = {
   ],
 };
 
-// ── NOTA PILLAR COLOR DISCREPANCY ────────────────────────────────────────────
-// L'HTML di riferimento usa: LIFE=#4A7FE0 (blu), GROWTH=#C76F3D (terra),
-// CONNECTION=#6156F5 (viola), IMPACT=#D99A2B (gold), LEGACY=#8A7562.
-// PILLAR_COLORS nei token usa: LIFE=#C76F3D, GROWTH=#2F7D55, CONNECTION=#D99767,
-// IMPACT=#D99A2B, LEGACY=#8A7562.
-// → Si usa PILLAR_COLORS dai token come single source of truth (regola 6).
-//   La discrepanza va discussa con il founder prima di sincronizzare.
+// ── NOTA PILLAR COLOR — RISOLTA (KORA-WP-088) ────────────────────────────────
+// Discrepanza storica: l'HTML di riferimento usava LIFE=#4A7FE0 (blu),
+// GROWTH=#C76F3D, CONNECTION=#6156F5 (viola), IMPACT=#D99A2B, LEGACY=#8A7562,
+// mentre PILLAR_COLORS nei token usa LIFE=#C76F3D, GROWTH=#2F7D55,
+// CONNECTION=#D99767, IMPACT=#D99A2B, LEGACY=#8A7562.
+// → CHIUSA dalla Founder colour adjudication (KORA-WP-088): PILLAR_COLORS è
+//   canonico. Non resta nulla da discutere o sincronizzare: i valori
+//   dell'HTML di riferimento non sono canonici.
 
 const f = (s: TemplateStringsArray, ...v: unknown[]) => String.raw({ raw: s }, ...v);
 void f; // silence unused
@@ -85,8 +86,8 @@ export default function LandingPage() {
         fontFeatureSettings: '"tnum"',
         WebkitFontSmoothing: 'antialiased',
         textRendering:       'optimizeLegibility',
-        background:          '#EFEBE2',
-        color:               '#06032B',
+        background:          TOKENS.canvas,
+        color:               TOKENS.ink,
         overflowX:           'hidden',
       }}
     >
@@ -119,7 +120,7 @@ export default function LandingPage() {
               </h1>
               <p className={`${styles.heroSub} ${styles.reveal} ${styles.revealIn} ${styles.d2}`}>
                 Le organizzazioni investono milioni in welfare, formazione e persone. KORA rende leggibile ciò che quella spesa{' '}
-                <strong style={{ color: '#EFEBE2' }}>attiva davvero</strong>{' '}
+                <strong style={{ color: TOKENS.canvas }}>attiva davvero</strong>{' '}
                 — con evidenze verificate, confini espliciti e Decision Pack di cui rispondere al board.
               </p>
               <div className={`${styles.heroCtas} ${styles.reveal} ${styles.revealIn} ${styles.d3}`}>
@@ -157,11 +158,11 @@ export default function LandingPage() {
                 <circle
                   id="gauge"
                   cx="220" cy="218" r="48"
-                  fill="none" stroke="#C76F3D" strokeWidth="9" strokeLinecap="round"
+                  fill="none" stroke={TOKENS.accent} strokeWidth="9" strokeLinecap="round"
                   transform="rotate(-90 220 218)"
                 />
                 <text id="gauge-num" x="220" y="214" textAnchor="middle"
-                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 36, fontWeight: 800, fill: '#EFEBE2' }}>
+                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 36, fontWeight: 800, fill: TOKENS.canvas }}>
                   0
                 </text>
                 <text x="220" y="234" textAnchor="middle"
@@ -176,7 +177,7 @@ export default function LandingPage() {
                   CONFIDENCE SCORE
                 </text>
                 <text x="418" y="425" textAnchor="end"
-                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 16, fontWeight: 800, fill: '#C76F3D' }}>
+                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 16, fontWeight: 800, fill: TOKENS.accent }}>
                   ESTERNO
                 </text>
                 <text x="418" y="438" textAnchor="end"
@@ -185,9 +186,9 @@ export default function LandingPage() {
                 </text>
                 {/* Safeguard badge — lists the 3 real states, no specific
                     company status claimed */}
-                <circle cx="22" cy="416" r="4.5" fill="#D99A2B" />
+                <circle cx="22" cy="416" r="4.5" fill={TOKENS.warning} />
                 <text x="33" y="412" textAnchor="start"
-                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 10, fontWeight: 800, fill: '#E9B95C', letterSpacing: '.02em' }}>
+                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 10, fontWeight: 800, fill: BADGE_TOKENS.limited.bg, letterSpacing: '.02em' }}>
                   CLEAR · WARNING · FLAGGED
                 </text>
                 <text x="33" y="426" textAnchor="start"
@@ -298,7 +299,7 @@ export default function LandingPage() {
       {/* ── METHOD / LINEAGE ─────────────────────────────────────────────── */}
       <section className={`${styles.block} ${styles.secDark}`} id="metodo">
         <div className={`${styles.wrap} ${styles.secDarkInner}`}>
-          <p className={`${styles.kicker} ${styles.eyebrow} ${styles.reveal}`} style={{ color: '#C76F3D' }}>
+          <p className={`${styles.kicker} ${styles.eyebrow} ${styles.reveal}`} style={{ color: TOKENS.accent }}>
             Come funziona · il filo del dato
           </p>
           <h2 className={`${styles.head} ${styles.secDarkHead} ${styles.reveal} ${styles.d1}`}>
@@ -414,7 +415,7 @@ export default function LandingPage() {
           <div className={styles.pillars}>
             {CANONICAL.pillars.map((p, i) => {
               // Modifica 2+nota: PILLAR_COLORS dai token (discrepanza segnalata in testa al file)
-              const color = PILLAR_COLORS[p.code as keyof typeof PILLAR_COLORS] ?? '#C76F3D';
+              const color = PILLAR_COLORS[p.code as keyof typeof PILLAR_COLORS] ?? TOKENS.accent;
               return (
                 <div
                   key={p.code}
@@ -507,7 +508,7 @@ export default function LandingPage() {
           </div>
           {/* Link to dedicated pilot page for full costs & contact */}
           <p className={`${styles.reveal} ${styles.d3}`} style={{ marginTop: '2rem', fontSize: 14, fontWeight: 600 }}>
-            <Link href="/pilot" style={{ color: '#C76F3D', textDecoration: 'none' }}>
+            <Link href="/pilot" style={{ color: TOKENS.accent, textDecoration: 'none' }}>
               Costi dettagliati, modalità, FAQ e richiesta informazioni →
             </Link>
           </p>

@@ -17,6 +17,7 @@ import {
   type KoraLinkActivationOutcome,
 } from '@/lib/kora-link/activation';
 import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -111,7 +112,7 @@ function KoraLinkSkeletonPage() {
       <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.30)', margin: '0 0 14px' }}>
         KORA Link
       </p>
-      <h1 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#06032B', margin: '0 0 10px', letterSpacing: '-0.025em' }}>
+      <h1 style={{ fontSize: '1.3rem', fontWeight: 800, color: TOKENS.ink, margin: '0 0 10px', letterSpacing: '-0.025em' }}>
         Accesso sicuro KORA Link
       </h1>
 
@@ -119,7 +120,7 @@ function KoraLinkSkeletonPage() {
         data-testid="kora-link-skeleton-status-badge"
         style={{
           display: 'inline-block', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em',
-          color: '#8A5A00', background: 'rgba(217,154,43,0.12)',
+          color: TOKENS.safeguard.watch.text, background: 'rgba(217,154,43,0.12)',
           borderRadius: 999, padding: '4px 12px', margin: '0 0 18px',
         }}
       >
@@ -134,7 +135,7 @@ function KoraLinkSkeletonPage() {
       <div
         style={{
           textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 8,
-          background: '#F8F6F1', borderRadius: 12, padding: '16px 18px', margin: '0 0 18px',
+          background: TOKENS.surface, borderRadius: 12, padding: '16px 18px', margin: '0 0 18px',
         }}
       >
         <p style={{ fontSize: 11.5, color: 'rgba(6,3,43,0.62)', margin: 0, lineHeight: 1.55 }}>
@@ -203,7 +204,7 @@ function KoraLinkReadyPage({
       <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.30)', margin: '0 0 16px' }}>
         KORA Link
       </p>
-      <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#06032B', margin: '0 0 12px', letterSpacing: '-0.025em' }}>
+      <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: TOKENS.ink, margin: '0 0 12px', letterSpacing: '-0.025em' }}>
         Collegamento KORA Link rilevato
       </h1>
       <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.55)', margin: '0 0 24px', lineHeight: 1.6 }}>
@@ -236,7 +237,7 @@ function ActivationPanel({
     padding:      '16px 18px',
     borderRadius: 12,
     border:       '1px solid rgba(6,3,43,0.08)',
-    background:   '#F8F6F1',
+    background:   TOKENS.surface,
     textAlign:    'left' as const,
   };
   const noteStyle = { fontSize: 12, color: 'rgba(6,3,43,0.55)', margin: 0, lineHeight: 1.6 };
@@ -265,7 +266,7 @@ function ActivationPanel({
               fontSize: 12.5,
               fontWeight: 700,
               color: '#fff',
-              background: '#06032B',
+              background: TOKENS.ink,
               padding: '8px 14px',
               borderRadius: 8,
               textDecoration: 'none',
@@ -279,7 +280,7 @@ function ActivationPanel({
     case 'activated':
       return (
         <div style={boxStyle} data-testid="kora-link-activation-activated">
-          <p style={{ ...noteStyle, fontWeight: 700, color: '#2F7D55' }}>
+          <p style={{ ...noteStyle, fontWeight: 700, color: TOKENS.success }}>
             KORA Link attivato con successo.
           </p>
         </div>
@@ -288,7 +289,7 @@ function ActivationPanel({
     case 'unavailable':
       return (
         <div style={boxStyle} data-testid="kora-link-activation-unavailable">
-          <p style={{ ...noteStyle, color: '#B3261E' }}>
+          <p style={{ ...noteStyle, color: BADGE_TOKENS.blocked.text }}>
             Servizio di attivazione temporaneamente non disponibile. Riprova più tardi.
           </p>
         </div>
@@ -297,7 +298,7 @@ function ActivationPanel({
     case 'error':
       return (
         <div style={boxStyle} data-testid="kora-link-activation-error">
-          <p style={{ ...noteStyle, color: '#B3261E' }}>
+          <p style={{ ...noteStyle, color: BADGE_TOKENS.blocked.text }}>
             Non è stato possibile completare l&apos;attivazione. Riprova più tardi.
           </p>
         </div>
@@ -330,7 +331,7 @@ function ActivationPanel({
               fontSize: 12.5,
               fontWeight: 700,
               color: '#fff',
-              background: '#06032B',
+              background: TOKENS.ink,
               padding: '8px 14px',
               borderRadius: 8,
               border: 'none',
@@ -361,7 +362,7 @@ function KoraLinkUnavailablePage() {
       <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.30)', margin: '0 0 16px' }}>
         KORA Link
       </p>
-      <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#06032B', margin: '0 0 12px', letterSpacing: '-0.025em' }}>
+      <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: TOKENS.ink, margin: '0 0 12px', letterSpacing: '-0.025em' }}>
         Servizio temporaneamente non disponibile
       </h1>
       <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.55)', margin: '0 0 24px', lineHeight: 1.6 }}>
@@ -391,7 +392,7 @@ function KoraLinkRateLimitedPage() {
       <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.30)', margin: '0 0 16px' }}>
         KORA Link
       </p>
-      <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#06032B', margin: '0 0 12px', letterSpacing: '-0.025em' }}>
+      <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: TOKENS.ink, margin: '0 0 12px', letterSpacing: '-0.025em' }}>
         Troppe richieste
       </h1>
       <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.55)', margin: '0 0 24px', lineHeight: 1.6 }}>

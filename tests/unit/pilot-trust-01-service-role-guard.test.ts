@@ -58,6 +58,221 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // not a user-facing read.
   { path: 'lib/live/persistence.ts', reason: 'batch write of scoring computation results — admin-triggered pipeline persistence, not a user-facing read' },
 
+  // KORA-WP-004: new Company Membership service — server-only by design
+  // (see the module's own header comment), not wired into any client route
+  // or authentication path; the only writer of analytics.company_memberships.
+  { path: 'lib/company-membership/membership-service.ts', reason: 'documented server-only service — Company Membership creation/termination, KORA-WP-004' },
+
+  // KORA-WP-041: Worker Offboarding playbook's own narrow gap-closing
+  // service — server-only, mirrors membership-service.ts's own pattern.
+  { path: 'lib/worker-identity/worker-identity-service.ts', reason: 'documented server-only service — Worker identity Company-access shutdown (offboarding), KORA-WP-041' },
+
+  // KORA-WP-005: shared governance event/provenance substrate — server-only,
+  // insertion-only, no client route or authentication path ever calls it.
+  { path: 'lib/audit/governance-event.ts', reason: 'documented server-only service — append-only governance event recording, KORA-WP-005' },
+
+  // KORA-WP-014: Investment Map Core (Observed Investment Fact) — server-only
+  // service, matches the Pattern-A convention (Company sessions read via RLS
+  // policy only; writes happen exclusively through this service).
+  { path: 'lib/investment-map/observed-investment-fact-service.ts', reason: 'documented server-only service — Observed Investment Fact creation/query, KORA-WP-014' },
+
+  // KORA-WP-009: internal admin operator identity + capability/RBAC grants —
+  // server-only, not Company-scoped, no client route or authentication path
+  // calls it (foundation-only, no route enforcement integration this WP).
+  { path: 'lib/admin-capability/capability-service.ts', reason: 'documented server-only service — internal operator/capability grant management + hasAdminCapability() check, KORA-WP-009' },
+
+  // KORA-WP-017: Need Hypothesis creation/query — server-only, matches the
+  // Pattern-A convention (Company sessions read via RLS policy only; writes
+  // happen exclusively through this service, same as KORA-WP-014).
+  { path: 'lib/needs-map/need-hypothesis-service.ts', reason: 'documented server-only service — Need Hypothesis creation/query, KORA-WP-017' },
+
+  // KORA-WP-030: Advisor Identity/Role Qualification — server-only by design.
+  // Unlike Company-scoped tables, no self-service write grant exists at all
+  // (migration 056: authenticated gets SELECT only) — a qualification is a
+  // governed capability (doc 76 §4), never self-declared, so every write
+  // (identity/qualification creation, status transitions) goes exclusively
+  // through this service.
+  { path: 'lib/advisor-identity/advisor-identity-service.ts', reason: 'documented server-only service — Advisor Identity/Role Qualification creation/query, KORA-WP-030' },
+
+  // KORA-WP-031: Advisor Assignment + Validity Rule + Minimum
+  // Prerequisite-Eligibility Data — server-only by design, same rationale as
+  // WP-030 immediately above. No route/UI exists over this WP (registry:
+  // "UI: N/A at this WP") — this service is itself the authorization
+  // boundary (every mutating function checks actorRole === 'KORA_ADMIN').
+  { path: 'lib/advisor-assignment/advisor-assignment-service.ts', reason: 'documented server-only service — Advisor Assignment creation/validity/prerequisite-eligibility, KORA-WP-031' },
+
+  // KORA-WP-033: Company Advisor Action-Matrix Surface + Portal Pilot Slice —
+  // server-only, same rationale as WP-030/031 immediately above. No route
+  // bypasses requireCompanyUser()/requireAdvisorUser() to reach this file.
+  { path: 'lib/advisor-portal/advisor-portal-service.ts', reason: 'documented server-only service — Company/Advisor assigned-relationship read + contact-message send, KORA-WP-033' },
+
+  // KORA-WP-035: Advisor Calendar & Call/Appointment Lineage — server-only,
+  // same rationale as WP-033 immediately above. Every mutating function
+  // re-verifies the caller is a genuine party to the Assignment itself.
+  { path: 'lib/advisor-portal/advisor-appointment-service.ts', reason: 'documented server-only service — Advisor appointment create/confirm/reschedule/cancel with lineage, KORA-WP-035' },
+
+  // KORA-WP-036: Advisor Document/Note Five-Class Taxonomy — server-only,
+  // same rationale as WP-033/035 immediately above. Class-aware read
+  // filtering is defense-in-depth on top of RLS, never the sole boundary.
+  { path: 'lib/advisor-portal/advisor-content-service.ts', reason: 'documented server-only service — Advisor five-class content create/list, KORA-WP-036' },
+
+  // KORA-WP-034: Advisor Tasks & Cases — server-only, same rationale as
+  // every other Advisor-domain service. Thin Assignment-scoping layer over
+  // WP-007's own operational-case-service.ts, never a second Case truth.
+  { path: 'lib/advisor-portal/advisor-case-service.ts', reason: 'documented server-only service — Advisor-facing Assignment-scoped Case list/create/transition over KORA-WP-007, KORA-WP-034' },
+
+  // KORA-WP-007: Operational Case Primitive — server-only, same rationale
+  // as every other domain service. Every mutating function re-verifies
+  // the caller's role and (for Advisor) ownership before any write.
+  { path: 'lib/operations/operational-case-service.ts', reason: 'documented server-only service — Operational Case create/list/status-transition, KORA-WP-007' },
+
+  // KORA-WP-008: ADMIN-020 Effort-Capture — server-only, zero RLS read
+  // policy at all (migration 063) — this module's own aggregate function
+  // is the sole read path over gov.workload_event, by design.
+  { path: 'lib/operations/effort-capture-service.ts', reason: 'documented server-only service — ADMIN-020 effort capture + aggregate-only read, KORA-WP-008' },
+
+  // KORA-WP-015: Resource Allocation Ledger — server-only, matches the
+  // Pattern-A convention (Company sessions read via RLS policy only; every
+  // transition — declare/allocate/commit/spend/release/reallocate/refund —
+  // happens exclusively through this service, same as WP-014/WP-017).
+  { path: 'lib/resource-allocation/resource-allocation-service.ts', reason: 'documented server-only service — Resource Allocation Ledger transitions + balance read, KORA-WP-015' },
+
+  // KORA-WP-020: Commitment Draft / Governance Substrate (Layer A) —
+  // server-only, matches the Pattern-A convention (Company sessions read via
+  // RLS policy only; every mutating function additionally requires
+  // actorRole === 'COMPANY_ADMIN', doc 73 §6's Decision-Owner-authoring rule).
+  { path: 'lib/commitment/commitment-service.ts', reason: 'documented server-only service — Commitment draft create/edit/ready-flag/Resource-Allocation-reference, KORA-WP-020' },
+
+  // KORA-WP-021: Evidence Plan Lineage (Layer B) — server-only, matches the
+  // Pattern-A convention (Company sessions read via RLS policy only; every
+  // mutating function requires actorRole === 'COMPANY_ADMIN', same
+  // discipline as KORA-WP-020's own commitment-service.ts).
+  { path: 'lib/evidence-plan/evidence-plan-service.ts', reason: 'documented server-only service — Evidence Plan primary/addendum lineage create/edit/reconstruct, KORA-WP-021' },
+
+  // KORA-WP-022: Commit Activation Transaction + MVB Manifest (Layer C) —
+  // server-only, delegates the atomic transaction to a single Postgres RPC
+  // (analytics.commit_commitment()); actorRole==='COMPANY_ADMIN' enforced
+  // before the RPC is ever called, same discipline as KORA-WP-020/021.
+  { path: 'lib/commitment/commit-activation-service.ts', reason: 'documented server-only service — Commit Activation Transaction (RPC) + MVB manifest read, KORA-WP-022' },
+
+  // KORA-WP-023: Core Decision Linkage — server-only, read-only query
+  // surface over a security-invoker view (migration 069) that projects
+  // already-existing KORA-WP-015/020/021/022 relationships; creates no new
+  // domain truth (doc 68 §8 — DECISION-008 IS the reference architecture
+  // itself, not a separate object).
+  { path: 'lib/decision-linkage/decision-linkage-service.ts', reason: 'documented server-only service — read-only Core Decision Linkage traceability query, KORA-WP-023' },
+
+  // KORA-WP-024: Review — Thin State + Event — server-only, matches the
+  // Pattern-A convention (Company sessions read via RLS policy only; every
+  // mutating function requires actorRole === 'COMPANY_ADMIN', same
+  // discipline as every other Lane-B primitive in this schema). Conclusion
+  // delegates to a single atomic Postgres RPC (analytics.conclude_review()).
+  { path: 'lib/review/review-service.ts', reason: 'documented server-only service — Review open/in-progress/conclude (RPC) + read paths, KORA-WP-024' },
+
+  // KORA-WP-033 CONVERGENCE (final remediation): Review Advisor Proposal —
+  // server-only, same rationale as every other Lane-B primitive in this
+  // schema. Every mutating function requires actorRole === 'ADVISOR'
+  // (structurally singular author, unlike its siblings); no path reaches
+  // concludeReview() or any constitutive function.
+  { path: 'lib/review/review-advisor-proposal-service.ts', reason: 'documented server-only service — Advisor Review Proposal create/read (upsert, one-per-Review), KORA-WP-033 convergence final remediation' },
+  { path: 'lib/review/review-advisor-assessment-service.ts', reason: 'documented server-only service — Advisor Review Assessment issuance/read (append-only, multiple per Review), KORA-WP-037' },
+
+  // KORA-WP-033 CONVERGENCE: Advisor Decision-Spine Support — server-only,
+  // same rationale as every other Advisor-domain service. Thin, doubly
+  // Assignment-verified layer over KORA-WP-020/021/023/024's own services;
+  // never calls commit_commitment()/concludeReview() — those remain
+  // COMPANY_ADMIN-only and untouched.
+  { path: 'lib/advisor-portal/advisor-decision-support-service.ts', reason: 'documented server-only service — Advisor-facing Assignment-scoped Commitment/Evidence-Plan/Review draft-support, KORA-WP-033 convergence remediation' },
+
+  // KORA-WP-013: Policy/Config Four-Tier Store — server-only, KORA_ADMIN-only
+  // (doc 78 §24: Governance Policy/Commercial/Implementation Configuration
+  // are all Admin-governed; Constitutional tier is structurally unreachable
+  // through this or any service). No Company-facing read/write path exists
+  // — this is a KORA-internal Control Plane primitive, not a tenant-scoped
+  // service.
+  { path: 'lib/policy-config/policy-config-service.ts', reason: 'documented server-only service — KORA_ADMIN-only versioned Policy/Config read/write (RPC-mediated write), KORA-WP-013' },
+
+  // KORA-WP-062: Flow A billing (Company↔KORA platform fee), structurally
+  // separate from Program Funds. Writes (recordFeeChargeEvent,
+  // setFlowACommercialEntitlement) are KORA_ADMIN-only; reads
+  // (getFlowACommercialEntitlement/getFeeChargeEventHistory/
+  // listCurrentFeeCharges/getCompanyBillingStatus) are Company-scoped
+  // (own tenant, or KORA_ADMIN) — enforced in this file via
+  // assertCompanyScopedRead(), the same application-layer belt-and-suspenders
+  // gate used throughout this engagement's server-side services.
+  { path: 'lib/flow-a-billing/flow-a-billing-service.ts', reason: 'documented server-only service — Company-scoped Flow A billing/entitlement read + KORA_ADMIN-only Fee/Charge event + Commercial Entitlement write, KORA-WP-062' },
+
+  // KORA-WP-028: generic Postgres-backed IdempotencyStore (KORA-WP-011's own
+  // interface) — tenant-scoped claim/complete/fail, no direct caller-facing
+  // read path of its own (a caller observes outcomes via executeIdempotent()'s
+  // typed return, never by querying this table).
+  { path: 'lib/async-contract/postgres-idempotency-store.ts', reason: 'documented server-only service — Postgres-backed IdempotencyStore implementation of the KORA-WP-011 contract, KORA-WP-028' },
+  // KORA-WP-028: Company-scoped ingestion write (requireCompanyUser-gated at
+  // the route layer, tenant taken from the verified session only).
+  { path: 'lib/ingestion-hardening/company-ingest-service.ts', reason: 'documented server-only service — Company-scoped synchronous ingestion write, idempotent per KORA-WP-011, KORA-WP-028' },
+
+  // KORA-WP-026: Program skeleton (Definition + Participation), degenerate
+  // two-level case. Writes are COMPANY_ADMIN-only (own tenant), matching
+  // the established analytics.commitment shape — read via RLS,
+  // write via this service (service_role) with the same actor gate.
+  { path: 'lib/program/program-service.ts', reason: 'documented server-only service — Company-scoped Program Definition/Participation create/read (degenerate two-level skeleton), KORA-WP-026' },
+
+  // KORA-WP-027: KORA Ready Attainment (append-only) + Current Readiness
+  // Health (mutable, one row per tenant) — automated evaluation read/write
+  // is Company-scoped (own tenant, via requireCompanyUser/requireKoraAdmin
+  // at the route layer); override/revoke are capability-gated
+  // (hasAdminCapability, COMPANY_OPERATIONS:OVERRIDE, KORA-WP-009 reuse).
+  { path: 'lib/company-readiness/company-readiness-service.ts', reason: 'documented server-only service — Company-scoped readiness evaluation + capability-gated override/revoke, KORA-WP-027' },
+
+  // KORA-WP-003: consolidated onto getSupabaseServiceClient() — previously
+  // called @supabase/supabase-js's createClient() directly, invisible to this
+  // guard. Pre-existing status, not newly introduced by KORA-WP-003: called
+  // from app/api/admin/decision-pack/** (already-allowlisted app/api/admin/
+  // prefix, KORA_ADMIN-only) AND from app/api/company/decision-pack/** — a
+  // Company reading its OWN Decision Pack. The latter is the same class of
+  // documented pre-existing self-service exception as app/partner/workspace/
+  // page.tsx below (not fixed here, not endorsed as ideal — RLS-based access
+  // for a company's own decision-pack read is a separate, out-of-scope
+  // architectural question from "consolidate the duplicated factory").
+  { path: 'lib/decision-pack/pdf-data.ts', reason: 'consolidated in KORA-WP-003 (previously an inline createClient() call); reads a tenant\'s persisted Decision Pack data for both admin and company-self routes — see comment for the company-self caveat, a pre-existing status this WP made visible, not newly created' },
+
+  // KORA-WP-112: Material Change Layer core — server-only, same Pattern-A
+  // rationale as WP-026/027/030/031 above. Candidate creation/assessment are
+  // system-authored (kora-automatic), never a direct user write path; the
+  // sole KORA_ADMIN read is a documented in-scope grant, no route yet.
+  { path: 'lib/living-koral-material-change/material-change-service.ts', reason: 'documented server-only service — Material Change candidate create/assess/list (CANDIDATE-only, WP-111-config-driven), KORA-WP-112' },
+  // KORA-WP-112: initiative domain adapter — server-only, re-reads the real
+  // personal.worker_initiative source record for the mandatory automated
+  // re-verification (Founder Correction 4, registry 142); called only from
+  // the already-allowlisted app/api/admin/ route, never client-facing.
+  { path: 'lib/living-koral-material-change/initiative-adapter.ts', reason: 'documented server-only service — initiative status-transition-to-candidate mapping + source re-verification, KORA-WP-112' },
+
+  // KORA-WP-113: Transformation Ledger + Morphogenesis Engine v1 — server-
+  // only, same Pattern-A rationale as WP-112 immediately above. The sole
+  // write path is gov.record_living_koral_transformation() (an atomic RPC
+  // called via service_role); this module itself never inserts/updates the
+  // two tables directly (structurally enforced by this WP's own test).
+  { path: 'lib/living-koral-transformation-ledger/transformation-ledger-service.ts', reason: 'documented server-only service — Transformation Ledger record + current-state read, atomic RPC delegate, KORA-WP-113' },
+
+  // KORA-WP-116: KORAL Review — server-only, same Pattern-A rationale as
+  // the Advisor-portal services above (advisor-case-service.ts,
+  // advisor-content-service.ts, operational-case-service.ts): every write
+  // is Assignment-gated at the service layer itself
+  // (assertActiveAssignmentAndGetCompanyId, reused from
+  // advisor-case-service.ts), never a direct RLS-mediated user write path.
+  { path: 'lib/living-koral-review/review-service.ts', reason: 'documented server-only service — KORAL Review Mode A (interpret)/Mode B (confirm), Assignment-gated, KORA-WP-116' },
+
+  // KORA-WP-117: Edition-bounded ledger/material-change replay (Level A
+  // lineage reconstruction) — server-only, Pattern-A. Deliberately does
+  // NOT read analytics.living_koral_edition itself (that table grants
+  // `authenticated` SELECT only, never service_role — resolved instead
+  // via the existing RLS-respecting getLivingKoralEditionById(), see
+  // mark-service.ts's own header); this file only ever reads
+  // gov.living_koral_transformation_ledger / gov.living_koral_material_change,
+  // both KORA_ADMIN-only under RLS and structurally unreachable by a
+  // Company session any other way.
+  { path: 'lib/living-koral-mark/edition-lineage-service.ts', reason: 'documented server-only service — Edition-bounded ledger/material-change lineage replay (Level A continuity), KORA-WP-117' },
+
   // ── Documented pre-existing exceptions (NOT part of this sprint's 6-page
   // scope) — real, tracked, not silently endorsed ─────────────────────────
   {

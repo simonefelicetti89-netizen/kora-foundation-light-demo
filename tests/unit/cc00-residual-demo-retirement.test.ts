@@ -202,10 +202,21 @@ describe('CC-00 Residual demo retirement — public landing CTA retargeted, not 
     expect(src).toContain('href="/demo"');
   });
 
-  it('next.config.ts redirects /demo-guide and /advisor to /demo, not the deleted routes', () => {
+  it('next.config.ts redirects /demo-guide to /demo, not the deleted route', () => {
     const config = read('next.config.ts');
     expect(config).toContain("source: '/demo-guide'");
-    expect(config).toContain("source: '/advisor'");
+  });
+
+  // The /advisor -> /demo redirect pair accurately existed here as of CC-00
+  // Residual demo retirement (2026-09-26) — its own comment named the exact
+  // reason: "no canonical advisor workspace model exists yet". KORA-WP-030
+  // (2026-09-12) later, separately, built that model, making the redirect
+  // stale (it would have made the new real /advisor route unreachable) —
+  // removed as a disclosed, narrow WP-030 defect fix, not a regression of
+  // this retirement slice. See .kora-audit/output/118_KORA_WP_030_IMPLEMENTATION_REPORT.md.
+  it('next.config.ts no longer redirects /advisor — superseded by KORA-WP-030\'s real Advisor route (historical note, not a live retirement assertion)', () => {
+    const config = read('next.config.ts');
+    expect(config).not.toContain("source: '/advisor'");
   });
 });
 

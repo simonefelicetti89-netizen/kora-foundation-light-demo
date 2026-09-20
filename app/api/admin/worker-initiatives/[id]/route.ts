@@ -12,6 +12,12 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import type { WorkerInitiativeRow } from '@/lib/supabase/types';
 import { assertSameOrigin } from '@/lib/security/origin';
+// KORA-WP-112 — additive only: observes a status transition this route's
+// own existing update already performed, for the Living KORAL Material
+// Change layer. Never alters this route's own existing behavior/response
+// shape; a failure here never blocks or changes the update's own result
+// (see the try/catch around the call below).
+import { observeInitiativeTransition } from '@/lib/living-koral-material-change/initiative-adapter';
 
 const STATUSES: WorkerInitiativeRow['status'][] = ['draft', 'published', 'closed'];
 const PILLARS: WorkerInitiativeRow['pillar'][] = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'];
@@ -67,6 +73,12 @@ export async function PATCH(
 
   const db = getSupabaseServiceClient();
 
+  // KORA-WP-112: read the prior status BEFORE updating — only knowable
+  // now, never reconstructable after. Read-only, additive; does not
+  // change this route's own existing behavior on any failure path below.
+  const { data: before } = await db
+    .schema('personal').from('worker_initiative').select('tenant_id, status').eq('id', id).maybeSingle();
+
   const { data: updated, error } = await db
     .schema('personal')
     .from('worker_initiative')
@@ -81,6 +93,26 @@ export async function PATCH(
 
   if (!updated) {
     return NextResponse.json({ error: 'Iniziativa non trovata.' }, { status: 404 });
+  }
+
+  // KORA-WP-112: observe the transition for the Living KORAL Material
+  // Change layer — additive only. Never blocks or alters this route's
+  // own existing response; a failure here is swallowed (logged) rather
+  // than surfaced, since it must never regress the pre-existing initiative
+  // update contract this route already provides.
+  if (before && update.status !== undefined && before.status !== update.status) {
+    try {
+      await observeInitiativeTransition({
+        tenantId: before.tenant_id as string,
+        initiativeId: id,
+        previousStatus: before.status as 'draft' | 'published' | 'closed',
+        newStatus: update.status,
+        actorRole: auth.koraRole,
+        actorId: auth.email,
+      });
+    } catch (koralError) {
+      console.error('[worker-initiatives PATCH] KORA-WP-112 Material Change observation failed (non-blocking):', koralError);
+    }
   }
 
   return NextResponse.json({ ok: true, initiative: updated });

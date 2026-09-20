@@ -12,6 +12,7 @@ interface DemoFlowBannerProps {
   canonicalLabel?: string;
 }
 
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 export function DemoFlowBanner({
   title = 'Synthetic Demo Flow',
   description = 'This flow does not create or modify live company data. All data shown is synthetic.',
@@ -40,7 +41,7 @@ export function DemoFlowBanner({
           width:        8,
           height:       8,
           borderRadius: '50%',
-          background:   '#C76F3D',
+          background:   TOKENS.accent,
           display:      'block',
         }}
       />
@@ -56,7 +57,7 @@ export function DemoFlowBanner({
               border:        '1px solid rgba(199,111,61,0.30)',
               borderRadius:  4,
               padding:       '2px 6px',
-              color:         '#C76F3D',
+              color:         TOKENS.accent,
               fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             }}
           >
@@ -90,7 +91,7 @@ export function DemoFlowBanner({
             <span style={{ color: 'rgba(6,3,43,0.40)' }}>Per il flusso live reale: </span>
             <a
               href={canonicalHref}
-              style={{ color: '#C76F3D', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 2 }}
+              style={{ color: TOKENS.accent, fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 2 }}
             >
               {canonicalLabel} →
             </a>

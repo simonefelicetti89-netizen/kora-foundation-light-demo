@@ -19,7 +19,7 @@ const SAFEGUARD_ACTIVE: Record<string, string> = {
 const SAFEGUARD_BADGE: Record<string, string> = {
   CLEAR:   'border-[rgba(47,125,85,0.22)] bg-green-100 text-green-700',
   WARNING: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.12)] text-amber-700',
-  FLAGGED: 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.10)] text-[#9E3B2F]',
+  FLAGGED: 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.10)] text-kora-critical',
 };
 
 export function ScenarioSwitcher() {
@@ -44,7 +44,7 @@ export function ScenarioSwitcher() {
                 i > 0 && 'border-l border-[rgba(6,3,43,0.08)]',
                 isActive
                   ? SAFEGUARD_ACTIVE[s.safeguard_status] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.90)] ring-1 ring-slate-300'
-                  : 'bg-[#F8F6F1] text-[rgba(6,3,43,0.40)] hover:bg-[rgba(6,3,43,0.03)] hover:text-[rgba(6,3,43,0.62)]',
+                  : 'bg-kora-paper text-[rgba(6,3,43,0.40)] hover:bg-[rgba(6,3,43,0.03)] hover:text-[rgba(6,3,43,0.62)]',
               )}
               aria-pressed={isActive}
               title={s.narrative}
@@ -56,7 +56,7 @@ export function ScenarioSwitcher() {
               <span className={cn(
                 'rounded border px-1 py-0.5 text-[9px] font-semibold',
                 isActive
-                  ? SAFEGUARD_BADGE[s.safeguard_status] ?? 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)]'
+                  ? SAFEGUARD_BADGE[s.safeguard_status] ?? 'border-[rgba(6,3,43,0.08)] bg-kora-paper text-[rgba(6,3,43,0.62)]'
                   : 'border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.28)]',
               )}>
                 {s.safeguard_status}

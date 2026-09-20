@@ -12,6 +12,7 @@
 
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { redirect } from 'next/navigation';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Admin Preview — Privacy & Condivisione · KORA' };
 
@@ -56,7 +57,7 @@ export default async function AdminPreviewWorkerPrivacyPage() {
       >
         <span style={{ fontSize: 16, lineHeight: 1 }}>&#9888;&#65039;</span>
         <div>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#8B4513', margin: '0 0 4px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: BADGE_TOKENS.limited.text, margin: '0 0 4px' }}>
             KORA Admin Preview — esempio sintetico, non impostazioni reali di un worker.
           </p>
           <p style={{ fontSize: 11, color: 'rgba(139,69,19,0.80)', margin: 0, lineHeight: 1.6 }}>
@@ -72,7 +73,7 @@ export default async function AdminPreviewWorkerPrivacyPage() {
         <a href="/admin" style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', textDecoration: 'none', display: 'inline-block', marginBottom: 8 }}>
           &#8592; Admin Dashboard
         </a>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.025em', margin: '0 0 4px' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.025em', margin: '0 0 4px' }}>
           Privacy & Condivisione &mdash; Anteprima Admin
         </h1>
         <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', margin: 0 }}>
@@ -90,7 +91,7 @@ export default async function AdminPreviewWorkerPrivacyPage() {
           marginBottom: 20,
         }}
       >
-        <p style={{ fontSize: 13, fontWeight: 700, color: '#1a4731', margin: '0 0 4px' }}>
+        <p style={{ fontSize: 13, fontWeight: 700, color: BADGE_TOKENS.eligible.text, margin: '0 0 4px' }}>
           &#128274; Il tuo datore di lavoro non vede questi dati.
         </p>
         <p style={{ fontSize: 11, color: 'rgba(26,71,49,0.80)', margin: 0, lineHeight: 1.6 }}>
@@ -105,7 +106,7 @@ export default async function AdminPreviewWorkerPrivacyPage() {
         </p>
         <ul style={{ margin: 0, padding: '0 0 0 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {SYNTHETIC_PRIVATE.map((item, i) => (
-            <li key={i} style={{ fontSize: 12, color: '#06032B', lineHeight: 1.5 }}>{item}</li>
+            <li key={i} style={{ fontSize: 12, color: TOKENS.ink, lineHeight: 1.5 }}>{item}</li>
           ))}
         </ul>
       </div>
@@ -117,7 +118,7 @@ export default async function AdminPreviewWorkerPrivacyPage() {
         </p>
         <ul style={{ margin: 0, padding: '0 0 0 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {SYNTHETIC_AGGREGATED.map((item, i) => (
-            <li key={i} style={{ fontSize: 12, color: '#06032B', lineHeight: 1.5 }}>{item}</li>
+            <li key={i} style={{ fontSize: 12, color: TOKENS.ink, lineHeight: 1.5 }}>{item}</li>
           ))}
         </ul>
       </div>
@@ -129,7 +130,7 @@ export default async function AdminPreviewWorkerPrivacyPage() {
         </p>
         {['Condivisione CV selettiva', 'Snapshot pubblico anonimo', 'Condivisione LinkedIn'].map((label, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', border: '1px solid rgba(6,3,43,0.07)', borderRadius: 8, marginBottom: i < 2 ? 8 : 0, opacity: 0.55 }}>
-            <p style={{ fontSize: 12, fontWeight: 600, color: '#06032B', margin: 0 }}>{label}</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: TOKENS.ink, margin: 0 }}>{label}</p>
             <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.35)', background: 'rgba(6,3,43,0.04)', border: '1px solid rgba(6,3,43,0.12)', borderRadius: 5, padding: '3px 8px' }}>
               Prossimamente
             </span>

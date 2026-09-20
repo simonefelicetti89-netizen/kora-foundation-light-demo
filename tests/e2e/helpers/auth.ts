@@ -16,7 +16,8 @@ export async function loginViaUI(page: Page, credentials: Credentials): Promise<
   await page.getByTestId('login-password-input').fill(credentials.password);
   await page.getByTestId('login-submit').click();
   // Wait until the app navigates away from /login (redirect happens after
-  // Supabase confirms the session and role is resolved).
+  // Supabase confirms the session and role is resolved). Every KORA role,
+  // ADVISOR included, has a role-home mapping — see lib/auth/role-home.ts.
   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 15_000 });
 }
 

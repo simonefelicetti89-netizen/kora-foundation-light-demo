@@ -69,7 +69,7 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
 
   if (!s1Record && !s2Record) {
     return (
-      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 text-sm text-[rgba(6,3,43,0.40)]">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-6 text-sm text-[rgba(6,3,43,0.40)]">
         Dati BTI non disponibili per questo scenario.
       </div>
     );
@@ -154,7 +154,7 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
 
       {/* ── C-bis. BTI Executive Intelligence ── */}
       {activeIntelligence && (
-        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-6 space-y-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">C-bis — BTI Executive Intelligence</p>
             <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1 italic">
@@ -327,7 +327,7 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
 
       {/* ── C-ter. Care Economy Intelligence™ ── */}
       {careEconomy && (
-        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-5 space-y-3">
           <div className="flex items-center gap-2">
             <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] flex-1">C-ter — Care Economy Intelligence™</p>
             <span className={`text-[9px] font-semibold rounded px-2 py-0.5 ${
@@ -361,7 +361,7 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
 
       {/* ── C-quater. Equity & Access Intelligence™ ── */}
       {equityAccess && equityAccess.accessRiskLevel !== 'insufficient_data' && (
-        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-5 space-y-3">
           <div className="flex items-center gap-2">
             <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] flex-1">C-quater — Equity &amp; Access Intelligence™</p>
             <span className={`text-[9px] font-semibold rounded px-2 py-0.5 ${
@@ -401,7 +401,7 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
 
       {/* ── C-quinquies. Evidence Reliability Intelligence™ ── */}
       {evidenceReliability && (
-        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-5 space-y-3">
           <div className="flex items-center gap-2">
             <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] flex-1">C-quinquies — Evidence Reliability Intelligence™</p>
             <span className={`text-[9px] font-semibold rounded px-2 py-0.5 ${
@@ -436,7 +436,7 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
       )}
 
       {/* ── D. Budget-to-Human-Impact Summary ── */}
-      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-6 space-y-5">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">D — Budget-to-Human-Impact Summary</p>
           <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1 italic">
@@ -448,13 +448,13 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-[rgba(6,3,43,0.05)]">
-                <th className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)] w-64">Metrica</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S1</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S2</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
+                <th scope="col" className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)] w-64">Metrica</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S1</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S2</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(6,3,43,0.05)]50">
+            <tbody className="divide-y divide-[rgba(6,3,43,0.05)]">
               {budgetRows.map((row) => (
                 <tr key={row.label} className="hover:bg-[rgba(6,3,43,0.03)] transition-colors group">
                   <td className="py-2.5 pr-4">
@@ -510,22 +510,22 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
       </div>
 
       {/* ── E. Macroblock Breakdown ── */}
-      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-4">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-6 space-y-4">
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">E — Macroblock Breakdown — S1 vs S2</p>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-[rgba(6,3,43,0.05)]">
-                <th className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)]">Macroblock</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Peso</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S1</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S2</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
-                <th className="py-2 text-left pl-4 text-xs font-semibold text-[rgba(6,3,43,0.40)]">Driver / Segnale</th>
+                <th scope="col" className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)]">Macroblock</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Peso</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S1</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S2</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
+                <th scope="col" className="py-2 text-left pl-4 text-xs font-semibold text-[rgba(6,3,43,0.40)]">Driver / Segnale</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(6,3,43,0.05)]50">
+            <tbody className="divide-y divide-[rgba(6,3,43,0.05)]">
               {s1Macroblocks.map((mb) => {
                 const s2mb = s2Macroblocks.find((m) => m.code === mb.code);
                 const delta = s2mb ? s2mb.score - mb.score : null;
@@ -543,7 +543,7 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
                       <span className="font-mono font-bold text-[rgba(6,3,43,0.78)]">{mb.score}</span>
                     </td>
                     <td className="py-3 text-right">
-                      <span className={`font-mono font-bold ${activeScenario === 'S2' ? 'text-[#06032B]' : 'text-[rgba(6,3,43,0.78)]'}`}>
+                      <span className={`font-mono font-bold ${activeScenario === 'S2' ? 'text-kora-ink' : 'text-[rgba(6,3,43,0.78)]'}`}>
                         {s2mb?.score ?? '—'}
                       </span>
                     </td>

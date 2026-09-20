@@ -5,7 +5,7 @@
 // methodologyStatus: pre_empirical_calibration · not_kora_index_component: true
 
 import Link from 'next/link';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 import type { ActivationOpportunity, OpportunityPriority } from '@/services/activation-opportunity/ActivationOpportunityService';
 
 // ── Priority display helpers ──────────────────────────────────────────────────
@@ -18,20 +18,20 @@ const PRIORITY_LABEL: Record<OpportunityPriority, string> = {
 };
 
 const PRIORITY_COLORS: Record<OpportunityPriority, { bg: string; text: string; border: string }> = {
-  critical: { bg: 'rgba(158,59,47,0.08)',  text: '#9E3B2F', border: 'rgba(158,59,47,0.20)' },
-  high:     { bg: 'rgba(199,111,61,0.08)', text: '#C76F3D', border: 'rgba(199,111,61,0.22)' },
-  medium:   { bg: 'rgba(217,154,43,0.08)', text: '#8A5A00', border: 'rgba(217,154,43,0.22)' },
+  critical: { bg: 'rgba(158,59,47,0.08)',  text: TOKENS.critical, border: 'rgba(158,59,47,0.20)' },
+  high:     { bg: 'rgba(199,111,61,0.08)', text: TOKENS.accent, border: 'rgba(199,111,61,0.22)' },
+  medium:   { bg: 'rgba(217,154,43,0.08)', text: TOKENS.safeguard.watch.text, border: 'rgba(217,154,43,0.22)' },
   low:      { bg: 'rgba(6,3,43,0.04)',     text: 'rgba(6,3,43,0.52)', border: 'rgba(6,3,43,0.08)' },
 };
 
 const PILLAR_ACCENT: Record<string, string> = {
-  LIFE:       '#2F7D55',
-  GROWTH:     '#2F7D55',
-  CONNECTION: '#D99767',
-  IMPACT:     '#D99A2B',
-  LEGACY:     '#8A7562',
-  COMPANY:    '#C76F3D',
-  ALL:        '#6156F5',
+  LIFE:       TOKENS.success,
+  GROWTH:     TOKENS.success,
+  CONNECTION: PILLAR_COLORS.CONNECTION,
+  IMPACT:     TOKENS.warning,
+  LEGACY:     PILLAR_COLORS.LEGACY,
+  COMPANY:    TOKENS.accent,
+  ALL:        TOKENS.violet,
 };
 
 interface ActivationOpportunityPanelProps {

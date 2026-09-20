@@ -91,12 +91,19 @@ describe('B129 Fase 2 — new demo pages exist at new paths', () => {
 // ── Group 2: Old page files are gone ─────────────────────────────────────────
 
 describe('B129 Fase 2 — old page files deleted', () => {
-  it('app/advisor/page.tsx is gone', () => {
-    expect(fileExists('app/advisor/page.tsx')).toBe(false);
+  // app/advisor/page.tsx and app/advisor/layout.tsx were accurately gone
+  // here as of B129 Fase 2 (the old synthetic demo page at this path had
+  // been moved to app/demo/advisor/page.tsx). KORA-WP-030 (2026-09-12) later,
+  // separately, built the REAL Advisor Identity self-view at this exact
+  // path — a legitimate, permanent architectural use of app/advisor/**, not
+  // a regression of the demo-migration this file locks in. See report
+  // .kora-audit/output/118_KORA_WP_030_IMPLEMENTATION_REPORT.md.
+  it('app/advisor/page.tsx now exists — superseded by KORA-WP-030\'s real Advisor self-view (historical note, not a demo-migration assertion)', () => {
+    expect(fileExists('app/advisor/page.tsx')).toBe(true);
   });
 
-  it('app/advisor/layout.tsx is gone', () => {
-    expect(fileExists('app/advisor/layout.tsx')).toBe(false);
+  it('app/advisor/layout.tsx now exists — superseded by KORA-WP-030\'s real Advisor auth guard (historical note, not a demo-migration assertion)', () => {
+    expect(fileExists('app/advisor/layout.tsx')).toBe(true);
   });
 
   it('app/demo-guide/page.tsx is gone', () => {
@@ -133,14 +140,14 @@ describe('B129 Fase 2 — old page files deleted', () => {
 describe('B129 Fase 2 — next.config.ts: 9 redirect entries', () => {
   const config = readFile('next.config.ts');
 
-  // /advisor's destination was accurately /demo/advisor as of B129 Fase 2.
-  // CC-00 Residual /demo/** controlled retirement (2026-09-26) retired
-  // app/demo/advisor entirely — the redirect now points at /demo, the
-  // route's real successor.
-  it('redirects /advisor → /demo (permanent, since CC-00 residual demo retirement)', () => {
-    expect(config).toContain("source: '/advisor'");
-    expect(config).toContain("destination: '/demo'");
-    expect(config).toContain('permanent: true');
+  // /advisor's destination was accurately /demo/advisor as of B129 Fase 2,
+  // then /demo (CC-00 Residual /demo/** controlled retirement, 2026-09-26).
+  // KORA-WP-030 (2026-09-12) later, separately, removed this redirect
+  // entirely — it built the real Advisor route tree the redirect's own
+  // comment said didn't exist yet ("no canonical advisor workspace model
+  // exists yet"), so the redirect became a routing blocker for real content.
+  it('no longer redirects /advisor — superseded by KORA-WP-030\'s real Advisor route (historical note, not a live B129 assertion)', () => {
+    expect(config).not.toContain("source: '/advisor'");
   });
 
   // /demo-guide's destination was accurately /demo/guide as of B129 Fase 2.

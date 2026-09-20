@@ -83,7 +83,15 @@ export function DryCheckButton() {
             B99 Readiness: {result.verdict}
           </span>
 
+          <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr>
+                <th scope="col" className="py-1 pr-2 w-5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide text-left">Stato</th>
+                <th scope="col" className="py-1 pr-4 text-[10px] font-semibold text-gray-400 uppercase tracking-wide text-left">Controllo</th>
+                <th scope="col" className="py-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wide text-left">Dettaglio</th>
+              </tr>
+            </thead>
             <tbody>
               {result.checks.map((c) => (
                 <tr key={c.id} className="border-b border-gray-100 last:border-0">
@@ -98,6 +106,7 @@ export function DryCheckButton() {
               ))}
             </tbody>
           </table>
+          </div>
 
           <p className="text-xs text-gray-400">
             Eseguito: {new Date(result.timestamp).toLocaleString('it-IT')}

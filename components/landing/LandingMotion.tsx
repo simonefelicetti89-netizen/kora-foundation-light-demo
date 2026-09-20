@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import styles from '@/app/landing.module.css';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 // ── Impact Field SVG nodes ──────────────────────────────────────────────────
 const FIELD_NODES = [
@@ -59,7 +60,7 @@ export function LandingMotion() {
         }
         fieldNodes.appendChild(svgEl('circle', {
           cx: String(n.x), cy: String(n.y), r: String(n.r),
-          fill: n.accent ? '#C76F3D' : 'rgba(247,245,239,.52)',
+          fill: n.accent ? TOKENS.accent : 'rgba(247,245,239,.52)',
         }));
         const t = svgEl('text', {
           x: String(n.lx), y: String(n.ly),

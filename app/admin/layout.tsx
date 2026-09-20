@@ -38,7 +38,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     // 403: wrong role (e.g. COMPANY_ADMIN trying to access admin area).
     // Show a clear error with a link to the correct login.
     return (
-      <div className="max-w-md mx-auto mt-16 p-8 border border-[rgba(6,3,43,0.08)] rounded-xl bg-[#F8F6F1] shadow-sm text-center space-y-4">
+      <div className="max-w-md mx-auto mt-16 p-8 border border-[rgba(6,3,43,0.08)] rounded-xl bg-kora-paper shadow-sm text-center space-y-4">
         <h1 className="text-lg font-semibold text-[rgba(6,3,43,0.90)]">
           Accesso non autorizzato
         </h1>
@@ -47,7 +47,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </p>
         <Link
           href="/login?role_hint=admin"
-          className="inline-block mt-2 bg-[#06032B] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[rgba(6,3,43,0.88)] transition-colors"
+          className="inline-block mt-2 bg-kora-ink text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[rgba(6,3,43,0.88)] transition-colors"
         >
           Vai al login KORA
         </Link>

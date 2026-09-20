@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 import type { BudgetToHumanImpactRecord } from '@/lib/types';
 
 interface BudgetToHumanImpactPanelProps {
@@ -66,10 +66,10 @@ export function BudgetToHumanImpactPanel({ s1, s2 }: BudgetToHumanImpactPanelPro
         <table className="w-full">
           <thead>
             <tr style={{ borderBottom: `2px solid ${TOKENS.ink}` }}>
-              <th className="pb-2 pr-4 text-left text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>Indicatore</th>
-              <th className="pb-2 pr-4 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>S1</th>
-              <th className="pb-2 pr-4 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.ink }}>S2</th>
-              <th className="pb-2 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>Δ</th>
+              <th scope="col" className="pb-2 pr-4 text-left text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>Indicatore</th>
+              <th scope="col" className="pb-2 pr-4 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>S1</th>
+              <th scope="col" className="pb-2 pr-4 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.ink }}>S2</th>
+              <th scope="col" className="pb-2 text-right text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>Δ</th>
             </tr>
           </thead>
           <tbody>
@@ -88,7 +88,7 @@ export function BudgetToHumanImpactPanel({ s1, s2 }: BudgetToHumanImpactPanelPro
         </table>
       </div>
 
-      <div className="rounded-[10px] p-3 text-xs leading-relaxed" style={{ background: 'rgba(43,92,230,0.07)', color: '#1B2A4A' }}>
+      <div className="rounded-[10px] p-3 text-xs leading-relaxed" style={{ background: 'rgba(43,92,230,0.07)', color: BADGE_TOKENS.info.text }}>
         <p className="font-semibold mb-1">Nota interpretativa: costo per lavoratore attivato in profondità</p>
         <p>Il costo per lavoratore profondamente attivato aumenta perché S2 estende l&apos;accesso a iniziative più strutturate e raggiunge una platea più ampia. In parallelo, il costo per Impact Unit scende da €22.4 a €13.8, segnalando una migliore efficienza complessiva dell&apos;attivazione. Non è inefficienza — è espansione di accesso.</p>
       </div>

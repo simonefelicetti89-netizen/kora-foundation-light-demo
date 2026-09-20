@@ -189,7 +189,7 @@ export default function GovernancePage() {
 
       {/* Non-suppressible scope banner — what this page is and is not */}
       <div style={{ background: 'rgba(97,86,245,0.06)', border: `1px dashed rgba(97,86,245,0.35)`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 18px' }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#6156F5' }}>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: TOKENS.violet }}>
           Registro di governance in sola lettura.
         </p>
         <p style={{ margin: '6px 0 0', fontSize: 12, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
@@ -263,7 +263,7 @@ export default function GovernancePage() {
                         padding: '3px 10px',
                         borderRadius: 999,
                         background: 'rgba(217,154,43,0.12)',
-                        color: '#8A5A00',
+                        color: TOKENS.safeguard.watch.text,
                         whiteSpace: 'nowrap',
                       }}
                     >

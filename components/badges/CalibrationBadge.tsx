@@ -23,7 +23,7 @@ export function CalibrationBadge({ status, className }: CalibrationBadgeProps) {
         fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
         fontWeight:    600,
         background:    TOKENS.safeguard.watch.bg,   // was rgba(217,154,43,0.12)
-        color:         TOKENS.safeguard.watch.text,  // was '#8A5A00'
+        color:         TOKENS.safeguard.watch.text,  // was TOKENS.safeguard.watch.text
         border:        `1px solid ${TOKENS.safeguard.watch.dot}48`,  // was 0.30 fixed
         letterSpacing: '0.01em',
       }}

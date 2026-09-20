@@ -74,7 +74,7 @@ export default async function CompanyConsolePage({
     <>
       {fromSection && (
         <div className="mb-4 rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.06)] px-4 py-3 text-xs text-[rgba(6,3,43,0.78)] leading-relaxed">
-          <span className="font-semibold text-[#C76F3D]">{fromSection}</span>
+          <span className="font-semibold text-kora-accent">{fromSection}</span>
           {' '}è ora accessibile dal drill-in dell&apos;azienda specifica.
           Seleziona un&apos;azienda per aprire la sezione.
         </div>

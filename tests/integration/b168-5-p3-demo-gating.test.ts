@@ -180,8 +180,10 @@ describe('DemoAccessBanner — componente client dismissibile', () => {
     expect(src).toContain('if (dismissed) return null');
   });
 
-  it('usa accento terracotta #C76F3D', () => {
-    expect(src).toContain('#C76F3D');
+  // WP-088: l'accento terracotta deve ora provenire dal token canonico
+  // (TOKENS.accent === '#C76F3D'), non da un literal. Asserzione piu' forte.
+  it('usa il token canonico dell accento terracotta', () => {
+    expect(src).toContain('TOKENS.accent');
   });
 });
 

@@ -15,7 +15,7 @@ export function PrintButton() {
         padding:      '9px 20px',
         borderRadius: 8,
         border:       '1px solid rgba(6,3,43,0.18)',
-        background:   '#06032B',
+        background:   TOKENS.ink,
         color:        '#fff',
         cursor:       'pointer',
       }}
@@ -24,3 +24,5 @@ export function PrintButton() {
     </button>
   );
 }
+
+import { TOKENS } from '@/lib/design/kora-design-tokens';

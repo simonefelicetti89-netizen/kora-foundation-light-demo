@@ -14,9 +14,9 @@ interface Props {
 }
 
 const SAFEGUARD_COLORS: Record<string, string> = {
-  CLEAR:   'text-[#2F7D55] bg-[rgba(47,125,85,0.08)] border-[rgba(47,125,85,0.22)]',
+  CLEAR:   'text-kora-success bg-[rgba(47,125,85,0.08)] border-[rgba(47,125,85,0.22)]',
   WARNING: 'text-amber-700 bg-[rgba(217,154,43,0.08)] border-[rgba(217,154,43,0.25)]',
-  FLAGGED: 'text-[#9E3B2F] bg-[rgba(158,59,47,0.06)] border-[rgba(158,59,47,0.20)]',
+  FLAGGED: 'text-kora-critical bg-[rgba(158,59,47,0.06)] border-[rgba(158,59,47,0.20)]',
 };
 
 const MB_ACCENT: Record<string, string> = {
@@ -57,7 +57,7 @@ export function DecisionPackHero({
     <div className="space-y-6">
 
       {/* ── A. Executive Summary ── */}
-      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-6 space-y-5">
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">A — Executive Summary</p>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -65,7 +65,7 @@ export function DecisionPackHero({
           <div className="space-y-1">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">KORA Index v1.0</p>
             <div className="flex items-end gap-2">
-              <span className="text-4xl font-bold text-[#06032B]">{output.kora_index_value}</span>
+              <span className="text-4xl font-bold text-kora-ink">{output.kora_index_value}</span>
               <span className="text-sm text-[rgba(6,3,43,0.40)] mb-1">/100</span>
               {activeScenario === 'S2' && indexDelta && (
                 <span className={`text-sm font-bold mb-1 ${indexDelta.positive ? 'text-[rgba(47,125,85,0.90)]' : 'text-[rgba(158,59,47,0.90)]'}`}>
@@ -126,7 +126,7 @@ export function DecisionPackHero({
       </div>
 
       {/* ── B. Methodology Snapshot ── */}
-      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-6 space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">B — Methodology Snapshot</p>
           <span className="text-[10px] text-[rgba(6,3,43,0.40)] italic">
@@ -139,12 +139,12 @@ export function DecisionPackHero({
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b border-[rgba(6,3,43,0.05)]">
-                <th className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)] w-40">Macroblock</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Peso</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Score S1</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Score S2</th>
-                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
-                <th className="py-2 text-left pl-4 text-xs font-semibold text-[rgba(6,3,43,0.40)]">Componenti</th>
+                <th scope="col" className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)] w-40">Macroblock</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Peso</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Score S1</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Score S2</th>
+                <th scope="col" className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
+                <th scope="col" className="py-2 text-left pl-4 text-xs font-semibold text-[rgba(6,3,43,0.40)]">Componenti</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">

@@ -52,8 +52,11 @@ describe('CompanyTabNav — 4 tabs (B-TRUTH Gen 0/1 Retirement Wave 1 + CC-019A,
     expect(src).toContain('/admin/companies/');
   });
 
-  it('uses terracotta #C76F3D for active tab underline', () => {
-    expect(src).toContain('#C76F3D');
+  // WP-088: the terracotta accent is now required to come from the canonical
+  // token (TOKENS.accent === '#C76F3D'), not a raw literal. Strictly stronger
+  // than the previous literal check, which a hardcoded violation would pass.
+  it('uses the canonical terracotta accent token for the active tab underline', () => {
+    expect(src).toContain('TOKENS.accent');
   });
 
   it('active detection handles sub-paths (startsWith)', () => {
@@ -140,7 +143,8 @@ describe('DiagnosticsTabNav — 3 tabs (B169 FASE 5)', () => {
     expect(src).toContain('/admin/platform/diagnostics');
   });
 
-  it('uses terracotta #C76F3D for active underline', () => {
-    expect(src).toContain('#C76F3D');
+  // WP-088: see note above — canonical token required, not a raw literal.
+  it('uses the canonical terracotta accent token for the active underline', () => {
+    expect(src).toContain('TOKENS.accent');
   });
 });

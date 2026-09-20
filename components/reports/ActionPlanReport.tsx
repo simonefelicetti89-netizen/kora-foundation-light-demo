@@ -13,12 +13,12 @@ interface OpportunityItem { label: string; detail: string; }
 interface ActionItem { label: string; detail: string; }
 
 const PRIORITY_STYLES: Record<string, string> = {
-  alta:  'border-l-[#9E3B2F] bg-[rgba(158,59,47,0.06)]',
-  media: 'border-l-[#D99A2B] bg-[rgba(217,154,43,0.08)]',
+  alta:  'border-l-kora-critical bg-[rgba(158,59,47,0.06)]',
+  media: 'border-l-kora-warning bg-[rgba(217,154,43,0.08)]',
   bassa: 'border-l-slate-300 bg-[rgba(6,3,43,0.03)]',
 };
 const PRIORITY_TAG: Record<string, string> = {
-  alta:  'text-[#9E3B2F] bg-[rgba(158,59,47,0.10)] border-[rgba(158,59,47,0.20)]',
+  alta:  'text-kora-critical bg-[rgba(158,59,47,0.10)] border-[rgba(158,59,47,0.20)]',
   media: 'text-amber-700 bg-[rgba(217,154,43,0.12)] border-[rgba(217,154,43,0.25)]',
   bassa: 'text-[rgba(6,3,43,0.62)] bg-[rgba(6,3,43,0.05)] border-[rgba(6,3,43,0.08)]',
 };
@@ -124,16 +124,16 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
     <div className="space-y-5">
 
       {/* ── F. Top Risks ── */}
-      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-4">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-6 space-y-4">
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">F — Top Rischi / Gap Prioritari</p>
         {risks.length === 0 ? (
           <p className="text-sm text-[rgba(6,3,43,0.40)]">Nessun rischio significativo identificato per questo scenario.</p>
         ) : (
           <div className="space-y-3">
             {risks.map((r, i) => (
-              <div key={i} className={`rounded-lg border bg-[#F8F6F1] border-l-4 pl-4 pr-4 py-3 ${r.severity === 'high' ? 'border-l-[#9E3B2F]' : 'border-l-[#D99A2B]'}`}>
+              <div key={i} className={`rounded-lg border bg-kora-paper border-l-4 pl-4 pr-4 py-3 ${r.severity === 'high' ? 'border-l-kora-critical' : 'border-l-kora-warning'}`}>
                 <div className="flex items-start gap-2">
-                  <span className={`shrink-0 mt-0.5 rounded border px-1.5 py-0.5 text-[10px] font-bold ${r.severity === 'high' ? 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]' : 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]'}`}>
+                  <span className={`shrink-0 mt-0.5 rounded border px-1.5 py-0.5 text-[10px] font-bold ${r.severity === 'high' ? 'bg-[rgba(158,59,47,0.06)] text-kora-critical border-[rgba(158,59,47,0.20)]' : 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]'}`}>
                     {r.severity === 'high' ? 'Alta' : 'Media'}
                   </span>
                   <div>
@@ -148,16 +148,16 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
       </div>
 
       {/* ── G. Top Opportunities ── */}
-      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-4">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-6 space-y-4">
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">G — Top Opportunità</p>
         {opportunities.length === 0 ? (
           <p className="text-sm text-[rgba(6,3,43,0.40)]">Dati insufficienti per identificare opportunità strutturali.</p>
         ) : (
           <div className="space-y-3">
             {opportunities.map((o, i) => (
-              <div key={i} className="rounded-lg border border-[rgba(47,125,85,0.14)] bg-[rgba(47,125,85,0.08)] border-l-4 border-l-[#2F7D55] pl-4 pr-4 py-3">
-                <p className="text-xs font-semibold text-[#2F7D55]">{o.label}</p>
-                <p className="text-xs text-[#2F7D55] leading-relaxed mt-0.5">{o.detail}</p>
+              <div key={i} className="rounded-lg border border-[rgba(47,125,85,0.14)] bg-[rgba(47,125,85,0.08)] border-l-4 border-l-kora-success pl-4 pr-4 py-3">
+                <p className="text-xs font-semibold text-kora-success">{o.label}</p>
+                <p className="text-xs text-kora-success leading-relaxed mt-0.5">{o.detail}</p>
               </div>
             ))}
           </div>
@@ -166,7 +166,7 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
 
       {/* ── Recommendations from BTI service ── */}
       {recommendations.length > 0 && (
-        <div className="rounded-xl border border-[rgba(6,3,43,0.06)] bg-[#F8F6F1] p-6 space-y-4">
+        <div className="rounded-xl border border-[rgba(6,3,43,0.06)] bg-kora-paper p-6 space-y-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Raccomandazioni BTI — Direzionali</p>
             <p className="text-[11px] text-[rgba(6,3,43,0.40)] mt-1">Correlazione ≠ causalità — potenziale non garantito</p>
@@ -179,7 +179,7 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
                     {r.priority.toUpperCase()}
                   </span>
                   {r.target_macroblock && (
-                    <span className="shrink-0 mt-0.5 rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.52)]">
+                    <span className="shrink-0 mt-0.5 rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.52)]">
                       {r.target_macroblock}
                     </span>
                   )}
@@ -196,7 +196,7 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
       )}
 
       {/* ── H. 90-Day Action Plan ── */}
-      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-6 space-y-5">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">H — Piano d&apos;Azione 90 Giorni</p>
           <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1">
@@ -229,7 +229,7 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
         {/* Phase 30–60 */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-[#C76F3D] text-white text-[10px] font-bold px-2.5 py-0.5">30–60 giorni</span>
+            <span className="rounded-full bg-kora-accent text-white text-[10px] font-bold px-2.5 py-0.5">30–60 giorni</span>
             <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">Riallocazione e Attivazione</p>
           </div>
           <div className="ml-4 space-y-2">

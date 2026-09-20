@@ -12,7 +12,7 @@ import { SectionLabel }      from '@/components/ui/SectionLabel';
 import { ChartFrame }        from '@/components/charts/ChartFrame';
 import { ProvenanceFooter }  from '@/components/company/cockpit/ProvenanceFooter';
 import { ExplainabilityHint } from '@/components/company/cockpit/ExplainabilityHint';
-import { TOKENS }            from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS }            from '@/lib/design/kora-design-tokens';
 import type { PillarCode }   from '@/lib/types';
 
 function pct(val: number) { return `${(val * 100).toFixed(0)}%`; }
@@ -20,14 +20,14 @@ function pct(val: number) { return `${(val * 100).toFixed(0)}%`; }
 const ADDITIONALITY_BADGE: Record<string, { bg: string; text: string; label: string }> = {
   mandatory_legal_minimum:        { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text,   label: 'Minimo legale'         },
   additional_beyond_requirement:  { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text,  label: 'Oltre il minimo'       },
-  strategic_company_initiative:   { bg: 'rgba(43,92,230,0.10)',    text: '#1B2A4A',                   label: 'Iniziativa strategica' },
+  strategic_company_initiative:   { bg: 'rgba(43,92,230,0.10)',    text: BADGE_TOKENS.info.text,                   label: 'Iniziativa strategica' },
   collective_verified_initiative: { bg: 'rgba(199,111,61,0.10)',   text: TOKENS.accent,               label: 'Collettiva verificata' },
 };
 
 const REVIEW_STATUS_BADGE: Record<string, { bg: string; text: string; label: string }> = {
   approved:                    { bg: TOKENS.safeguard.pass.bg,   text: TOKENS.safeguard.pass.text,  label: 'Approvato KORA'               },
   under_kora_review:           { bg: TOKENS.safeguard.watch.bg,  text: TOKENS.safeguard.watch.text, label: 'In Revisione KORA'            },
-  advisor_review_required:     { bg: 'rgba(186,117,23,0.12)',    text: '#854F0B',                   label: 'Revisione Advisor Richiesta'  },
+  advisor_review_required:     { bg: 'rgba(186,117,23,0.12)',    text: BADGE_TOKENS.limited.text,                   label: 'Revisione Advisor Richiesta'  },
   partner_validation_required: { bg: 'rgba(199,111,61,0.10)',    text: TOKENS.accent,               label: 'Validazione Partner Richiesta' },
   blocked_by_design:           { bg: TOKENS.safeguard.cap.bg,    text: TOKENS.safeguard.cap.text,   label: 'Escluso per Design'           },
 };
@@ -116,7 +116,7 @@ export default function PillarsInitiatives() {
   if (!hasKoraData) {
     return (
       <div style={{ padding: '32px 0' }}>
-        <p style={{ fontSize: '14px', fontWeight: 700, color: '#06032B' }}>
+        <p style={{ fontSize: '14px', fontWeight: 700, color: TOKENS.ink }}>
           Distribuzione pillar non ancora disponibile
         </p>
         <p style={{ fontSize: '12px', color: 'rgba(6,3,43,0.52)', marginTop: 6 }}>
@@ -191,7 +191,7 @@ export default function PillarsInitiatives() {
       {/* ── Initiative Studio Preview (static — non attivo in Foundation Light) ── */}
       <SectionLabel>Initiative Studio</SectionLabel>
       <div style={{ background: 'rgba(186,117,23,0.06)', border: '1px solid rgba(186,117,23,0.20)', borderRadius: TOKENS.cardRadius, padding: '12px 16px', marginBottom: 4 }}>
-        <p style={{ fontSize: '11px', color: '#854F0B' }}>
+        <p style={{ fontSize: '11px', color: BADGE_TOKENS.limited.text }}>
           <span style={{ fontWeight: 600 }}>Pilot Preview — non attivo in Foundation Light. </span>
           Crea, proponi o unisciti a iniziative che KORA può validare, orchestrare e misurare.
         </p>
@@ -233,7 +233,7 @@ export default function PillarsInitiatives() {
                 <div style={{
                   borderRadius: 8, padding: '10px 12px', fontSize: '11px', lineHeight: 1.6, marginBottom: 12,
                   background: isBlocked ? TOKENS.safeguard.cap.bg : 'rgba(186,117,23,0.08)',
-                  color:      isBlocked ? TOKENS.safeguard.cap.text : '#854F0B',
+                  color:      isBlocked ? TOKENS.safeguard.cap.text : BADGE_TOKENS.limited.text,
                   border:     isBlocked ? `1px solid ${TOKENS.safeguard.cap.dot}33` : '1px solid rgba(186,117,23,0.20)',
                 }}>
                   {init.kora_note}

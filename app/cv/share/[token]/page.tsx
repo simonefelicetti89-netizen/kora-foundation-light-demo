@@ -26,15 +26,16 @@ export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { hashShareToken, isShareExpired } from '@/lib/worker-cv/share-token';
+import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
 const PILLAR_META: Record<string, { color: string; bg: string }> = {
-  LIFE:       { color: '#2F7D55', bg: 'rgba(47,125,85,0.08)'   },
-  GROWTH:     { color: '#3B6EBA', bg: 'rgba(59,110,186,0.08)'  },
-  CONNECTION: { color: '#7C3D8F', bg: 'rgba(124,61,143,0.08)'  },
-  IMPACT:     { color: '#C07D2A', bg: 'rgba(192,125,42,0.08)'  },
-  LEGACY:     { color: '#5A4A3F', bg: 'rgba(90,74,63,0.08)'    },
+  LIFE:       { color: PILLAR_SURFACE.LIFE.color, bg: PILLAR_SURFACE.LIFE.bg },
+  GROWTH:     { color: PILLAR_SURFACE.GROWTH.color, bg: PILLAR_SURFACE.GROWTH.bg },
+  CONNECTION: { color: PILLAR_SURFACE.CONNECTION.color, bg: PILLAR_SURFACE.CONNECTION.bg },
+  IMPACT:     { color: PILLAR_SURFACE.IMPACT.color, bg: PILLAR_SURFACE.IMPACT.bg },
+  LEGACY:     { color: PILLAR_SURFACE.LEGACY.color, bg: PILLAR_SURFACE.LEGACY.bg },
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -195,7 +196,7 @@ export default async function CVSharePage({
       <div
         data-testid="cv-share-hero"
         style={{
-          background:   '#06032B',
+          background:   TOKENS.ink,
           borderRadius: 16,
           padding:      '28px 32px',
           marginBottom: 20,
@@ -222,7 +223,7 @@ export default async function CVSharePage({
         </p>
         <div
           data-testid="cv-share-pillar-profile"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}
         >
           {ALL_PILLARS.map(p => {
             const meta  = PILLAR_META[p];
@@ -234,15 +235,15 @@ export default async function CVSharePage({
                   border:       `1px solid ${meta?.color ?? '#ddd'}30`,
                   borderRadius: 10,
                   padding:      '12px 10px',
-                  background:   count > 0 ? (meta?.bg ?? '#f9f9f9') : 'rgba(6,3,43,0.02)',
+                  background:   count > 0 ? (meta?.bg ?? TOKENS.surface) : 'rgba(6,3,43,0.02)',
                   opacity:      count > 0 ? 1 : 0.4,
                   textAlign:    'center',
                 }}
               >
-                <p style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta?.color ?? '#06032B', margin: '0 0 4px' }}>
+                <p style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta?.color ?? TOKENS.ink, margin: '0 0 4px' }}>
                   {p}
                 </p>
-                <p style={{ fontSize: '1.25rem', fontWeight: 900, color: count > 0 ? (meta?.color ?? '#06032B') : 'rgba(6,3,43,0.20)', margin: 0 }}>
+                <p style={{ fontSize: '1.25rem', fontWeight: 900, color: count > 0 ? (meta?.color ?? TOKENS.ink) : 'rgba(6,3,43,0.20)', margin: 0 }}>
                   {count}
                 </p>
               </div>
@@ -285,12 +286,12 @@ export default async function CVSharePage({
                     justifyContent: 'center',
                     flexShrink:     0,
                   }}>
-                    <span style={{ fontSize: 8, fontWeight: 800, color: meta?.color ?? '#06032B' }}>
+                    <span style={{ fontSize: 8, fontWeight: 800, color: meta?.color ?? TOKENS.ink }}>
                       {exp.pillar.slice(0, 2)}
                     </span>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#06032B', margin: '0 0 2px' }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: TOKENS.ink, margin: '0 0 2px' }}>
                       {exp.title}
                     </p>
                     <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>
@@ -350,7 +351,7 @@ function ShareInvalidPage({ reason }: { reason: 'revoked' | 'expired' }) {
       <p style={{ fontSize: 32, margin: '0 0 16px' }}>
         {reason === 'revoked' ? '🔒' : '⏰'}
       </p>
-      <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#06032B', margin: '0 0 10px' }}>
+      <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: TOKENS.ink, margin: '0 0 10px' }}>
         {msg.title}
       </h1>
       <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: '0 0 24px', lineHeight: 1.6 }}>

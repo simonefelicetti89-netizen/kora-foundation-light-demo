@@ -17,17 +17,18 @@ import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PrintButton } from './_print-button';
+import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Stampa Dynamic Impact CV · KORA' };
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
 const PILLAR_META: Record<string, { color: string }> = {
-  LIFE:       { color: '#2F7D55' },
-  GROWTH:     { color: '#3B6EBA' },
-  CONNECTION: { color: '#7C3D8F' },
-  IMPACT:     { color: '#C07D2A' },
-  LEGACY:     { color: '#5A4A3F' },
+  LIFE:       { color: PILLAR_SURFACE.LIFE.color },
+  GROWTH:     { color: PILLAR_SURFACE.GROWTH.color },
+  CONNECTION: { color: PILLAR_SURFACE.CONNECTION.color },
+  IMPACT:     { color: PILLAR_SURFACE.IMPACT.color },
+  LEGACY:     { color: PILLAR_SURFACE.LEGACY.color },
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -107,7 +108,7 @@ export default async function DynamicCVPrintPage() {
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
           *, *::before, *::after { box-sizing: border-box; }
-          body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #fff; color: #06032B; }
+          body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #fff; color: ${TOKENS.ink}; }
           @media print {
             .no-print { display: none !important; }
             body { padding: 0; }
@@ -138,11 +139,11 @@ export default async function DynamicCVPrintPage() {
           </div>
 
           {/* Hero */}
-          <div style={{ borderBottom: '2px solid #06032B', paddingBottom: 20, marginBottom: 24 }}>
+          <div style={{ borderBottom: `2px solid ${TOKENS.ink}`, paddingBottom: 20, marginBottom: 24 }}>
             <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.40)', margin: '0 0 6px' }}>
               Dynamic Impact CV &middot; KORA Foundation Light
             </p>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: '#06032B', margin: '0 0 4px', letterSpacing: '-0.03em' }}>
+            <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: TOKENS.ink, margin: '0 0 4px', letterSpacing: '-0.03em' }}>
               {displayName}
             </h1>
             {tenantName && (
@@ -175,10 +176,10 @@ export default async function DynamicCVPrintPage() {
                       textAlign:    'center',
                     }}
                   >
-                    <p style={{ fontSize: 7, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta?.color ?? '#06032B', margin: '0 0 4px' }}>
+                    <p style={{ fontSize: 7, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta?.color ?? TOKENS.ink, margin: '0 0 4px' }}>
                       {p}
                     </p>
-                    <p style={{ fontSize: '1.25rem', fontWeight: 900, color: meta?.color ?? '#06032B', margin: 0 }}>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 900, color: meta?.color ?? TOKENS.ink, margin: 0 }}>
                       {count}
                     </p>
                   </div>
@@ -195,7 +196,7 @@ export default async function DynamicCVPrintPage() {
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(6,3,43,0.12)' }}>
                     {['Pillar', 'Titolo', 'Stato', 'Data'].map(h => (
-                      <th key={h} style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.35)', textAlign: 'left', padding: '0 8px 6px 0' }}>
+                      <th scope="col" key={h} style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.35)', textAlign: 'left', padding: '0 8px 6px 0' }}>
                         {h}
                       </th>
                     ))}
@@ -206,8 +207,8 @@ export default async function DynamicCVPrintPage() {
                     const meta = PILLAR_META[exp.pillar];
                     return (
                       <tr key={i} style={{ borderBottom: '1px solid rgba(6,3,43,0.05)' }}>
-                        <td style={{ fontSize: 10, fontWeight: 700, color: meta?.color ?? '#06032B', padding: '7px 8px 7px 0', whiteSpace: 'nowrap' }}>{exp.pillar}</td>
-                        <td style={{ fontSize: 12, color: '#06032B', padding: '7px 8px 7px 0' }}>{exp.title}</td>
+                        <td style={{ fontSize: 10, fontWeight: 700, color: meta?.color ?? TOKENS.ink, padding: '7px 8px 7px 0', whiteSpace: 'nowrap' }}>{exp.pillar}</td>
+                        <td style={{ fontSize: 12, color: TOKENS.ink, padding: '7px 8px 7px 0' }}>{exp.title}</td>
                         <td style={{ fontSize: 10, color: 'rgba(6,3,43,0.55)', padding: '7px 8px 7px 0', whiteSpace: 'nowrap' }}>{exp.statusLabel}</td>
                         <td style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', padding: '7px 0', whiteSpace: 'nowrap' }}>{exp.date}</td>
                       </tr>
@@ -245,7 +246,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
     <div>
-      <p style={{ fontSize: 18, fontWeight: 900, color: '#06032B', margin: '0 0 2px', letterSpacing: '-0.02em' }}>{value}</p>
+      <p style={{ fontSize: 18, fontWeight: 900, color: TOKENS.ink, margin: '0 0 2px', letterSpacing: '-0.02em' }}>{value}</p>
       <p style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.40)', margin: 0 }}>{label}</p>
     </div>
   );

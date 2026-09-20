@@ -89,7 +89,7 @@ export default function CompanyActivitySignalsSummaryPage() {
 
       {/* Preview banner */}
       <div style={{ background: 'rgba(97,86,245,0.06)', border: `1px dashed rgba(97,86,245,0.35)`, borderRadius: TOKENS.cardRadiusSm, padding: '12px 16px' }}>
-        <p style={{ margin: 0, fontSize: 11.5, fontWeight: 700, color: '#6156F5' }}>
+        <p style={{ margin: 0, fontSize: 11.5, fontWeight: 700, color: TOKENS.violet }}>
           Anteprima design — dati mock aggregati, nessuna connessione a database o servizi esterni.
         </p>
       </div>
@@ -120,7 +120,7 @@ export default function CompanyActivitySignalsSummaryPage() {
         <SectionLabel>Anteprima componenti KORA Index (sintesi)</SectionLabel>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {(['reach', 'quality', 'equity', 'activation', 'continuity', 'pillar_balance'] as const).map((c) => (
-            <span key={c} style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: 'rgba(97,86,245,0.10)', color: '#6156F5' }}>
+            <span key={c} style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: 'rgba(97,86,245,0.10)', color: TOKENS.violet }}>
               {INDEX_COMPONENT_PREVIEW_LABELS[c]}
             </span>
           ))}
@@ -131,7 +131,7 @@ export default function CompanyActivitySignalsSummaryPage() {
       </Panel>
 
       {/* Privacy note */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 16px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 16px' }}>
         <p style={{ margin: 0, fontSize: 12, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           Le soglie di privacy non sono decise in questo sprint. L&apos;azienda resta sempre aggregate-only —
           nessun nominativo, email, ID lavoratore, o prenotazione individuale è mai mostrata qui.

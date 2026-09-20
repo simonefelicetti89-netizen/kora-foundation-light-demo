@@ -1,0 +1,109 @@
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- KORA — Migration 073: commons — service_role table-level grants
+-- Migration:   073_commons_service_role_table_grants
+-- Created:     2026-09-15
+-- Block:       COMMONS SERVICE_ROLE TABLE-GRANT REMEDIATION (follow-on to
+--              migration 072; scoped remediation, not a numbered WP advancement)
+-- Gate:        Gate 2 CLOSED WITH CONDITIONS (staging authorized) — written and
+--              validated LOCAL/disposable-DB only by this task. NOT applied to
+--              staging or production by this migration file.
+-- ───────────────────────────────────────────────────────────────────────────────
+-- SCOPO
+-- ─────
+-- Migration 072 granted service_role schema-level USAGE on `commons` (proven
+-- necessary, but proven — by this task's own negative tests — insufficient
+-- alone: schema USAGE grants no table access by itself). This migration
+-- closes the second, distinct layer: service_role holds ZERO table-level
+-- grants on any commons table (confirmed via
+-- information_schema.role_table_grants on local disposable Postgres,
+-- migrations 001-072 applied) — every one of migration 013's and 025's own
+-- table grants was written for `authenticated` only, because at the time
+-- those migrations were written no service_role Commons consumer existed.
+-- Two now do, and are the ONLY proven service_role Commons consumers in the
+-- current repository (every other Commons call site — CommonsService reads,
+-- BookingService's own booking-lifecycle functions, KoraContributionService,
+-- all of app/api/commons/** — runs as `authenticated` via
+-- getSupabaseServerClient(), already fully privileged, unchanged here):
+--
+--   1. app/admin/commons/page.tsx (KORA_ADMIN moderation console, an allowed
+--      getSupabaseServiceClient() use) -> inline SELECT commons.post (all
+--      tenants, for moderation triage — RLS's own COMPANY_ADMIN/WORKER
+--      policies would incorrectly scope this to one tenant, which is why
+--      this page legitimately needs service_role rather than a session
+--      client; KORA_ADMIN's own admin-workspace authorization, checked one
+--      layer up by requireKoraAdmin(), is the real gate here, same pattern
+--      as commons_post_kora_admin_all's RLS policy for the authenticated
+--      path). REQUIRES: SELECT on commons.post.
+--
+--   2. app/api/admin/commons/bookings/[id]/route.ts's `action=attended`
+--      branch (KORA_ADMIN-only) -> BookingService.markAttended()'s own
+--      `serviceDb` parameter ("bypassa RLS per il hook di attribuzione,
+--      pattern B164" per that file's own header):
+--        a. fetchPostForBooking(serviceDb, ...) -> SELECT commons.post
+--           (same privilege as #1 — one additional call site, not an
+--           additional distinct privilege).
+--        b. lib/commons/cross-company-attribution.ts's
+--           attributeContributionForBooking() (2 rows: promoter +
+--           origin_employer) and attributeContributionForExternalParticipants()
+--           (1 row, when the post declares external participants) ->
+--           INSERT-only into commons.contribution_event, no .select()
+--           chained, no pre-read — idempotency is handled entirely by the
+--           table's own UNIQUE constraints (error code 23505), not by a
+--           SELECT. REQUIRES: INSERT on commons.contribution_event. No
+--           SELECT is proven necessary on this table for service_role.
+--
+-- The booking status UPDATE itself (`status='attended'`) in
+-- BookingService.markAttended() runs on the route's own `db` parameter
+-- (authenticated, the KORA_ADMIN's session, already fully privileged) —
+-- NOT on serviceDb. commons.booking therefore needs NO service_role grant
+-- of any kind; none is added here.
+--
+-- WHY service_role, NOT a narrower authenticated path (per this task's own
+-- Section 5 requirement): both call sites are structurally SECURITY-DEFINER-
+-- shaped RLS bypasses that predate this migration (B128's own admin
+-- moderation console intentionally reads across every tenant at once, which
+-- no per-tenant RLS policy could express; B166's own attribution hook
+-- intentionally writes Contribution rows scoped to the ORIGIN employer's
+-- tenant, not the acting KORA_ADMIN's own tenant claim, which a
+-- `kora_tenant_id = kora.tenant_id()` WITH CHECK could never satisfy for an
+-- admin actor). Both are pre-existing, already-shipped, KORA_ADMIN-gated
+-- architecture (requireKoraAdmin() one layer up) — this migration does not
+-- introduce, widen, or relocate that authority, it only makes the
+-- already-intended table access functional.
+--
+-- MINIMUM GRANTED, proven by direct inspection, nothing broader:
+--   commons.post:               SELECT only (no INSERT/UPDATE/DELETE — no
+--                                proven service_role write path exists).
+--   commons.contribution_event: INSERT only (no SELECT — no proven
+--                                service_role read path exists; no
+--                                UPDATE/DELETE — the ledger is append-only
+--                                by design, migration 025's own intent,
+--                                unchanged here).
+--   commons.booking:             NOTHING — no proven service_role path
+--                                touches this table at all.
+-- No TRUNCATE, no REFERENCES, no TRIGGER privilege granted to any role —
+-- none proven necessary, none previously existed for authenticated either.
+--
+-- Does NOT modify: migration 072's own schema-level USAGE grant, RLS, FORCE
+-- RLS, policies, table structure, functions, PostgREST exposed-schema
+-- configuration, or any authenticated/anon/PUBLIC grant.
+--
+-- IDEMPOTENTE: GRANT is naturally idempotent in Postgres (no error if
+-- already granted) — same discipline as migrations 046 and 072.
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+GRANT SELECT ON commons.post TO service_role;
+GRANT INSERT ON commons.contribution_event TO service_role;
+
+-- ── Reload schema PostgREST ───────────────────────────────────────────────────
+
+NOTIFY pgrst, 'reload schema';
+
+-- ── ROLLBACK ─────────────────────────────────────────────────────────────────
+-- REVOKE SELECT ON commons.post FROM service_role;
+-- REVOKE INSERT ON commons.contribution_event FROM service_role;
+-- NOTIFY pgrst, 'reload schema';
+-- Rollback is safe at any time — no object, policy, trigger, or function
+-- depends on these grants existing; reverting only re-blocks the two
+-- service_role call sites described above (the same failure mode already
+-- present before this migration, not a new one).

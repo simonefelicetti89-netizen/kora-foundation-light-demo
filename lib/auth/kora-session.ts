@@ -295,6 +295,55 @@ export async function getCurrentPartnerUser(request?: NextRequest): Promise<Kora
   return result instanceof NextResponse ? null : result;
 }
 
+// ── KoraAdvisorUser — authenticated advisor session (KORA-WP-002) ────────────
+// ADVISOR is a FUTURE_KORA_ROLES role (lib/constants/kora.ts) — this is the
+// session-guard only. There is no Advisor Identity table yet (KORA-WP-030,
+// explicitly out of this WP's scope), so — unlike requireCompanyUser() /
+// requireWorkerUser() — there is no DB-backed identity/assignment existence
+// check here, and no tenant/partner-style id field on this type: there is no
+// real table row for it to reference yet. The constitutional privacy floor
+// (ADVISOR never sees individual worker data) is enforced independently by
+// lib/auth/access-matrix.ts's MATRIX (ADVISOR is DENY on every resource, in
+// every environment, today) and by middleware.ts's worker-path block below —
+// neither depends on this guard existing, and this guard does not loosen
+// either one.
+
+export interface KoraAdvisorUser {
+  id: string;
+  email: string;
+  koraRole: 'ADVISOR';
+}
+
+// ── requireAdvisorUser — returns KoraAdvisorUser or a 401/403 NextResponse ────
+
+export async function requireAdvisorUser(request?: NextRequest): Promise<KoraAdvisorUser | NextResponse> {
+  const user = await resolveUser(request);
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Authorization from app_metadata ONLY — never user_metadata
+  const appMeta = user.app_metadata as Record<string, unknown> | undefined;
+  const koraRole = appMeta?.kora_role as string | undefined;
+
+  if (koraRole !== 'ADVISOR') {
+    return NextResponse.json(
+      { error: 'Forbidden — ADVISOR role required', role_found: koraRole ?? 'none' },
+      { status: 403 },
+    );
+  }
+
+  return { id: user.id, email: user.email ?? '', koraRole: 'ADVISOR' };
+}
+
+// ── getCurrentAdvisorUser — returns KoraAdvisorUser or null (no throw) ────────
+
+export async function getCurrentAdvisorUser(request?: NextRequest): Promise<KoraAdvisorUser | null> {
+  const result = await requireAdvisorUser(request);
+  return result instanceof NextResponse ? null : result;
+}
+
 // ── KoraWorkerUser — authenticated worker in their private space ──────────────
 // workerId links to personal.worker_identity.id — always from app_metadata.
 // tenantId scopes which company this worker belongs to.
@@ -416,23 +465,27 @@ export async function getCurrentWorkerUser(request?: NextRequest): Promise<KoraW
 // ── Type guards — distinguish error response from authorized user ──────────────
 
 export function isKoraAuthError(
-  value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | NextResponse,
+  value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraAdvisorUser | NextResponse,
 ): value is NextResponse {
   return value instanceof NextResponse;
 }
 
-export function isKoraAdmin(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser): value is KoraUser {
+export function isKoraAdmin(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraAdvisorUser): value is KoraUser {
   return value.koraRole === 'KORA_ADMIN';
 }
 
-export function isCompanyUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser): value is KoraCompanyUser {
+export function isCompanyUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraAdvisorUser): value is KoraCompanyUser {
   return value.koraRole === 'COMPANY_ADMIN';
 }
 
-export function isWorkerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser): value is KoraWorkerUser {
+export function isWorkerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraAdvisorUser): value is KoraWorkerUser {
   return value.koraRole === 'WORKER';
 }
 
-export function isPartnerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser): value is KoraPartnerUser {
+export function isPartnerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraAdvisorUser): value is KoraPartnerUser {
   return value.koraRole === 'PARTNER';
+}
+
+export function isAdvisorUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraAdvisorUser): value is KoraAdvisorUser {
+  return value.koraRole === 'ADVISOR';
 }

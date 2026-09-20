@@ -13,6 +13,7 @@
 //   any demo URL indexed.
 
 import type { Metadata } from 'next';
+import { ACTIVATION_SIGNATURE } from '@/lib/design/kora-design-tokens';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false, nocache: true,
@@ -23,7 +24,7 @@ const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
 export default function DemoLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div data-testid="demo-boundary-marker" style={{ minHeight: '100vh', background: '#F6F4EF', fontFamily: FONT }}>
+    <div data-testid="demo-boundary-marker" style={{ minHeight: '100vh', background: ACTIVATION_SIGNATURE.canvas, fontFamily: FONT }}>
       {children}
     </div>
   );

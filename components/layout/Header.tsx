@@ -11,6 +11,7 @@ import { isEmployerRole, isAdminRole } from '@/lib/permissions';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { AccountMenu } from '@/components/auth/AccountMenu';
+import { useSidebarDrawer, SIDEBAR_DRAWER_ID } from '@/components/layout/SidebarDrawerContext';
 import type { Environment } from '@/lib/types';
 
 const ENV_BADGE_TEXT: Record<Environment, string> = {
@@ -41,6 +42,7 @@ export function Header() {
   }, []);
 
   const showDemoControls = shouldShowDemoControls(realRole);
+  const drawer = useSidebarDrawer();
 
   const showScenarioSwitcher =
     showDemoControls &&
@@ -49,7 +51,7 @@ export function Header() {
 
   return (
     <header
-      className="flex h-13 items-center justify-between px-6"
+      className="flex h-13 items-center justify-between gap-2 px-3 sm:px-6"
       style={{
         height:       '52px',
         background:   TOKENS.surface,
@@ -57,7 +59,25 @@ export function Header() {
         flexShrink:   0,
       }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3">
+        {/* WP-088: mobile-only sidebar drawer toggle. Hidden at md+ where the
+            sidebar is a permanent column. Presentation only — opens the same
+            navigation, changes no route or nav structure. */}
+        <button
+          type="button"
+          onClick={drawer.toggle}
+          aria-label={drawer.open ? 'Chiudi navigazione' : 'Apri navigazione'}
+          aria-expanded={drawer.open}
+          aria-controls={SIDEBAR_DRAWER_ID}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg md:hidden"
+          style={{ background: 'transparent', border: `1px solid ${TOKENS.inkBorder}`, cursor: 'pointer' }}
+        >
+          <span aria-hidden="true" className="flex flex-col gap-[3px]">
+            <span style={{ display: 'block', width: 16, height: 2, borderRadius: 1, background: TOKENS.ink }} />
+            <span style={{ display: 'block', width: 16, height: 2, borderRadius: 1, background: TOKENS.ink }} />
+            <span style={{ display: 'block', width: 16, height: 2, borderRadius: 1, background: TOKENS.ink }} />
+          </span>
+        </button>
         {showDemoControls && (
           <span
             className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold whitespace-nowrap tracking-wide"
