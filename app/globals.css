@@ -42,6 +42,25 @@
   --kora-warning:   #D99A2B;
   --kora-critical:  #9E3B2F;
 
+  /* ── Informational / in-process / link — Founder Q1 (KORA-WP-088) ─ */
+  --kora-info:         #3B6EBA;
+  --kora-info-text:    #1E4A8A;
+  --kora-info-bg:      rgba(59,110,186,0.08);
+  --kora-info-border:  rgba(59,110,186,0.22);
+
+  /* ── Solid ink button hover — Founder Q2 (KORA-WP-088) ──────────── */
+  --kora-ink-hover: #1A1756;
+
+  /* ── Recessed inset panel — Founder Q3 (KORA-WP-088) ────────────── */
+  --kora-inset-panel: #FFFAF5;
+
+  /* ── On-tint text depths (accessible text over a soft tint) ─────── */
+  --kora-warning-text: #8A5A00;
+
+  /* ── Secondary warm accent (charts, pillar CONNECTION surface) ──── */
+  --kora-cotto:     #B5512E;   /* Activation Signature STRATO band       */
+  --kora-ink-warm:  #211F1A;   /* KORA Link card — premium warm/materico */
+
   /* ── Safeguard states ───────────────────────────────────────────── */
   --safeguard-pass-bg:   rgba(47,125,85,0.10);
   --safeguard-pass-text: #2F7D55;
@@ -98,7 +117,23 @@
   --color-kora-ink:      var(--kora-ink);
   --color-kora-accent:   var(--kora-accent);
   --color-kora-terracotta: var(--kora-terracotta);
+  --color-kora-terracotta-secondary: var(--kora-terracotta-secondary);
   --color-kora-violet:   var(--kora-violet);
+
+  /* KORA-WP-088 — utilities for the values Tailwind class strings still
+     spelled as raw hex. `bg-kora-ink`, `text-kora-info`, `hover:bg-kora-ink-hover`
+     and friends, with native opacity-modifier support (`/40`). */
+  --color-kora-ink-secondary: var(--kora-ink-secondary);
+  --color-kora-ink-tertiary:  var(--kora-ink-tertiary);
+  --color-kora-ink-border:    var(--kora-ink-border);
+  --color-kora-info:         var(--kora-info);
+  --color-kora-info-text:    var(--kora-info-text);
+  --color-kora-ink-hover:    var(--kora-ink-hover);
+  --color-kora-inset-panel:  var(--kora-inset-panel);
+  --color-kora-warning-text: var(--kora-warning-text);
+  --color-kora-cotto:        var(--kora-cotto);
+  --color-kora-ink-warm:     var(--kora-ink-warm);
+  --color-kora-accent-hover: #B5602E;
 
   /* ── Environment color tokens ───────────────────────────────────── */
   --color-env-accent: var(--env-accent);

@@ -30,6 +30,33 @@
  * canonical token carries the right semantic role, and the value is
  * mechanically justified from the ratified system — never invented for
  * aesthetic uniformity. Full record: .kora-audit/output/201 and /202.
+ *
+ * ── FINAL FOUNDER COLOUR ADJUDICATION (KORA-WP-088, second pass) ────────────
+ * The five remaining semantic questions raised by the audit in
+ * .kora-audit/output/203 have now been adjudicated. No value below is
+ * invented: each is ratified from evidenced repository usage.
+ *
+ *   Q1 INFORMATIONAL / IN-PROCESS / LINK  → APPROVED as `TOKENS.info`.
+ *      Base #3B6EBA, on-tint text #1E4A8A. A SEMANTIC FUNCTIONAL BLUE.
+ *      It is NOT a pillar colour, NOT a maturity colour, NOT a performance
+ *      colour and NOT the KORA primary brand colour. The warm KORA brand
+ *      system remains canonical.
+ *   Q2 SOLID INK BUTTON HOVER             → APPROVED as `BUTTON_TOKENS.ink.hover`
+ *      #1A1756. Canonical hover for the solid #06032B ink button. No redesign.
+ *   Q3 SOFT WARM INSET PANEL              → APPROVED as `TOKENS.insetPanel`
+ *      #FFFAF5. Deliberately DISTINCT from TOKENS.surface (#F8F6F1): repository
+ *      truth shows a stable, repeated "recessed explanatory panel + dashed
+ *      inkBorder" treatment. Do NOT generalise this token beyond that role.
+ *   Q4 KORA INDEX MACROBLOCK SERIES       → APPROVED as `MACROBLOCK_COLORS`.
+ *      Categorical data-visualisation differentiation ONLY. NOT pillar
+ *      colours, NOT status, NOT performance levels, NOT good/bad, NOT
+ *      general-purpose UI accents. Pillar semantics are never reused here.
+ *   Q5 KORA LIME #C8FF47                  → NOT promoted into this token
+ *      system. In-app occurrences were synthetic-data badges and now use
+ *      BADGE_TOKENS.synthetic. Lime remains confined to the separately
+ *      governed Decision Pack export template.
+ *
+ * Full record: .kora-audit/output/203 and /204.
  */
 
 // ── Core brand palette ───────────────────────────────────────────────────────
@@ -79,6 +106,25 @@ export const TOKENS = {
   success:  '#2F7D55',
   warning:  '#D99A2B',
   critical: '#9E3B2F',
+
+  // Informational / in-process — Founder Q1 (KORA-WP-088). The fourth status
+  // role beside success/warning/critical: "in lavorazione", "in attesa",
+  // "iscritto", "preview", and the inline-link colour where that role applies.
+  // Semantic functional blue — never a pillar, maturity or performance colour.
+  // `text` is the accessible on-tint depth, exactly as safeguard.watch.text
+  // (#8A5A00) relates to warning (#D99A2B).
+  info: {
+    base:   '#3B6EBA',
+    text:   '#1E4A8A',
+    bg:     'rgba(59,110,186,0.08)',
+    border: 'rgba(59,110,186,0.22)',
+  },
+
+  // Recessed inset panel — Founder Q3 (KORA-WP-088). ONLY for the recessed
+  // explanatory/inset panel inside a card, which the repository consistently
+  // draws as `background: insetPanel` + a dashed inkBorder. Deliberately one
+  // step off `surface` so the recess reads. Do not use it as a card surface.
+  insetPanel: '#FFFAF5',
 
   // Card system
   cardRadius:          '20px',
@@ -206,6 +252,16 @@ export const BUTTON_TOKENS = {
     color:      '#FFFFFF',
     radius:     '12px',
   },
+  // Solid ink button — Founder Q2 (KORA-WP-088). `hover` is the canonical
+  // hover of the solid #06032B button. secondary.hover (a 4% ink tint) is for
+  // the TRANSPARENT button and is invisible on a solid ink fill, so it cannot
+  // serve here. #1A1756 relates to #06032B as #B5602E relates to #C76F3D.
+  ink: {
+    background: '#06032B',
+    color:      '#FFFFFF',
+    hover:      '#1A1756',
+    radius:     '12px',
+  },
 } as const;
 
 // ── Badge tokens ─────────────────────────────────────────────────────────────
@@ -216,7 +272,26 @@ export const BADGE_TOKENS = {
   blocked:   { bg: 'rgba(158,59,47,0.10)',   text: '#9E3B2F',  border: 'rgba(158,59,47,0.25)'  },
   draft:     { bg: 'rgba(6,3,43,0.06)',       text: 'rgba(6,3,43,0.62)', border: 'rgba(6,3,43,0.12)' },
   synthetic: { bg: 'rgba(199,111,61,0.10)',  text: '#C76F3D',  border: 'rgba(199,111,61,0.28)' },
+  // Founder Q1 (KORA-WP-088) — the informational/in-process badge. Same values
+  // as TOKENS.info, expressed in the badge triad shape used by this group.
+  info:      { bg: 'rgba(59,110,186,0.08)',  text: '#1E4A8A',  border: 'rgba(59,110,186,0.22)' },
 } as const;
+
+// ── KORA Index macroblock series — Founder Q4 (KORA-WP-088) ─────────────────
+// The four KORA Index v3 macroblocks rendered as four mutually distinguishable
+// data-visualisation series. RATIFIED ONLY AS CATEGORICAL DIFFERENTIATION.
+// These are NOT pillar colours, NOT status colours, NOT performance levels,
+// NOT good/bad colours and NOT general-purpose UI accents. Pillar semantics
+// are deliberately not reused here: a pillar colour must never also mean a
+// macroblock. Weights live in lib/methodology-config — never here.
+export const MACROBLOCK_COLORS = {
+  REACH:   '#3B6EBA',
+  QUALITY: '#2F7D55',
+  EQUITY:  '#7C3D8F',
+  BTI:     '#C07D2A',
+} as const;
+
+export type MacroblockColorKey = keyof typeof MACROBLOCK_COLORS;
 
 export type PillarColorKey = keyof typeof PILLAR_COLORS;
 export type KoraColorKey = keyof typeof KORA_COLORS;
