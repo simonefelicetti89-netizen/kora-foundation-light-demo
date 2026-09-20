@@ -452,6 +452,54 @@ describe('KORA-WP-088 — authenticated multi-viewport validation is runnable on
     expect(fx).not.toMatch(/from\('tenant'\)/);
   });
 
+  it('exactly ONE synthetic staging partner_profile, machine-identifiable beyond its name', () => {
+    const fx = fixtureCode();
+    // A deterministic primary key is the strongest marker: no text matching,
+    // no possible collision with a generated id.
+    expect(fx).toMatch(/PARTNER_FIXTURE_PROFILE_ID = '[0-9a-f-]{36}'/);
+    // And a CANONICAL SCHEMA FIELD carries the machine token — not just the
+    // human-readable display name.
+    expect(fx).toContain("PARTNER_FIXTURE_CATEGORY = 'kora-e2e-fixture'");
+    expect(fx).toMatch(/category: PARTNER_FIXTURE_CATEGORY/);
+    // Exactly one: a single id constant, used for both create and locate.
+    expect((fx.match(/PARTNER_FIXTURE_PROFILE_ID = /g) ?? []).length).toBe(1);
+    // It refuses to adopt an unrecognised row sitting at that id.
+    expect(fx).toMatch(/category !== PARTNER_FIXTURE_CATEGORY/);
+  });
+
+  it('the fixture profile stays invisible to worker-facing surfaces', () => {
+    const fx = fixtureCode();
+    // status 'draft' is a real safety property, not a label: the only
+    // worker-facing RLS policy on partner_profile exposes published rows only.
+    expect(fx).toMatch(/status: 'draft'/);
+    expect(fx).not.toMatch(/status: 'published'/);
+    const migration = read('supabase/migrations/010_partner_profile.sql').replace(/--.*$/gm, '');
+    expect(migration).toMatch(/network_partner_worker_published_select/);
+    expect(migration).toMatch(/status\s*=\s*'published'/);
+  });
+
+  it('the anchor profile is PERMANENT — cleanup never deletes it, verify requires it', () => {
+    const fx = fixtureCode();
+    // No delete path of any kind on partner_profile.
+    expect(fx).not.toMatch(/from\('partner_profile'\)[\s\S]{0,300}\.delete\(\)/);
+    // verify fails if the anchor has gone missing.
+    expect(fx).toMatch(/if \(!profile\) return false;/);
+    // ...while the identity half must be gone.
+    expect(fx).toMatch(/authUserId === null && identityCount === 0/);
+  });
+
+  it('no unrelated Partner or Advisor business data is ever created', () => {
+    const fx = fixtureCode();
+    for (const table of ['advisor_assignment', 'advisor_role_qualification',
+                         'advisor_prerequisite_eligibility', 'tenant',
+                         'operational_case', 'advisor_appointment']) {
+      expect(fx, `${table} must never be written by a test fixture`).not.toContain(`from('${table}')`);
+    }
+    // The only two tables it writes.
+    const written = [...fx.matchAll(/\.from\('([a-z_]+)'\)/g)].map((m) => m[1]);
+    expect([...new Set(written)].sort()).toEqual(['advisor_identity', 'partner_identity', 'partner_profile']);
+  });
+
   it('advisor cleanup respects the no-DELETE governance invariant', () => {
     const fx = fixtureCode();
     // advisor.advisor_identity has NO DELETE grant for anyone, by design
@@ -476,10 +524,15 @@ describe('KORA-WP-088 — authenticated multi-viewport validation is runnable on
     expect(fx).toContain('full_name');
     expect(fx).toMatch(/status: 'active'/);
     expect(fx).not.toMatch(/advisor_identity[\s\S]{0,200}email:/);
-    // Partner must attach to an EXISTING partner_profile, never invent one.
+    // Partner profile rule, as adjudicated: the ONLY partner_profile this
+    // script may create is the single deterministic synthetic fixture. An
+    // arbitrary profile must still be impossible — so every insert into that
+    // table must carry the fixture id.
     expect(fx).toContain('E2E_PARTNER_PROFILE_ID');
     expect(fx).toContain("from('partner_profile')");
-    expect(fx).not.toMatch(/partner_profile'\)[\s\S]{0,120}\.insert\(/);
+    const profileInserts = [...fx.matchAll(/from\('partner_profile'\)([\s\S]{0,400}?)\.insert\(([\s\S]{0,300}?)\)/g)];
+    expect(profileInserts.length, 'exactly one partner_profile insert path').toBe(1);
+    expect(profileInserts[0][2]).toContain('id: PARTNER_FIXTURE_PROFILE_ID');
     // Partners are never company-scoped.
     expect(fx).not.toContain('kora_tenant_id:');
   });

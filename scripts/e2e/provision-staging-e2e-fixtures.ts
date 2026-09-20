@@ -22,6 +22,21 @@
  * reproduces the SAME domain invariants those paths encode, as test-only
  * tooling outside the Product surface.
  *
+ * ADJUDICATED LIFECYCLE (Founder, KORA-WP-088)
+ * --------------------------------------------
+ *   network.partner_profile  — PERMANENT staging fixture. Exactly ONE
+ *                              synthetic, staging-only, test-only profile.
+ *                              It is NOT business data: it exists solely as
+ *                              the anchor the Partner identity model requires
+ *                              (partner_identity.partner_id is NOT NULL, FK'd
+ *                              to partner_profile). Never created in, or
+ *                              intended for, production.
+ *   network.partner_identity — EPHEMERAL, removed by cleanup.
+ *   Supabase Auth user       — EPHEMERAL, removed by cleanup.
+ *
+ * After cleanup, the permanent partner_identity total is 0 and only the
+ * synthetic anchor profile remains.
+ *
  * EPHEMERAL BY DECISION (Founder Decision 2)
  * ------------------------------------------
  * Staging must not accumulate test identities, and
@@ -60,9 +75,13 @@
  *     - kora_partner_id is the network.partner_profile.id
  *       (lib/auth/kora-session.ts:235). Migration 012's column comment says
  *       otherwise and is wrong; the guard is the authority.
- *     - a network.partner_profile row must ALREADY EXIST. This script never
- *       creates one: that is business data, and inventing it for a test is out
- *       of bounds. No suitable profile => STOP.
+ *     - partner_identity.partner_id must reference a real partner_profile row.
+ *       Repo truth is that staging has none permanently
+ *       (docs/KORA_LINK_STAGING_FIXTURE_GOVERNANCE.md:117), so the Founder
+ *       authorised exactly ONE synthetic staging-only fixture profile — see
+ *       PARTNER_FIXTURE_PROFILE_ID below. No assignments, qualifications,
+ *       commercial relationships, company links or governance rows are ever
+ *       created, here or anywhere in this script.
  *   ADVISOR, from lib/auth/kora-session.ts#requireAdvisorUser and
  *   supabase/migrations/056_advisor_identity_qualification.sql:
  *     - app_metadata { kora_role: 'ADVISOR' } — the ONLY key that guard reads.
@@ -107,7 +126,9 @@
  *   E2E_STAGING_PROJECT_REF=<ref> \
  *   E2E_STAGING_FIXTURE_CONFIRM=YES \
  *   E2E_PARTNER_EMAIL=... E2E_PARTNER_PASSWORD=... \
- *   E2E_PARTNER_PROFILE_ID=<uuid of an EXISTING network.partner_profile> \
+ *   # E2E_PARTNER_PROFILE_ID is OPTIONAL — an override to attach to a real
+ *   # profile if one ever exists. Omit it and the synthetic fixture profile is
+ *   # located or created automatically. \
  *   E2E_ADVISOR_EMAIL=... E2E_ADVISOR_PASSWORD=... \
  *   npx tsx scripts/e2e/provision-staging-e2e-fixtures.ts <provision|verify|cleanup>
  */
@@ -147,6 +168,39 @@ const LOOPBACK = ['127.0.0.1', 'localhost', '::1', '0.0.0.0'];
  */
 const ALLOWED_STAGING_REF = 'haqflkurpmeaxpikozjl';
 const DENIED_PRODUCTION_REF = 'azdnepfmwrmacruykskm';
+
+/**
+ * THE ONE synthetic staging-only partner_profile (Founder adjudication,
+ * KORA-WP-088). PERMANENT in staging, never in production, never business data.
+ *
+ * Identification is layered, strongest first, so the fixture can always tell
+ * its own profile from any real Partner profile that may exist later:
+ *
+ *   1. A DETERMINISTIC PRIMARY KEY. The fixture locates itself by `id`, which
+ *      cannot collide with a generated one and needs no text matching. This
+ *      follows the staging seed's own convention
+ *      (supabase/seed/gate2_phase1_minimal_staging_seed.sql uses
+ *      'aaaaaaaa-0001-…' / 'bbbbbbbb-000a-…'); 'eeeeeeee' reads as E2E.
+ *   2. `category` — a CANONICAL SCHEMA FIELD carrying a machine token, not a
+ *      human-readable display name. partner_profile.category is free-text and
+ *      unconstrained, so it is available as a classifier without a migration.
+ *   3. `name` — the KL11-style FIXTURE_PREFIX convention, a secondary
+ *      human-readable signal only.
+ *   4. `status: 'draft'` — a real safety property, not just a label. The only
+ *      worker-facing RLS policy on this table
+ *      (010_partner_profile.sql: network_partner_worker_published_select)
+ *      exposes `status = 'published'` rows only, so this fixture is invisible
+ *      to every WORKER session by construction.
+ */
+const PARTNER_FIXTURE_PROFILE_ID = 'eeeeeeee-0088-0088-0088-000000000001';
+const PARTNER_FIXTURE_CATEGORY = 'kora-e2e-fixture';
+const PARTNER_FIXTURE_NAME = 'KORA_E2E_FIXTURE_PARTNER';
+const PARTNER_FIXTURE_DESCRIPTION =
+  'Synthetic KORA-WP-088 E2E fixture. Staging only, never production. Not a real ' +
+  'partner and not business data: it exists solely as the anchor the Partner ' +
+  'identity model requires (partner_identity.partner_id is NOT NULL). Kept in ' +
+  'draft so it is invisible to every worker-facing surface.';
+const PARTNER_FIXTURE_PILLAR = 'GROWTH';
 
 const ADVISOR_FIXTURE_NAME = 'KORA E2E Advisor Fixture';
 const ADVISOR_OFFBOARDED = 'inactive_offboarded';
@@ -277,36 +331,84 @@ function partnerEnv(): { email: string; password?: string; profileId?: string } 
   };
 }
 
+/**
+ * Locate-or-create THE ONE synthetic staging partner_profile. Idempotent: a
+ * second run finds it by primary key and creates nothing. Minimally populated —
+ * only the columns the schema actually requires (name, pillar) plus the
+ * identification fields above. No assignments, qualifications, commercial
+ * relationships, company links or governance rows are created, here or anywhere.
+ */
+async function ensurePartnerFixtureProfile(db: SupabaseClient): Promise<string> {
+  const { data: existing, error: readErr } = await db
+    .schema('network')
+    .from('partner_profile')
+    .select('id, category, status')
+    .eq('id', PARTNER_FIXTURE_PROFILE_ID)
+    .maybeSingle();
+  if (readErr) fail('could not read network.partner_profile while locating the fixture.');
+
+  if (existing) {
+    // Refuse to adopt a row at this id that is not recognisably our fixture.
+    if (existing.category !== PARTNER_FIXTURE_CATEGORY) {
+      fail(
+        'a partner_profile exists at the fixture id but does not carry the fixture ' +
+          'category marker. Refusing to treat an unrecognised profile as a test fixture.',
+      );
+    }
+    console.log(`[e2e-fixtures] PARTNER profile: reusing existing fixture ${mask(existing.id)}.`);
+    return existing.id;
+  }
+
+  const { data: created, error: insertErr } = await db
+    .schema('network')
+    .from('partner_profile')
+    .insert({
+      id: PARTNER_FIXTURE_PROFILE_ID,
+      name: PARTNER_FIXTURE_NAME,
+      description: PARTNER_FIXTURE_DESCRIPTION,
+      category: PARTNER_FIXTURE_CATEGORY,
+      pillar: PARTNER_FIXTURE_PILLAR,
+      status: 'draft',
+    })
+    .select('id')
+    .single();
+  if (insertErr || !created) fail('could not create the synthetic staging partner_profile fixture.');
+
+  console.log(
+    `[e2e-fixtures] PARTNER profile: created THE ONE synthetic staging fixture ` +
+      `${mask(created.id)} (draft, category="${PARTNER_FIXTURE_CATEGORY}"). It is PERMANENT ` +
+      'in staging by design and is never removed by cleanup.',
+  );
+  return created.id;
+}
+
 async function partnerProvision(db: SupabaseClient): Promise<void> {
   const env = partnerEnv();
   if (!env) return console.log('[e2e-fixtures] PARTNER: E2E_PARTNER_EMAIL not set — skipped.');
   if (!env.password) fail('E2E_PARTNER_PASSWORD is not set.');
-  if (!env.profileId) {
-    fail(
-      'E2E_PARTNER_PROFILE_ID is not set. A partner user must attach to an EXISTING ' +
-        'network.partner_profile. This script never creates one — inventing business ' +
-        'data for a test is out of bounds. If no suitable profile exists on staging: STOP.',
-    );
-  }
 
-  // Mirrors the canonical route's own 404 when the profile is absent.
-  const { data: profile } = await db
-    .schema('network')
-    .from('partner_profile')
-    .select('id, name, status')
-    .eq('id', env.profileId)
-    .maybeSingle();
-  if (!profile) {
-    fail(
-      'network.partner_profile not found for E2E_PARTNER_PROFILE_ID. No suitable ' +
-        'existing profile => STOP. Do not create one for WP-088.',
-    );
+  // E2E_PARTNER_PROFILE_ID is an OPTIONAL override for attaching to a real
+  // profile if one ever exists; by default the synthetic fixture is used and
+  // created on first run. Either way the profile must exist before the
+  // identity is written — partner_identity.partner_id is NOT NULL and FK'd.
+  let profileId: string;
+  if (env.profileId) {
+    const { data: profile } = await db
+      .schema('network')
+      .from('partner_profile')
+      .select('id')
+      .eq('id', env.profileId)
+      .maybeSingle();
+    if (!profile) fail('network.partner_profile not found for the E2E_PARTNER_PROFILE_ID override.');
+    profileId = env.profileId;
+  } else {
+    profileId = await ensurePartnerFixtureProfile(db);
   }
 
   // NOTE: no kora_tenant_id — partners are not company-scoped.
   const authUserId = await upsertAuthUser(db, env.email, env.password, {
     kora_role: 'PARTNER',
-    kora_partner_id: env.profileId,
+    kora_partner_id: profileId,
     kora_status: 'active',
   });
 
@@ -314,14 +416,15 @@ async function partnerProvision(db: SupabaseClient): Promise<void> {
     .schema('network')
     .from('partner_identity')
     .upsert(
-      { partner_id: env.profileId, auth_user_id: authUserId, email: env.email, status: 'active' },
+      { partner_id: profileId, auth_user_id: authUserId, email: env.email, status: 'active' },
       { onConflict: 'auth_user_id' },
     );
   if (error) fail('could not upsert network.partner_identity.');
 
   console.log(
-    `[e2e-fixtures] PARTNER provisioned (EPHEMERAL) — auth ${mask(authUserId)}, ` +
-      `profile ${mask(env.profileId)}. Run cleanup after the matrix.`,
+    `[e2e-fixtures] PARTNER provisioned — auth user + partner_identity are EPHEMERAL ` +
+      `(auth ${mask(authUserId)}, profile ${mask(profileId)}). Run cleanup after the matrix; ` +
+      'the profile itself is retained.',
   );
 }
 
@@ -352,7 +455,8 @@ async function partnerCleanup(db: SupabaseClient): Promise<void> {
   const removed = await deleteAuthUserIfPresent(db, env.email);
   console.log(
     `[e2e-fixtures] PARTNER cleanup done — auth user ${removed ? 'removed' : 'already absent'}, ` +
-      'identity mapping removed. partner_profile untouched.',
+      'identity mapping removed. The synthetic anchor partner_profile is RETAINED ' +
+      'by design (permanent staging fixture) — cleanup never deletes it.',
   );
 }
 
@@ -377,20 +481,27 @@ async function partnerVerify(db: SupabaseClient): Promise<boolean> {
       `partner_identity rows for this fixture: ${identityCount} (expected 0).`,
   );
 
-  // The profile must still be there: cleanup removes the fixture, never the
-  // business data it attached to.
-  if (env.profileId) {
-    const { data: profile } = await db
-      .schema('network')
-      .from('partner_profile')
-      .select('id')
-      .eq('id', env.profileId)
-      .maybeSingle();
-    console.log(
-      '[e2e-fixtures] PARTNER verify — referenced partner_profile: ' +
-        `${profile ? 'still present (correct)' : 'MISSING (unexpected — investigate)'}.`,
+  // The anchor profile must SURVIVE cleanup — it is the permanent half of the
+  // adjudicated lifecycle. Its absence is as much a failure as a leftover
+  // identity would be.
+  const anchorId = env.profileId ?? PARTNER_FIXTURE_PROFILE_ID;
+  const { data: profile } = await db
+    .schema('network')
+    .from('partner_profile')
+    .select('id, status, category')
+    .eq('id', anchorId)
+    .maybeSingle();
+  console.log(
+    '[e2e-fixtures] PARTNER verify — anchor partner_profile: ' +
+      `${profile ? `present (status=${profile.status}, category=${profile.category})` : 'MISSING'}.`,
+  );
+  if (!profile) return false;
+  if (!env.profileId && profile.status !== 'draft') {
+    console.error(
+      '[e2e-fixtures] PARTNER verify — the synthetic fixture profile must stay in draft ' +
+        'so it is invisible to worker-facing surfaces.',
     );
-    if (!profile) return false;
+    return false;
   }
 
   return authUserId === null && identityCount === 0;
