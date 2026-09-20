@@ -134,7 +134,7 @@ describe('KORA-WP-042 — E. Decision Spine independence preserved (no mutation 
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(88); // 114's own migration 084; 115's own migration 085; 116's own migration 086 (gov.operational_case.linked_object_type + advisor_content_record widenings — no new table); KORAL Morphology Package A's own migration 087 (2026-09-19, narrow additive widening of the WP-113 operation CHECK/RPC) and 088 (cardinality remediation, gov.living_koral_material_change's own uniqueness widened) — this WP's own "no migration" intent is unaffected
+    expect(Math.max(...numbers)).toBe(89); // 114's own migration 084; 115's own migration 085; 116's own migration 086 (gov.operational_case.linked_object_type + advisor_content_record widenings — no new table); KORAL Morphology Package A's own migration 087 (2026-09-19, narrow additive widening of the WP-113 operation CHECK/RPC) and 088 (cardinality remediation, gov.living_koral_material_change's own uniqueness widened) — this WP's own "no migration" intent is unaffected // KORA-WP-016 raised the ceiling to 089 (analytics.observed_investment_fact flexible edge — a later, unrelated WP; this assertion's own intent is unaffected)
   });
 
   it('this WP adds no lib/services file of its own — verification artifact only', () => {

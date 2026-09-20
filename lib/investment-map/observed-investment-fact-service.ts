@@ -22,6 +22,18 @@
 //
 // A free-text `provider` is never promoted to a Partner/network object —
 // this module has no code path that touches the `network` schema.
+//
+// KORA-WP-016 — structured spine + bounded flexible edge. The five typed "if
+// known" attributes above are the SPINE. `sourceAttributes` is the EDGE: a
+// flat map of source-specific attributes a differently-shaped source carries
+// that the spine does not model (the approved second source is the real intake
+// role `IntakeFileRole = 'policy'`, whose coverage/uptake/eligible_population/
+// diritto attributes have no spine column). The edge can never duplicate,
+// replace or contradict a spine field: a key naming a spine column is rejected
+// here AND by migration 089's CHECK. It is deliberately outside Unknown
+// semantics — an empty edge means "this source carried no extra attributes",
+// never "Unknown" — so `unknown_fields` continues to name exactly the omitted
+// SPINE fields, unchanged from KORA-WP-014.
 
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { recordGovernanceEvent } from '@/lib/audit/governance-event';
@@ -39,6 +51,9 @@ export interface ObservedInvestmentFact {
   reachSummary: string | null;
   evidenceSummary: string | null;
   unknownFields: string[];
+  /** KORA-WP-016 flexible edge. `{}` means the source carried no extra
+   *  attributes — it never means Unknown. */
+  sourceAttributes: InvestmentSourceAttributes;
   commitmentRef: null; // structurally always null for an Observed fact — see module header
   createdAt: string;
 }
@@ -56,6 +71,7 @@ interface ObservedInvestmentFactDbRow {
   reach_summary: string | null;
   evidence_summary: string | null;
   unknown_fields: string[];
+  source_attributes: InvestmentSourceAttributes | null;
   commitment_ref: null;
   created_at: string;
 }
@@ -74,9 +90,69 @@ function toFact(row: ObservedInvestmentFactDbRow): ObservedInvestmentFact {
     reachSummary: row.reach_summary,
     evidenceSummary: row.evidence_summary,
     unknownFields: row.unknown_fields,
+    sourceAttributes: row.source_attributes ?? {},
     commitmentRef: null,
     createdAt: row.created_at,
   };
+}
+
+// ── KORA-WP-016: the bounded flexible edge ───────────────────────────────────
+
+/** Flat map of source-specific Investment attributes. Scalars only: a tabular
+ *  source cell is a value, never a tree. */
+export type InvestmentSourceAttributes = Record<string, string | number | boolean | null>;
+
+/** Exactly migration 053's column set, and byte-identical to migration 089's
+ *  own reserved list — `tests/unit/kora-wp-016-*.test.ts` asserts the two stay
+ *  in sync, so the service and the database can never disagree about what the
+ *  spine owns. */
+export const SPINE_RESERVED_KEYS: readonly string[] = [
+  'id',
+  'tenant_id',
+  'source_batch_id',
+  'recorded_by_role',
+  'recorded_by_id',
+  'purpose',
+  'amount',
+  'provider',
+  'population_descriptor',
+  'reach_summary',
+  'evidence_summary',
+  'unknown_fields',
+  'commitment_ref',
+  'created_at',
+] as const;
+
+/** Deterministic, total, and identical in effect to migration 089's CHECK —
+ *  the service refuses the same values the database would refuse, so a caller
+ *  gets a named error instead of an opaque constraint violation. */
+export function validateSourceAttributes(
+  attrs: InvestmentSourceAttributes | undefined,
+): InvestmentSourceAttributes {
+  if (attrs === undefined) return {};
+  if (attrs === null || typeof attrs !== 'object' || Array.isArray(attrs)) {
+    throw new Error('[KORA] sourceAttributes must be a plain object of scalar values.');
+  }
+  for (const [key, value] of Object.entries(attrs)) {
+    if (SPINE_RESERVED_KEYS.includes(key)) {
+      throw new Error(
+        `[KORA] sourceAttributes may not carry "${key}": it names a canonical typed Investment field. ` +
+          'The flexible edge never duplicates, replaces or overrides the structured spine.',
+      );
+    }
+    if (
+      value !== null &&
+      typeof value !== 'string' &&
+      typeof value !== 'number' &&
+      typeof value !== 'boolean'
+    ) {
+      throw new Error(
+        `[KORA] sourceAttributes["${key}"] must be a string, number, boolean or null — ` +
+          'nested objects and arrays are not a tabular source shape.',
+      );
+    }
+  }
+  return attrs;
 }
 
 // ── unknown-field derivation ─────────────────────────────────────────────────
@@ -122,6 +198,9 @@ export interface CreateObservedInvestmentFactParams {
   populationDescriptor?: string;
   reachSummary?: string;
   evidenceSummary?: string;
+  /** KORA-WP-016 flexible edge — legitimate source-specific attributes the spine
+   *  does not model. Omit it entirely when the source carries none. */
+  sourceAttributes?: InvestmentSourceAttributes;
   // No commitmentRef, no Resource Allocation reference, no Program reference —
   // deliberately absent from this type. See module header.
 }
@@ -130,6 +209,9 @@ export async function createObservedInvestmentFact(
   params: CreateObservedInvestmentFactParams,
 ): Promise<ObservedInvestmentFact> {
   const db = getSupabaseServiceClient();
+  // Validate BEFORE the insert, so an invalid edge never reaches the database
+  // and never emits a governance event.
+  const sourceAttributes = validateSourceAttributes(params.sourceAttributes);
   const unknownFields = deriveUnknownFields(params);
 
   const { data, error } = await db
@@ -147,6 +229,7 @@ export async function createObservedInvestmentFact(
       reach_summary: params.reachSummary ?? null,
       evidence_summary: params.evidenceSummary ?? null,
       unknown_fields: unknownFields,
+      source_attributes: sourceAttributes,
     })
     .select()
     .single();

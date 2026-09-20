@@ -429,6 +429,9 @@ export interface ObservedInvestmentFactRow {
   evidence_summary: string | null;
   unknown_fields: string[];
   commitment_ref: null; // always null — DB CHECK-enforced, see migration 053
+  // KORA-WP-016 bounded flexible edge — flat scalar map, never a spine column
+  // key, CHECK-enforced by migration 089.
+  source_attributes: Record<string, string | number | boolean | null>;
   created_at: string;
   // No updated_at — no mutation path exists for this table
 }
@@ -445,6 +448,7 @@ export type ObservedInvestmentFactInsert = Pick<
   reach_summary?: string | null;
   evidence_summary?: string | null;
   unknown_fields?: string[];
+  source_attributes?: Record<string, string | number | boolean | null>;
   created_at?: string;
 };
 

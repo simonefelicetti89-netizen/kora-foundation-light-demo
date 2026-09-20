@@ -127,7 +127,7 @@ describe('KORA-WP-112 — no migration beyond 081 was introduced BY THIS WP (a l
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(88);
+    expect(Math.max(...numbers)).toBe(89); // KORA-WP-016 raised the ceiling to 089 (analytics.observed_investment_fact flexible edge — a later, unrelated WP; this assertion's own intent is unaffected)
     expect(numbers).toContain(81);
   });
 });
