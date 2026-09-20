@@ -32,10 +32,29 @@
  *                              to partner_profile). Never created in, or
  *                              intended for, production.
  *   network.partner_identity — EPHEMERAL, removed by cleanup.
- *   Supabase Auth user       — EPHEMERAL, removed by cleanup.
+ *   PARTNER Auth user        — EPHEMERAL, removed by cleanup.
  *
- * After cleanup, the permanent partner_identity total is 0 and only the
- * synthetic anchor profile remains.
+ *   advisor.advisor_identity — PERSISTENT synthetic staging fixture.
+ *   ADVISOR Auth user        — PERSISTENT, deliberately NOT deleted.
+ *
+ * After cleanup, the permanent partner_identity total is 0, the synthetic
+ * partner anchor profile remains, and exactly ONE advisor fixture remains.
+ *
+ * ── WHY THE ADVISOR FIXTURE IS PERSISTENT (verified, not assumed) ──────────
+ * An EPHEMERAL advisor would accumulate dead rows forever. The chain:
+ *   - `advisor_identity.auth_user_id` is UNIQUE and is this script's upsert
+ *     conflict target (migration 056:108);
+ *   - there is NO foreign key from `advisor_identity.auth_user_id` to
+ *     `auth.users` — deliberately, it is cross-schema — so deleting the Auth
+ *     user does NOT cascade the identity row away;
+ *   - `auth.admin.createUser()` mints a NEW uuid unless an explicit `id` is
+ *     passed, and this script does not pass one (pinning a GoTrue user id is
+ *     possible but is a fragile thing to depend on);
+ *   - so run N+1 gets a different auth_user_id, the upsert misses row N, and
+ *     INSERTs another — while `advisor.advisor_identity` has no DELETE grant
+ *     for anyone, so none of them can ever be removed.
+ * Unbounded, permanent, irreversible growth. Founder decision: one persistent
+ * fixture instead, reconciled in place on every run.
  *
  * EPHEMERAL BY DECISION (Founder Decision 2)
  * ------------------------------------------
@@ -202,8 +221,15 @@ const PARTNER_FIXTURE_DESCRIPTION =
   'draft so it is invisible to every worker-facing surface.';
 const PARTNER_FIXTURE_PILLAR = 'GROWTH';
 
-const ADVISOR_FIXTURE_NAME = 'KORA E2E Advisor Fixture';
-const ADVISOR_OFFBOARDED = 'inactive_offboarded';
+/**
+ * THE ONE persistent synthetic staging-only Advisor fixture. `full_name` is the
+ * marker: advisor_identity has no category/kind column and no email column, so
+ * the name is the only schema field available — but identification does not
+ * rest on it, because reconciliation is keyed on the PERSISTENT Auth user's
+ * uuid, looked up by its unique email. The name makes the row unmistakably
+ * synthetic to a human reading the table.
+ */
+const ADVISOR_FIXTURE_NAME = 'KORA_E2E_FIXTURE_ADVISOR (synthetic, staging only)';
 
 type Mode = 'provision' | 'verify' | 'cleanup';
 
@@ -520,6 +546,11 @@ async function advisorProvision(db: SupabaseClient): Promise<void> {
   if (!env) return console.log('[e2e-fixtures] ADVISOR: E2E_ADVISOR_EMAIL not set — skipped.');
   if (!env.password) fail('E2E_ADVISOR_PASSWORD is not set.');
 
+  // Locate-or-reconcile. upsertAuthUser() finds the existing user by email and
+  // updates it in place, so the uuid is STABLE across runs — which is exactly
+  // what makes the identity upsert below hit the SAME row every time instead of
+  // inserting another one.
+  const preExisting = await findAuthUserIdByEmail(db, env.email);
   const authUserId = await upsertAuthUser(db, env.email, env.password, { kora_role: 'ADVISOR' });
 
   const { error } = await db
@@ -536,35 +567,45 @@ async function advisorProvision(db: SupabaseClient): Promise<void> {
     );
   }
 
-  console.log(`[e2e-fixtures] ADVISOR provisioned (EPHEMERAL) — auth ${mask(authUserId)}.`);
+  // Prove the invariant on every run rather than trusting it.
+  const { data: rows, error: countErr } = await db
+    .schema('advisor')
+    .from('advisor_identity')
+    .select('id')
+    .eq('full_name', ADVISOR_FIXTURE_NAME);
+  if (countErr) fail('could not count advisor fixture rows.');
+  const total = rows?.length ?? 0;
+  if (total > 1) {
+    fail(
+      `${total} advisor fixture rows exist where there must be exactly 1. That table ` +
+        'has no DELETE grant for anyone, so the surplus cannot be removed by this ' +
+        'script — escalate rather than adding another.',
+    );
+  }
+
+  console.log(
+    `[e2e-fixtures] ADVISOR ${preExisting ? 'reconciled' : 'provisioned'} (PERSISTENT) — ` +
+      `auth ${mask(authUserId)}, exactly ${total} fixture identity row. ` +
+      'Reused across runs; never offboarded or deleted by cleanup.',
+  );
 }
 
 async function advisorCleanup(db: SupabaseClient): Promise<void> {
   const env = advisorEnv();
   if (!env) return console.log('[e2e-fixtures] ADVISOR: E2E_ADVISOR_EMAIL not set — skipped.');
 
+  // DELIBERATE NO-OP. The advisor fixture is PERSISTENT: deleting the Auth user
+  // would mint a new uuid on the next run, which would INSERT a second
+  // advisor_identity row that could never be deleted (no DELETE grant for
+  // anyone, migration 056). Offboarding it would be just as bad — the next run
+  // would still create a fresh row beside the offboarded one. Keeping the user
+  // and the row is what makes "exactly one fixture, forever" true.
   const authUserId = await findAuthUserIdByEmail(db, env.email);
-
-  // The identity ROW cannot be deleted: advisor.advisor_identity has no DELETE
-  // grant for anyone, deliberately (migration 056 — "identity history is never
-  // physically removed"). Transition it to the domain's own terminal state
-  // instead, which is what that lifecycle exists for. This script will not
-  // request a grant that weakens a governance invariant.
-  if (authUserId) {
-    const { error } = await db
-      .schema('advisor')
-      .from('advisor_identity')
-      .update({ status: ADVISOR_OFFBOARDED })
-      .eq('auth_user_id', authUserId);
-    if (error) fail('could not transition advisor.advisor_identity to inactive_offboarded.');
-  }
-
-  const removed = await deleteAuthUserIfPresent(db, env.email);
   console.log(
-    `[e2e-fixtures] ADVISOR cleanup done — auth user ${removed ? 'removed' : 'already absent'}; ` +
-      `advisor_identity transitioned to ${ADVISOR_OFFBOARDED} (row retained BY DESIGN: ` +
-      'no DELETE grant exists on that table for anyone). No qualification, eligibility ' +
-      'or assignment rows were created or removed.',
+    `[e2e-fixtures] ADVISOR cleanup: nothing to do by design — the fixture is ` +
+      `PERSISTENT (auth ${mask(authUserId)}). Deleting it would cause unbounded, ` +
+      'irreversible advisor_identity growth. No qualification, eligibility, ' +
+      'assignment or governance data was ever created, so none is left behind.',
   );
 }
 
@@ -575,21 +616,31 @@ async function advisorVerify(db: SupabaseClient): Promise<boolean> {
     return true;
   }
 
+  // The advisor fixture is PERSISTENT, so PRESENT is the correct post-cleanup
+  // state — the opposite of the partner expectation, on purpose.
   const authUserId = await findAuthUserIdByEmail(db, env.email);
+  const { data: rows, error } = await db
+    .schema('advisor')
+    .from('advisor_identity')
+    .select('id, status')
+    .eq('full_name', ADVISOR_FIXTURE_NAME);
+  if (error) fail('could not read advisor.advisor_identity for verification.');
+
+  const total = rows?.length ?? 0;
   console.log(
-    `[e2e-fixtures] ADVISOR verify — auth user: ${authUserId ? 'PRESENT' : 'absent'} ` +
-      '(absent is the post-cleanup expectation).',
+    `[e2e-fixtures] ADVISOR verify — auth user: ${authUserId ? 'present (expected)' : 'ABSENT'}; ` +
+      `fixture identity rows: ${total} (expected exactly 1); ` +
+      `status: ${rows?.[0]?.status ?? '(none)'}.`,
   );
-  if (authUserId) {
-    const { data } = await db
-      .schema('advisor')
-      .from('advisor_identity')
-      .select('status')
-      .eq('auth_user_id', authUserId)
-      .maybeSingle();
-    console.log(`[e2e-fixtures] ADVISOR verify — identity status: ${data?.status ?? '(no row)'}.`);
+
+  if (total > 1) {
+    console.error(
+      '[e2e-fixtures] ADVISOR verify — MORE THAN ONE fixture row. These cannot be ' +
+        'deleted (no DELETE grant). Escalate; do not provision again.',
+    );
+    return false;
   }
-  return authUserId === null;
+  return authUserId !== null && total === 1;
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────
@@ -608,7 +659,11 @@ async function main(): Promise<void> {
   } else if (mode === 'cleanup') {
     await partnerCleanup(db);
     await advisorCleanup(db);
-    console.log('[e2e-fixtures] cleanup complete. Run `verify` to prove staging is clean.');
+    console.log(
+      '[e2e-fixtures] cleanup complete: partner identity + auth user removed; ' +
+        'partner anchor profile and the persistent advisor fixture retained. ' +
+        'Run `verify`.',
+    );
   } else {
     const partnerClean = await partnerVerify(db);
     const advisorClean = await advisorVerify(db);
@@ -616,7 +671,10 @@ async function main(): Promise<void> {
       console.error('[e2e-fixtures] verify: staging is NOT clean — re-run cleanup.');
       process.exit(1);
     }
-    console.log('[e2e-fixtures] verify: staging is clean. Permanent partner-identity total is 0.');
+    console.log(
+      '[e2e-fixtures] verify: OK. Permanent partner_identity total is 0; the synthetic ' +
+        'partner anchor profile and exactly one persistent advisor fixture remain.',
+    );
   }
 
   console.log('[e2e-fixtures] done. No password was printed, returned or written to disk.');

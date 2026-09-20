@@ -500,13 +500,27 @@ describe('KORA-WP-088 — authenticated multi-viewport validation is runnable on
     expect([...new Set(written)].sort()).toEqual(['advisor_identity', 'partner_identity', 'partner_profile']);
   });
 
+  it('the advisor fixture is PERSISTENT — repeated runs cannot accumulate rows', () => {
+    const fx = fixtureCode();
+    // The accumulation chain, closed at its source: the Auth user is never
+    // deleted, so its uuid is stable, so the upsert reconciles the SAME row.
+    expect(fx).toMatch(/onConflict: 'auth_user_id'/);
+    // advisorCleanup must not delete the auth user or touch the identity row.
+    const cleanupBody = fx.slice(fx.indexOf('async function advisorCleanup'),
+                                 fx.indexOf('async function advisorVerify'));
+    expect(cleanupBody).not.toContain('deleteAuthUserIfPresent');
+    expect(cleanupBody).not.toMatch(/\.update\(/);
+    expect(cleanupBody).not.toMatch(/\.delete\(\)/);
+    expect(cleanupBody).not.toContain('inactive_offboarded');
+    // provision asserts the one-row invariant on every run instead of trusting it.
+    expect(fx).toMatch(/if \(total > 1\)/);
+  });
+
   it('advisor cleanup respects the no-DELETE governance invariant', () => {
     const fx = fixtureCode();
     // advisor.advisor_identity has NO DELETE grant for anyone, by design
-    // (migration 056). Cleanup must transition, never attempt a delete.
+    // (migration 056). Nothing anywhere may attempt a delete on it.
     expect(fx).not.toMatch(/from\('advisor_identity'\)[\s\S]{0,200}\.delete\(\)/);
-    expect(fx).toContain("inactive_offboarded");
-    expect(fx).toMatch(/from\('advisor_identity'\)[\s\S]{0,200}\.update\(/);
     // The migration's own wording is preserved as the justification...
     const migration = read('supabase/migrations/056_advisor_identity_qualification.sql');
     expect(migration).toMatch(/No DELETE for anyone/);
@@ -516,6 +530,25 @@ describe('KORA-WP-088 — authenticated multi-viewport validation is runnable on
     const grants = migration.replace(/--.*$/gm, '');
     expect(grants).not.toMatch(/GRANT[^;]*DELETE[^;]*advisor_identity/i);
     expect(grants).toMatch(/GRANT SELECT, INSERT, UPDATE ON advisor\.advisor_identity\s+TO service_role/);
+  });
+
+  it('the persistent advisor fixture cannot surface in Company/Worker/Partner UI', () => {
+    // Company visibility is gated on an ACTIVE assignment, which this fixture
+    // never has — at BOTH the RLS layer and the API layer.
+    const policy = read('supabase/migrations/058_advisor_company_surface.sql');
+    expect(policy).toContain('advisor_identity_company_own_select');
+    expect(policy).toMatch(/company_has_active_advisor/);
+    expect(policy).toMatch(/status = 'active'/);
+    // The fixture script creates no assignment at all.
+    expect(fixtureCode()).not.toContain("from('advisor_assignment')");
+    // Worker and Partner surfaces never read advisor_identity in the first place.
+    const leaks: string[] = [];
+    for (const dir of ['app/worker', 'app/partner', 'app/api/worker', 'app/api/partner']) {
+      for (const p of walk(dir, ['.ts', '.tsx'])) {
+        if (read(p).includes('advisor_identity')) leaks.push(p);
+      }
+    }
+    expect(leaks, `advisor_identity must not be read by worker/partner surfaces: ${leaks.join(', ')}`).toEqual([]);
   });
 
   it('the fixture mirrors real schema truth for both roles', () => {
