@@ -45,6 +45,37 @@ export function getCompanyBCredentials(): CompanyCredentials | null {
   return { email, password, tenantCode: readEnv('E2E_COMPANY_B_TENANT_CODE') };
 }
 
+/**
+ * KORA-WP-088 — Worker / Partner / Advisor credential readers.
+ *
+ * Same contract as the admin/company readers above: process.env only, never
+ * returns or logs a raw secret, missing credentials resolve to `null` so the
+ * caller skips instead of throwing. Added so the Founder-mandated authenticated
+ * multi-viewport validation can cover all FIVE role environments, not just the
+ * three GOLDEN-02 covered. NO CREDENTIAL IS FABRICATED OR STORED HERE — these
+ * are readers only; the values must come from the authorized environment.
+ */
+export function getWorkerCredentials(): Credentials | null {
+  const email = readEnv('E2E_WORKER_EMAIL');
+  const password = readEnv('E2E_WORKER_PASSWORD');
+  if (!email || !password) return null;
+  return { email, password };
+}
+
+export function getPartnerCredentials(): Credentials | null {
+  const email = readEnv('E2E_PARTNER_EMAIL');
+  const password = readEnv('E2E_PARTNER_PASSWORD');
+  if (!email || !password) return null;
+  return { email, password };
+}
+
+export function getAdvisorCredentials(): Credentials | null {
+  const email = readEnv('E2E_ADVISOR_EMAIL');
+  const password = readEnv('E2E_ADVISOR_PASSWORD');
+  if (!email || !password) return null;
+  return { email, password };
+}
+
 export function getBaseUrl(): string {
   return readEnv('E2E_BASE_URL') ?? 'http://localhost:3000';
 }

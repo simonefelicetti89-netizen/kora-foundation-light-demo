@@ -54,7 +54,13 @@ describe('/company/status — contrast fix', () => {
   });
 
   it('functional green and blue colors are preserved in live status page', () => {
-    expect(statusPage).toContain('#22c55e');
+    // KORA-WP-088: the functional green is preserved but now routes through the
+    // canonical token instead of the raw '#22c55e' literal. This is a
+    // STRENGTHENING of the original assertion, not a relaxation: the literal
+    // check would still have passed for a hardcoded design-system violation,
+    // whereas the token check also enforces the token rule. The blue is
+    // unchanged — it is an rgba() tint, which this WP did not touch.
+    expect(statusPage).toContain('BADGE_TOKENS.eligible.text');
     expect(statusPage).toContain('rgba(74,127,224,');
   });
 

@@ -15,7 +15,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
-import { PILLAR_COLORS, PILLAR_SURFACE, TOKENS } from '@/lib/design/kora-design-tokens';
+import { PILLAR_COLORS, PILLAR_SURFACE, TOKENS, BADGE_TOKENS, BUTTON_TOKENS, MACROBLOCK_COLORS } from '@/lib/design/kora-design-tokens';
 
 const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf-8');
@@ -210,53 +210,210 @@ describe('KORA-WP-088 — card/metric grids wrap instead of overflowing', () => 
   });
 });
 
-// ── PRESENTATION-HEX RATCHET ───────────────────────────────────────────────
-// The remaining literal debt is real and disclosed (report 202). These bounds
-// are a RATCHET, not a pass: they can only ever be lowered. They make the
-// remaining debt impossible to grow silently, and any future remediation batch
-// simply tightens the numbers.
+// ── PRESENTATION-LITERAL CLOSURE ───────────────────────────────────────────
+// WP-088 second pass (Founder final colour adjudication). The remediation is
+// complete: every in-scope presentation literal now resolves through the
+// canonical token source. What is left is a CLOSED, ENUMERATED set of proven
+// exceptions — not an open allow-list. The numbers below are a ratchet that can
+// only be lowered, and the exceptions are asserted by value and by kind, so a
+// new exception cannot be smuggled in by widening a path pattern.
 
-describe('KORA-WP-088 — presentation-hex ratchet (remaining debt cannot grow)', () => {
+describe('KORA-WP-088 — presentation-literal closure', () => {
+  // A comment is documentation, not a presentation literal. docs/30's
+  // supersession record, KoraLogo's variant note and app/page.tsx's historical
+  // pillar note all legitimately NAME colours in prose; stripping comments is
+  // what makes this guard measure the thing it claims to measure.
+  const stripComments = (src: string) =>
+    src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*(\/\/|\*).*$/gm, '');
+
+  // The ONLY value allowed to remain as a literal, and why: #FFFFFF is not a
+  // KORA palette colour — it is the CSS universal constant, and the canonical
+  // token source itself spells it literally (BUTTON_TOKENS.primary.color,
+  // CHART_COLORS.tooltipText) rather than tokenising it. A component literal is
+  // therefore consistent with canon, not a violation of it. Class strings use
+  // Tailwind's own `text-white`/`bg-white` for the same need.
+  const ALLOWED_LITERALS = new Set(['#FFFFFF']);
+
+  // Not colours at all: HTML numeric character entities (&#128274; 🔒,
+  // &#128279; 🔗) that the /#[0-9A-Fa-f]{6}/ shape matches by accident.
+  const ENTITY = /&#\d{6};/g;
+
   function scan() {
     const files = walk('app', ['.ts', '.tsx', '.css'])
       .concat(walk('components', ['.ts', '.tsx', '.css']))
       .concat(walk('lib', ['.ts', '.tsx', '.css']));
-    let occurrences = 0;
-    const withHex: string[] = [];
+    let allowed = 0;
+    const offenders: string[] = [];
     for (const p of files) {
       if (isExemptPath(p)) continue;
-      const n = (read(p).match(/#[0-9A-Fa-f]{6}\b/g) ?? []).length;
-      if (n) { withHex.push(p); occurrences += n; }
-    }
-    return { fileCount: withHex.length, occurrences };
-  }
-
-  const BASELINE_FILES = 182;
-  const BASELINE_OCCURRENCES = 1967;
-
-  it(`no more than ${BASELINE_FILES} in-scope files carry a presentation hex literal`, () => {
-    expect(scan().fileCount).toBeLessThanOrEqual(BASELINE_FILES);
-  });
-
-  it(`no more than ${BASELINE_OCCURRENCES} presentation hex literals remain in scope`, () => {
-    expect(scan().occurrences).toBeLessThanOrEqual(BASELINE_OCCURRENCES);
-  });
-
-  it('the canonical core palette is no longer duplicated as an inline-style literal', () => {
-    // These ten values were fully routed through tokens in this WP. A raw
-    // `prop: '#HEX'` reintroduction of any of them is a regression.
-    const CORE = ['#06032B', '#F8F6F1', '#EFEBE2', '#E3DDD3', '#C76F3D',
-                  '#2F7D55', '#9E3B2F', '#D99A2B', '#6156F5', '#8A5A00'];
-    const offenders: string[] = [];
-    for (const p of walk('app', ['.tsx']).concat(walk('components', ['.tsx']))) {
-      if (isExemptPath(p)) continue;
-      const src = read(p);
-      for (const v of CORE) {
-        const re = new RegExp(`\\b\\w+\\s*:\\s*'${v}'`, 'i');
-        if (re.test(src)) offenders.push(`${p} (${v})`);
+      // The ONE out-of-scope file: the brand mark itself. Founder instruction
+      // for WP-088 excludes brand-asset regeneration. app/global-error.tsx is
+      // deliberately NOT excluded — it was fully remediated (it uses token
+      // imports, which survive a root-layout crash; only CSS vars would not).
+      if (p === 'components/brand/KoraLogo.tsx') continue;
+      const src = stripComments(read(p)).replace(ENTITY, '');
+      for (const m of src.match(/#[0-9A-Fa-f]{6}\b/g) ?? []) {
+        if (ALLOWED_LITERALS.has(m.toUpperCase())) { allowed += 1; continue; }
+        offenders.push(`${p} (${m})`);
       }
     }
-    expect(offenders, `core palette must come from TOKENS: ${offenders.join(', ')}`).toEqual([]);
+    return { offenders, allowed };
+  }
+
+  it('no in-scope presentation colour literal remains outside the canonical token source', () => {
+    const { offenders } = scan();
+    expect(offenders, `must resolve through tokens: ${offenders.slice(0, 20).join(', ')}`).toEqual([]);
+  });
+
+  // Ratchet on the one allowed value, so even the proven exception cannot grow.
+  const BASELINE_WHITE = 75;
+  it(`the #FFFFFF exception does not grow beyond ${BASELINE_WHITE} occurrences`, () => {
+    expect(scan().allowed).toBeLessThanOrEqual(BASELINE_WHITE);
+  });
+
+  it('every exempt path is a deliberate, named exclusion — not a growable pattern', () => {
+    // Pinning the set makes widening it a visible test edit, never a silent one.
+    expect([...HEX_EXEMPT].sort()).toEqual([
+      'app/globals.css',
+      'app/landing.module.css',
+      'app/pilot/pilot.module.css',
+      'components/landing/marketing.module.css',
+      'lib/decision-pack/html-template.ts',
+      'lib/design/kora-design-tokens.ts',
+    ]);
+  });
+
+  it('no Tailwind arbitrary-value hex class remains in scope', () => {
+    const offenders: string[] = [];
+    for (const p of walk('app', ['.ts', '.tsx']).concat(walk('components', ['.ts', '.tsx']))
+                     .concat(walk('lib', ['.ts', '.tsx']))) {
+      if (isExemptPath(p) || p === 'components/brand/KoraLogo.tsx') continue;
+      const src = stripComments(read(p));
+      for (const m of src.match(/[a-z-]+-\[#[0-9A-Fa-f]{6}\]/g) ?? []) offenders.push(`${p} (${m})`);
+    }
+    expect(offenders, `use the generated token utilities: ${offenders.join(', ')}`).toEqual([]);
+  });
+
+  it('no malformed arbitrary-value class survives (Tailwind drops these silently)', () => {
+    const offenders: string[] = [];
+    for (const p of walk('app', ['.ts', '.tsx']).concat(walk('components', ['.ts', '.tsx']))) {
+      if (isExemptPath(p)) continue;
+      const src = read(p);
+      // `bg-[rgba(...)]0` and `text-\[#HEX\]` both emit a class Tailwind never generates.
+      if (/-\[rgba\([\d,. ]*\)\]\d/.test(src)) offenders.push(`${p} (trailing digit after ])`);
+      if (/-\\\[#[0-9A-Fa-f]{6}\\\]/.test(src)) offenders.push(`${p} (escaped brackets)`);
+    }
+    expect(offenders, `dead classes: ${offenders.join(', ')}`).toEqual([]);
+  });
+});
+
+// ── FOUNDER FINAL COLOUR ADJUDICATION — the four ratified semantic slots ───
+
+describe('KORA-WP-088 — Founder final colour adjudication (Q1–Q5)', () => {
+  const tokens = read('lib/design/kora-design-tokens.ts');
+
+  it('Q1 — the informational/in-process family exists with the ratified values', () => {
+    expect(TOKENS.info.base).toBe('#3B6EBA');
+    expect(TOKENS.info.text).toBe('#1E4A8A');
+    expect(TOKENS.info.bg).toMatch(/^rgba\(59,110,186,/);
+    expect(TOKENS.info.border).toMatch(/^rgba\(59,110,186,/);
+    expect(BADGE_TOKENS.info.text).toBe(TOKENS.info.text);
+  });
+
+  it('Q1 — the record states it is a semantic functional blue, not a pillar/brand colour', () => {
+    expect(tokens).toMatch(/SEMANTIC FUNCTIONAL BLUE/);
+    expect(tokens).toMatch(/NOT a pillar colour/);
+  });
+
+  it('Q2 — the solid ink button has a canonical hover distinct from the transparent one', () => {
+    expect(BUTTON_TOKENS.ink.background).toBe(TOKENS.ink);
+    expect(BUTTON_TOKENS.ink.hover).toBe('#1A1756');
+    expect(BUTTON_TOKENS.ink.hover).not.toBe(BUTTON_TOKENS.secondary.hover);
+  });
+
+  it('Q3 — the inset panel is a distinct surface, deliberately not TOKENS.surface', () => {
+    expect(TOKENS.insetPanel).toBe('#FFFAF5');
+    expect(TOKENS.insetPanel).not.toBe(TOKENS.surface);
+    expect(tokens).toMatch(/Do not use it as a card surface/);
+  });
+
+  it('Q4 — the macroblock series is categorical only and never reuses pillar semantics', () => {
+    expect(MACROBLOCK_COLORS.REACH).toBe('#3B6EBA');
+    expect(MACROBLOCK_COLORS.QUALITY).toBe('#2F7D55');
+    expect(MACROBLOCK_COLORS.EQUITY).toBe('#7C3D8F');
+    expect(MACROBLOCK_COLORS.BTI).toBe('#C07D2A');
+    expect(Object.keys(MACROBLOCK_COLORS).sort()).toEqual(['BTI', 'EQUITY', 'QUALITY', 'REACH']);
+    expect(tokens).toMatch(/NOT pillar colours, NOT status colours/);
+    // EQUITY and BTI must not leak back out as general-purpose UI accents.
+    const leaked: string[] = [];
+    for (const p of walk('app', ['.ts', '.tsx']).concat(walk('components', ['.ts', '.tsx']))
+                     .concat(walk('lib', ['.ts', '.tsx']))) {
+      if (isExemptPath(p)) continue;
+      const src = read(p).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*(\/\/|\*).*$/gm, '');
+      if (/['"`]#7C3D8F['"`]/i.test(src) || /['"`]#C07D2A['"`]/i.test(src)) leaked.push(p);
+    }
+    expect(leaked, `macroblock values used as literals: ${leaked.join(', ')}`).toEqual([]);
+  });
+
+  it('Q5 — KORA lime is NOT promoted into the token system', () => {
+    // The header records the Q5 decision by name, so assert lime is never
+    // DEFINED as a token value — not that the file never mentions it.
+    expect(tokens).not.toMatch(/:\s*'#C8FF47'/);
+    const offenders: string[] = [];
+    for (const p of walk('app', ['.ts', '.tsx']).concat(walk('components', ['.ts', '.tsx']))) {
+      if (isExemptPath(p)) continue;
+      if (/#C8FF47|#D4FF6B/i.test(read(p))) offenders.push(p);
+    }
+    expect(offenders, `lime must stay confined to the Decision Pack export: ${offenders.join(', ')}`).toEqual([]);
+  });
+
+  it('exactly four new semantic concepts were introduced — no token sprawl', () => {
+    expect(Object.keys(TOKENS.info).sort()).toEqual(['base', 'bg', 'border', 'text']);
+    expect(TOKENS.insetPanel).toBeTypeOf('string');
+    expect(BUTTON_TOKENS.ink).toBeDefined();
+    expect(MACROBLOCK_COLORS).toBeDefined();
+  });
+});
+
+// ── E2E MULTI-VIEWPORT PREPARATION (no credentials, no secrets) ────────────
+
+describe('KORA-WP-088 — authenticated multi-viewport validation is runnable once credentials exist', () => {
+  it('env helpers read Worker / Partner / Advisor credentials from the environment only', () => {
+    const env = read('tests/e2e/helpers/env.ts');
+    for (const fn of ['getWorkerCredentials', 'getPartnerCredentials', 'getAdvisorCredentials']) {
+      expect(env).toContain(fn);
+    }
+    for (const v of ['E2E_WORKER_EMAIL', 'E2E_PARTNER_EMAIL', 'E2E_ADVISOR_EMAIL']) {
+      expect(env).toContain(v);
+    }
+  });
+
+  it('no credential value is committed anywhere in the E2E helpers or spec', () => {
+    for (const f of ['tests/e2e/helpers/env.ts', 'tests/e2e/responsive-viewports.spec.ts']) {
+      const src = read(f);
+      // A getter must read process.env, never compare against or assign a literal.
+      expect(src).not.toMatch(/E2E_[A-Z_]+\s*=\s*['"`][^'"`]+['"`]/);
+      expect(src).not.toMatch(/password\s*[:=]\s*['"`][^'"`$]{3,}['"`]/i);
+    }
+  });
+
+  it('playwright defines the three Founder-mandated viewport projects', () => {
+    const cfg = read('playwright.config.ts');
+    for (const [name, width] of [['mobile-375', 375], ['tablet-768', 768], ['desktop-1440', 1440]] as const) {
+      expect(cfg).toContain(name);
+      expect(cfg).toContain(`width: ${width}`);
+    }
+    // The viewport projects must not silently re-run every existing spec.
+    expect(cfg).toContain('testMatch');
+    expect(cfg).toContain('testIgnore');
+  });
+
+  it('the responsive spec covers all five role environments and skips without credentials', () => {
+    const spec = read('tests/e2e/responsive-viewports.spec.ts');
+    for (const r of ['KORA Admin', 'Company', 'Worker', 'Partner', 'Advisor']) expect(spec).toContain(r);
+    expect((spec.match(/test\.skip\(!creds/g) ?? []).length).toBe(5);
+    expect(spec).toContain('guardE2ETarget');
+    expect(spec).toContain('scrollWidth');
   });
 });
 

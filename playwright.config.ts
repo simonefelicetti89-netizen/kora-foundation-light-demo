@@ -21,10 +21,31 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
 
+  // KORA-WP-088 — the Founder's responsive acceptance is stated in viewports,
+  // so the runner has to be able to produce that evidence. `chromium` stays the
+  // default project for every existing spec; the three viewport projects below
+  // run ONLY tests/e2e/responsive-viewports.spec.ts, so adding them does not
+  // triple the runtime of the GOLDEN suites.
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: /responsive-viewports\.spec\.ts/,
+    },
+    {
+      name: 'mobile-375',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 375, height: 812 }, isMobile: false },
+      testMatch: /responsive-viewports\.spec\.ts/,
+    },
+    {
+      name: 'tablet-768',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 } },
+      testMatch: /responsive-viewports\.spec\.ts/,
+    },
+    {
+      name: 'desktop-1440',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+      testMatch: /responsive-viewports\.spec\.ts/,
     },
   ],
 
