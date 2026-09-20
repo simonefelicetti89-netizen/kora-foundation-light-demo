@@ -151,6 +151,16 @@ export function validateSourceAttributes(
           'nested objects and arrays are not a tabular source shape.',
       );
     }
+    // JSON has no NaN/Infinity: serialization silently turns them into null, so
+    // accepting one here would store a different value than the caller passed —
+    // a semantic mutation the edge contract forbids. Reject at the boundary
+    // instead, where the caller can still see which attribute was wrong.
+    if (typeof value === 'number' && !Number.isFinite(value)) {
+      throw new Error(
+        `[KORA] sourceAttributes["${key}"] must be a finite number — ` +
+          'NaN and Infinity are not representable in JSON and would be persisted as null.',
+      );
+    }
   }
   return attrs;
 }

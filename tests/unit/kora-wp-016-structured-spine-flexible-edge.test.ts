@@ -254,6 +254,65 @@ describe('KORA-WP-016 — the edge can never replace, duplicate or override the 
   });
 });
 
+describe('KORA-WP-016 — numeric values must be finite (JSON cannot carry NaN/Infinity)', () => {
+  it('accepts a finite integer and a finite decimal', async () => {
+    const { validateSourceAttributes } = await svc();
+    expect(validateSourceAttributes({ eligible_population: 420, uptake: 0.62 })).toEqual({
+      eligible_population: 420, uptake: 0.62,
+    });
+  });
+
+  it('accepts the numeric extremes that ARE representable', async () => {
+    const { validateSourceAttributes } = await svc();
+    expect(() => validateSourceAttributes({ a: 0, b: -1, c: Number.MAX_SAFE_INTEGER })).not.toThrow();
+  });
+
+  it('rejects NaN', async () => {
+    const { validateSourceAttributes } = await svc();
+    expect(() => validateSourceAttributes({ uptake: NaN })).toThrow(/must be a finite number/);
+  });
+
+  it('rejects Infinity and -Infinity', async () => {
+    const { validateSourceAttributes } = await svc();
+    expect(() => validateSourceAttributes({ uptake: Infinity })).toThrow(/must be a finite number/);
+    expect(() => validateSourceAttributes({ uptake: -Infinity })).toThrow(/must be a finite number/);
+  });
+
+  it('a non-finite value fails the whole write — no row, no governance event', async () => {
+    const { createObservedInvestmentFact } = await svc();
+    await expect(createObservedInvestmentFact({
+      tenantId: TENANT_A, recordedByRole: 'COMPANY_ADMIN', recordedById: 'u', purpose: 'p',
+      sourceAttributes: { uptake: NaN },
+    })).rejects.toThrow(/must be a finite number/);
+    expect(insertedRows).toHaveLength(0);
+    expect(recordGovernanceEventMock).not.toHaveBeenCalled();
+  });
+
+  it('accepted numeric values round-trip unchanged through persistence', async () => {
+    const { createObservedInvestmentFact } = await svc();
+    const fact = await createObservedInvestmentFact({
+      tenantId: TENANT_A, recordedByRole: 'COMPANY_ADMIN', recordedById: 'u', purpose: 'p',
+      sourceAttributes: { eligible_population: 420, uptake: 0.62, zero: 0, negative: -3.5 },
+    });
+    expect(fact.sourceAttributes).toEqual({ eligible_population: 420, uptake: 0.62, zero: 0, negative: -3.5 });
+  });
+
+  it('every accepted value survives a JSON round-trip identically — TS validator and JSONB persistence agree', async () => {
+    const { validateSourceAttributes } = await svc();
+    const accepted = validateSourceAttributes({ ...POLICY_SOURCE_ATTRIBUTES });
+    expect(JSON.parse(JSON.stringify(accepted))).toEqual(accepted);
+  });
+
+  it('the approved policy-shaped fixture remains valid after the finite-number guard', async () => {
+    const { createObservedInvestmentFact } = await svc();
+    const fact = await createObservedInvestmentFact({
+      tenantId: TENANT_A, recordedByRole: 'COMPANY_ADMIN', recordedById: 'u',
+      purpose: 'Policy smart working aziendale', sourceAttributes: { ...POLICY_SOURCE_ATTRIBUTES },
+    });
+    expect(fact.sourceAttributes).toEqual(POLICY_SOURCE_ATTRIBUTES);
+  });
+});
+
 describe('KORA-WP-016 — WP-014 invariants survive unchanged', () => {
   it('Unknown is still never coerced to 0/false/empty, with an edge present', async () => {
     const { createObservedInvestmentFact } = await svc();
