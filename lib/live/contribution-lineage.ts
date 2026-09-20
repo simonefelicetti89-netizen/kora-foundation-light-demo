@@ -1,4 +1,5 @@
 // lib/live/contribution-lineage.ts
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 // B29: Derives the KORA contribution role for an intake record.
 // Pure function — no DB, no LLM, deterministic.
 //
@@ -157,12 +158,12 @@ export const CONTRIBUTION_ROLE_LABELS: Record<ContributionRole, string> = {
 };
 
 export const CONTRIBUTION_ROLE_COLOR: Record<ContributionRole, { bg: string; text: string; border: string }> = {
-  kora_index_and_bti:       { bg: '#f0fdf4', text: '#166534', border: '#bbf7d0' },
-  kora_index_only:          { bg: '#f5f4ff', text: '#4d3d9e', border: '#c7c4f8' },
-  bti_only_economic_relief: { bg: '#fffbeb', text: '#854d0e', border: '#fde68a' },
-  reporting_context_only:   { bg: '#f0f9ff', text: '#0c4a6e', border: '#bae6fd' },
-  excluded_compliance:      { bg: '#fef9c3', text: '#713f12', border: '#fef08a' },
-  needs_info:               { bg: '#faf5ff', text: '#581c87', border: '#e9d5ff' },
-  rejected:                 { bg: '#fef2f2', text: '#991b1b', border: '#fca5a5' },
-  pending_review:           { bg: '#f8fafc', text: '#64748b', border: '#e2e8f0' },
+  kora_index_and_bti:       { bg: BADGE_TOKENS.eligible.bg, text: BADGE_TOKENS.eligible.text, border: BADGE_TOKENS.eligible.border },
+  kora_index_only:          { bg: TOKENS.accentSoft, text: TOKENS.violet, border: TOKENS.accentSoft },
+  bti_only_economic_relief: { bg: BADGE_TOKENS.limited.bg, text: BADGE_TOKENS.limited.text, border: BADGE_TOKENS.limited.border },
+  reporting_context_only:   { bg: BADGE_TOKENS.info.bg, text: BADGE_TOKENS.info.text, border: BADGE_TOKENS.info.border },
+  excluded_compliance:      { bg: BADGE_TOKENS.limited.bg, text: BADGE_TOKENS.limited.text, border: BADGE_TOKENS.limited.border },
+  needs_info:               { bg: TOKENS.accentSoft, text: TOKENS.violet, border: TOKENS.accentSoft },
+  rejected:                 { bg: BADGE_TOKENS.blocked.bg, text: BADGE_TOKENS.blocked.text, border: BADGE_TOKENS.blocked.border },
+  pending_review:           { bg: TOKENS.surface, text: TOKENS.inkSecondary, border: TOKENS.inkBorder },
 };

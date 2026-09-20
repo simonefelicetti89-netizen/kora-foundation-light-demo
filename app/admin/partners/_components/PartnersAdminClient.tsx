@@ -5,7 +5,7 @@
 // No marketplace, no booking, no partner ranking, no per-worker interaction data.
 
 import { useState, useId, isValidElement, cloneElement } from 'react';
-import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const PILLARS   = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 const MODES     = ['online', 'onsite', 'hybrid'] as const;
@@ -17,9 +17,9 @@ type Status   = typeof STATUSES[number];
 
 
 const STATUS_STYLES: Record<Status, { bg: string; text: string; label: string }> = {
-  draft:     { bg: '#fef9c3', text: '#854d0e', label: 'Bozza' },
-  published: { bg: '#dcfce7', text: '#15803d', label: 'Pubblicato' },
-  archived:  { bg: '#f3f4f6', text: '#6b7280', label: 'Archiviato' },
+  draft:     { bg: BADGE_TOKENS.limited.bg, text: BADGE_TOKENS.limited.text, label: 'Bozza' },
+  published: { bg: BADGE_TOKENS.eligible.bg, text: BADGE_TOKENS.eligible.text, label: 'Pubblicato' },
+  archived:  { bg: TOKENS.surface, text: TOKENS.inkSecondary, label: 'Archiviato' },
 };
 
 const DELIVERY_LABELS: Record<Mode, string> = {
@@ -209,7 +209,7 @@ export function PartnersAdminClient({ initialPartners }: { initialPartners: Part
               />
             </FormField>
             {createError && (
-              <p style={{ fontSize: 11, color: '#dc2626', marginTop: 8 }}>{createError}</p>
+              <p style={{ fontSize: 11, color: BADGE_TOKENS.blocked.text, marginTop: 8 }}>{createError}</p>
             )}
             <div style={{ marginTop: 16 }}>
               <button
@@ -239,9 +239,9 @@ export function PartnersAdminClient({ initialPartners }: { initialPartners: Part
             style={{
               padding: '4px 12px', borderRadius: 99, fontSize: 11, fontWeight: 600,
               cursor: 'pointer', border: '1px solid',
-              background: pillarFilter === p ? '#06032B' : 'transparent',
+              background: pillarFilter === p ? TOKENS.ink : 'transparent',
               color: pillarFilter === p ? '#fff' : 'rgba(6,3,43,0.55)',
-              borderColor: pillarFilter === p ? '#06032B' : 'rgba(6,3,43,0.15)',
+              borderColor: pillarFilter === p ? TOKENS.ink : 'rgba(6,3,43,0.15)',
             }}
           >
             {p === 'all' ? 'Tutti' : p}
@@ -306,7 +306,7 @@ export function PartnersAdminClient({ initialPartners }: { initialPartners: Part
                   {partner.website_url && (
                     <a
                       href={partner.website_url} target="_blank" rel="noreferrer noopener"
-                      style={{ fontSize: 10, color: '#2563eb', marginTop: 4, display: 'inline-block' }}
+                      style={{ fontSize: 10, color: BADGE_TOKENS.info.text, marginTop: 4, display: 'inline-block' }}
                     >
                       {partner.website_url}
                     </a>
@@ -324,8 +324,8 @@ export function PartnersAdminClient({ initialPartners }: { initialPartners: Part
                         padding: '5px 11px', borderRadius: 6, fontSize: 10, fontWeight: 700,
                         cursor: isBusy ? 'not-allowed' : 'pointer', opacity: isBusy ? 0.5 : 1,
                         border: '1px solid rgba(6,3,43,0.15)',
-                        background: s === 'published' ? '#dcfce7' : s === 'archived' ? '#f3f4f6' : '#fef9c3',
-                        color: s === 'published' ? '#15803d' : s === 'archived' ? '#6b7280' : '#854d0e',
+                        background: s === 'published' ? BADGE_TOKENS.eligible.bg : s === 'archived' ? TOKENS.surface : BADGE_TOKENS.limited.bg,
+                        color: s === 'published' ? BADGE_TOKENS.eligible.text : s === 'archived' ? TOKENS.inkSecondary : BADGE_TOKENS.limited.text,
                       }}
                     >
                       → {STATUS_STYLES[s].label}
@@ -354,7 +354,7 @@ function Stat({ label, value, highlight, muted }: { label: string; value: number
   return (
     <div>
       <div style={{
-        fontSize: 22, fontWeight: 800, color: highlight ? '#15803d' : muted ? 'rgba(6,3,43,0.30)' : '#06032B',
+        fontSize: 22, fontWeight: 800, color: highlight ? BADGE_TOKENS.eligible.text : muted ? 'rgba(6,3,43,0.30)' : TOKENS.ink,
         lineHeight: 1,
       }}>
         {value}

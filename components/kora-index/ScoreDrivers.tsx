@@ -87,7 +87,7 @@ const DRIVER_LIBRARY: Record<string, {
   },
 };
 
-const STATUS_COLORS = ['#9E3B2F', '#D99A2B', 'rgba(6,3,43,0.40)'];
+const STATUS_COLORS = [TOKENS.critical, TOKENS.warning, 'rgba(6,3,43,0.40)'];
 
 // ScoreDrivers — shows 3 business-language score drivers BEFORE any technical detail.
 // Translates component codes into decisions executives can act on.

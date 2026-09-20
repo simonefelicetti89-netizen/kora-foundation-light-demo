@@ -74,7 +74,7 @@ export function CompanyUsersPanel({ tenantId }: { tenantId: string }) {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-[#9E3B2F]">
+      <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-kora-critical">
         ⚠ {error}
       </div>
     );
@@ -86,7 +86,7 @@ export function CompanyUsersPanel({ tenantId }: { tenantId: string }) {
     <div className="space-y-4">
       <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-white px-4 py-3">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">Tenant</p>
-        <p className="text-sm font-bold text-[#06032B]">{data.companyName}</p>
+        <p className="text-sm font-bold text-kora-ink">{data.companyName}</p>
         <p className="text-xs font-mono text-[rgba(6,3,43,0.40)]">{data.tenantId}</p>
       </div>
 
@@ -114,7 +114,7 @@ export function CompanyUsersPanel({ tenantId }: { tenantId: string }) {
             <tbody>
               {data.users.map((u) => (
                 <tr key={u.userId} className="border-t border-[rgba(6,3,43,0.05)]">
-                  <td className="px-4 py-2 text-[#06032B]">{u.email}</td>
+                  <td className="px-4 py-2 text-kora-ink">{u.email}</td>
                   <td className="px-4 py-2 text-[rgba(6,3,43,0.65)]">{u.koraRole}</td>
                   <td className="px-4 py-2 text-[rgba(6,3,43,0.65)]">{STATUS_LABEL[u.userStatus] ?? u.userStatus}</td>
                   <td className="px-4 py-2 text-[rgba(6,3,43,0.50)]">{formatDate(u.lastSignIn)}</td>

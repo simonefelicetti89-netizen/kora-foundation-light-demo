@@ -299,7 +299,7 @@ export default function CompanyActivitySelectionPage() {
       </Panel>
 
       {/* 7. Privacy/output note */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Confine privacy</SectionLabel>
         <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>L&apos;azienda riceve sempre e solo output aggregati.</li>
@@ -310,7 +310,7 @@ export default function CompanyActivitySelectionPage() {
       </div>
 
       {/* 8. KORA Index note */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Nota KORA Index</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           L&apos;attivazione di queste attività potrà in futuro diventare un segnale aggregato per il KORA Index —
@@ -320,7 +320,7 @@ export default function CompanyActivitySelectionPage() {
       </div>
 
       {/* 9. Contribution note */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Nota Contribution</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           Le Attività Partner non alimentano mai direttamente KORA Contribution. Le iniziative KORA Space/
@@ -330,7 +330,7 @@ export default function CompanyActivitySelectionPage() {
       </div>
 
       {/* 10. Fiscal/legal note */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Nota fiscale/legale</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           La categoria fiscale/welfare è metadato proposto. La validazione definitiva resta in capo a

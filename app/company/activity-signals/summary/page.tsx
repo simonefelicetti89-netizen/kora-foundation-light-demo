@@ -131,7 +131,7 @@ export default function CompanyActivitySignalsSummaryPage() {
       </Panel>
 
       {/* Privacy note */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 16px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 16px' }}>
         <p style={{ margin: 0, fontSize: 12, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           Le soglie di privacy non sono decise in questo sprint. L&apos;azienda resta sempre aggregate-only —
           nessun nominativo, email, ID lavoratore, o prenotazione individuale è mai mostrata qui.

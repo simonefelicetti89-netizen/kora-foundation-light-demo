@@ -19,6 +19,7 @@ import {
   getTemplatesBySubmissionType,
   type SubmissionTypeGuidance,
 } from '@/lib/company-submissions/templates';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -60,9 +61,9 @@ const STATUS_LABEL: Record<string, string> = {
 
 const STATUS_CLS: Record<string, string> = {
   submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
-  submission_pending:             'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
+  submission_pending:             'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]',
   submission_needs_clarification: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
-  submission_accepted:            'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  submission_accepted:            'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
   submission_rejected:            'bg-[rgba(158,59,47,0.06)] text-red-500 border-[rgba(158,59,47,0.22)]',
   submission_archived:            'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
 };
@@ -118,8 +119,8 @@ function SubmissionTimeline({ status }: { status: string }) {
         void isDone;
 
         if (reached) {
-          dotStyle  = 'bg-[#2F7D55] border-[rgba(47,125,85,0.50)]';
-          labelStyle = 'text-[#2F7D55]';
+          dotStyle  = 'bg-kora-success border-[rgba(47,125,85,0.50)]';
+          labelStyle = 'text-kora-success';
         }
         // Special: needs_clarification is amber
         if (status === 'submission_needs_clarification' && step.key === 'reviewed') {
@@ -137,7 +138,7 @@ function SubmissionTimeline({ status }: { status: string }) {
         );
         if (isCurrent) {
           dotStyle  = 'bg-[rgba(43,92,230,0.60)] border-[rgba(43,92,230,0.40)]';
-          labelStyle = 'text-[#1E4A8A]';
+          labelStyle = 'text-kora-info-text';
         }
 
         return (
@@ -204,7 +205,7 @@ function TypeGuidancePanel({ type }: { type: string }) {
                 <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.78)]">{tmpl.title}</p>
                 <p className="text-[9px] text-[rgba(6,3,43,0.40)]">{tmpl.description}</p>
               </div>
-              <span className="text-[10px] font-semibold text-[#4A7FE0] shrink-0">↓ Scarica</span>
+              <span className="text-[10px] font-semibold text-kora-info shrink-0">↓ Scarica</span>
             </a>
           ))}
         </div>
@@ -270,7 +271,7 @@ function UploadForm({ submissionId, onFileDone, label }: {
             className="text-xs text-[rgba(6,3,43,0.78)] w-full" />
         </div>
         <button onClick={upload} disabled={!file || status === 'loading'}
-          className="rounded-lg bg-[#06032B] text-white px-3 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-50 transition-colors shrink-0">
+          className="rounded-lg bg-kora-ink text-white px-3 py-1.5 text-xs font-semibold hover:bg-kora-ink-hover disabled:opacity-50 transition-colors shrink-0">
           {status === 'loading' ? '⏳' : 'Carica'}
         </button>
       </div>
@@ -322,7 +323,7 @@ function ClarificationPanel({ sub, onResolved }: {
         <div className="flex items-center gap-2 mb-1">
           <span style={{
             fontSize: 9, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
-            background: 'rgba(217,154,43,0.20)', color: '#b45309',
+            background: 'rgba(217,154,43,0.20)', color: BADGE_TOKENS.limited.text,
             border: '1.5px solid rgba(217,154,43,0.40)', borderRadius: 4, padding: '2px 6px',
           }}>
             Azione richiesta
@@ -374,7 +375,7 @@ function ClarificationPanel({ sub, onResolved }: {
             onClick={resubmit}
             disabled={submitting}
             className="rounded-lg px-4 py-2 text-xs font-bold transition-colors disabled:opacity-50"
-            style={{ background: 'rgba(217,154,43,0.22)', color: '#b45309', border: '1.5px solid rgba(217,154,43,0.45)' }}
+            style={{ background: 'rgba(217,154,43,0.22)', color: BADGE_TOKENS.limited.text, border: '1.5px solid rgba(217,154,43,0.45)' }}
             data-testid="clarification-submit-btn"
           >
             {submitting ? '⏳ Invio…' : 'Invia risposta a KORA Admin →'}
@@ -477,8 +478,8 @@ function SubmissionWizard({ onDone }: WizardProps) {
             <div className="flex items-center gap-1">
               <div
                 className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
-                  s < step ? 'bg-[#2F7D55] text-white' :
-                  s === step ? 'bg-[#06032B] text-white' :
+                  s < step ? 'bg-kora-success text-white' :
+                  s === step ? 'bg-kora-ink text-white' :
                   'bg-[rgba(6,3,43,0.10)] text-[rgba(6,3,43,0.40)]'
                 }`}
               >
@@ -526,7 +527,7 @@ function SubmissionWizard({ onDone }: WizardProps) {
 
           <button
             onClick={() => setStep(2)}
-            className="rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
+            className="rounded-lg bg-kora-ink text-white px-4 py-2 text-xs font-semibold hover:bg-kora-ink-hover transition-colors"
           >
             Avanti: scegli template →
           </button>
@@ -559,7 +560,7 @@ function SubmissionWizard({ onDone }: WizardProps) {
                   <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">{tmpl.title}</p>
                   <p className="text-[9px] text-[rgba(6,3,43,0.45)]">{tmpl.description} · {tmpl.pillarHint}</p>
                 </div>
-                <span className="text-[10px] font-bold text-[#4A7FE0]">↓ Scarica CSV</span>
+                <span className="text-[10px] font-bold text-kora-info">↓ Scarica CSV</span>
               </a>
             ))}
             {getTemplatesBySubmissionType(subType).length === 0 && (
@@ -578,7 +579,7 @@ function SubmissionWizard({ onDone }: WizardProps) {
             <button
               onClick={createDraft}
               disabled={creating}
-              className="rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-50 transition-colors"
+              className="rounded-lg bg-kora-ink text-white px-4 py-2 text-xs font-semibold hover:bg-kora-ink-hover disabled:opacity-50 transition-colors"
             >
               {creating ? '⏳ Creazione bozza…' : 'Avanti: carica file →'}
             </button>
@@ -600,7 +601,7 @@ function SubmissionWizard({ onDone }: WizardProps) {
             {fileCount > 0 && (
               <button
                 onClick={() => setStep(4)}
-                className="rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
+                className="rounded-lg bg-kora-ink text-white px-4 py-2 text-xs font-semibold hover:bg-kora-ink-hover transition-colors"
               >
                 Avanti: aggiungi nota →
               </button>
@@ -631,7 +632,7 @@ function SubmissionWizard({ onDone }: WizardProps) {
             </button>
             <button
               onClick={() => setStep(5)}
-              className="rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
+              className="rounded-lg bg-kora-ink text-white px-4 py-2 text-xs font-semibold hover:bg-kora-ink-hover transition-colors"
             >
               Avanti: conferma →
             </button>
@@ -664,7 +665,7 @@ function SubmissionWizard({ onDone }: WizardProps) {
               <button
                 onClick={submit}
                 disabled={submitting}
-                className="rounded-lg bg-[#C76F3D] text-white px-4 py-2 text-xs font-bold hover:bg-[#a55a2e] disabled:opacity-50 transition-colors"
+                className="rounded-lg bg-kora-accent text-white px-4 py-2 text-xs font-bold hover:bg-kora-accent-hover disabled:opacity-50 transition-colors"
                 data-testid="wizard-submit-btn"
               >
                 {submitting ? '⏳ Invio in corso…' : 'Invia per revisione KORA Admin →'}
@@ -704,14 +705,14 @@ interface HistoryEntry {
 }
 
 const HISTORY_STATUS_CLS: Record<string, string> = {
-  pending:                        'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  approved:                       'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  pending:                        'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]',
+  approved:                       'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
   rejected:                       'bg-[rgba(158,59,47,0.06)] text-red-500 border-[rgba(158,59,47,0.22)]',
   archived:                       'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
   submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
-  submission_pending:             'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
+  submission_pending:             'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]',
   submission_needs_clarification: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
-  submission_accepted:            'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  submission_accepted:            'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
   submission_rejected:            'bg-[rgba(158,59,47,0.06)] text-red-500 border-[rgba(158,59,47,0.22)]',
 };
 
@@ -764,7 +765,7 @@ export function DataSubmissionSection({ userRole }: Props) {
         {isAdmin && !showWizard && !activeClarSub && (
           <button
             onClick={() => setShowWizard(true)}
-            className="rounded-lg bg-[#06032B] text-white px-3 py-1.5 text-xs font-semibold hover:bg-[#1a1756] transition-colors shrink-0"
+            className="rounded-lg bg-kora-ink text-white px-3 py-1.5 text-xs font-semibold hover:bg-kora-ink-hover transition-colors shrink-0"
             data-testid="new-submission-btn"
           >
             + Nuova submission
@@ -784,7 +785,7 @@ export function DataSubmissionSection({ userRole }: Props) {
             <div className="flex items-center gap-2">
               <span style={{
                 fontSize: 9, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
-                background: 'rgba(217,154,43,0.20)', color: '#b45309',
+                background: 'rgba(217,154,43,0.20)', color: BADGE_TOKENS.limited.text,
                 border: '1.5px solid rgba(217,154,43,0.40)', borderRadius: 4, padding: '2px 6px',
               }}>
                 Azione richiesta
@@ -797,7 +798,7 @@ export function DataSubmissionSection({ userRole }: Props) {
             <button
               onClick={() => setActiveClarSub(cSub)}
               className="rounded-md px-3 py-1.5 text-[10px] font-bold transition-colors"
-              style={{ background: 'rgba(217,154,43,0.20)', color: '#b45309', border: '1.5px solid rgba(217,154,43,0.40)' }}
+              style={{ background: 'rgba(217,154,43,0.20)', color: BADGE_TOKENS.limited.text, border: '1.5px solid rgba(217,154,43,0.40)' }}
               data-testid="open-clarification-btn"
             >
               Rispondi al chiarimento →
@@ -841,7 +842,7 @@ export function DataSubmissionSection({ userRole }: Props) {
               className="rounded-lg border px-4 py-3"
               style={{
                 background: sub.status === 'submission_needs_clarification'
-                  ? 'rgba(217,154,43,0.06)' : '#F8F6F1',
+                  ? 'rgba(217,154,43,0.06)' : TOKENS.surface,
                 borderColor: sub.status === 'submission_needs_clarification'
                   ? 'rgba(217,154,43,0.35)' : 'rgba(6,3,43,0.08)',
                 borderWidth: sub.status === 'submission_needs_clarification' ? '1.5px' : '1px',
@@ -883,7 +884,7 @@ export function DataSubmissionSection({ userRole }: Props) {
                     <button
                       onClick={() => setActiveClarSub(sub)}
                       className="rounded-md px-3 py-1 text-[10px] font-bold transition-colors"
-                      style={{ background: 'rgba(217,154,43,0.18)', color: '#b45309', border: '1.5px solid rgba(217,154,43,0.40)' }}
+                      style={{ background: 'rgba(217,154,43,0.18)', color: BADGE_TOKENS.limited.text, border: '1.5px solid rgba(217,154,43,0.40)' }}
                       data-testid="reply-clarification-btn"
                     >
                       Rispondi →
@@ -900,7 +901,7 @@ export function DataSubmissionSection({ userRole }: Props) {
       {!showWizard && isAdmin && (
         <div className="rounded-lg border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.02)] px-3 py-2 flex items-center gap-2">
           <span className="text-[10px] text-[rgba(6,3,43,0.40)]">Hai bisogno di un template CSV?</span>
-          <a href="/company/status#template-library" className="text-[10px] font-semibold text-[#4A7FE0] hover:underline">
+          <a href="/company/status#template-library" className="text-[10px] font-semibold text-kora-info hover:underline">
             Scarica dal Template Library →
           </a>
         </div>

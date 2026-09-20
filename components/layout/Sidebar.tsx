@@ -686,7 +686,7 @@ export function Sidebar() {
             aria-hidden="true"
             style={{
               background:  'rgba(199,111,61,0.20)',
-              border:      '1.5px solid #C76F3D',
+              border:      `1.5px solid ${TOKENS.accent}`,
               color:       TOKENS.accent,
               fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             }}

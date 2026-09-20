@@ -4,7 +4,7 @@
 // Actions: publish, reject, archive. No individual worker data.
 
 import { useState } from 'react';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -126,7 +126,7 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
                 padding:      '6px 12px',
                 borderRadius: 8,
                 border:       '1px solid rgba(6,3,43,0.12)',
-                background:   filter === value ? '#06032B' : 'transparent',
+                background:   filter === value ? TOKENS.ink : 'transparent',
                 color:        filter === value ? '#FFFFFF' : 'rgba(6,3,43,0.60)',
                 fontSize:     12,
                 fontWeight:   filter === value ? 700 : 500,
@@ -205,7 +205,7 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
                     {CATEGORY_LABELS[post.category] ?? post.category}
                   </span>
                   {post.pillar && (
-                    <span style={{ fontSize: 10, fontWeight: 600, color: '#C07D2A', padding: '2px 6px', borderRadius: 4, background: 'rgba(192,125,42,0.08)' }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: BADGE_TOKENS.limited.text, padding: '2px 6px', borderRadius: 4, background: 'rgba(192,125,42,0.08)' }}>
                       {post.pillar}
                     </span>
                   )}
@@ -213,7 +213,7 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
                   {post.opening_grade && (
                     <span
                       data-testid={`admin-opening-grade-${post.opening_grade}`}
-                      style={{ fontSize: 10, fontWeight: 600, color: '#3B6EBA', padding: '2px 6px', borderRadius: 4, background: 'rgba(59,110,186,0.08)', border: '1px solid rgba(59,110,186,0.20)' }}
+                      style={{ fontSize: 10, fontWeight: 600, color: TOKENS.info.base, padding: '2px 6px', borderRadius: 4, background: 'rgba(59,110,186,0.08)', border: '1px solid rgba(59,110,186,0.20)' }}
                     >
                       {OPENING_GRADE_LABELS[post.opening_grade] ?? post.opening_grade}
                     </span>
@@ -246,7 +246,7 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
                           <span style={{ color: TOKENS.success, marginLeft: 4 }}>✓ geocodificato</span>
                         )}
                         {post.location_lat == null && post.opening_grade && (
-                          <span style={{ color: '#C07D2A', marginLeft: 4 }}>⚠ non geocodificato</span>
+                          <span style={{ color: BADGE_TOKENS.limited.text, marginLeft: 4 }}>⚠ non geocodificato</span>
                         )}
                       </span>
                     )}

@@ -21,6 +21,7 @@
 import type { DeliveryMode, FiscalCategory } from './catalog';
 import type { PillarColorKey } from '@/lib/design/kora-design-tokens';
 import { getPartnerActivityById } from './catalog';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 // ── Enums ──────────────────────────────────────────────────────────────────
 
@@ -85,12 +86,12 @@ export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
 };
 
 export const BOOKING_STATUS_COLOR: Record<BookingStatus, { bg: string; text: string }> = {
-  new: { bg: 'rgba(97,86,245,0.10)', text: '#6156F5' },
-  confirmed: { bg: 'rgba(47,125,85,0.10)', text: '#2F7D55' },
-  completed: { bg: 'rgba(47,125,85,0.18)', text: '#2F7D55' },
+  new: { bg: 'rgba(97,86,245,0.10)', text: TOKENS.violet },
+  confirmed: { bg: 'rgba(47,125,85,0.10)', text: TOKENS.success },
+  completed: { bg: 'rgba(47,125,85,0.18)', text: TOKENS.success },
   cancelled: { bg: 'rgba(6,3,43,0.06)', text: 'rgba(6,3,43,0.42)' },
   withdrawn: { bg: 'rgba(6,3,43,0.06)', text: 'rgba(6,3,43,0.42)' },
-  follow_up_needed: { bg: 'rgba(217,154,43,0.12)', text: '#8A5A00' },
+  follow_up_needed: { bg: 'rgba(217,154,43,0.12)', text: TOKENS.safeguard.watch.text },
 };
 
 export const EMPLOYER_HIDDEN_FIELDS_STANDARD: string[] = [

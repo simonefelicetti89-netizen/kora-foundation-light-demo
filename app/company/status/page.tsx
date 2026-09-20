@@ -17,6 +17,7 @@ import {
   type WorkspaceReadinessSnapshot,
   type ChecklistItem,
 } from '@/lib/company-status/company-status-engine';
+import { BADGE_TOKENS } from '@/lib/design/kora-design-tokens';
 
 const DEFAULT_READINESS: WorkspaceReadinessSnapshot = {
   hasWorkforceBaseline: false,
@@ -59,7 +60,7 @@ function ChecklistRow({ item }: { item: ChecklistItem }) {
   const isInProgress = item.status === 'IN_PROGRESS';
 
   const icon = isComplete
-    ? { bg: 'rgba(34,197,94,0.15)', border: '1.5px solid rgba(34,197,94,0.35)', color: '#22c55e' }
+    ? { bg: 'rgba(34,197,94,0.15)', border: '1.5px solid rgba(34,197,94,0.35)', color: BADGE_TOKENS.eligible.text }
     : isInProgress
     ? { bg: 'rgba(74,127,224,0.12)', border: '1.5px solid rgba(74,127,224,0.35)', color: 'rgba(74,127,224,0.9)' }
     : { bg: 'rgba(6,3,43,0.04)', border: '1.5px solid rgba(6,3,43,0.12)', color: 'rgba(6,3,43,0.28)' };
@@ -133,8 +134,8 @@ const STATUS_META: Record<string, { label: string; bg: string; color: string }> 
   submission_draft:               { label: 'Bozza',                bg: 'rgba(6,3,43,0.08)',         color: 'rgba(6,3,43,0.50)' },
   submission_pending:             { label: 'In attesa revisione',   bg: 'rgba(74,127,224,0.15)',     color: 'rgba(130,180,240,0.90)' },
   submission_needs_clarification: { label: 'Chiarimento richiesto', bg: 'rgba(245,158,11,0.15)',     color: 'rgba(251,191,36,0.90)' },
-  submission_accepted:            { label: 'Accettata',             bg: 'rgba(34,197,94,0.12)',      color: '#22c55e' },
-  submission_rejected:            { label: 'Rifiutata',             bg: 'rgba(239,68,68,0.12)',      color: '#f87171' },
+  submission_accepted:            { label: 'Accettata',             bg: 'rgba(34,197,94,0.12)',      color: BADGE_TOKENS.eligible.text },
+  submission_rejected:            { label: 'Rifiutata',             bg: 'rgba(239,68,68,0.12)',      color: BADGE_TOKENS.blocked.text },
   submission_archived:            { label: 'Archiviata',            bg: 'rgba(6,3,43,0.06)',         color: 'rgba(6,3,43,0.38)' },
 };
 
@@ -213,7 +214,7 @@ export default function CompanyStatusCenterPage() {
           </h1>
           <span style={{
             fontSize: 10, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase',
-            background: 'rgba(34,197,94,0.12)', color: '#22c55e',
+            background: 'rgba(34,197,94,0.12)', color: BADGE_TOKENS.eligible.text,
             border: '1.5px solid rgba(34,197,94,0.30)', borderRadius: 5, padding: '3px 8px',
           }}>
             LIVE
@@ -225,7 +226,7 @@ export default function CompanyStatusCenterPage() {
         {liveError && (
           <div style={{
             marginTop: 12, padding: '10px 14px', borderRadius: 8, fontSize: 12,
-            background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171',
+            background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)', color: BADGE_TOKENS.blocked.text,
           }}>
             Impossibile caricare i dati live. Controlla la connessione e riprova.
           </div>
@@ -506,9 +507,9 @@ export default function CompanyStatusCenterPage() {
                   <div className="flex items-center gap-2">
                     <div style={{
                       width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-                      background: ready ? '#22c55e' : 'rgba(6,3,43,0.20)',
+                      background: ready ? BADGE_TOKENS.eligible.text : 'rgba(6,3,43,0.20)',
                     }} />
-                    <span style={{ fontSize: 13, fontWeight: 600, color: ready ? '#22c55e' : 'rgba(6,3,43,0.45)' }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: ready ? BADGE_TOKENS.eligible.text : 'rgba(6,3,43,0.45)' }}>
                       {value}
                     </span>
                   </div>

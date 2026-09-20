@@ -43,7 +43,7 @@ const ACTION_CONFIGS: Record<LifecycleAction, ActionConfig> = {
     label:            'Archivia',
     confirmToken:     'ARCHIVE_ATTACHMENT',
     destructive:      false,
-    confirmButtonCls: 'bg-[#D99A2B] text-white hover:bg-[rgba(217,154,43,0.90)]',
+    confirmButtonCls: 'bg-kora-warning text-white hover:bg-[rgba(217,154,43,0.90)]',
   },
   restore: {
     action:           'restore',
@@ -172,8 +172,8 @@ export function AttachmentLifecycleActions({
       {result && (
         <div className={`rounded border px-2.5 py-1.5 text-[9px] ${
           result.ok
-            ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]'
-            : 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]'
+            ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-kora-success'
+            : 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-kora-critical'
         }`}>
           {result.ok ? '✓' : '⚠'} {result.message}
         </div>
@@ -190,10 +190,10 @@ export function AttachmentLifecycleActions({
                 onClick={() => startAction(action)}
                 className={`rounded border px-2 py-0.5 text-[9px] font-semibold transition-colors ${
                   c.destructive
-                    ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] hover:bg-[rgba(158,59,47,0.10)]'
+                    ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-kora-critical hover:bg-[rgba(158,59,47,0.10)]'
                     : action === 'restore'
-                    ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55] hover:bg-[rgba(47,125,85,0.10)]'
-                    : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00] hover:bg-[rgba(217,154,43,0.12)]'
+                    ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-kora-success hover:bg-[rgba(47,125,85,0.10)]'
+                    : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-kora-warning-text hover:bg-[rgba(217,154,43,0.12)]'
                 }`}
               >
                 {c.label}
@@ -209,7 +209,7 @@ export function AttachmentLifecycleActions({
           cfg.destructive ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)]' : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]'
         }`}>
           <div className="flex items-start justify-between gap-2">
-            <p className={`text-[10px] font-bold ${cfg.destructive ? 'text-[#9E3B2F]' : 'text-[#8A5A00]'}`}>
+            <p className={`text-[10px] font-bold ${cfg.destructive ? 'text-kora-critical' : 'text-kora-warning-text'}`}>
               {cfg.destructive ? '⚠ ' : ''}{cfg.label}
             </p>
             <button onClick={cancelAction} className="text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] text-[9px]">Annulla</button>
@@ -220,7 +220,7 @@ export function AttachmentLifecycleActions({
 
           {/* Warning for destructive */}
           {cfg.warning && (
-            <p className="text-[9px] text-[#9E3B2F] leading-snug">{cfg.warning}</p>
+            <p className="text-[9px] text-kora-critical leading-snug">{cfg.warning}</p>
           )}
 
           {/* Optional reason */}
@@ -235,7 +235,7 @@ export function AttachmentLifecycleActions({
                 onChange={e => setReason(e.target.value.slice(0, 200))}
                 placeholder="es. Documento duplicato"
                 aria-label="Motivazione (opzionale, max 200 caratteri)"
-                className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1 text-[10px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-slate-400"
+                className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1 text-[10px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-slate-400"
               />
             </div>
           )}
@@ -244,7 +244,7 @@ export function AttachmentLifecycleActions({
           {cfg.confirmToken && (
             <div>
               <label className="block text-[9px] font-semibold text-[rgba(6,3,43,0.52)] mb-0.5">
-                Digita <code className="bg-[#F8F6F1]/80 px-1 rounded font-mono">{cfg.confirmToken}</code> per confermare
+                Digita <code className="bg-kora-paper/80 px-1 rounded font-mono">{cfg.confirmToken}</code> per confermare
               </label>
               <input
                 type="text"
@@ -253,7 +253,7 @@ export function AttachmentLifecycleActions({
                 placeholder={cfg.confirmToken}
                 aria-label={`Digita ${cfg.confirmToken} per confermare`}
                 autoFocus
-                className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1 text-[10px] font-mono text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#9E3B2F]"
+                className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1 text-[10px] font-mono text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-critical"
               />
             </div>
           )}
@@ -267,7 +267,7 @@ export function AttachmentLifecycleActions({
             >
               {loading ? '⏳ In corso…' : cfg.label}
             </button>
-            <button onClick={cancelAction} className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-1 text-[10px] text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.03)] transition-colors">
+            <button onClick={cancelAction} className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-1 text-[10px] text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.03)] transition-colors">
               Annulla
             </button>
           </div>

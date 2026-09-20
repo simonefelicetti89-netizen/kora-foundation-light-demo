@@ -9,7 +9,7 @@
 //   - Actions manage participation status — do not evaluate the worker
 
 import { useState, useEffect, useCallback } from 'react';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -46,7 +46,7 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string; bo
   pending:   { label: 'Richiesta inviata',          color: TOKENS.safeguard.watch.text,           bg: 'rgba(192,125,42,0.10)', border: 'rgba(192,125,42,0.30)' },
   approved:  { label: 'Partecipazione confermata',  color: TOKENS.success,           bg: 'rgba(47,125,85,0.08)',  border: 'rgba(47,125,85,0.22)'  },
   rejected:  { label: 'Richiesta non approvata',    color: TOKENS.critical,           bg: 'rgba(158,59,47,0.08)', border: 'rgba(158,59,47,0.22)'  },
-  attended:  { label: 'Partecipazione completata',  color: '#3B6EBA',           bg: 'rgba(59,110,186,0.08)', border: 'rgba(59,110,186,0.22)' },
+  attended:  { label: 'Partecipazione completata',  color: TOKENS.info.base,           bg: 'rgba(59,110,186,0.08)', border: 'rgba(59,110,186,0.22)' },
   cancelled: { label: 'Annullata',                  color: 'rgba(6,3,43,0.45)', bg: 'rgba(6,3,43,0.05)',    border: 'rgba(6,3,43,0.12)'    },
 };
 
@@ -164,7 +164,7 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
         style={{
           background: 'rgba(59,110,186,0.06)', border: '1px solid rgba(59,110,186,0.18)',
           borderRadius: 10, padding: '10px 14px', marginBottom: 16,
-          fontSize: 11, color: '#3B5A8A', fontFamily: FONT, lineHeight: 1.6,
+          fontSize: 11, color: BADGE_TOKENS.info.text, fontFamily: FONT, lineHeight: 1.6,
         }}
       >
         <p style={{ margin: '0 0 6px', fontWeight: 700, fontFamily: FONT }}>Cosa fa {'"Segna Partecipazione Completata"'}:</p>
@@ -199,7 +199,7 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
               padding:      '6px 12px',
               borderRadius: 8,
               border:       '1px solid rgba(6,3,43,0.12)',
-              background:   activeScope === scope ? '#06032B' : 'transparent',
+              background:   activeScope === scope ? TOKENS.ink : 'transparent',
               color:        activeScope === scope ? '#FFFFFF' : 'rgba(6,3,43,0.60)',
               fontSize:     12,
               fontWeight:   activeScope === scope ? 700 : 500,
@@ -310,7 +310,7 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
                     </p>
                   )}
                   {booking.attended_at && (
-                    <p style={{ fontSize: 9, color: '#3B6EBA', margin: 0, fontFamily: 'monospace' }}>
+                    <p style={{ fontSize: 9, color: TOKENS.info.base, margin: 0, fontFamily: 'monospace' }}>
                       completata: {new Date(booking.attended_at).toLocaleDateString('it-IT')}
                     </p>
                   )}
@@ -362,7 +362,7 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
                       data-testid={`admin-booking-attended-${booking.id}`}
                       disabled={isLoading}
                       onClick={() => doAction(booking.id, 'attended')}
-                      style={{ padding: '6px 14px', borderRadius: 7, border: '1px solid rgba(59,110,186,0.25)', background: 'rgba(59,110,186,0.06)', color: '#3B6EBA', fontSize: 11, fontWeight: 700, fontFamily: FONT, cursor: isLoading ? 'not-allowed' : 'pointer' }}
+                      style={{ padding: '6px 14px', borderRadius: 7, border: '1px solid rgba(59,110,186,0.25)', background: 'rgba(59,110,186,0.06)', color: TOKENS.info.base, fontSize: 11, fontWeight: 700, fontFamily: FONT, cursor: isLoading ? 'not-allowed' : 'pointer' }}
                     >
                       Segna Partecipazione Completata
                     </button>
@@ -370,7 +370,7 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
                 )}
 
                 {booking.status === 'attended' && (
-                  <p style={{ fontSize: 11, color: '#3B6EBA', margin: 0, fontFamily: FONT }}>
+                  <p style={{ fontSize: 11, color: TOKENS.info.base, margin: 0, fontFamily: FONT }}>
                     Partecipazione completata — nessuna ulteriore azione disponibile.
                   </p>
                 )}

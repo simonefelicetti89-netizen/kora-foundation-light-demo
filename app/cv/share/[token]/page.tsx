@@ -235,15 +235,15 @@ export default async function CVSharePage({
                   border:       `1px solid ${meta?.color ?? '#ddd'}30`,
                   borderRadius: 10,
                   padding:      '12px 10px',
-                  background:   count > 0 ? (meta?.bg ?? '#f9f9f9') : 'rgba(6,3,43,0.02)',
+                  background:   count > 0 ? (meta?.bg ?? TOKENS.surface) : 'rgba(6,3,43,0.02)',
                   opacity:      count > 0 ? 1 : 0.4,
                   textAlign:    'center',
                 }}
               >
-                <p style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta?.color ?? '#06032B', margin: '0 0 4px' }}>
+                <p style={{ fontSize: 8, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta?.color ?? TOKENS.ink, margin: '0 0 4px' }}>
                   {p}
                 </p>
-                <p style={{ fontSize: '1.25rem', fontWeight: 900, color: count > 0 ? (meta?.color ?? '#06032B') : 'rgba(6,3,43,0.20)', margin: 0 }}>
+                <p style={{ fontSize: '1.25rem', fontWeight: 900, color: count > 0 ? (meta?.color ?? TOKENS.ink) : 'rgba(6,3,43,0.20)', margin: 0 }}>
                   {count}
                 </p>
               </div>
@@ -286,7 +286,7 @@ export default async function CVSharePage({
                     justifyContent: 'center',
                     flexShrink:     0,
                   }}>
-                    <span style={{ fontSize: 8, fontWeight: 800, color: meta?.color ?? '#06032B' }}>
+                    <span style={{ fontSize: 8, fontWeight: 800, color: meta?.color ?? TOKENS.ink }}>
                       {exp.pillar.slice(0, 2)}
                     </span>
                   </div>

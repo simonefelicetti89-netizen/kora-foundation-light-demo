@@ -13,7 +13,7 @@
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Admin Preview — Worker Space · KORA' };
 
@@ -41,10 +41,10 @@ export default async function AdminPreviewWorkerHubPage() {
           borderRadius: 12, padding: '14px 18px', marginBottom: 24,
         }}
       >
-        <p style={{ fontSize: 13, fontWeight: 700, color: '#7A4019', margin: '0 0 4px' }}>
+        <p style={{ fontSize: 13, fontWeight: 700, color: BADGE_TOKENS.limited.text, margin: '0 0 4px' }}>
           Anteprima presentazione — nessun dato worker reale
         </p>
-        <p style={{ fontSize: 12, color: '#7A4019', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 12, color: BADGE_TOKENS.limited.text, margin: 0, lineHeight: 1.6 }}>
           Queste pagine mostrano contenuti illustrativi di cosa vede un worker sul suo spazio reale,
           senza accedere a dati individuali reali. Per lo spazio operativo autenticato di un worker,
           nessun ruolo KORA_ADMIN può accedervi — è privato per design.

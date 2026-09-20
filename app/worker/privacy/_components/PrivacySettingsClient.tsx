@@ -12,7 +12,7 @@
 
 import { useState, useEffect } from 'react';
 import type { PrivacySettingsResponse } from '@/app/api/worker/privacy-settings/route';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -67,7 +67,7 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
       >
         <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }}>&#128274;</span>
         <div>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#1a4731', margin: '0 0 4px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: BADGE_TOKENS.eligible.text, margin: '0 0 4px' }}>
             Il tuo datore di lavoro non vede questi dati.
           </p>
           <p style={{ fontSize: 12, color: 'rgba(26,71,49,0.80)', margin: 0, lineHeight: 1.6 }}>
@@ -201,7 +201,7 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
               border:         '1px solid rgba(59,110,186,0.30)',
               borderRadius:   6,
               background:     'rgba(59,110,186,0.08)',
-              color:          '#3B6EBA',
+              color:          TOKENS.info.base,
               textDecoration: 'none',
               whiteSpace:     'nowrap',
             }}
@@ -320,7 +320,7 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
       <div
         data-testid="privacy-links-section"
         style={{
-          background:   '#FAFAFA',
+          background:   TOKENS.surface,
           border:       '1px solid rgba(6,3,43,0.07)',
           borderRadius: 14,
           padding:      '16px 20px',
@@ -333,7 +333,7 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
         <a href="/worker/onboarding?mode=review" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.ink, textDecoration: 'none' }}>
           Rivedi le impostazioni di onboarding →
         </a>
-        <a href="/worker/dynamic-cv" style={{ fontSize: 12, fontWeight: 600, color: '#3B6EBA', textDecoration: 'none' }}>
+        <a href="/worker/dynamic-cv" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.info.base, textDecoration: 'none' }}>
           Vedi il tuo Dynamic Impact CV →
         </a>
         <a href="/worker/workspace" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.ink, textDecoration: 'none' }}>

@@ -13,7 +13,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
@@ -122,7 +122,7 @@ function ForgotPasswordForm() {
                 background:   'rgba(47,125,85,0.08)',
                 padding:      '14px 16px',
                 fontSize:     '13px',
-                color:        '#1a4731',
+                color:        BADGE_TOKENS.eligible.text,
                 fontFamily:   FONT,
                 lineHeight:   1.6,
                 marginBottom: 20,

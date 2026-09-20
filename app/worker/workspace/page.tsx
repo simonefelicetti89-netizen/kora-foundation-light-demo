@@ -13,7 +13,7 @@ import { InitiativeCardsClient } from './_components/InitiativeCardsClient';
 import type { InitiativeItem } from './_components/InitiativeCardsClient';
 import { ActivationProfileSection } from './_components/ActivationProfileSection';
 import type { WorkerActivationProfile, PillarDistributionEntry } from '@/app/api/worker/activation-profile/route';
-import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -209,10 +209,10 @@ export default async function WorkerWorkspacePage() {
   }));
 
   const STATUS_COLOR: Record<string, { bg: string; text: string; label: string }> = {
-    invited:  { bg: '#fef9c3', text: '#854d0e', label: 'Invitato' },
-    active:   { bg: '#dcfce7', text: '#15803d', label: 'Attivo' },
-    pending:  { bg: '#dbeafe', text: '#1d4ed8', label: 'In attesa' },
-    disabled: { bg: '#f3f4f6', text: '#6b7280', label: 'Disabilitato' },
+    invited:  { bg: BADGE_TOKENS.limited.bg, text: BADGE_TOKENS.limited.text, label: 'Invitato' },
+    active:   { bg: BADGE_TOKENS.eligible.bg, text: BADGE_TOKENS.eligible.text, label: 'Attivo' },
+    pending:  { bg: BADGE_TOKENS.info.bg, text: BADGE_TOKENS.info.text, label: 'In attesa' },
+    disabled: { bg: TOKENS.surface, text: TOKENS.inkSecondary, label: 'Disabilitato' },
   };
   const sc = STATUS_COLOR[status] ?? STATUS_COLOR['pending'];
 
@@ -247,7 +247,7 @@ export default async function WorkerWorkspacePage() {
             data-testid="privacy-active-badge"
             style={{
               fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
-              background: 'rgba(22,101,52,0.10)', color: '#166534',
+              background: 'rgba(22,101,52,0.10)', color: BADGE_TOKENS.eligible.text,
               border: '1px solid rgba(22,101,52,0.22)', borderRadius: 999, padding: '2px 8px',
             }}
           >
@@ -268,7 +268,7 @@ export default async function WorkerWorkspacePage() {
         background: 'rgba(47,125,85,0.06)', border: '1px solid rgba(47,125,85,0.20)',
         borderRadius: 10, padding: '14px 18px', marginBottom: 28,
       }}>
-        <p style={{ fontSize: 12, color: '#1a4731', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 12, color: BADGE_TOKENS.eligible.text, margin: 0, lineHeight: 1.6 }}>
           <strong>Privacy:</strong> Il tuo datore di lavoro non può vedere questi dati individuali.
           Solo tu puoi accedere a questo spazio. KORA misura le organizzazioni, non le persone.
         </p>
@@ -342,7 +342,7 @@ export default async function WorkerWorkspacePage() {
           {partnerPreview.length > 0 && (
             <a
               href="/worker/opportunities"
-              style={{ fontSize: 11, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}
+              style={{ fontSize: 11, color: BADGE_TOKENS.info.text, textDecoration: 'none', fontWeight: 600 }}
             >
               Vedi tutti →
             </a>
@@ -382,7 +382,7 @@ export default async function WorkerWorkspacePage() {
           border:         '1px solid rgba(59,110,186,0.18)',
           borderRadius:   14,
           padding:        '18px 22px',
-          background:     '#FAFAFA',
+          background:     TOKENS.surface,
           marginBottom:   16,
           display:        'flex',
           alignItems:     'flex-start',
@@ -391,7 +391,7 @@ export default async function WorkerWorkspacePage() {
         }}
       >
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3B6EBA', margin: '0 0 6px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.info.base, margin: '0 0 6px' }}>
             Le tue tracce personali
           </p>
           <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
@@ -404,7 +404,7 @@ export default async function WorkerWorkspacePage() {
             <a
               href="/worker/bookings"
               data-testid="workspace-trace-bookings-link"
-              style={{ fontSize: 12, fontWeight: 600, color: '#3B6EBA', textDecoration: 'none' }}
+              style={{ fontSize: 12, fontWeight: 600, color: TOKENS.info.base, textDecoration: 'none' }}
             >
               Prenotazioni &amp; partecipazioni →
             </a>
@@ -431,7 +431,7 @@ export default async function WorkerWorkspacePage() {
             padding:       '3px 8px',
             borderRadius:  999,
             background:    'rgba(59,110,186,0.10)',
-            color:         '#3B6EBA',
+            color:         TOKENS.info.base,
           }}
         >
           Privato
@@ -445,7 +445,7 @@ export default async function WorkerWorkspacePage() {
           border:         '1px solid rgba(199,111,61,0.18)',
           borderRadius:   14,
           padding:        '18px 22px',
-          background:     '#FAFAFA',
+          background:     TOKENS.surface,
           marginBottom:   16,
           display:        'flex',
           alignItems:     'flex-start',
@@ -504,7 +504,7 @@ export default async function WorkerWorkspacePage() {
           border:         '1px solid rgba(97,86,245,0.18)',
           borderRadius:   14,
           padding:        '18px 22px',
-          background:     '#FAFAFA',
+          background:     TOKENS.surface,
           marginBottom:   16,
           display:        'flex',
           alignItems:     'flex-start',
@@ -563,7 +563,7 @@ export default async function WorkerWorkspacePage() {
           border:       '1px solid rgba(6,3,43,0.10)',
           borderRadius: 14,
           padding:      '20px 22px',
-          background:   '#FAFAFA',
+          background:   TOKENS.surface,
           display:      'flex',
           alignItems:   'flex-start',
           justifyContent: 'space-between',
@@ -571,7 +571,7 @@ export default async function WorkerWorkspacePage() {
         }}
       >
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3B6EBA', margin: '0 0 6px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.info.base, margin: '0 0 6px' }}>
             Dynamic Impact CV
           </p>
           <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
@@ -589,7 +589,7 @@ export default async function WorkerWorkspacePage() {
               display:        'inline-block',
               fontSize:       12,
               fontWeight:     600,
-              color:          '#3B6EBA',
+              color:          TOKENS.info.base,
               textDecoration: 'none',
               padding:        '7px 14px',
               border:         '1px solid rgba(59,110,186,0.28)',
@@ -609,7 +609,7 @@ export default async function WorkerWorkspacePage() {
             padding:       '3px 8px',
             borderRadius:  999,
             background:    hasAnyActivity ? 'rgba(47,125,85,0.10)' : 'rgba(6,3,43,0.06)',
-            color:         hasAnyActivity ? '#2F7D55' : 'rgba(6,3,43,0.40)',
+            color:         hasAnyActivity ? TOKENS.success : 'rgba(6,3,43,0.40)',
           }}
         >
           {hasAnyActivity ? 'Pronto' : 'In costruzione'}
@@ -623,7 +623,7 @@ export default async function WorkerWorkspacePage() {
           border:         '1px solid rgba(6,3,43,0.10)',
           borderRadius:   14,
           padding:        '18px 22px',
-          background:     '#FAFAFA',
+          background:     TOKENS.surface,
           marginTop:      16,
           display:        'flex',
           alignItems:     'flex-start',
@@ -775,7 +775,7 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
 function PlaceholderSection({ title, description }: { title: string; description: string }) {
   return (
     <div style={{
-      background: '#f9f9fb', border: '1px dashed rgba(6,3,43,0.15)', borderRadius: 10, padding: '18px 20px',
+      background: TOKENS.surface, border: '1px dashed rgba(6,3,43,0.15)', borderRadius: 10, padding: '18px 20px',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <h3 style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: 0 }}>{title}</h3>

@@ -26,7 +26,7 @@ export default async function CompanyWorkspaceLayout({ children }: { children: R
     }
 
     return (
-      <div className="max-w-lg mx-auto mt-20 p-8 border border-[rgba(6,3,43,0.08)] rounded-xl bg-[#F8F6F1] shadow-sm text-center space-y-5">
+      <div className="max-w-lg mx-auto mt-20 p-8 border border-[rgba(6,3,43,0.08)] rounded-xl bg-kora-paper shadow-sm text-center space-y-5">
         <div className="space-y-2">
           <h1 className="text-lg font-semibold text-[rgba(6,3,43,0.90)]">
             {is401 ? 'Accesso al workspace aziendale' : 'Workspace non accessibile'}
@@ -41,7 +41,7 @@ export default async function CompanyWorkspaceLayout({ children }: { children: R
         {is401 && (
           <Link
             href="/company/login"
-            className="inline-block bg-[#06032B] text-white rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-[#06032B] transition-colors">
+            className="inline-block bg-kora-ink text-white rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-kora-ink transition-colors">
             Accedi
           </Link>
         )}

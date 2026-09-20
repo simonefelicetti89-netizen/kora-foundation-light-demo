@@ -124,7 +124,7 @@ export default function PartnerAggregateSignalsPage() {
 
       {/* No individual data — explicit, prominent. Threshold-pending language lives
           only in the banner above; this panel adds specificity, not repetition. */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Nessun dato individuale</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           Questa pagina non mostrerà mai nomi, email, identificativi worker (worker_id), tag UID, singoli

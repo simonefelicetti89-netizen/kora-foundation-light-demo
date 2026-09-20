@@ -48,27 +48,27 @@ const STEPS = [
 // ── Status styling ─────────────────────────────────────────────────────────────
 
 const STATUS_STYLE: Record<StepStatus, { chip: string; dot: string; short: string; label: string }> = {
-  completed:      { chip: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',    dot: 'bg-green-500',  short: '✓', label: 'completato'  },
+  completed:      { chip: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-kora-success',    dot: 'bg-green-500',  short: '✓', label: 'completato'  },
   active:         { chip: 'border-blue-200 bg-blue-50 text-blue-700',      dot: 'bg-blue-400',   short: '●', label: 'in corso'    },
   pending:        { chip: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',    dot: 'bg-amber-300',  short: '⋯', label: 'in attesa'   },
-  review_required:{ chip: 'border-[rgba(217,154,43,0.22)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]', dot: 'bg-[#D99A2B]', short: '?', label: 'review'      },
-  blocked:        { chip: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',      dot: 'bg-[rgba(158,59,47,0.06)]0',   short: '✗', label: 'bloccato'    },
+  review_required:{ chip: 'border-[rgba(217,154,43,0.22)] bg-[rgba(217,154,43,0.08)] text-kora-warning-text', dot: 'bg-kora-warning', short: '?', label: 'review'      },
+  blocked:        { chip: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-kora-critical',      dot: 'bg-kora-critical',   short: '✗', label: 'bloccato'    },
   excluded:       { chip: 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)]',   dot: 'bg-[rgba(6,3,43,0.12)]',  short: '○', label: 'escluso'     },
-  tracked_only:   { chip: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.06)] text-[#C76F3D]', dot: 'bg-[rgba(6,3,43,0.30)]', short: '⊘', label: 'tracciato'   },
+  tracked_only:   { chip: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.06)] text-kora-accent', dot: 'bg-[rgba(6,3,43,0.30)]', short: '⊘', label: 'tracciato'   },
 };
 
 const TYPE_STYLE = {
-  eligible:        { badge: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',    card: 'border-green-100',  label: 'Eligible' },
-  limited:         { badge: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.06)] text-[#C76F3D]', card: 'border-[rgba(6,3,43,0.06)]', label: 'Limited' },
-  blocked:         { badge: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',       card: 'border-[rgba(158,59,47,0.12)]',   label: 'Blocked' },
+  eligible:        { badge: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-kora-success',    card: 'border-green-100',  label: 'Eligible' },
+  limited:         { badge: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.06)] text-kora-accent', card: 'border-[rgba(6,3,43,0.06)]', label: 'Limited' },
+  blocked:         { badge: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-kora-critical',       card: 'border-[rgba(158,59,47,0.12)]',   label: 'Blocked' },
   review_required: { badge: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',    card: 'border-amber-100',  label: 'Review Required' },
 };
 
 const PILLAR_STYLE: Record<string, string> = {
-  LIFE:       'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  LIFE:       'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
   GROWTH:     'bg-blue-50 text-blue-700 border-blue-200',
   CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
-  IMPACT:     'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  IMPACT:     'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.22)]',
   LEGACY:     'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
 };
 
@@ -165,7 +165,7 @@ function StatusChip({ status }: { status: StepStatus }) {
 function ExampleCard({ example }: { example: LineageExample }) {
   const typeStyle = TYPE_STYLE[example.type];
   return (
-    <div className={cn('rounded-lg border bg-[#F8F6F1] p-3 space-y-3', typeStyle.card)}>
+    <div className={cn('rounded-lg border bg-kora-paper p-3 space-y-3', typeStyle.card)}>
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -321,7 +321,7 @@ export function DataLineagePreview({
       {/* Pipeline strip — responsive grid, no horizontal scroll */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
         {STEPS.map((step) => (
-          <div key={step.num} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2 text-center">
+          <div key={step.num} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-2 text-center">
             <p className="text-[10px] font-mono font-bold text-[rgba(6,3,43,0.40)]">
               {String(step.num).padStart(2, '0')}
             </p>

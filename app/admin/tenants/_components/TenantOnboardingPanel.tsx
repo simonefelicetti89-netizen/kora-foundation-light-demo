@@ -22,9 +22,9 @@ type TenantKind = typeof KINDS[number];
 function TenantKindBadge({ kind }: { kind?: string }) {
   if (!kind) return null;
   const cls: Record<string, string> = {
-    LIVE:    'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-    DEMO:    'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-    TEST:    'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
+    LIVE:    'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
+    DEMO:    'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]',
+    TEST:    'bg-[rgba(199,111,61,0.08)] text-kora-accent border-[rgba(199,111,61,0.22)]',
     SANDBOX: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
   };
   return (
@@ -60,10 +60,10 @@ function fmtDate(s: string) {
 }
 
 const STATUS_CLS: Record<string, string> = {
-  active:        'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  intake_ready:  'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
+  active:        'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
+  intake_ready:  'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]',
   not_ready:     'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
-  pending:       'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
+  pending:       'bg-[rgba(199,111,61,0.08)] text-kora-accent border-[rgba(199,111,61,0.22)]',
 };
 
 function statusCls(s: string): string {
@@ -136,9 +136,9 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
     <div className="max-w-4xl mx-auto py-6 px-3 space-y-5">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
+      <div className="rounded-xl bg-kora-ink px-6 py-5 flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
+          <p className="text-xs font-semibold tracking-widest uppercase text-kora-accent mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Registro Tenant</h1>
           <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">
@@ -147,7 +147,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-white">
+          <span className="rounded border border-kora-accent/60 bg-kora-accent/15 px-2 py-0.5 text-xs font-semibold text-white">
             {userRole}
           </span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
@@ -164,7 +164,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
       {/* ── Create notice ───────────────────────────────────────────────────── */}
       <div className="rounded-lg border border-[rgba(47,125,85,0.28)] bg-[rgba(47,125,85,0.07)] px-5 py-4 flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-[#2F7D55]">Per creare una nuova azienda live usa Crea Azienda.</p>
+          <p className="text-sm font-semibold text-kora-success">Per creare una nuova azienda live usa Crea Azienda.</p>
           <p className="text-xs text-[rgba(6,3,43,0.55)] mt-1">
             Questa pagina è solo per gestire i tenant esistenti. La creazione di tenant e utente Company Admin
             avviene esclusivamente tramite il flusso dedicato.
@@ -172,7 +172,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
         </div>
         <Link
           href="/admin/companies/new"
-          className="shrink-0 rounded-lg bg-[#06032B] text-white px-4 py-2 text-sm font-semibold hover:bg-[#1a1756] transition-colors whitespace-nowrap"
+          className="shrink-0 rounded-lg bg-kora-ink text-white px-4 py-2 text-sm font-semibold hover:bg-kora-ink-hover transition-colors whitespace-nowrap"
         >
           Crea Azienda →
         </Link>
@@ -200,7 +200,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
                 onClick={() => setKind(k)}
                 className={`rounded border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition-colors ${
                   kind === k
-                    ? 'bg-[#06032B] text-white border-[#06032B]'
+                    ? 'bg-kora-ink text-white border-kora-ink'
                     : 'bg-white text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.14)] hover:border-[rgba(6,3,43,0.30)]'
                 }`}
               >
@@ -220,7 +220,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
         {!tenantsLoading && tenants.length === 0 && (
           <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-4 text-sm text-[rgba(6,3,43,0.40)] text-center">
             Nessuna azienda registrata.{' '}
-            <Link href="/admin/companies/new" className="underline text-[#2F7D55] font-medium">Crea la prima →</Link>
+            <Link href="/admin/companies/new" className="underline text-kora-success font-medium">Crea la prima →</Link>
           </div>
         )}
 
@@ -230,7 +230,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
           const isBaselineOpen = expandedBaseline === t.id;
 
           return (
-            <div key={t.id} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+            <div key={t.id} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper overflow-hidden">
 
               {/* Card body */}
               <div className="px-4 py-4 space-y-3">
@@ -268,23 +268,23 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
 
                 {/* Row 3: baseline update feedback */}
                 {bStatus === 'ok' && bMsg && (
-                  <p className="text-[10px] text-[#2F7D55] font-medium">✓ {bMsg}</p>
+                  <p className="text-[10px] text-kora-success font-medium">✓ {bMsg}</p>
                 )}
                 {bStatus === 'error' && bMsg && (
-                  <p className="text-[10px] text-[#9E3B2F]">⚠ {bMsg}</p>
+                  <p className="text-[10px] text-kora-critical">⚠ {bMsg}</p>
                 )}
 
                 {/* Row 4: action links */}
                 <div className="flex flex-wrap gap-x-3 gap-y-1 pt-2 border-t border-[rgba(6,3,43,0.05)]">
                   <a
                     href={`/admin/data-intake?tenantCode=${encodeURIComponent(t.tenantCode)}`}
-                    className="text-[11px] text-[#C76F3D] underline hover:no-underline"
+                    className="text-[11px] text-kora-accent underline hover:no-underline"
                   >
                     Data Intake
                   </a>
                   <a
                     href="/admin/uef-review"
-                    className="text-[11px] text-[#C76F3D] underline hover:no-underline"
+                    className="text-[11px] text-kora-accent underline hover:no-underline"
                   >
                     UEF Review
                   </a>
@@ -344,7 +344,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
                     <button
                       type="submit"
                       disabled={bStatus === 'loading'}
-                      className="rounded bg-[#06032B] text-white px-3 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-50 transition-colors"
+                      className="rounded bg-kora-ink text-white px-3 py-1.5 text-xs font-semibold hover:bg-kora-ink-hover disabled:opacity-50 transition-colors"
                     >
                       {bStatus === 'loading' ? 'Salvataggio…' : 'Salva Baseline'}
                     </button>

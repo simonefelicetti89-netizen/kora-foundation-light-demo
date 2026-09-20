@@ -223,7 +223,7 @@ export default function PartnerActivityCatalogPage() {
       </Panel>
 
       {/* Privacy note */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Nessun nominativo worker</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           Questo catalogo non mostra mai nomi, email, identificativi worker o eventi individuali. Il partner
@@ -236,7 +236,7 @@ export default function PartnerActivityCatalogPage() {
       </div>
 
       {/* Classification note */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Nota sulla classificazione</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           La categoria fiscale/welfare mostrata è metadato proposto, non un&apos;approvazione fiscale o legale.

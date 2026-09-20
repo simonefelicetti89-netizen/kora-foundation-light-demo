@@ -10,7 +10,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = {
   title: 'Richiedi accesso · KORA',
@@ -156,7 +156,7 @@ export default async function RequestAccessPage({
             marginBottom: 24,
           }}
         >
-          <p style={{ fontSize: 12, fontWeight: 600, color: '#8B4513', margin: '0 0 4px' }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: BADGE_TOKENS.limited.text, margin: '0 0 4px' }}>
             Questa richiesta NON crea un account.
           </p>
           <p style={{ fontSize: 11, color: 'rgba(139,69,19,0.80)', margin: 0, lineHeight: 1.6 }}>

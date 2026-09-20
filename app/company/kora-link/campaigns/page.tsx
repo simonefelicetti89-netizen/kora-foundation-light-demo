@@ -226,7 +226,7 @@ export default function CompanyKoraLinkCampaignsPage() {
       </Panel>
 
       {/* No individual worker visibility — explicit, prominent, mirrors /company/kora-link */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Nessuna visibilità individuale</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           Questa pagina non mostrerà mai nomi dei worker, identificativi worker (worker_id), tag UID,

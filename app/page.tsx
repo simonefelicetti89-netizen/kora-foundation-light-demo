@@ -29,7 +29,7 @@ import { LandingMotion } from '@/components/landing/LandingMotion';
 import { MarketingNav } from '@/components/landing/MarketingNav';
 import { MarketingFooter } from '@/components/landing/MarketingFooter';
 import { RecoveryHashHandler } from '@/components/auth/RecoveryHashHandler';
-import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 import { PACKAGES } from '@/lib/landing/packages';
 import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
 import styles from './landing.module.css';
@@ -158,7 +158,7 @@ export default function LandingPage() {
                 <circle
                   id="gauge"
                   cx="220" cy="218" r="48"
-                  fill="none" stroke="#C76F3D" strokeWidth="9" strokeLinecap="round"
+                  fill="none" stroke={TOKENS.accent} strokeWidth="9" strokeLinecap="round"
                   transform="rotate(-90 220 218)"
                 />
                 <text id="gauge-num" x="220" y="214" textAnchor="middle"
@@ -186,9 +186,9 @@ export default function LandingPage() {
                 </text>
                 {/* Safeguard badge — lists the 3 real states, no specific
                     company status claimed */}
-                <circle cx="22" cy="416" r="4.5" fill="#D99A2B" />
+                <circle cx="22" cy="416" r="4.5" fill={TOKENS.warning} />
                 <text x="33" y="412" textAnchor="start"
-                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 10, fontWeight: 800, fill: '#E9B95C', letterSpacing: '.02em' }}>
+                  style={{ fontFamily: 'Plus Jakarta Sans', fontSize: 10, fontWeight: 800, fill: BADGE_TOKENS.limited.bg, letterSpacing: '.02em' }}>
                   CLEAR · WARNING · FLAGGED
                 </text>
                 <text x="33" y="426" textAnchor="start"
@@ -415,7 +415,7 @@ export default function LandingPage() {
           <div className={styles.pillars}>
             {CANONICAL.pillars.map((p, i) => {
               // Modifica 2+nota: PILLAR_COLORS dai token (discrepanza segnalata in testa al file)
-              const color = PILLAR_COLORS[p.code as keyof typeof PILLAR_COLORS] ?? '#C76F3D';
+              const color = PILLAR_COLORS[p.code as keyof typeof PILLAR_COLORS] ?? TOKENS.accent;
               return (
                 <div
                   key={p.code}

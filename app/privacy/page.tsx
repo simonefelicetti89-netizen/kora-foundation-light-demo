@@ -8,7 +8,7 @@
 import { MarketingNav } from '@/components/landing/MarketingNav';
 import { MarketingFooter } from '@/components/landing/MarketingFooter';
 import { LegalSection } from '@/components/legal/LegalSection';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 import {
   PRIVACY_SECTIONS,
   PRIVACY_DOCUMENT_VERSION,
@@ -30,7 +30,7 @@ const NAV_LINKS = [
 
 export default function PrivacyPage() {
   return (
-    <div style={{ background: '#FAF9F6', minHeight: '100vh' }}>
+    <div style={{ background: BADGE_TOKENS.limited.bg, minHeight: '100vh' }}>
       <MarketingNav links={NAV_LINKS} loginHref="/login" ctaHref="/pilot" ctaLabel="Scopri il pilot" />
 
       <main
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
             fontSize: 13,
             lineHeight: 1.7,
             fontWeight: 600,
-            color: '#1E3A5F',
+            color: BADGE_TOKENS.info.text,
             background: 'rgba(59,110,186,0.08)',
             border: '1px solid rgba(59,110,186,0.25)',
             borderRadius: 10,

@@ -40,14 +40,14 @@ interface WorkspaceData {
 
 const SAFEGUARD_CLS: Record<string, string> = {
   CLEAR:   'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]',
-  WARNING: 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  FLAGGED: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
+  WARNING: 'bg-[rgba(217,154,43,0.12)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
+  FLAGGED: 'bg-[rgba(158,59,47,0.10)] text-kora-critical border-[rgba(158,59,47,0.22)]',
 };
 
 const DP_CLS: Record<string, string> = {
-  draft:    'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  ready:    'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  exported: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  draft:    'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
+  ready:    'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]',
+  exported: 'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
   archived: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
 
@@ -66,12 +66,12 @@ const PILOT_STATUS_LABEL: Record<string, string> = {
 const PILOT_STATUS_CLS: Record<string, string> = {
   not_started:            'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   batch_pending:          'bg-blue-50 text-blue-600 border-blue-200',
-  review_ready:           'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  needs_enrichment:       'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  review_ready:           'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
+  needs_enrichment:       'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.22)]',
   ready_for_scoring:      'bg-purple-50 text-purple-700 border-purple-200',
-  scored:                 'bg-[#C76F3D]/10 text-[#C76F3D] border-[#C76F3D]/30',
-  decision_pack_draft:    'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  decision_pack_exported: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  scored:                 'bg-kora-accent/10 text-kora-accent border-kora-accent/30',
+  decision_pack_draft:    'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]',
+  decision_pack_exported: 'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
   archived:               'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
 
@@ -105,13 +105,13 @@ interface StepCardProps {
 function StepCard({ number, title, status, children, cta }: StepCardProps) {
   const statusDot = {
     complete: 'bg-green-500',
-    active:   'bg-[#C76F3D] animate-pulse',
-    warning:  'bg-[#D99A2B]',
+    active:   'bg-kora-accent animate-pulse',
+    warning:  'bg-kora-warning',
     pending:  'bg-[rgba(6,3,43,0.18)]',
   }[status];
 
   return (
-    <div className={`rounded-lg border px-4 py-3.5 space-y-2 ${status === 'active' ? 'border-[#C76F3D]/40 bg-[#f5f4ff]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]'}`}>
+    <div className={`rounded-lg border px-4 py-3.5 space-y-2 ${status === 'active' ? 'border-kora-accent/40 bg-kora-accent/8' : 'border-[rgba(6,3,43,0.08)] bg-kora-paper'}`}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${statusDot}`} />
@@ -122,7 +122,7 @@ function StepCard({ number, title, status, children, cta }: StepCardProps) {
           <a href={cta.href}
             className={`rounded px-3 py-1 text-[10px] font-semibold transition-colors flex-shrink-0 ${
               cta.primary
-                ? 'bg-[#06032B] text-white hover:bg-[#1a1756]'
+                ? 'bg-kora-ink text-white hover:bg-kora-ink-hover'
                 : 'border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.03)]'
             }`}>
             {cta.label} →
@@ -242,9 +242,9 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
     <div className="max-w-3xl mx-auto py-6 px-3 space-y-5">
 
       {/* Header */}
-      <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
+      <div className="rounded-xl bg-kora-ink px-6 py-5 flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
+          <p className="text-xs font-semibold tracking-widest uppercase text-kora-accent mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Spazio azienda</h1>
           <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">
@@ -252,17 +252,17 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
+          <span className="rounded border border-kora-accent/60 bg-kora-accent/15 px-2 py-0.5 text-xs font-semibold text-white">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
         </div>
       </div>
 
       {/* Selector — hidden when initialTenantCode is provided (drill-in context) */}
-      {showSelector && <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 flex flex-wrap items-end gap-4">
+      {showSelector && <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-3 flex flex-wrap items-end gap-4">
         <div>
           <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Azienda</p>
           <select value={tenantCode} onChange={e => setTenantCode(e.target.value)}
-            className="rounded border border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.03)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D] min-w-[200px]">
+            className="rounded border border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.03)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-kora-accent min-w-[200px]">
             <option value="">— Seleziona azienda —</option>
             {tenants.map(t => (
               <option key={t.tenantCode} value={t.tenantCode}>{t.tenantCode} — {t.companyName}</option>
@@ -273,21 +273,21 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
           <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Reporting Period</p>
           <input value={period} onChange={e => setPeriod(e.target.value)}
             placeholder="2026-Q1" aria-label="Reporting Period"
-            className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D] w-28" />
+            className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-kora-accent w-28" />
         </div>
         <button onClick={loadWorkspace} disabled={!tenantCode || loading}
           className="rounded border border-[rgba(6,3,43,0.14)] px-3 py-1.5 text-xs font-medium text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.03)] disabled:opacity-40 transition-colors">
           ↻ Aggiorna
         </button>
         <a href="/admin/tenants"
-          className="text-[10px] text-[#C76F3D] underline underline-offset-2 hover:text-[#4a41d4] pb-1">
+          className="text-[10px] text-kora-accent underline underline-offset-2 hover:text-kora-accent-hover pb-1">
           + Crea azienda
         </a>
       </div>}
 
       {/* OP-001 synthetic warning */}
       {isOp001 && (
-        <div className="rounded-lg border border-amber-300 bg-[rgba(217,154,43,0.08)] px-4 py-2.5 text-xs text-[#8A5A00] font-medium">
+        <div className="rounded-lg border border-amber-300 bg-[rgba(217,154,43,0.08)] px-4 py-2.5 text-xs text-kora-warning-text font-medium">
           OP-001 è un ambiente demo synthetic. Non usare per dati reali.
         </div>
       )}
@@ -308,7 +308,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
 
       {/* Error */}
       {workspace && !workspace.ok && !loading && (
-        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2.5 text-xs text-[#9E3B2F]">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2.5 text-xs text-kora-critical">
           ⚠ {workspace.error ?? 'Errore caricamento workspace'}
         </div>
       )}
@@ -317,7 +317,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
       {w && !loading && (
         <>
           {/* Summary bar */}
-          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-3 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-bold text-[rgba(6,3,43,0.90)]">{w.tenant.companyName}</p>
               <p className="text-[10px] font-mono text-[rgba(6,3,43,0.40)]">{w.tenant.tenantCode} · {w.reportingPeriod}</p>
@@ -332,13 +332,13 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
 
           {/* Recommended next action */}
           {w.recommendedNextAction && (
-            <div className="rounded-lg border border-[#C76F3D]/30 bg-[#C76F3D]/5 px-4 py-3 flex items-center justify-between gap-3">
+            <div className="rounded-lg border border-kora-accent/30 bg-kora-accent/5 px-4 py-3 flex items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-semibold text-[#C76F3D] uppercase tracking-wide mb-0.5">Prossimo passo</p>
+                <p className="text-[10px] font-semibold text-kora-accent uppercase tracking-wide mb-0.5">Prossimo passo</p>
                 <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{w.recommendedNextAction.label}</p>
               </div>
               <a href={w.recommendedNextAction.href}
-                className="rounded-lg bg-[#C76F3D] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4a41d4] transition-colors flex-shrink-0">
+                className="rounded-lg bg-kora-accent text-white px-4 py-2 text-xs font-semibold hover:bg-kora-accent-hover transition-colors flex-shrink-0">
                 {w.recommendedNextAction.label} →
               </a>
             </div>
@@ -354,7 +354,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
               cta={{ label: 'Gestisci azienda', href: '/admin/tenants' }}>
               {w.workforce.exists
                 ? <><span className="text-green-600 font-medium">✓ Baseline presente</span>{w.workforce.totalWorkers !== null && ` · ${w.workforce.totalWorkers} lavoratori`}</>
-                : <span className="text-[#D99A2B]">⚠ Workforce baseline mancante — imposta il numero di lavoratori prima di procedere.</span>
+                : <span className="text-kora-warning">⚠ Workforce baseline mancante — imposta il numero di lavoratori prima di procedere.</span>
               }
             </StepCard>
 
@@ -362,7 +362,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
             {!w.workforce.exists && (
               <form onSubmit={handleBaselineSubmit}
                 className="rounded-lg border border-[rgba(217,154,43,0.28)] bg-[rgba(217,154,43,0.05)] px-4 py-3.5 space-y-3">
-                <p className="text-[11px] font-semibold text-[#8A5A00]">Imposta Baseline Forza Lavoro</p>
+                <p className="text-[11px] font-semibold text-kora-warning-text">Imposta Baseline Forza Lavoro</p>
                 <div className="flex flex-wrap items-end gap-3">
                   <div>
                     <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Lavoratori totali (≥ 10)</p>
@@ -374,7 +374,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
                       value={baselineWorkers}
                       onChange={(e) => { setBaselineWorkers(e.target.value); setBaselineSuccess(false); setBaselineError(null); }}
                       placeholder="Es. 120" aria-label="Lavoratori totali (≥ 10)"
-                      className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-[#D99A2B] w-28"
+                      className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-kora-warning w-28"
                     />
                   </div>
                   <div>
@@ -385,18 +385,18 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
                       onChange={(e) => setBaselinePeriod(e.target.value)}
                       placeholder={period}
                       aria-label="Reporting Period baseline"
-                      className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-[#D99A2B] w-28"
+                      className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-kora-warning w-28"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={baselineLoading || !baselineWorkers}
-                    className="rounded bg-[#8A5A00] text-white px-3 py-1.5 text-xs font-semibold hover:bg-[#5C3509] disabled:opacity-40 transition-colors">
+                    className="rounded bg-kora-warning-text text-white px-3 py-1.5 text-xs font-semibold hover:opacity-90 disabled:opacity-40 transition-colors">
                     {baselineLoading ? 'Salvataggio…' : 'Salva baseline'}
                   </button>
                 </div>
                 {baselineError && (
-                  <p className="text-[11px] text-[#9E3B2F]">⚠ {baselineError}</p>
+                  <p className="text-[11px] text-kora-critical">⚠ {baselineError}</p>
                 )}
                 {baselineSuccess && (
                   <p className="text-[11px] text-green-700 font-medium">✓ Baseline salvata. Aggiornamento in corso…</p>
@@ -415,7 +415,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
                     {' · '}{w.latestBatch.rowCount} righe
                     {' · '}{ts(w.latestBatch.createdAt)}
                     {' · '}<Badge label={w.latestBatch.status} cls="bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]" />
-                    {w.latestBatch.hasFinancialMetadata && <>{' · '}<span className="text-[#C76F3D]">B11.3 metadata ✓</span></>}
+                    {w.latestBatch.hasFinancialMetadata && <>{' · '}<span className="text-kora-accent">B11.3 metadata ✓</span></>}
                   </>
                 : <span className="text-[rgba(6,3,43,0.40)]">Nessun batch per questo periodo.</span>
               }
@@ -434,7 +434,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
                 ? <span className="text-[rgba(6,3,43,0.28)]">Attesa batch.</span>
                 : w.uef && w.uef.total > 0
                 ? <><span className="text-green-600 font-medium">✓ {w.uef.total} candidati generati</span></>
-                : <span className="text-[#D99A2B]">⚠ Candidati non ancora generati — apri UEF Review e clicca &quot;Generate candidates&quot;.</span>
+                : <span className="text-kora-warning">⚠ Candidati non ancora generati — apri UEF Review e clicca &quot;Generate candidates&quot;.</span>
               }
             </StepCard>
 
@@ -451,10 +451,10 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
                 ? <span className="text-[rgba(6,3,43,0.28)]">Attesa candidati.</span>
                 : <>
                     {w.uef.approved > 0 && <span className="text-green-600 font-medium mr-3">✓ {w.uef.approved} approvati</span>}
-                    {w.uef.pendingReview > 0 && <span className="text-[#D99A2B] mr-3">⏳ {w.uef.pendingReview} in attesa</span>}
-                    {w.uef.rejected > 0 && <span className="text-[#9E3B2F] mr-3">✕ {w.uef.rejected} rifiutati</span>}
+                    {w.uef.pendingReview > 0 && <span className="text-kora-warning mr-3">⏳ {w.uef.pendingReview} in attesa</span>}
+                    {w.uef.rejected > 0 && <span className="text-kora-critical mr-3">✕ {w.uef.rejected} rifiutati</span>}
                     {w.uef.needsInfo > 0 && <span className="text-purple-600 mr-3">? {w.uef.needsInfo} needs info</span>}
-                    {w.uef.needsEnrichment > 0 && <span className="text-[#D99A2B] mr-3">⚠ {w.uef.needsEnrichment} enrichment incompleto</span>}
+                    {w.uef.needsEnrichment > 0 && <span className="text-kora-warning mr-3">⚠ {w.uef.needsEnrichment} enrichment incompleto</span>}
                   </>
               }
             </StepCard>
@@ -476,13 +476,13 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
               }>
               {w.scoring
                 ? <>
-                    <span className="text-green-600 font-medium">✓ KORA Index: <strong className="text-[#C76F3D]">{w.scoring.koraIndex}</strong></span>
+                    <span className="text-green-600 font-medium">✓ KORA Index: <strong className="text-kora-accent">{w.scoring.koraIndex}</strong></span>
                     {' · '}Confidence: {w.scoring.confidenceScore}%
                     {' · '}<Badge label={w.scoring.safeguard} cls={SAFEGUARD_CLS[w.scoring.safeguard] ?? ''} />
                     {w.scoring.activationRate !== null && <>{' · '}AR: {Math.round((w.scoring.activationRate) * 100)}%</>}
                   </>
                 : w.uef && w.uef.approved > 0
-                ? <span className="text-[#D99A2B]">⚠ {w.uef.approved} record approvati — scoring non ancora eseguito.</span>
+                ? <span className="text-kora-warning">⚠ {w.uef.approved} record approvati — scoring non ancora eseguito.</span>
                 : <span className="text-[rgba(6,3,43,0.28)]">Attesa approvazione UEF.</span>
               }
             </StepCard>
@@ -508,11 +508,11 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
                     {' · '}{w.decisionPack.versionId.slice(0, 24)}…
                     {' · '}{ts(w.decisionPack.createdAt)}
                     <span className="ml-2">
-                      <a href={w.decisionPack.previewUrl} className="text-[#C76F3D] underline mr-2" target="_blank" rel="noopener noreferrer">Preview</a>
+                      <a href={w.decisionPack.previewUrl} className="text-kora-accent underline mr-2" target="_blank" rel="noopener noreferrer">Preview</a>
                       {(() => {
                         const cfg = getPdfLinkConfig(w.decisionPack.previewUrl, w.decisionPack.pdfUrl);
                         return (
-                          <a href={cfg.href} title={cfg.title} className="text-[#C76F3D] underline" target={cfg.openInNewTab ? '_blank' : '_self'} rel="noopener noreferrer">{cfg.label}</a>
+                          <a href={cfg.href} title={cfg.title} className="text-kora-accent underline" target={cfg.openInNewTab ? '_blank' : '_self'} rel="noopener noreferrer">{cfg.label}</a>
                         );
                       })()}
                     </span>
@@ -526,7 +526,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
                         >
                           {dpPromoStatus === 'loading' ? '⏳…' : 'Marca come Pronto'}
                         </button>
-                        {dpPromoError && <span className="text-[10px] text-[#9E3B2F]">⚠ {dpPromoError}</span>}
+                        {dpPromoError && <span className="text-[10px] text-kora-critical">⚠ {dpPromoError}</span>}
                       </div>
                     )}
                     {w.decisionPack.status === 'ready' && (
@@ -538,11 +538,11 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
                         >
                           {dpPromoStatus === 'loading' ? '⏳…' : 'Segna come Esportato'}
                         </button>
-                        {dpPromoError && <span className="text-[10px] text-[#9E3B2F]">⚠ {dpPromoError}</span>}
+                        {dpPromoError && <span className="text-[10px] text-kora-critical">⚠ {dpPromoError}</span>}
                       </div>
                     )}
                   </>
-                : <span className="text-[#D99A2B]">Scoring completato — apri preview per generare il Decision Pack.</span>
+                : <span className="text-kora-warning">Scoring completato — apri preview per generare il Decision Pack.</span>
               }
             </StepCard>
 
@@ -551,7 +551,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
               number={7} title="Data Lifecycle"
               status="pending"
               cta={{ label: 'Apri Data Lifecycle', href: '/admin/data-lifecycle' }}>
-              <a href="/admin/data-lifecycle" className="text-[#C76F3D] underline">
+              <a href="/admin/data-lifecycle" className="text-kora-accent underline">
                 Gestisci batch, archivio ed erasure readiness
               </a>
             </StepCard>
@@ -560,7 +560,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
 
           {/* Budget-to-Human-Impact — B-TRUTH Root Control Room Wave 2 (2026-08-30).
               Persisted analytics.bti_result only — no recomputation. */}
-          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3.5 space-y-2">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-3.5 space-y-2">
             <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide">Budget-to-Human-Impact</p>
             {w.bti ? (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-[10px]">
@@ -578,7 +578,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
                 </div>
                 <div>
                   <p className="text-[rgba(6,3,43,0.40)]">Activation Debt</p>
-                  <p className={`font-bold text-sm mt-0.5 ${w.bti.activationDebtEur > 0 ? 'text-[#8A5A00]' : 'text-[rgba(6,3,43,0.40)]'}`}>{eur(w.bti.activationDebtEur)}</p>
+                  <p className={`font-bold text-sm mt-0.5 ${w.bti.activationDebtEur > 0 ? 'text-kora-warning-text' : 'text-[rgba(6,3,43,0.40)]'}`}>{eur(w.bti.activationDebtEur)}</p>
                 </div>
                 <div>
                   <p className="text-[rgba(6,3,43,0.40)]">Costo per Impact Unit</p>
@@ -596,7 +596,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
 
           {/* Lifecycle / Audit — B-TRUTH Root Control Room Wave 2 (2026-08-30).
               Real audit.audit_log, tenant-scoped by the resolved tenantId. */}
-          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3.5 space-y-2">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-3.5 space-y-2">
             <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide">
               Lifecycle / Audit — {w.recentAuditEvents.length} eventi recenti
             </p>

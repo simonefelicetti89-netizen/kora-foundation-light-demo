@@ -15,7 +15,7 @@
 
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { redirect } from 'next/navigation';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Admin Preview — Dynamic Impact CV · KORA' };
 
@@ -29,11 +29,11 @@ const SYNTHETIC_FIXTURE = {
   headline:      'Profilo attivo con partecipazioni verificate, con focus principale su GROWTH.',
   summary:       { total: 7, attended: 3, activePillars: 3 },
   pillars: [
-    { code: 'LIFE',       count: 1, color: TOKENS.success },
-    { code: 'GROWTH',     count: 4, color: '#3B6EBA' },
-    { code: 'CONNECTION', count: 2, color: '#7C3D8F' },
-    { code: 'IMPACT',     count: 0, color: '#C07D2A' },
-    { code: 'LEGACY',     count: 0, color: '#5A4A3F' },
+    { code: 'LIFE',       count: 1, color: PILLAR_COLORS.LIFE },
+    { code: 'GROWTH',     count: 4, color: PILLAR_COLORS.GROWTH },
+    { code: 'CONNECTION', count: 2, color: PILLAR_COLORS.CONNECTION },
+    { code: 'IMPACT',     count: 0, color: PILLAR_COLORS.IMPACT },
+    { code: 'LEGACY',     count: 0, color: PILLAR_COLORS.LEGACY },
   ],
   experiences: [
     { title: 'Workshop Leadership Digitale',  pillar: 'GROWTH',     status: 'Partecipazione registrata', date: '2026-05-12' },
@@ -49,14 +49,12 @@ const SYNTHETIC_FIXTURE = {
   },
 };
 
-const PILLAR_COLOR: Record<string, string> = {
-  LIFE: TOKENS.success, GROWTH: '#3B6EBA', CONNECTION: '#7C3D8F', IMPACT: '#C07D2A', LEGACY: '#5A4A3F',
-};
+const PILLAR_COLOR: Record<string, string> = PILLAR_COLORS;
 
 const STATUS_COLOR: Record<string, string> = {
-  'Partecipazione registrata': '#2F7D55',
-  'Iscrizione':                '#3B6EBA',
-  'Interesse espresso':        '#C07D2A',
+  'Partecipazione registrata': TOKENS.success,
+  'Iscrizione':                TOKENS.info.base,
+  'Interesse espresso':        TOKENS.warning,
 };
 
 export default async function AdminPreviewWorkerDynamicCVPage() {
@@ -86,7 +84,7 @@ export default async function AdminPreviewWorkerDynamicCVPage() {
       >
         <span style={{ fontSize: 16, lineHeight: 1 }}>⚠️</span>
         <div>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#8B4513', margin: '0 0 4px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: BADGE_TOKENS.limited.text, margin: '0 0 4px' }}>
             KORA Admin Preview — esempio sintetico, non CV reale di un worker.
           </p>
           <p style={{ fontSize: 11, color: 'rgba(139,69,19,0.80)', margin: 0, lineHeight: 1.6 }}>

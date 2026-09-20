@@ -10,7 +10,7 @@
 //   - Nessun fallback sintetico: empty state onesto se dati non disponibili
 
 import { useEffect, useRef, useState } from 'react';
-import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_SURFACE, MACROBLOCK_COLORS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -27,10 +27,10 @@ const PILLAR_ORDER = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as con
 const MACROBLOCK_ORDER = ['REACH', 'QUALITY', 'EQUITY', 'BTI'] as const;
 
 const MACROBLOCK_META: Record<string, { label: string; description: string; weight: number; color: string; bg: string }> = {
-  REACH:   { label: 'Activation Reach',       description: 'Quota della workforce raggiunta dall\'attivazione.',           weight: 0.25, color: '#3B6EBA', bg: 'rgba(59,110,186,0.06)'  },
-  QUALITY: { label: 'Activation Quality',     description: 'Profondita\', verifica e continuita\' dell\'attivazione.',     weight: 0.30, color: TOKENS.success, bg: 'rgba(47,125,85,0.06)'   },
-  EQUITY:  { label: 'Distribution & Equity',  description: 'Distribuzione equa tra lavoratori, reparti, sedi.',           weight: 0.25, color: '#7C3D8F', bg: 'rgba(124,61,143,0.06)'  },
-  BTI:     { label: 'Budget-to-Human-Impact', description: 'Quanto il budget welfare si traduce in valore umano reale.',   weight: 0.20, color: '#C07D2A', bg: 'rgba(192,125,42,0.06)'  },
+  REACH:   { label: 'Activation Reach',       description: 'Quota della workforce raggiunta dall\'attivazione.',           weight: 0.25, color: MACROBLOCK_COLORS.REACH, bg: 'rgba(59,110,186,0.06)'  },
+  QUALITY: { label: 'Activation Quality',     description: 'Profondita\', verifica e continuita\' dell\'attivazione.',     weight: 0.30, color: MACROBLOCK_COLORS.QUALITY, bg: 'rgba(47,125,85,0.06)'   },
+  EQUITY:  { label: 'Distribution & Equity',  description: 'Distribuzione equa tra lavoratori, reparti, sedi.',           weight: 0.25, color: MACROBLOCK_COLORS.EQUITY, bg: 'rgba(124,61,143,0.06)'  },
+  BTI:     { label: 'Budget-to-Human-Impact', description: 'Quanto il budget welfare si traduce in valore umano reale.',   weight: 0.20, color: MACROBLOCK_COLORS.BTI, bg: 'rgba(192,125,42,0.06)'  },
 };
 
 const SAFEGUARD_STYLE: Record<string, { color: string; bg: string; border: string }> = {
@@ -46,9 +46,9 @@ function koraIndexBand(v: number): string {
 }
 
 function koraIndexBandColor(v: number): string {
-  if (v >= 70) return '#2F7D55';
-  if (v >= 50) return '#C07D2A';
-  return '#9E3B2F';
+  if (v >= 70) return TOKENS.success;
+  if (v >= 50) return TOKENS.warning;
+  return TOKENS.critical;
 }
 
 function fmtPct(n: number | null | undefined): string {
@@ -117,7 +117,7 @@ function deriveInsights(ki: WorkspaceData['koraIndex'], agg: AggData | null): Ar
     insights.push({
       label: 'Forza principale',
       text:  `Il pillar ${topPillar.pillar} guida l'attivazione con ${topPillar.total_participations} adesioni aggregate.`,
-      color: meta?.color ?? '#06032B',
+      color: meta?.color ?? TOKENS.ink,
     });
   } else if (ki.activationRate != null && ki.activationRate >= 0.4) {
     insights.push({
@@ -155,13 +155,13 @@ function deriveInsights(ki: WorkspaceData['koraIndex'], agg: AggData | null): Ar
     insights.push({
       label: 'Prossima priorità',
       text:  `Rafforzare il pillar ${weakPillar.pillar} — il meno attivato tra quelli misurabili.`,
-      color: meta?.color ?? '#06032B',
+      color: meta?.color ?? TOKENS.ink,
     });
   } else if (ki.confidenceScore < 60) {
     insights.push({
       label: 'Prossima priorità',
       text:  `Confidence Score al ${Math.round(ki.confidenceScore)} — migliorare la qualità e completezza delle fonti dati per aumentare l'affidabilità del calcolo.`,
-      color: '#3B6EBA',
+      color: TOKENS.info.base,
     });
   }
 

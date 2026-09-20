@@ -133,7 +133,7 @@ export function WorkerBookingButton({ postId, initialStatus }: Props) {
           padding:      '8px 18px',
           borderRadius: 8,
           border:       'none',
-          background:   state === 'loading' ? 'rgba(47,125,85,0.50)' : '#2F7D55',
+          background:   state === 'loading' ? 'rgba(47,125,85,0.50)' : TOKENS.success,
           color:        '#FFFFFF',
           fontSize:     12,
           fontWeight:   700,

@@ -17,7 +17,7 @@ import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { CommonsCreateForm } from '@/components/commons/CommonsCreateForm';
-import { TOKENS, PILLAR_COLORS, type PillarColorKey } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS, type PillarColorKey } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'KORA Space · Company' };
 
@@ -121,7 +121,7 @@ export default async function CompanyCommonsPage() {
         <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.success, margin: '0 0 10px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
           Come funziona KORA Space
         </p>
-        <ol style={{ fontSize: 12, color: '#2F5A42', lineHeight: 1.8, margin: 0, paddingLeft: 18 }}>
+        <ol style={{ fontSize: 12, color: BADGE_TOKENS.eligible.text, lineHeight: 1.8, margin: 0, paddingLeft: 18 }}>
           <li>L&apos;azienda propone un&apos;iniziativa in KORA Space.</li>
           <li>KORA la modera e la pubblica — solo dopo approvazione KORA.</li>
           <li>I lavoratori scoprono e partecipano — il datore di lavoro vede solo aggregati.</li>
@@ -141,7 +141,7 @@ export default async function CompanyCommonsPage() {
           padding:      '10px 14px',
           marginBottom: 20,
           fontSize:     11,
-          color:        '#3B5A8A',
+          color:        BADGE_TOKENS.info.text,
           lineHeight:   1.6,
         }}
       >
@@ -215,7 +215,7 @@ export default async function CompanyCommonsPage() {
                   key={post.id}
                   data-testid="company-commons-post-card"
                   style={{
-                    background:   '#FAFAFA',
+                    background:   TOKENS.surface,
                     border:       '1px solid rgba(6,3,43,0.09)',
                     borderRadius: 12,
                     padding:      '16px 20px',
@@ -268,7 +268,7 @@ export default async function CompanyCommonsPage() {
           marginBottom: 0,
         }}
       >
-        <p style={{ fontSize: 11, color: '#2F5A42', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 11, color: BADGE_TOKENS.eligible.text, margin: 0, lineHeight: 1.6 }}>
           Le adesioni sono gestite nel rispetto del perimetro privacy: l&apos;azienda vede solo aggregati.
           Nessun lavoratore identificabile, nessun percorso individuale visibile in questa vista.
         </p>

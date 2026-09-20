@@ -37,7 +37,7 @@ export function CompanyTabNav({ companyId, companyName }: Props) {
   const pathname = usePathname();
 
   return (
-    <div className="border-b border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]">
+    <div className="border-b border-[rgba(6,3,43,0.08)] bg-kora-paper">
       {/* Company identity strip */}
       <div className="flex items-center gap-3 px-6 pt-4 pb-2">
         <Link
@@ -66,7 +66,7 @@ export function CompanyTabNav({ companyId, companyName }: Props) {
               href={href}
               className="relative shrink-0 px-4 py-2.5 text-[12px] font-medium transition-colors"
               style={{
-                color: isActive ? '#06032B' : 'rgba(6,3,43,0.48)',
+                color: isActive ? TOKENS.ink : 'rgba(6,3,43,0.48)',
               }}
             >
               {label}

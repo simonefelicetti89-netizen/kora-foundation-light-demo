@@ -187,11 +187,11 @@ export default async function LiveSpineDiagnosticsPage() {
   const data = await fetchSpineData();
 
   return (
-    <div className="min-h-screen bg-[#F8F6F1] px-6 py-8 space-y-6">
+    <div className="min-h-screen bg-kora-paper px-6 py-8 space-y-6">
 
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-lg font-bold text-[#06032B]">Live Spine Diagnostics</h1>
+          <h1 className="text-lg font-bold text-kora-ink">Live Spine Diagnostics</h1>
           <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">
             Stato operativo live per tenant reali — KORA_ADMIN only
           </p>
@@ -205,7 +205,7 @@ export default async function LiveSpineDiagnosticsPage() {
       <div className="rounded-lg border border-[rgba(6,3,43,0.10)] bg-white px-4 py-3 flex items-start gap-3">
         <span className="text-base shrink-0 mt-0.5">▶</span>
         <div className="space-y-0.5 min-w-0">
-          <p className="text-[11px] font-semibold text-[#06032B]">Primo utilizzo? Segui il Golden Path Runbook.</p>
+          <p className="text-[11px] font-semibold text-kora-ink">Primo utilizzo? Segui il Golden Path Runbook.</p>
           <p className="text-[10px] text-[rgba(6,3,43,0.52)]">
             Guida operativa passo-passo: creazione tenant → upload → UEF Review → scoring → Decision Pack.
             File sample disponibile in <span className="font-mono">data/golden-path/kora_golden_path_upload.csv</span>.
@@ -231,10 +231,10 @@ export default async function LiveSpineDiagnosticsPage() {
 
           <div className="flex items-center justify-between flex-wrap gap-2 px-5 py-3 border-b border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.02)]">
             <div className="flex items-center gap-3">
-              <span className="font-mono text-[11px] font-bold text-[#06032B] bg-[rgba(6,3,43,0.06)] rounded px-1.5 py-0.5">
+              <span className="font-mono text-[11px] font-bold text-kora-ink bg-[rgba(6,3,43,0.06)] rounded px-1.5 py-0.5">
                 {t.tenantCode}
               </span>
-              <span className="text-sm font-semibold text-[#06032B]">{t.companyName}</span>
+              <span className="text-sm font-semibold text-kora-ink">{t.companyName}</span>
               {t.tenantCode === 'OP-001' && (
                 <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
                   DEMO SINTETICO
@@ -259,12 +259,12 @@ export default async function LiveSpineDiagnosticsPage() {
               </div>
               <div className="space-y-0.5">
                 <p className="text-[10px] text-[rgba(6,3,43,0.40)] uppercase tracking-wide">Dati caricati</p>
-                <p className="text-base font-bold text-[#06032B] tabular-nums">{t.uploadedRecordCount}</p>
+                <p className="text-base font-bold text-kora-ink tabular-nums">{t.uploadedRecordCount}</p>
                 <p className="text-[10px] text-[rgba(6,3,43,0.52)]">uploaded_record</p>
               </div>
               <div className="space-y-0.5">
                 <p className="text-[10px] text-[rgba(6,3,43,0.40)] uppercase tracking-wide">UEF candidati</p>
-                <p className="text-base font-bold text-[#06032B] tabular-nums">{t.uefCandidateCount}</p>
+                <p className="text-base font-bold text-kora-ink tabular-nums">{t.uefCandidateCount}</p>
                 <div className="flex flex-wrap gap-1 text-[9px]">
                   <span className="text-green-700">{t.uefApprovedCount} approvati</span>
                   {t.uefPendingCount > 0 && <span className="text-amber-700">· {t.uefPendingCount} pending</span>}
@@ -275,7 +275,7 @@ export default async function LiveSpineDiagnosticsPage() {
                 <p className="text-[10px] text-[rgba(6,3,43,0.40)] uppercase tracking-wide">Ultimo scoring</p>
                 {t.lastKoraIndex != null ? (
                   <>
-                    <p className="text-base font-bold text-[#06032B] tabular-nums">{t.lastKoraIndex.toFixed(1)}</p>
+                    <p className="text-base font-bold text-kora-ink tabular-nums">{t.lastKoraIndex.toFixed(1)}</p>
                     <div className="flex flex-wrap gap-1.5 text-[10px]">
                       <span className="text-[rgba(6,3,43,0.52)]">CS {t.lastConfidenceScore != null ? `${t.lastConfidenceScore}%` : '—'}</span>
                       <SafeguardBadge status={t.lastSafeguard} />
@@ -297,12 +297,12 @@ export default async function LiveSpineDiagnosticsPage() {
                 <div className="ml-auto flex gap-2">
                   <a href={`/api/admin/decision-pack/preview?tenantCode=${t.tenantCode}`}
                     target="_blank" rel="noopener noreferrer"
-                    className="rounded border border-[#C76F3D] text-[#C76F3D] px-2 py-0.5 text-[10px] font-medium hover:bg-[rgba(199,111,61,0.06)] transition-colors">
+                    className="rounded border border-kora-accent text-kora-accent px-2 py-0.5 text-[10px] font-medium hover:bg-[rgba(199,111,61,0.06)] transition-colors">
                     ↗ HTML
                   </a>
                   <a href={`/api/admin/decision-pack/pdf?tenantCode=${t.tenantCode}`}
                     download
-                    className="rounded bg-[#06032B] text-white px-2 py-0.5 text-[10px] font-medium hover:bg-[#1a1756] transition-colors">
+                    className="rounded bg-kora-ink text-white px-2 py-0.5 text-[10px] font-medium hover:bg-kora-ink-hover transition-colors">
                     ↓ PDF
                   </a>
                 </div>
@@ -322,7 +322,7 @@ export default async function LiveSpineDiagnosticsPage() {
 
             <div className="flex items-center gap-2 rounded border border-[rgba(6,3,43,0.10)] bg-[rgba(6,3,43,0.02)] px-3 py-2">
               <span className="text-[10px] text-[rgba(6,3,43,0.40)] shrink-0">Prossima azione</span>
-              <span className="text-[11px] font-medium text-[#06032B]">{t.nextAction}</span>
+              <span className="text-[11px] font-medium text-kora-ink">{t.nextAction}</span>
             </div>
 
             <div className="flex flex-wrap gap-2 border-t border-[rgba(6,3,43,0.06)] pt-3">

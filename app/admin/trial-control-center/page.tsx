@@ -16,7 +16,7 @@ export const dynamic  = 'force-dynamic';
 import { redirect }     from 'next/navigation';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient }          from '@/lib/supabase/server';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Trial Control Center · KORA Admin' };
 
@@ -25,8 +25,8 @@ const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 // ── Readiness helpers ─────────────────────────────────────────────────────────
 
 function readinessColor(level: string) {
-  if (level === 'READY')       return '#2F7D55';
-  if (level === 'PARTIAL')     return '#C07D2A';
+  if (level === 'READY')       return TOKENS.success;
+  if (level === 'PARTIAL')     return BADGE_TOKENS.limited.text;
   return 'rgba(6,3,43,0.35)';
 }
 function readinessBg(level: string) {
@@ -48,7 +48,7 @@ function statusDot(ok: boolean) {
         width:        8,
         height:       8,
         borderRadius: '50%',
-        background:   ok ? '#2F7D55' : 'rgba(6,3,43,0.20)',
+        background:   ok ? TOKENS.success : 'rgba(6,3,43,0.20)',
         marginRight:  6,
         flexShrink:   0,
       }}
@@ -374,7 +374,7 @@ export default async function TrialControlCenterPage() {
             borderRadius: 10, padding: '12px 16px', background: 'rgba(199,111,61,0.05)',
           }}
         >
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: '#C07D2A', margin: '0 0 8px' }}>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: BADGE_TOKENS.limited.text, margin: '0 0 8px' }}>
             &#9888; Attenzione
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -384,7 +384,7 @@ export default async function TrialControlCenterPage() {
                 href={gw.href}
                 data-testid="global-warning-action"
                 style={{
-                  fontSize: 11, fontWeight: 600, color: '#C07D2A',
+                  fontSize: 11, fontWeight: 600, color: BADGE_TOKENS.limited.text,
                   textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6,
                 }}
               >
@@ -441,7 +441,7 @@ export default async function TrialControlCenterPage() {
                       data-testid="tenant-warning-action"
                       style={{
                         display: 'inline-flex', alignItems: 'center', gap: 6,
-                        fontSize: 10, fontWeight: 600, color: '#C07D2A',
+                        fontSize: 10, fontWeight: 600, color: BADGE_TOKENS.limited.text,
                         background: 'rgba(192,125,42,0.08)', border: '1px solid rgba(192,125,42,0.22)',
                         borderRadius: 6, padding: '3px 9px', textDecoration: 'none', width: 'fit-content',
                       }}
@@ -537,9 +537,9 @@ export default async function TrialControlCenterPage() {
           ))}
         </div>
         {partnerPublished === 0 && (
-          <p style={{ fontSize: 11, color: '#C07D2A', margin: '12px 0 0', fontWeight: 600 }}>
+          <p style={{ fontSize: 11, color: BADGE_TOKENS.limited.text, margin: '12px 0 0', fontWeight: 600 }}>
             &#9888; Nessun partner pubblicato &mdash; il catalogo opportunit&agrave; appare vuoto ai worker.
-            <a href="/admin/partners" style={{ marginLeft: 8, color: '#3B6EBA', textDecoration: 'none' }}>Gestisci partner &#8594;</a>
+            <a href="/admin/partners" style={{ marginLeft: 8, color: TOKENS.info.base, textDecoration: 'none' }}>Gestisci partner &#8594;</a>
           </p>
         )}
       </div>
@@ -551,7 +551,7 @@ export default async function TrialControlCenterPage() {
         data-testid="demo-checklist"
         style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 12, overflow: 'hidden', marginBottom: 24 }}
       >
-        <div style={{ padding: '12px 18px', background: '#FAFAFA', borderBottom: '1px solid rgba(6,3,43,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ padding: '12px 18px', background: TOKENS.surface, borderBottom: '1px solid rgba(6,3,43,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, margin: 0 }}>
             {completedCount} / {checklistItems.length} completati
           </p>
@@ -569,7 +569,7 @@ export default async function TrialControlCenterPage() {
             }}
           >
             <span style={{
-              fontSize: 9, fontWeight: 700, color: item.ok ? '#2F7D55' : 'rgba(6,3,43,0.30)',
+              fontSize: 9, fontWeight: 700, color: item.ok ? TOKENS.success : 'rgba(6,3,43,0.30)',
               background: item.ok ? 'rgba(47,125,85,0.10)' : 'rgba(6,3,43,0.05)',
               border: `1px solid ${item.ok ? 'rgba(47,125,85,0.25)' : 'rgba(6,3,43,0.10)'}`,
               borderRadius: 4, padding: '2px 5px', flexShrink: 0, marginTop: 1, minWidth: 20, textAlign: 'center',
@@ -577,12 +577,12 @@ export default async function TrialControlCenterPage() {
               {item.step}
             </span>
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: item.ok ? '#1a4731' : 'rgba(6,3,43,0.60)', margin: '0 0 1px' }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: item.ok ? BADGE_TOKENS.eligible.text : 'rgba(6,3,43,0.60)', margin: '0 0 1px' }}>
                 {item.ok ? '✓ ' : ''}{item.label}
               </p>
               <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.38)', margin: 0 }}>{item.note}</p>
             </div>
-            <a href={item.href} style={{ fontSize: 10, color: '#3B6EBA', textDecoration: 'none', whiteSpace: 'nowrap', marginTop: 2 }}>
+            <a href={item.href} style={{ fontSize: 10, color: TOKENS.info.base, textDecoration: 'none', whiteSpace: 'nowrap', marginTop: 2 }}>
               Vai &#8594;
             </a>
           </div>
@@ -600,7 +600,7 @@ export default async function TrialControlCenterPage() {
           const groupLinks = quickLinks.filter(l => l.group === group);
           return (
             <div key={group} style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 12, overflow: 'hidden' }}>
-              <div style={{ padding: '8px 14px', background: '#FAFAFA', borderBottom: '1px solid rgba(6,3,43,0.06)' }}>
+              <div style={{ padding: '8px 14px', background: TOKENS.surface, borderBottom: '1px solid rgba(6,3,43,0.06)' }}>
                 <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: 'rgba(6,3,43,0.40)', margin: 0 }}>
                   {group}
                 </p>
@@ -627,7 +627,7 @@ export default async function TrialControlCenterPage() {
         <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.28)', margin: 0, lineHeight: 1.5 }}>
           KORA Foundation Light &middot; Trial Control Center &middot; B123 &middot;
           Dati letti in tempo reale. Nessun dato individuale worker esposto.
-          <a href="/docs/LIVE_TRIAL_DEMO_PACK.md" style={{ marginLeft: 8, color: '#3B6EBA', textDecoration: 'none' }}>Demo Pack &#8594;</a>
+          <a href="/docs/LIVE_TRIAL_DEMO_PACK.md" style={{ marginLeft: 8, color: TOKENS.info.base, textDecoration: 'none' }}>Demo Pack &#8594;</a>
         </p>
       </div>
     </div>
@@ -653,7 +653,7 @@ function PipelineRow({ label, value, ok }: { label: string; value: string; ok: b
       <span style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', display: 'flex', alignItems: 'center' }}>
         {statusDot(ok)}{label}
       </span>
-      <span style={{ fontSize: 11, fontWeight: 600, color: ok ? '#06032B' : 'rgba(6,3,43,0.30)' }}>
+      <span style={{ fontSize: 11, fontWeight: 600, color: ok ? TOKENS.ink : 'rgba(6,3,43,0.30)' }}>
         {value}
       </span>
     </div>
@@ -669,7 +669,7 @@ function EmptyCard({ title, body, cta, href }: { title: string; body: string; ct
       <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 6px' }}>{title}</p>
       <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', margin: '0 0 14px' }}>{body}</p>
       <a href={href} style={{
-        display: 'inline-block', fontSize: 12, fontWeight: 600, color: '#3B6EBA',
+        display: 'inline-block', fontSize: 12, fontWeight: 600, color: TOKENS.info.base,
         border: '1px solid rgba(59,110,186,0.28)', borderRadius: 8, padding: '7px 14px',
         textDecoration: 'none', background: 'rgba(59,110,186,0.06)',
       }}>

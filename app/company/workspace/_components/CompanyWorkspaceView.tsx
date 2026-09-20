@@ -109,9 +109,9 @@ interface ArchiveData {
 // ── Helpers ──────────────────────────────────────────────────────────────────────
 
 const SAFEGUARD_CLS: Record<string, string> = {
-  CLEAR:   'border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
-  WARNING: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.10)] text-[#8A5A00]',
-  FLAGGED: 'border-[rgba(158,59,47,0.25)] bg-[rgba(158,59,47,0.08)] text-[#9E3B2F]',
+  CLEAR:   'border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.08)] text-kora-success',
+  WARNING: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.10)] text-kora-warning-text',
+  FLAGGED: 'border-[rgba(158,59,47,0.25)] bg-[rgba(158,59,47,0.08)] text-kora-critical',
 };
 
 const SAFEGUARD_LABEL: Record<string, string> = {
@@ -121,11 +121,11 @@ const SAFEGUARD_LABEL: Record<string, string> = {
 };
 
 const REVIEW_CLS: Record<string, string> = {
-  approved:             'text-[#2F7D55]',
-  approved_for_scoring: 'text-[#2F7D55]',
-  pending:              'text-[#D99A2B]',
-  pending_review:       'text-[#D99A2B]',
-  rejected:             'text-[#9E3B2F]',
+  approved:             'text-kora-success',
+  approved_for_scoring: 'text-kora-success',
+  pending:              'text-kora-warning',
+  pending_review:       'text-kora-warning',
+  rejected:             'text-kora-critical',
 };
 
 const ELIGIBILITY_LABEL: Record<string, string> = {
@@ -153,7 +153,7 @@ function ts(s: string) {
 
 function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
-    <div id={id} className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden scroll-mt-4">
+    <div id={id} className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper overflow-hidden scroll-mt-4">
       <div className="px-5 py-3.5 border-b border-[rgba(6,3,43,0.05)]">
         <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-widest">{title}</p>
       </div>
@@ -228,9 +228,9 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
     <div className="max-w-3xl mx-auto py-6 px-3 space-y-5" data-testid="company-workspace-page">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
+      <div className="rounded-xl bg-kora-ink px-6 py-5 flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">
+          <p className="text-xs font-semibold tracking-widest uppercase text-kora-accent mb-1">
             KORA · Workspace Aziendale
           </p>
           <h1 className="text-xl font-bold text-white tracking-tight" data-testid="company-tenant-name">
@@ -244,7 +244,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
+          <span className="rounded border border-kora-accent/60 bg-kora-accent/15 px-2 py-0.5 text-xs font-semibold text-white">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
         </div>
       </div>
@@ -265,7 +265,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
         </div>
       )}
       {wsError && (
-        <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-[#9E3B2F]">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-kora-critical">
           ⚠ {wsError}
         </div>
       )}
@@ -284,7 +284,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
       {/* ── Welcome banner — new company with no data yet ─────────────────────── */}
       {w && !ki && rr?.readinessLevel === 'not_started' && (
         <div className="rounded-xl border border-[rgba(43,92,230,0.18)] bg-[rgba(43,92,230,0.06)] px-5 py-4 space-y-1.5">
-          <p className="text-sm font-semibold text-[#1B2A4A]">
+          <p className="text-sm font-semibold text-kora-info-text">
             La workspace aziendale è attiva
           </p>
           <p className="text-xs text-[rgba(30,74,138,0.85)] leading-relaxed">
@@ -307,7 +307,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                 <div>
                   <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">KORA Index</p>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-4xl font-bold text-[#06032B] tracking-tight">{ki.koraIndexValue}</span>
+                    <span className="text-4xl font-bold text-kora-ink tracking-tight">{ki.koraIndexValue}</span>
                     <span className="text-sm text-[rgba(6,3,43,0.40)]">/100</span>
                   </div>
                 </div>
@@ -374,7 +374,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
               <div className="flex items-center gap-3">
                 <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-center">
                   <p className="text-[9px] text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-0.5">{history.periods[0].reporting_period}</p>
-                  <p className="text-xl font-bold text-[#06032B]">{history.periods[0].kora_index_value}</p>
+                  <p className="text-xl font-bold text-kora-ink">{history.periods[0].kora_index_value}</p>
                   <p className="text-[9px] text-[rgba(6,3,43,0.35)]">/100</p>
                 </div>
                 <p className="text-xs text-[rgba(6,3,43,0.55)] leading-relaxed">
@@ -403,14 +403,14 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                       <tr key={p.reporting_period} className={`border-b border-[rgba(6,3,43,0.04)] ${p.is_current ? 'bg-[rgba(47,125,85,0.04)]' : ''}`}>
                         <td className="py-1.5 pr-4 text-[rgba(6,3,43,0.70)] font-mono">
                           {p.reporting_period}
-                          {p.is_current && <span className="ml-1.5 text-[8px] font-semibold text-[#2F7D55] uppercase tracking-wide">corrente</span>}
+                          {p.is_current && <span className="ml-1.5 text-[8px] font-semibold text-kora-success uppercase tracking-wide">corrente</span>}
                         </td>
-                        <td className="py-1.5 pr-4 font-bold text-[#06032B]">{p.kora_index_value}</td>
+                        <td className="py-1.5 pr-4 font-bold text-kora-ink">{p.kora_index_value}</td>
                         <td className="py-1.5 pr-4">
                           {p.delta === null ? (
                             <span className="text-[rgba(6,3,43,0.35)]">—</span>
                           ) : (
-                            <span className={p.delta >= 0 ? 'text-[#2F7D55] font-semibold' : 'text-[#9E3B2F] font-semibold'}>
+                            <span className={p.delta >= 0 ? 'text-kora-success font-semibold' : 'text-kora-critical font-semibold'}>
                               {p.delta >= 0 ? '+' : ''}{p.delta}
                             </span>
                           )}
@@ -449,7 +449,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
               </span>
               {!aggData.aggregate.participation_summary.suppressed && (
                 <span>
-                  <strong className="text-[#2F7D55]">{aggData.aggregate.participation_summary.value}</strong> adesioni aggregate
+                  <strong className="text-kora-success">{aggData.aggregate.participation_summary.value}</strong> adesioni aggregate
                 </span>
               )}
               {aggData.aggregate.participation_summary.suppressed && (
@@ -490,7 +490,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
             <div className="flex items-center gap-2 flex-wrap">
               <Badge
                 label={READINESS_LEVEL_LABEL[rr.readinessLevel] ?? rr.readinessLevel}
-                cls={rr.hasScoring ? 'border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]' : rr.hasEvidenceBatches ? 'border-[rgba(43,92,230,0.18)] bg-[rgba(43,92,230,0.06)] text-[#1B2A4A]' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]'}
+                cls={rr.hasScoring ? 'border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.08)] text-kora-success' : rr.hasEvidenceBatches ? 'border-[rgba(43,92,230,0.18)] bg-[rgba(43,92,230,0.06)] text-kora-info-text' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]'}
               />
               <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">{rr.batchCount} batch evidenza</span>
             </div>
@@ -503,7 +503,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                 ['Decision Pack', rr.hasDecisionPack],
               ].map(([label, done]) => (
                 <div key={String(label)} className="flex items-center gap-2">
-                  <span className={done ? 'text-\[#2F7D55\]' : 'text-[rgba(6,3,43,0.28)]'}>
+                  <span className={done ? 'text-kora-success' : 'text-[rgba(6,3,43,0.28)]'}>
                     {done ? '✓' : '○'}
                   </span>
                   <span className={done ? 'text-[rgba(6,3,43,0.78)]' : 'text-[rgba(6,3,43,0.40)]'}>{String(label)}</span>
@@ -524,14 +524,14 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
           <p className="text-xs text-[rgba(6,3,43,0.40)] text-center py-4">Caricamento archivio…</p>
         )}
         {archError && (
-          <p className="text-xs text-[#9E3B2F]">{archError}</p>
+          <p className="text-xs text-kora-critical">{archError}</p>
         )}
         {archive && !archLoading && (
           <div className="space-y-3">
             {/* Summary bar */}
             <div className="flex gap-4 text-[10.5px] text-[rgba(6,3,43,0.52)]">
               <span><strong className="text-[rgba(6,3,43,0.90)]">{archive.summary.total}</strong> iniziative</span>
-              <span><strong className="text-[#2F7D55]">{archive.summary.approved}</strong> approvate</span>
+              <span><strong className="text-kora-success">{archive.summary.approved}</strong> approvate</span>
               <span><strong className="text-amber-600">{archive.summary.pendingReview}</strong> in revisione</span>
             </div>
 
@@ -596,7 +596,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
               <Badge
                 label={dp.status.replace(/_/g, ' ')}
                 cls={dp.status === 'ready' || dp.status === 'exported'
-                  ? 'border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]'
+                  ? 'border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.08)] text-kora-success'
                   : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700'}
               />
               <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">Generato: {ts(dp.createdAt)}</span>
@@ -610,7 +610,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                 href={dp.previewUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(6,3,43,0.15)] bg-[#06032B] px-4 py-2 text-xs font-semibold text-white hover:bg-[#06032B]/90 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(6,3,43,0.15)] bg-kora-ink px-4 py-2 text-xs font-semibold text-white hover:bg-kora-ink/90 transition-colors"
               >
                 Apri Decision Pack →
               </a>
@@ -654,7 +654,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                 { label: 'Soglia privacy', value: 'N≥10 per segmento' },
                 { label: 'Dati individuali', value: 'Non accessibili al datore di lavoro' },
               ].map(({ label, value }) => (
-                <div key={label} className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2">
+                <div key={label} className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-2">
                   <p className="text-[9px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-0.5">{label}</p>
                   <p className="text-[rgba(6,3,43,0.78)] font-medium">{value}</p>
                 </div>

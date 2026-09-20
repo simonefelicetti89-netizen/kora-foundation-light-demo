@@ -3,7 +3,7 @@
 // Calls /api/admin/worker-diagnostics on mount. KORA_ADMIN only.
 
 import { useEffect, useState } from 'react';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface WorkerAggregate {
   total: number; invited: number; active: number; pending: number; disabled: number; coveragePct: number;
@@ -18,10 +18,10 @@ interface TenantRow {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  none:           { label: 'Nessun worker',       color: '#6b7280', bg: '#f3f4f6' },
-  partial:        { label: 'Parziale',             color: '#854d0e', bg: '#fef9c3' },
-  active:         { label: 'Attivo',               color: '#15803d', bg: '#dcfce7' },
-  fully_disabled: { label: 'Tutti disabilitati',   color: '#b91c1c', bg: '#fee2e2' },
+  none:           { label: 'Nessun worker',       color: TOKENS.inkSecondary, bg: TOKENS.surface },
+  partial:        { label: 'Parziale',             color: BADGE_TOKENS.limited.text, bg: BADGE_TOKENS.limited.bg },
+  active:         { label: 'Attivo',               color: BADGE_TOKENS.eligible.text, bg: BADGE_TOKENS.eligible.bg },
+  fully_disabled: { label: 'Tutti disabilitati',   color: BADGE_TOKENS.blocked.text, bg: BADGE_TOKENS.blocked.bg },
 };
 
 export default function WorkerDiagnosticsClient() {
@@ -67,7 +67,7 @@ export default function WorkerDiagnosticsClient() {
       )}
 
       {error && (
-        <div style={{ padding: '12px 16px', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, fontSize: 12, color: '#b91c1c', marginBottom: 16 }}>
+        <div style={{ padding: '12px 16px', background: BADGE_TOKENS.blocked.bg, border: `1px solid ${BADGE_TOKENS.blocked.border}`, borderRadius: 8, fontSize: 12, color: BADGE_TOKENS.blocked.text, marginBottom: 16 }}>
           {error}
         </div>
       )}
@@ -94,16 +94,16 @@ export default function WorkerDiagnosticsClient() {
               {tenants.map((t, i) => {
                 const sc = STATUS_CONFIG[t.provisioningStatus] ?? STATUS_CONFIG['none'];
                 return (
-                  <tr key={t.tenantId} style={{ borderTop: '1px solid rgba(6,3,43,0.05)', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
+                  <tr key={t.tenantId} style={{ borderTop: '1px solid rgba(6,3,43,0.05)', background: i % 2 === 0 ? '#fff' : TOKENS.surface }}>
                     <td style={{ padding: '10px 14px', fontWeight: 600, color: TOKENS.ink, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {t.companyName}
                     </td>
                     <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: 'rgba(6,3,43,0.70)' }}>{t.tenantCode}</td>
                     <td style={{ padding: '10px 14px', fontWeight: 700 }}>{t.workers.total}</td>
-                    <td style={{ padding: '10px 14px', color: '#854d0e' }}>{t.workers.invited}</td>
-                    <td style={{ padding: '10px 14px', color: '#15803d', fontWeight: t.workers.active > 0 ? 700 : 400 }}>{t.workers.active}</td>
-                    <td style={{ padding: '10px 14px', color: '#1d4ed8' }}>{t.workers.pending}</td>
-                    <td style={{ padding: '10px 14px', color: '#6b7280' }}>{t.workers.disabled}</td>
+                    <td style={{ padding: '10px 14px', color: BADGE_TOKENS.limited.text }}>{t.workers.invited}</td>
+                    <td style={{ padding: '10px 14px', color: BADGE_TOKENS.eligible.text, fontWeight: t.workers.active > 0 ? 700 : 400 }}>{t.workers.active}</td>
+                    <td style={{ padding: '10px 14px', color: BADGE_TOKENS.info.text }}>{t.workers.pending}</td>
+                    <td style={{ padding: '10px 14px', color: TOKENS.inkSecondary }}>{t.workers.disabled}</td>
                     <td style={{ padding: '10px 14px', fontWeight: 600 }}>{t.workers.coveragePct}%</td>
                     <td style={{ padding: '10px 14px' }}>
                       <span style={{ background: sc.bg, color: sc.color, fontSize: 10, fontWeight: 700, borderRadius: 4, padding: '2px 7px', whiteSpace: 'nowrap' }}>

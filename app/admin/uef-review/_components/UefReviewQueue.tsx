@@ -116,20 +116,20 @@ interface ScoringResult {
 
 function confColor(c: number) {
   if (c >= 0.70) return 'text-green-700';
-  if (c >= 0.50) return 'text-[#8A5A00]';
-  return 'text-[#9E3B2F]';
+  if (c >= 0.50) return 'text-kora-warning-text';
+  return 'text-kora-critical';
 }
 
 const ELIG_BADGE: Record<string, string> = {
-  eligible: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  limited:  'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  blocked:  'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
+  eligible: 'bg-[rgba(47,125,85,0.10)] text-kora-success border-[rgba(47,125,85,0.22)]',
+  limited:  'bg-[rgba(217,154,43,0.12)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
+  blocked:  'bg-[rgba(158,59,47,0.10)] text-kora-critical border-[rgba(158,59,47,0.22)]',
 };
 const STATUS_BADGE: Record<string, string> = {
   pending_review: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
   approved:       'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]',
-  rejected:       'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
-  needs_info:     'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
+  rejected:       'bg-[rgba(158,59,47,0.10)] text-kora-critical border-[rgba(158,59,47,0.22)]',
+  needs_info:     'bg-[rgba(217,154,43,0.12)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
 };
 
 function Badge({ label, cls }: { label: string; cls: string }) {
@@ -398,18 +398,18 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
     <div className="max-w-5xl mx-auto py-6 px-3 space-y-5" data-testid="admin-uef-review-page">
 
       {/* Header */}
-      <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
+      <div className="rounded-xl bg-kora-ink px-6 py-5 flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
+          <p className="text-xs font-semibold tracking-widest uppercase text-kora-accent mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">UEF Review Queue</h1>
           <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">B5 — Raw-to-UEF Interpreter · human review required</p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
+          <span className="rounded border border-kora-accent/60 bg-kora-accent/15 px-2 py-0.5 text-xs font-semibold text-white">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <div className="flex flex-wrap gap-1">
-            <span className="rounded border border-[#9E3B2F]/40 bg-[#9E3B2F]/10 px-2 py-0.5 text-[10px] font-semibold text-red-300">Scoring remains locked until B6.</span>
+            <span className="rounded border border-kora-critical/40 bg-kora-critical/10 px-2 py-0.5 text-[10px] font-semibold text-red-300">Scoring remains locked until B6.</span>
           </div>
         </div>
       </div>
@@ -437,7 +437,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
       {/* Generate status */}
       {genStatus === 'done'  && genMsg  && <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 px-4 py-2 text-xs text-green-700">✓ {genMsg}</div>}
-      {genStatus === 'error' && genMsg  && <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-[#9E3B2F]">⚠ {genMsg}</div>}
+      {genStatus === 'error' && genMsg  && <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-kora-critical">⚠ {genMsg}</div>}
 
       <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
 
@@ -452,7 +452,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           </div>
 
           {batchesLoading && <p className="text-xs text-[rgba(6,3,43,0.40)]">Loading batches…</p>}
-          {batchesErr    && <p className="text-xs text-[#9E3B2F]">⚠ {batchesErr}</p>}
+          {batchesErr    && <p className="text-xs text-kora-critical">⚠ {batchesErr}</p>}
 
           {!batchesLoading && batches.length === 0 && (
             <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-xs text-[rgba(6,3,43,0.40)]">
@@ -464,16 +464,16 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
             <div key={b.batchId}
               onClick={() => b.canReview && selectBatch(b.batchId)}
               data-testid="uef-batch-card"
-              className={`rounded-lg border px-4 py-3 space-y-2 cursor-pointer transition-colors ${selectedBatchId === b.batchId ? 'border-[#C76F3D] bg-[#f5f4ff]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] hover:border-[rgba(6,3,43,0.14)]'}`}>
+              className={`rounded-lg border px-4 py-3 space-y-2 cursor-pointer transition-colors ${selectedBatchId === b.batchId ? 'border-kora-accent bg-kora-accent/8' : 'border-[rgba(6,3,43,0.08)] bg-kora-paper hover:border-[rgba(6,3,43,0.14)]'}`}>
               <div className="flex items-start justify-between gap-2">
                 <div>
                   {/* B9.1: tenant label for multi-tenant clarity */}
                   {b.companyName && (
-                    <p className="text-[10px] font-semibold text-[#C76F3D] mb-0.5">{b.companyName} <span className="font-mono opacity-75">· {b.tenantCode}</span></p>
+                    <p className="text-[10px] font-semibold text-kora-accent mb-0.5">{b.companyName} <span className="font-mono opacity-75">· {b.tenantCode}</span></p>
                   )}
                   <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)] break-all">{b.sourceName ?? b.batchId.slice(0, 12) + '…'}</p>
                 </div>
-                <Badge label={b.batchStatus} cls={b.batchStatus === 'processing' ? 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]' : 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]'} />
+                <Badge label={b.batchStatus} cls={b.batchStatus === 'processing' ? 'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]' : 'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]'} />
               </div>
               <div className="flex flex-wrap gap-2 text-[10px] text-[rgba(6,3,43,0.52)]">
                 <span>Period: {b.reportingPeriod}</span>
@@ -485,7 +485,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                   onClick={e => { e.stopPropagation(); handleGenerate(b.batchId); }}
                   disabled={genStatus === 'loading'}
                   data-testid="uef-generate-candidates-button"
-                  className="w-full text-xs font-semibold rounded bg-[#06032B] text-white px-3 py-1.5 hover:bg-[#1a1756] disabled:opacity-50 transition-colors">
+                  className="w-full text-xs font-semibold rounded bg-kora-ink text-white px-3 py-1.5 hover:bg-kora-ink-hover disabled:opacity-50 transition-colors">
                   {genStatus === 'loading' ? '⏳ Generating…' : '⚙ Generate UEF candidates'}
                 </button>
               )}
@@ -507,7 +507,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           )}
 
           {selectedBatchId && candidatesErr && (
-            <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-[#9E3B2F]">⚠ {candidatesErr}</div>
+            <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-kora-critical">⚠ {candidatesErr}</div>
           )}
 
           {/* Summary bar */}
@@ -516,8 +516,8 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               <div className="flex flex-wrap gap-3 text-[10px]">
                 <span className="text-[rgba(6,3,43,0.52)]">Total: <strong>{summary.total}</strong></span>
                 <span className="text-green-700">Approved: <strong>{summary.approved}</strong></span>
-                <span className="text-[#9E3B2F]">Rejected: <strong>{summary.rejected}</strong></span>
-                <span className="text-[#8A5A00]">Needs info: <strong>{summary.needsInfo}</strong></span>
+                <span className="text-kora-critical">Rejected: <strong>{summary.rejected}</strong></span>
+                <span className="text-kora-warning-text">Needs info: <strong>{summary.needsInfo}</strong></span>
                 <span className="text-[rgba(6,3,43,0.52)]">Pending: <strong>{summary.pending}</strong></span>
                 <span className="text-[rgba(6,3,43,0.52)]">Avg confidence: <strong>{Math.round(summary.avgConfidence * 100)}%</strong></span>
               </div>
@@ -528,7 +528,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                 </span>
               )}
               {summary.pending > 0 && (
-                <span className="inline-flex items-center gap-1 rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2.5 py-0.5 text-[10px] font-semibold text-[#8A5A00]">
+                <span className="inline-flex items-center gap-1 rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2.5 py-0.5 text-[10px] font-semibold text-kora-warning-text">
                   ⏳ {summary.pending} {summary.pending === 1 ? 'record' : 'record'} in attesa di review
                 </span>
               )}
@@ -556,7 +556,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                         ✓ {eligible.length} approvabili
                       </span>
                       {skippedEnrichment > 0 && (
-                        <span className="rounded border border-[rgba(199,111,61,0.28)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-[9px] font-semibold text-[#C76F3D]">
+                        <span className="rounded border border-[rgba(199,111,61,0.28)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-[9px] font-semibold text-kora-accent">
                           ⚡ {skippedEnrichment} arricchimento richiesto
                         </span>
                       )}
@@ -582,27 +582,27 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     {bulkProgress.processed}/{bulkProgress.total} elaborati
                     {' · '}
                     <span className="text-green-700">{bulkProgress.success} approvati</span>
-                    {bulkProgress.failed > 0 && <span className="text-[#9E3B2F]"> · {bulkProgress.failed} falliti</span>}
+                    {bulkProgress.failed > 0 && <span className="text-kora-critical"> · {bulkProgress.failed} falliti</span>}
                     {bulkSkipCounts && bulkSkipCounts.enrichment > 0 && (
-                      <span className="text-[#C76F3D]"> · {bulkSkipCounts.enrichment} saltati (arricchimento)</span>
+                      <span className="text-kora-accent"> · {bulkSkipCounts.enrichment} saltati (arricchimento)</span>
                     )}
                   </div>
                 )}
                 {bulkStatus === 'done'  && <p className="text-[10px] text-green-700 font-semibold">✓ Approvazione massiva completata.</p>}
-                {bulkStatus === 'error' && <p className="text-[10px] text-[#9E3B2F]">⚠ Alcuni record hanno fallito. Rivedi manualmente.</p>}
+                {bulkStatus === 'error' && <p className="text-[10px] text-kora-critical">⚠ Alcuni record hanno fallito. Rivedi manualmente.</p>}
               </div>
             );
           })()}
 
           {/* Candidate cards */}
           {candidates.map(c => (
-            <div key={c.id} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-4 space-y-3">
+            <div key={c.id} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-4 space-y-3">
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{c.rawName}</p>
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {c.eventType && <span className="text-[10px] font-mono bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] rounded px-1.5 py-0.5">{c.eventType}</span>}
-                    {c.pillar    && <span className="text-[10px] font-semibold bg-[#C76F3D]/10 text-[#C76F3D] rounded px-1.5 py-0.5">{c.pillar}</span>}
+                    {c.pillar    && <span className="text-[10px] font-semibold bg-kora-accent/10 text-kora-accent rounded px-1.5 py-0.5">{c.pillar}</span>}
                     {c.eligibility && <Badge label={c.eligibility} cls={ELIG_BADGE[c.eligibility] ?? ''} />}
                   </div>
                 </div>
@@ -621,7 +621,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     ? <strong>€{c.budgetAmount.toLocaleString('it-IT')}</strong>
                     : c.amountParsingStatus === 'invalid'
                       ? <span className="font-semibold text-red-600">⚠ formato non valido</span>
-                      : <span className="font-semibold text-[#8A5A00]">—</span>
+                      : <span className="font-semibold text-kora-warning-text">—</span>
                   }
                 </span>
                 <span>Partecipanti:{' '}
@@ -629,7 +629,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     ? <strong>{c.participantsApproximate ? `~${c.participants}` : c.participants}</strong>
                     : <span className="font-semibold text-[rgba(6,3,43,0.36)]">—</span>
                   }
-                  {c.participantsApproximate && <span className="ml-1 text-[9px] text-[#8A5A00]">(approssimativo)</span>}
+                  {c.participantsApproximate && <span className="ml-1 text-[9px] text-kora-warning-text">(approssimativo)</span>}
                 </span>
                 {c.evidenceLevel     != null && <span>Evidence: <strong>{c.evidenceLevel}</strong></span>}
                 {c.actionFamily      != null && <span>Category: <strong>{c.actionFamily}</strong></span>}
@@ -641,13 +641,13 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               {/* B11: needs_enrichment pill */}
               {c.needsEnrichment && (
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="rounded border border-[rgba(217,154,43,0.28)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A00]">
+                  <span className="rounded border border-[rgba(217,154,43,0.28)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-kora-warning-text">
                     ⚡ Enrichment needed: {c.enrichmentMissingFields.join(', ')}
                   </span>
                   {c.b11Enriched && <span className="text-[9px] text-[rgba(6,3,43,0.40)]">Partially enriched by {c.enrichedBy ?? '—'}</span>}
                   <button
                     onClick={() => enrichOpen === c.id ? setEnrichOpen(null) : openEnrich(c)}
-                    className="text-[10px] font-medium text-[#C76F3D] underline hover:no-underline transition-all">
+                    className="text-[10px] font-medium text-kora-accent underline hover:no-underline transition-all">
                     {enrichOpen === c.id ? '▲ Chiudi' : '▼ Arricchisci manualmente'}
                   </button>
                 </div>
@@ -659,12 +659,12 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               {/* B11: enrichment panel */}
               {enrichOpen === c.id && (
                 <div className="rounded-lg border border-[rgba(217,154,43,0.22)] bg-[rgba(217,154,43,0.08)]/30 px-4 py-3 space-y-3">
-                  <p className="text-[10px] font-bold text-[#8A5A00] uppercase tracking-wide">Enrichment manuale</p>
+                  <p className="text-[10px] font-bold text-kora-warning-text uppercase tracking-wide">Enrichment manuale</p>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px]">
                     <label className="space-y-0.5">
                       <span className="text-[rgba(6,3,43,0.52)] font-medium">Initiative Domain</span>
                       <select value={enrichForm.initiativeDomain} onChange={e => setEnrichForm(f => ({ ...f, initiativeDomain: e.target.value }))}
-                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-[#F8F6F1] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-kora-paper focus:outline-none focus:ring-1 focus:ring-kora-accent">
                         <option value="">— non cambiare —</option>
                         {DOMAIN_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
                       </select>
@@ -672,7 +672,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <label className="space-y-0.5">
                       <span className="text-[rgba(6,3,43,0.52)] font-medium">Event Type</span>
                       <select value={enrichForm.eventType} onChange={e => setEnrichForm(f => ({ ...f, eventType: e.target.value }))}
-                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-[#F8F6F1] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-kora-paper focus:outline-none focus:ring-1 focus:ring-kora-accent">
                         <option value="">— non cambiare —</option>
                         {EVENT_TYPE_OPTS.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
@@ -680,7 +680,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <label className="space-y-0.5">
                       <span className="text-[rgba(6,3,43,0.52)] font-medium">Eligibility</span>
                       <select value={enrichForm.eligibilityClass} onChange={e => setEnrichForm(f => ({ ...f, eligibilityClass: e.target.value }))}
-                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-[#F8F6F1] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-kora-paper focus:outline-none focus:ring-1 focus:ring-kora-accent">
                         <option value="">— non cambiare —</option>
                         {ELIG_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
                       </select>
@@ -688,7 +688,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <label className="space-y-0.5">
                       <span className="text-[rgba(6,3,43,0.52)] font-medium">Pillar</span>
                       <select value={enrichForm.pillar} onChange={e => setEnrichForm(f => ({ ...f, pillar: e.target.value }))}
-                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-[#F8F6F1] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-kora-paper focus:outline-none focus:ring-1 focus:ring-kora-accent">
                         <option value="">— non cambiare —</option>
                         {PILLAR_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
                       </select>
@@ -696,7 +696,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <label className="space-y-0.5">
                       <span className="text-[rgba(6,3,43,0.52)] font-medium">Budget Class</span>
                       <select value={enrichForm.budgetClass} onChange={e => setEnrichForm(f => ({ ...f, budgetClass: e.target.value }))}
-                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-[#F8F6F1] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-kora-paper focus:outline-none focus:ring-1 focus:ring-kora-accent">
                         <option value="">— non cambiare —</option>
                         {BUDGET_CLS_OPTS.map(b => <option key={b} value={b}>{b}</option>)}
                       </select>
@@ -704,7 +704,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <label className="space-y-0.5">
                       <span className="text-[rgba(6,3,43,0.52)] font-medium">Evidence Level</span>
                       <select value={enrichForm.evidenceLevel} onChange={e => setEnrichForm(f => ({ ...f, evidenceLevel: e.target.value }))}
-                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-[#F8F6F1] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-kora-paper focus:outline-none focus:ring-1 focus:ring-kora-accent">
                         <option value="">— non cambiare —</option>
                         {EVID_OPTS.map(l => <option key={l} value={l}>{l}</option>)}
                       </select>
@@ -714,14 +714,14 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                       <input type="number" min={0} value={enrichForm.budgetAmount}
                         onChange={e => setEnrichForm(f => ({ ...f, budgetAmount: e.target.value }))}
                         placeholder="es. 12500"
-                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent" />
                     </label>
                     <label className="space-y-0.5">
                       <span className="text-[rgba(6,3,43,0.52)] font-medium">Budget Source</span>
                       <input type="text" value={enrichForm.budgetSource}
                         onChange={e => setEnrichForm(f => ({ ...f, budgetSource: e.target.value }))}
                         placeholder="es. export fornitore welfare"
-                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent" />
                     </label>
                   </div>
                   {c.rawAmountValue && (
@@ -734,13 +734,13 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <span className="text-[rgba(6,3,43,0.52)] font-medium">Note enrichment (max 500 car.)</span>
                     <textarea rows={2} value={enrichForm.notes} maxLength={500}
                       onChange={e => setEnrichForm(f => ({ ...f, notes: e.target.value }))}
-                      className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] resize-none focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+                      className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] resize-none focus:outline-none focus:ring-1 focus:ring-kora-accent" />
                   </label>
                   <div className="flex items-center gap-3 pt-1">
                     <button
                       onClick={() => handleEnrich(c.id)}
                       disabled={enrichStatus[c.id] === 'loading'}
-                      className="rounded border border-[#C76F3D] bg-[#C76F3D] text-white px-4 py-1.5 text-[11px] font-semibold hover:bg-[#4d43d4] disabled:opacity-50 transition-colors">
+                      className="rounded border border-kora-accent bg-kora-accent text-white px-4 py-1.5 text-[11px] font-semibold hover:bg-kora-accent-hover disabled:opacity-50 transition-colors">
                       {enrichStatus[c.id] === 'loading' ? '⏳ Saving…' : '✓ Salva enrichment'}
                     </button>
                     <button onClick={() => setEnrichOpen(null)}
@@ -749,7 +749,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     </button>
                   </div>
                   {enrichMsg[c.id] && (
-                    <p className={`text-[10px] ${enrichStatus[c.id] === 'done' ? 'text-green-700' : 'text-[#9E3B2F]'}`}>
+                    <p className={`text-[10px] ${enrichStatus[c.id] === 'done' ? 'text-green-700' : 'text-kora-critical'}`}>
                       {enrichMsg[c.id]}
                     </p>
                   )}
@@ -770,7 +770,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               {c.warnings.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {c.warnings.map(w => (
-                    <span key={w} className="text-[9px] font-mono bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)] text-[#8A5A00] rounded px-1.5 py-0.5">⚠ {w}</span>
+                    <span key={w} className="text-[9px] font-mono bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)] text-kora-warning-text rounded px-1.5 py-0.5">⚠ {w}</span>
                   ))}
                 </div>
               )}
@@ -787,16 +787,16 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                   <button
                     onClick={() => handleAction(c.id, 'reject')}
                     disabled={actionState[c.id] === 'loading'}
-                    className="rounded border border-[rgba(158,59,47,0.25)] bg-[rgba(158,59,47,0.06)] px-3 py-1 text-[11px] font-semibold text-[#9E3B2F] hover:bg-[rgba(158,59,47,0.10)] disabled:opacity-50 transition-colors">
+                    className="rounded border border-[rgba(158,59,47,0.25)] bg-[rgba(158,59,47,0.06)] px-3 py-1 text-[11px] font-semibold text-kora-critical hover:bg-[rgba(158,59,47,0.10)] disabled:opacity-50 transition-colors">
                     ✕ Reject
                   </button>
                   <button
                     onClick={() => handleAction(c.id, 'needs_info')}
                     disabled={actionState[c.id] === 'loading'}
-                    className="rounded border border-amber-300 bg-[rgba(217,154,43,0.08)] px-3 py-1 text-[11px] font-semibold text-[#8A5A00] hover:bg-[rgba(217,154,43,0.12)] disabled:opacity-50 transition-colors">
+                    className="rounded border border-amber-300 bg-[rgba(217,154,43,0.08)] px-3 py-1 text-[11px] font-semibold text-kora-warning-text hover:bg-[rgba(217,154,43,0.12)] disabled:opacity-50 transition-colors">
                     ? Needs info
                   </button>
-                  {actionState[c.id] === 'error' && <span className="text-[10px] text-[#9E3B2F]">⚠ Action failed. Retry.</span>}
+                  {actionState[c.id] === 'error' && <span className="text-[10px] text-kora-critical">⚠ Action failed. Retry.</span>}
                 </div>
               )}
               {c.reviewStatus !== 'pending_review' && (
@@ -813,10 +813,10 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
       {/* ── B6: Live Scoring panel ── */}
       {selectedBatchId && summary && summary.approved > 0 && (
-        <div className="rounded-lg border border-[#06032B] bg-[#F8F6F1] px-5 py-4 space-y-3">
+        <div className="rounded-lg border border-kora-ink bg-kora-paper px-5 py-4 space-y-3">
           <div className="flex items-start justify-between flex-wrap gap-2">
             <div>
-              <p className="text-xs font-bold text-[#06032B] uppercase tracking-wide">Run Live Scoring</p>
+              <p className="text-xs font-bold text-kora-ink uppercase tracking-wide">Run Live Scoring</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">
                 Solo i record UEF approvati entrano nel calcolo. Questa azione genera il KORA Index e il Decision Pack
                 per questo batch — è consequenziale, ma può essere ripetuta se servono correzioni a monte.
@@ -827,7 +827,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
             </span>
           </div>
 
-          <p className="text-[10px] text-[#8A5A00] border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded px-2 py-1">
+          <p className="text-[10px] text-kora-warning-text border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded px-2 py-1">
             Numero totale di lavoratori dell&apos;azienda per questo periodo — necessario per calcolare Activation Rate
             ed Equity. Serve solo se non esiste già una baseline workforce per questa azienda/periodo.
           </p>
@@ -846,7 +846,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               onClick={() => handleRunScoring(selectedBatchId)}
               disabled={scoringStatus === 'loading'}
               data-testid="uef-run-scoring-button"
-              className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-50 transition-colors">
+              className="rounded-lg bg-kora-ink text-white px-4 py-1.5 text-xs font-semibold hover:bg-kora-ink-hover disabled:opacity-50 transition-colors">
               {scoringStatus === 'loading' ? '⏳ Running scoring…' : '▶ Run scoring from approved UEF'}
             </button>
           </div>
@@ -856,12 +856,12 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
             <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 px-4 py-3 space-y-2">
               <p className="text-xs font-bold text-green-700">✓ Decision Pack generated from approved UEF records.</p>
               <div className="grid grid-cols-3 gap-x-4 gap-y-1 text-[10px]">
-                <span className="text-[rgba(6,3,43,0.52)]">KORA Index <strong className="text-[#06032B] tabular-nums text-base">{scoringResult.koraIndex ?? '—'}</strong></span>
-                <span className="text-[rgba(6,3,43,0.52)]">Confidence <strong className="text-[#06032B] tabular-nums">{scoringResult.confidenceScore != null ? `${scoringResult.confidenceScore}%` : '—'}</strong></span>
-                <span className="text-[rgba(6,3,43,0.52)]">Safeguard <strong className="text-[#06032B]">{scoringResult.safeguard ?? '—'}</strong></span>
-                <span className="text-[rgba(6,3,43,0.52)]">AR <strong className="tabular-nums text-[#06032B]">{scoringResult.activationRate != null ? `${Math.round(scoringResult.activationRate * 100)}%` : '—'}</strong></span>
-                <span className="text-[rgba(6,3,43,0.52)]">MAR <strong className="tabular-nums text-[#06032B]">{scoringResult.meaningfulActivationRate != null ? `${Math.round(scoringResult.meaningfulActivationRate * 100)}%` : '—'}</strong></span>
-                <span className="text-[rgba(6,3,43,0.52)]">UEF count <strong className="text-[#06032B]">{scoringResult.approvedUefCount}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">KORA Index <strong className="text-kora-ink tabular-nums text-base">{scoringResult.koraIndex ?? '—'}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">Confidence <strong className="text-kora-ink tabular-nums">{scoringResult.confidenceScore != null ? `${scoringResult.confidenceScore}%` : '—'}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">Safeguard <strong className="text-kora-ink">{scoringResult.safeguard ?? '—'}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">AR <strong className="tabular-nums text-kora-ink">{scoringResult.activationRate != null ? `${Math.round(scoringResult.activationRate * 100)}%` : '—'}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">MAR <strong className="tabular-nums text-kora-ink">{scoringResult.meaningfulActivationRate != null ? `${Math.round(scoringResult.meaningfulActivationRate * 100)}%` : '—'}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">UEF count <strong className="text-kora-ink">{scoringResult.approvedUefCount}</strong></span>
               </div>
               {scoringResult.decisionPack && (
                 <p className="text-[10px] text-[rgba(6,3,43,0.52)]">
@@ -872,13 +872,13 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                 {scoringResult.previewUrl && (
                   <a href={scoringResult.previewUrl} target="_blank" rel="noopener noreferrer"
                     data-testid="decision-pack-preview-link"
-                    className="inline-flex items-center gap-1 border border-[#C76F3D] text-[#C76F3D] rounded px-3 py-1 text-[11px] font-medium hover:bg-[#f5f4ff] transition-colors">
+                    className="inline-flex items-center gap-1 border border-kora-accent text-kora-accent rounded px-3 py-1 text-[11px] font-medium hover:bg-kora-accent/8 transition-colors">
                     ↗ HTML Preview
                   </a>
                 )}
                 {scoringResult.pdfUrl && (
                   <a href={scoringResult.pdfUrl} download
-                    className="inline-flex items-center gap-1 bg-[#06032B] text-white rounded px-3 py-1 text-[11px] font-medium hover:bg-[#1a1756] transition-colors">
+                    className="inline-flex items-center gap-1 bg-kora-ink text-white rounded px-3 py-1 text-[11px] font-medium hover:bg-kora-ink-hover transition-colors">
                     ↓ Download PDF
                   </a>
                 )}
@@ -889,8 +889,8 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           {/* Error / blocked */}
           {scoringStatus === 'error' && scoringResult && (
             <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 space-y-1">
-              <p className="text-xs font-bold text-[#9E3B2F]">⚠ {scoringResult.error}</p>
-              {scoringResult.hint && <p className="text-[10px] text-[#9E3B2F]">{scoringResult.hint}</p>}
+              <p className="text-xs font-bold text-kora-critical">⚠ {scoringResult.error}</p>
+              {scoringResult.hint && <p className="text-[10px] text-kora-critical">{scoringResult.hint}</p>}
             </div>
           )}
         </div>

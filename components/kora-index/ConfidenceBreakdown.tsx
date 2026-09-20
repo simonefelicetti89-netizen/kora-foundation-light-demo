@@ -1,6 +1,6 @@
 'use client';
 
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 import type { ConfidenceRecord } from '@/lib/types';
 
 interface ConfidenceBreakdownProps {
@@ -10,7 +10,7 @@ interface ConfidenceBreakdownProps {
 const COVERAGE_STYLES: Record<string, { bg: string; text: string; border: string }> = {
   complete: { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text,  border: TOKENS.safeguard.pass.dot  },
   partial:  { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text, border: TOKENS.safeguard.watch.dot },
-  present:  { bg: 'rgba(43,92,230,0.08)',    text: '#1B2A4A',                   border: '#2B5CE6'                   },
+  present:  { bg: 'rgba(43,92,230,0.08)',    text: BADGE_TOKENS.info.text,                   border: BADGE_TOKENS.info.border                   },
   absent:   { bg: TOKENS.inkBorder,          text: TOKENS.inkSecondary,         border: TOKENS.inkHint              },
 };
 

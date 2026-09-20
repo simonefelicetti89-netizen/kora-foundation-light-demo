@@ -180,7 +180,7 @@ export default function CompanyActivitySelectionPlanPage() {
       </Panel>
 
       {/* Privacy boundary */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Confine privacy</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           L&apos;azienda riceve sempre e solo output aggregati. Il partner vede nominativi solo dopo un&apos;azione

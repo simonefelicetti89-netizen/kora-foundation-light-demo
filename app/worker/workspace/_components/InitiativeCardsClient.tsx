@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase/types';
-import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export type InitiativeItem = {
   id: string;
@@ -150,7 +150,7 @@ function InitiativeCard({
             {init.eligibility_class && init.eligibility_class !== 'eligible' && (
               <span style={{
                 fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-                background: '#fef9c3', color: '#854d0e', borderRadius: 4, padding: '1px 5px',
+                background: BADGE_TOKENS.limited.bg, color: BADGE_TOKENS.limited.text, borderRadius: 4, padding: '1px 5px',
               }}>
                 {ELIGIBILITY_LABELS[init.eligibility_class] ?? init.eligibility_class}
               </span>
@@ -178,8 +178,8 @@ function InitiativeCard({
         {currentStatus && (
           <span style={{
             fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-            background: currentStatus === 'attended' ? '#dcfce7' : currentStatus === 'registered' ? '#dbeafe' : currentStatus === 'interested' ? 'rgba(6,3,43,0.06)' : '#f3f4f6',
-            color: currentStatus === 'attended' ? '#15803d' : currentStatus === 'registered' ? '#1d4ed8' : currentStatus === 'interested' ? 'rgba(6,3,43,0.60)' : '#6b7280',
+            background: currentStatus === 'attended' ? BADGE_TOKENS.eligible.bg : currentStatus === 'registered' ? BADGE_TOKENS.info.bg : currentStatus === 'interested' ? 'rgba(6,3,43,0.06)' : TOKENS.surface,
+            color: currentStatus === 'attended' ? BADGE_TOKENS.eligible.text : currentStatus === 'registered' ? BADGE_TOKENS.info.text : currentStatus === 'interested' ? 'rgba(6,3,43,0.60)' : TOKENS.inkSecondary,
             borderRadius: 4, padding: '2px 7px', flexShrink: 0, marginLeft: 10,
           }}>
             {STATUS_LABELS[currentStatus]}
@@ -220,7 +220,7 @@ function InitiativeCard({
             </span>
           )}
           {saved && !loading && (
-            <span data-testid="initiative-saved-feedback" style={{ fontSize: 10, color: '#16a34a', fontStyle: 'italic' }}>
+            <span data-testid="initiative-saved-feedback" style={{ fontSize: 10, color: BADGE_TOKENS.eligible.text, fontStyle: 'italic' }}>
               Aggiornamento salvato
             </span>
           )}
@@ -228,7 +228,7 @@ function InitiativeCard({
       )}
 
       {error && (
-        <p style={{ fontSize: 10, color: '#dc2626', marginTop: 8, marginBottom: 0 }}>{error}</p>
+        <p style={{ fontSize: 10, color: BADGE_TOKENS.blocked.text, marginTop: 8, marginBottom: 0 }}>{error}</p>
       )}
     </div>
   );

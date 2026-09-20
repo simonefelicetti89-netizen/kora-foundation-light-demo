@@ -73,7 +73,7 @@ export default function ConfirmIngestPanel({ file }: ConfirmIngestPanelProps) {
 
   return (
     <div className="mt-6 rounded-xl border border-[rgba(6,3,43,0.08)] bg-white p-5">
-      <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-2">
+      <p className="text-xs font-semibold tracking-widest uppercase text-kora-accent mb-2">
         Conferma e Salva
       </p>
       <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed mb-3">
@@ -84,7 +84,7 @@ export default function ConfirmIngestPanel({ file }: ConfirmIngestPanelProps) {
         <button
           type="button"
           onClick={handleConfirm}
-          className="rounded-lg bg-[#06032B] px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
+          className="rounded-lg bg-kora-ink px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
         >
           {state === 'failed' ? 'Riprova' : 'Conferma e Salva'}
         </button>

@@ -1,4 +1,5 @@
 // lib/commons/types.ts
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 // B97-B — KORA Commons type definitions.
 // B165 — esteso con InitiativeOpeningGrade e CommonsPost (tipo DB live).
 // KORA Commons is a shared activation layer — NOT a social network.
@@ -19,9 +20,9 @@ export const OPENING_GRADE_LABELS: Record<InitiativeOpeningGrade, string> = {
 };
 
 export const OPENING_GRADE_COLORS: Record<InitiativeOpeningGrade, { text: string; bg: string; border: string }> = {
-  company_internal: { text: '#3B6EBA', bg: 'rgba(59,110,186,0.08)',  border: 'rgba(59,110,186,0.25)'  },
-  company_extended: { text: '#7C3D8F', bg: 'rgba(124,61,143,0.08)', border: 'rgba(124,61,143,0.25)' },
-  cross_company:    { text: '#2F7D55', bg: 'rgba(47,125,85,0.08)',   border: 'rgba(47,125,85,0.25)'   },
+  company_internal: { text: TOKENS.info.base, bg: 'rgba(59,110,186,0.08)',  border: 'rgba(59,110,186,0.25)'  },
+  company_extended: { text: TOKENS.accent, bg: 'rgba(199,111,61,0.08)', border: 'rgba(199,111,61,0.25)' },
+  cross_company:    { text: TOKENS.success, bg: 'rgba(47,125,85,0.08)',   border: 'rgba(47,125,85,0.25)'   },
 };
 
 // ── B165: Tipo DB live per commons.post ──────────────────────────────────────

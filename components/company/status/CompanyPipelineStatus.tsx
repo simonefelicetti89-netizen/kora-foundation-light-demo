@@ -2,6 +2,7 @@
 
 import type { PipelineStage, PipelineStatusResult } from '@/lib/company-status/company-status-engine';
 import { PIPELINE_STAGES } from '@/lib/company-status/company-status-engine';
+import { BADGE_TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface Props {
   pipeline: PipelineStatusResult;
@@ -20,19 +21,19 @@ export function CompanyPipelineStatus({ pipeline }: Props) {
           const isNotStarted = !isDone && !isCurrent;
 
           const lineColor = isDone
-            ? '#22c55e'
+            ? BADGE_TOKENS.eligible.text
             : isCurrent
             ? 'rgba(74,127,224,0.9)'
             : 'rgba(6,3,43,0.10)';
 
           const dotBg = isDone
-            ? '#22c55e'
+            ? BADGE_TOKENS.eligible.text
             : isCurrent
             ? 'rgba(74,127,224,0.9)'
             : 'rgba(6,3,43,0.12)';
 
           const textColor = isDone
-            ? '#22c55e'
+            ? BADGE_TOKENS.eligible.text
             : isCurrent
             ? 'rgba(6,3,43,0.92)'
             : 'rgba(6,3,43,0.36)';
@@ -52,7 +53,7 @@ export function CompanyPipelineStatus({ pipeline }: Props) {
                   className="absolute top-[14px] left-1/2 right-0 h-[2px]"
                   style={{
                     background: pipeline.completedStages.includes((stage + 1) as PipelineStage)
-                      ? '#22c55e'
+                      ? BADGE_TOKENS.eligible.text
                       : 'rgba(6,3,43,0.10)',
                   }}
                 />
@@ -138,7 +139,7 @@ export function CompanyPipelineStatus({ pipeline }: Props) {
                   borderRadius: '50%',
                   flexShrink: 0,
                   background: isDone
-                    ? '#22c55e'
+                    ? BADGE_TOKENS.eligible.text
                     : isCurrent
                     ? 'rgba(74,127,224,0.9)'
                     : 'rgba(6,3,43,0.10)',
@@ -159,7 +160,7 @@ export function CompanyPipelineStatus({ pipeline }: Props) {
                 <div style={{
                   fontSize: 12,
                   fontWeight: isCurrent ? 700 : 500,
-                  color: isDone ? '#22c55e' : isCurrent ? 'rgba(6,3,43,0.92)' : 'rgba(6,3,43,0.40)',
+                  color: isDone ? BADGE_TOKENS.eligible.text : isCurrent ? 'rgba(6,3,43,0.92)' : 'rgba(6,3,43,0.40)',
                 }}>
                   {PIPELINE_STAGES[stage].label}
                   {isCurrent && (

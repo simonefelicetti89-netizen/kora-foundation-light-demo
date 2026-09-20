@@ -36,10 +36,10 @@ export default function DataEvidence() {
         </p>
       </div>
       <div style={{ padding: '8px 0' }}>
-        <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">
+        <p className="text-xs font-semibold tracking-widest uppercase text-kora-accent mb-1">
           Stato Dati &amp; Evidenze · LIVE
         </p>
-        <h1 className="text-xl font-bold text-[#06032B] mb-2">
+        <h1 className="text-xl font-bold text-kora-ink mb-2">
           {liveCompanyName ?? 'La tua organizzazione'}
         </h1>
         <p className="text-sm text-[rgba(6,3,43,0.55)] max-w-xl leading-relaxed">

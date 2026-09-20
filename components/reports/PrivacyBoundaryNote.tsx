@@ -10,16 +10,16 @@ export function PrivacyBoundaryNote() {
   ];
 
   return (
-    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-4">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-6 space-y-4">
       <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">I — Perimetro Privacy e Metodologia</p>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {/* Privacy */}
         <div className="rounded-lg border border-[rgba(47,125,85,0.14)] bg-[rgba(47,125,85,0.08)] p-4 space-y-2">
-          <p className="text-[11px] font-bold text-[#2F7D55] uppercase tracking-wide">Privacy garantita</p>
+          <p className="text-[11px] font-bold text-kora-success uppercase tracking-wide">Privacy garantita</p>
           <ul className="space-y-1.5">
             {items.map((item, i) => (
-              <li key={i} className="flex gap-1.5 text-[11px] text-[#2F7D55] leading-relaxed">
+              <li key={i} className="flex gap-1.5 text-[11px] text-kora-success leading-relaxed">
                 <span className="shrink-0 mt-0.5 text-[rgba(47,125,85,0.75)]">·</span>
                 {item}
               </li>
@@ -31,7 +31,7 @@ export function PrivacyBoundaryNote() {
         <div className="space-y-3">
           <div className="rounded-lg border border-amber-100 bg-[rgba(217,154,43,0.08)] p-4 space-y-2">
             <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wide">Perimetro metodologico</p>
-            <div className="space-y-1.5 text-[11px] text-[#8A5A00] leading-relaxed">
+            <div className="space-y-1.5 text-[11px] text-kora-warning-text leading-relaxed">
               <p>Output di intelligence diagnostica organizzativa — non una certificazione, non un rating regolatorio.</p>
               <p>Metodologia in fase pre-empirical calibration — pesi e soglie raffinati post-Delphi Study e programma pilota.</p>
               <p>Correlazione ≠ causalità su tutte le implicazioni business.</p>
@@ -56,7 +56,7 @@ export function PrivacyBoundaryNote() {
                 'KORA Foundation Light',
                 'informational_only',
               ].map((tag) => (
-                <span key={tag} className="font-mono text-[10px] rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-[rgba(6,3,43,0.52)]">
+                <span key={tag} className="font-mono text-[10px] rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-1.5 py-0.5 text-[rgba(6,3,43,0.52)]">
                   {tag}
                 </span>
               ))}

@@ -82,14 +82,14 @@ export default function FinancialGovernanceLive() {
           className="rounded-xl border border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.06)] px-5 py-4 space-y-2"
         >
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold text-[#2F7D55] uppercase tracking-wide">
+            <p className="text-xs font-bold text-kora-success uppercase tracking-wide">
               BTI™ Score live · La tua organizzazione
             </p>
             <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">
               LIVE
             </span>
           </div>
-          <p className="text-3xl font-bold text-[#06032B]">
+          <p className="text-3xl font-bold text-kora-ink">
             {Math.round(liveBtiScore)}
             <span className="text-sm text-[rgba(6,3,43,0.40)] ml-1">/100</span>
           </p>

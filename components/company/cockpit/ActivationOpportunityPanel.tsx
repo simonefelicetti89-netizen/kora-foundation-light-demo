@@ -5,7 +5,7 @@
 // methodologyStatus: pre_empirical_calibration · not_kora_index_component: true
 
 import Link from 'next/link';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 import type { ActivationOpportunity, OpportunityPriority } from '@/services/activation-opportunity/ActivationOpportunityService';
 
 // ── Priority display helpers ──────────────────────────────────────────────────
@@ -27,9 +27,9 @@ const PRIORITY_COLORS: Record<OpportunityPriority, { bg: string; text: string; b
 const PILLAR_ACCENT: Record<string, string> = {
   LIFE:       TOKENS.success,
   GROWTH:     TOKENS.success,
-  CONNECTION: '#D99767',
+  CONNECTION: PILLAR_COLORS.CONNECTION,
   IMPACT:     TOKENS.warning,
-  LEGACY:     '#8A7562',
+  LEGACY:     PILLAR_COLORS.LEGACY,
   COMPANY:    TOKENS.accent,
   ALL:        TOKENS.violet,
 };

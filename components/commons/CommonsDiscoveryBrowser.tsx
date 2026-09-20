@@ -14,7 +14,7 @@ import {
   OPENING_GRADE_LABELS,
   OPENING_GRADE_COLORS,
 } from '@/lib/commons/types';
-import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 // ── Pillar styling ────────────────────────────────────────────────────────────
 
@@ -36,7 +36,7 @@ const PILLAR_BG: Record<string, string> = {
 
 const STATUS_COLORS: Record<CommonsDiscoveryStatus, string> = {
   open:      TOKENS.success,
-  upcoming:  '#4A7FE0',
+  upcoming:  BADGE_TOKENS.info.text,
   full:      TOKENS.critical,
   completed: 'rgba(6,3,43,0.35)',
 };
@@ -153,12 +153,12 @@ function InitiativeCard({ initiative, featured = false }: { initiative: CommonsD
             <span style={{ fontSize: 10.5, color: 'rgba(6,3,43,0.45)', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
               {initiative.participants_enrolled} / {initiative.capacity} iscritti
             </span>
-            <span style={{ fontSize: 10.5, fontWeight: 600, color: capacityPct >= 80 ? '#9E3B2F' : 'rgba(6,3,43,0.45)', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
+            <span style={{ fontSize: 10.5, fontWeight: 600, color: capacityPct >= 80 ? TOKENS.critical : 'rgba(6,3,43,0.45)', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
               {capacityPct}%
             </span>
           </div>
           <div style={{ height: 4, borderRadius: 4, background: 'rgba(6,3,43,0.08)', overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${capacityPct}%`, borderRadius: 4, background: capacityPct >= 80 ? '#9E3B2F' : accent, transition: 'width 400ms' }} />
+            <div style={{ height: '100%', width: `${capacityPct}%`, borderRadius: 4, background: capacityPct >= 80 ? TOKENS.critical : accent, transition: 'width 400ms' }} />
           </div>
         </div>
       )}
@@ -261,7 +261,7 @@ export function CommonsDiscoveryBrowser({ initiatives }: { initiatives: CommonsD
       >
         <span style={{
           fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: 'rgba(74,127,224,0.15)',
-          color: '#3B6EBA', textTransform: 'uppercase', letterSpacing: '0.10em', border: '1px solid rgba(74,127,224,0.25)', flexShrink: 0,
+          color: TOKENS.info.base, textTransform: 'uppercase', letterSpacing: '0.10em', border: '1px solid rgba(74,127,224,0.25)', flexShrink: 0,
         }}>
           KORA Space · Live
         </span>

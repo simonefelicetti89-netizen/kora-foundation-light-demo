@@ -17,7 +17,7 @@ import { SessionBar } from '@/components/auth/SessionBar';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PartnerCatalogClient } from './_components/PartnerCatalogClient';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export type PartnerItem = {
   id:            string;
@@ -91,7 +91,7 @@ export default async function WorkerOpportunitiesPage() {
             borderRadius: 10, padding: '14px 18px', marginBottom: 24,
           }}
         >
-          <p style={{ fontSize: 12, color: '#1a4731', margin: 0, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 12, color: BADGE_TOKENS.eligible.text, margin: 0, lineHeight: 1.6 }}>
             <strong>Privacy:</strong>{' '}
             La tua navigazione tra i partner non viene mostrata al datore di lavoro.
             L&apos;azienda vede solo dati aggregati anonimi, non le tue scelte individuali.

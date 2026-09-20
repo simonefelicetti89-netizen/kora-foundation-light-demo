@@ -11,7 +11,7 @@
 // before this component ever renders.
 
 import { useState, useEffect } from 'react';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
@@ -43,7 +43,7 @@ const BOOKING_STATUS_COPY: Record<string, { label: string; color: string }> = {
   approved:  { label: 'Partecipazione confermata',  color: TOKENS.success           },
   confirmed: { label: 'Partecipazione confermata',  color: TOKENS.success           },
   rejected:  { label: 'Richiesta non approvata',    color: TOKENS.critical           },
-  attended:  { label: 'Partecipazione completata',  color: '#3B6EBA'           },
+  attended:  { label: 'Partecipazione completata',  color: TOKENS.info.base           },
   cancelled: { label: 'Annullata',                  color: 'rgba(6,3,43,0.45)' },
 };
 
@@ -248,17 +248,17 @@ export function BookingsClient() {
                         padding: '10px 14px',
                       }}
                     >
-                      <p style={{ fontSize: 11, fontWeight: 700, color: '#3B5A8A', margin: '0 0 6px', fontFamily: FONT }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: BADGE_TOKENS.info.text, margin: '0 0 6px', fontFamily: FONT }}>
                         Traccia privata My KORA
                       </p>
-                      <p style={{ fontSize: 11, color: '#3B5A8A', margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
+                      <p style={{ fontSize: 11, color: BADGE_TOKENS.info.text, margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
                         Questa partecipazione è una traccia privata del tuo percorso My KORA.
                       </p>
-                      <p style={{ fontSize: 11, color: '#3B5A8A', margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
+                      <p style={{ fontSize: 11, color: BADGE_TOKENS.info.text, margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
                         Il datore di lavoro non vede il tuo percorso individuale.
                         Eventuali segnali verso l&apos;organizzazione sono aggregati.
                       </p>
-                      <p style={{ fontSize: 11, color: '#3B5A8A', margin: '0 0 6px', lineHeight: 1.6, fontFamily: FONT }}>
+                      <p style={{ fontSize: 11, color: BADGE_TOKENS.info.text, margin: '0 0 6px', lineHeight: 1.6, fontFamily: FONT }}>
                         La partecipazione completata può contribuire al tuo Personal Impact Balance quando disponibile.
                       </p>
                       <p style={{ fontSize: 10, color: 'rgba(59,110,186,0.65)', margin: 0, lineHeight: 1.55, fontFamily: FONT }}>

@@ -18,7 +18,7 @@ export function KoraLinkBoundaryCard({ boundaries, title = 'Confini privacy' }: 
   return (
     <div
       style={{
-        background:   '#fffaf5',
+        background:   TOKENS.insetPanel,
         border:       `1px dashed ${TOKENS.inkBorder}`,
         borderRadius: TOKENS.cardRadiusSm,
         padding:      '16px 18px',

@@ -27,14 +27,14 @@ export function KoraIndexHero({ output, className, variant = 'light' }: KoraInde
   return (
     <div className={cn(
       'rounded-xl border p-6',
-      dark ? 'border-[rgba(6,3,43,0.35)] bg-[#06032B] shadow-lg' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm',
+      dark ? 'border-[rgba(6,3,43,0.35)] bg-kora-ink shadow-lg' : 'border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm',
       className,
     )}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">KORA Index</p>
           <div className="mt-1 flex items-end gap-3">
-            <span className={cn('text-5xl font-bold', dark ? 'text-white' : 'text-[#06032B]')}>
+            <span className={cn('text-5xl font-bold', dark ? 'text-white' : 'text-kora-ink')}>
               {indexValue !== null ? formatKoraIndex(indexValue) : '—'}
             </span>
             <span className={cn('mb-1 text-sm', dark ? 'text-[rgba(6,3,43,0.52)]' : 'text-[rgba(6,3,43,0.40)]')}>/ 100</span>

@@ -42,8 +42,8 @@ interface Props {
 }
 
 const GRADE_COLORS: Record<InitiativeOpeningGrade, string> = {
-  company_internal: '#3B6EBA',
-  company_extended: '#7C3D8F',
+  company_internal: TOKENS.info.base,
+  company_extended: TOKENS.accent,
   cross_company:    TOKENS.success,
 };
 
@@ -86,7 +86,7 @@ export function InitiativesMap({ initiatives, height = 360 }: Props) {
         {geoPoints.map((initiative) => {
           const gradeColor = initiative.opening_grade
             ? GRADE_COLORS[initiative.opening_grade]
-            : '#06032B';
+            : TOKENS.ink;
           const gradeLabel = initiative.opening_grade
             ? OPENING_GRADE_LABELS[initiative.opening_grade]
             : '';

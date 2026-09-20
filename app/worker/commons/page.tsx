@@ -23,7 +23,7 @@ import { OPENING_GRADE_LABELS, OPENING_GRADE_COLORS } from '@/lib/commons/types'
 import { InitiativesMapClient } from '@/components/commons/InitiativesMapClient';
 import { WorkerBookingButton } from '@/components/commons/WorkerBookingButton';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
-import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_SURFACE, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'KORA Space · Worker' };
 
@@ -165,10 +165,10 @@ export default async function WorkerCommonsPage() {
             borderRadius: 10, padding: '12px 16px', marginBottom: 20,
           }}
         >
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#2F5A42', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: BADGE_TOKENS.eligible.text, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             Come funziona la partecipazione
           </p>
-          <ol style={{ fontSize: 11, color: '#2F5A42', margin: 0, paddingLeft: 16, lineHeight: 1.9 }}>
+          <ol style={{ fontSize: 11, color: BADGE_TOKENS.eligible.text, margin: 0, paddingLeft: 16, lineHeight: 1.9 }}>
             <li>Richiedi partecipazione su KORA Space</li>
             <li>KORA esamina la richiesta</li>
             <li>Ricevi conferma (partecipazione confermata)</li>

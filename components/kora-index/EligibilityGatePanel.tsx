@@ -47,11 +47,11 @@ export function EligibilityGatePanel({ summary }: EligibilityGatePanelProps) {
       {/* Three gate classes — semantic colors preserved */}
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-[10px] border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] p-4 space-y-2">
-          <p className="text-xs font-bold uppercase tracking-widest text-[#2F7D55]">Eligible</p>
-          <p className="text-3xl font-bold text-[#1A4A2E]" style={{ fontFamily: 'var(--font-jakarta)' }}>
+          <p className="text-xs font-bold uppercase tracking-widest text-kora-success">Eligible</p>
+          <p className="text-3xl font-bold text-kora-success" style={{ fontFamily: 'var(--font-jakarta)' }}>
             {summary.eligible_row_count.toLocaleString('it-IT')}
           </p>
-          <p className="text-xs text-[#2F7D55] leading-relaxed">
+          <p className="text-xs text-kora-success leading-relaxed">
             Azioni che possono generare attivazione umana verificata. Processate dall&apos;IU Engine — contribuiscono al KORA Index.
           </p>
         </div>
@@ -65,11 +65,11 @@ export function EligibilityGatePanel({ summary }: EligibilityGatePanelProps) {
           </p>
         </div>
         <div className="rounded-[10px] border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-4 space-y-2">
-          <p className="text-xs font-bold uppercase tracking-widest text-[#9E3B2F]">Blocked</p>
-          <p className="text-3xl font-bold text-[#9E3B2F]" style={{ fontFamily: 'var(--font-jakarta)' }}>
+          <p className="text-xs font-bold uppercase tracking-widest text-kora-critical">Blocked</p>
+          <p className="text-3xl font-bold text-kora-critical" style={{ fontFamily: 'var(--font-jakarta)' }}>
             {summary.blocked_count.toLocaleString('it-IT')}
           </p>
-          <p className="text-xs text-[#9E3B2F] leading-relaxed">
+          <p className="text-xs text-kora-critical leading-relaxed">
             Compliance legale/HSE/documentale esclusa per design. 0 IU · 0 KORA Index · 0 PIB · 0 KORA Contribution.
           </p>
         </div>

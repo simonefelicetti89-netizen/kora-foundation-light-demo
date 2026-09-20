@@ -4,7 +4,7 @@
 // environment, until a human replaces them with confirmed content.
 
 import type { PrivacySection, PrivacyParagraph } from '@/lib/legal/privacy-content';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 function Paragraph({ paragraph, index }: { paragraph: PrivacyParagraph; index: number }) {
   if (typeof paragraph === 'string') {
@@ -24,7 +24,7 @@ function Paragraph({ paragraph, index }: { paragraph: PrivacyParagraph; index: n
         lineHeight: 1.7,
         fontSize: 14,
         fontWeight: 700,
-        color: '#7A3B00',
+        color: BADGE_TOKENS.limited.text,
         background: 'rgba(255, 176, 32, 0.14)',
         border: '1px solid rgba(255, 176, 32, 0.55)',
         borderRadius: 8,

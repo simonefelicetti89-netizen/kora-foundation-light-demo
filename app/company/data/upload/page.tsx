@@ -25,7 +25,7 @@ import { mapPillarBatch } from '@/lib/kora-engine/pillar-mapping';
 import { assessBudgetEvidenceBatch } from '@/lib/kora-engine/budget-evidence';
 import { cn } from '@/lib/utils';
 import ConfirmIngestPanel from './_components/ConfirmIngestPanel';
-import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import { PILLAR_SURFACE, TOKENS } from '@/lib/design/kora-design-tokens';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -42,13 +42,13 @@ const MAX_FILE_MB = 10;
 // ── Existing helpers ───────────────────────────────────────────────────────────
 
 function confidenceBadge(confidence: number): { label: string; cls: string } {
-  if (confidence >= 0.90) return { label: `${Math.round(confidence * 100)}%`, cls: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border border-[rgba(47,125,85,0.22)]' };
+  if (confidence >= 0.90) return { label: `${Math.round(confidence * 100)}%`, cls: 'bg-[rgba(47,125,85,0.10)] text-kora-success border border-[rgba(47,125,85,0.22)]' };
   if (confidence >= 0.70) return { label: `${Math.round(confidence * 100)}%`, cls: 'bg-[rgba(217,154,43,0.12)] text-amber-700 border border-[rgba(217,154,43,0.25)]' };
-  return { label: `${Math.round(confidence * 100)}% — revisione`, cls: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border border-[rgba(158,59,47,0.22)]' };
+  return { label: `${Math.round(confidence * 100)}% — revisione`, cls: 'bg-[rgba(158,59,47,0.10)] text-kora-critical border border-[rgba(158,59,47,0.22)]' };
 }
 
 function severityBadgeCls(severity: string): string {
-  if (severity === 'high') return 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border border-[rgba(158,59,47,0.22)]';
+  if (severity === 'high') return 'bg-[rgba(158,59,47,0.10)] text-kora-critical border border-[rgba(158,59,47,0.22)]';
   if (severity === 'medium') return 'bg-[rgba(217,154,43,0.12)] text-amber-700 border border-[rgba(217,154,43,0.25)]';
   return 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border border-[rgba(6,3,43,0.08)]';
 }
@@ -69,13 +69,13 @@ function btiStatusConfig(criticalMapped: number): { label: string; sublabel: str
     label: 'Forte',
     sublabel: 'Le colonne necessarie per la valutazione BTI sono presenti. Il livello di evidenza (L0–L4) verrà determinato in revisione e influenzerà il peso nel macroblocco Budget-to-Human-Impact (20%).',
     cls: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)]',
-    barCls: 'bg-[rgba(47,125,85,0.08)]0',
+    barCls: 'bg-kora-success',
   };
   if (criticalMapped >= 1) return {
     label: 'Parziale',
     sublabel: `${criticalMapped}/3 colonne critiche per BTI presenti. Il peso BTI sarà ridotto in base all'evidenza disponibile.`,
     cls: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]',
-    barCls: 'bg-[#D99A2B]',
+    barCls: 'bg-kora-warning',
   };
   return {
     label: 'Assente',
@@ -108,8 +108,8 @@ function inferWorkforcePopulation(rows: RawUploadedRecord[], mappings: ColumnMap
 }
 
 function safeguardCls(status: string): { bg: string; text: string; border: string } {
-  if (status === 'CLEAR')   return { bg: 'bg-[rgba(47,125,85,0.10)]', text: 'text-[#2F7D55]', border: 'border-[rgba(47,125,85,0.22)]' };
-  if (status === 'FLAGGED') return { bg: 'bg-[rgba(158,59,47,0.10)]',     text: 'text-[#9E3B2F]',     border: 'border-[rgba(158,59,47,0.22)]'     };
+  if (status === 'CLEAR')   return { bg: 'bg-[rgba(47,125,85,0.10)]', text: 'text-kora-success', border: 'border-[rgba(47,125,85,0.22)]' };
+  if (status === 'FLAGGED') return { bg: 'bg-[rgba(158,59,47,0.10)]',     text: 'text-kora-critical',     border: 'border-[rgba(158,59,47,0.22)]'     };
   return                           { bg: 'bg-[rgba(217,154,43,0.12)]',   text: 'text-amber-700',   border: 'border-[rgba(217,154,43,0.25)]'   };
 }
 
@@ -121,9 +121,9 @@ function koraIndexTextCls(value: number): string {
 
 function barCls(value: number, max: number = 100): string {
   const pct = max > 0 ? value / max : 0;
-  if (pct >= 0.6) return 'bg-[rgba(47,125,85,0.08)]0';
-  if (pct >= 0.35) return 'bg-[#D99A2B]';
-  return 'bg-[#9E3B2F]';
+  if (pct >= 0.6) return 'bg-kora-success';
+  if (pct >= 0.35) return 'bg-kora-warning';
+  return 'bg-kora-critical';
 }
 
 function barW(value: number, max: number = 100): string {
@@ -167,9 +167,9 @@ function isCareEconomyRow(row: RawUploadedRecord): boolean {
 
 function eligibilityStatusConfig(status: EligibilityStatus | 'mixed'): { label: string; cls: string; dot: string } {
   switch (status) {
-    case 'eligible':        return { label: 'Eligible',        cls: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]', dot: 'bg-[rgba(47,125,85,0.08)]0' };
-    case 'limited':         return { label: 'Limited',         cls: 'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',       dot: 'bg-[#D99A2B]'   };
-    case 'blocked':         return { label: 'Blocked',         cls: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',             dot: 'bg-[rgba(158,59,47,0.06)]0'     };
+    case 'eligible':        return { label: 'Eligible',        cls: 'bg-[rgba(47,125,85,0.10)] text-kora-success border-[rgba(47,125,85,0.22)]', dot: 'bg-kora-success' };
+    case 'limited':         return { label: 'Limited',         cls: 'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',       dot: 'bg-kora-warning'   };
+    case 'blocked':         return { label: 'Blocked',         cls: 'bg-[rgba(158,59,47,0.10)] text-kora-critical border-[rgba(158,59,47,0.22)]',             dot: 'bg-kora-critical'     };
     case 'review_required': return { label: 'Review Required', cls: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',       dot: 'bg-[rgba(6,3,43,0.35)]'   };
     case 'mixed':           return { label: 'Mixed — Review',  cls: 'bg-purple-100 text-purple-700 border-purple-200',    dot: 'bg-purple-400'  };
   }
@@ -189,9 +189,9 @@ function btiTreatmentLabel(t: BTITreatment | 'mixed'): string {
 
 function btiTreatmentCls(t: BTITreatment | 'mixed'): string {
   if (t === 'mixed') return 'bg-purple-50 text-purple-700 border-purple-200';
-  if (t === 'full_weight' || t === 'confidence_weighted') return 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]';
+  if (t === 'full_weight' || t === 'confidence_weighted') return 'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]';
   if (t === 'tracked_only') return 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]';
-  if (t === 'not_applicable') return 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]';
+  if (t === 'not_applicable') return 'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]';
   return 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]';
 }
 
@@ -207,8 +207,8 @@ function evidenceLevelLabel(level: BudgetEvidenceLevel): string {
 }
 
 function evidenceLevelCls(level: BudgetEvidenceLevel): string {
-  if (level === 'L4_VERIFIED_EVIDENCE' || level === 'L3_THIRD_PARTY_DOCUMENT') return 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]';
-  if (level === 'L2_INTERNAL_DOCUMENT') return 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]';
+  if (level === 'L4_VERIFIED_EVIDENCE' || level === 'L3_THIRD_PARTY_DOCUMENT') return 'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]';
+  if (level === 'L2_INTERNAL_DOCUMENT') return 'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]';
   if (level === 'L1_SELF_DECLARED') return 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]';
   return 'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]';
 }
@@ -664,14 +664,14 @@ export default function UploadPage() {
             fontWeight:   700,
             letterSpacing:'0.12em',
             textTransform:'uppercase',
-            color:        '#1E4A8A',
+            color:        TOKENS.info.text,
             fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             whiteSpace:   'nowrap',
           }}>
             LOCAL ONLY
           </span>
           <div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#1E4A8A', marginBottom: 4, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.info.text, marginBottom: 4, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
               KORA Preview Locale™
             </p>
             <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.62)', lineHeight: 1.6, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
@@ -681,7 +681,7 @@ export default function UploadPage() {
               Nessun UEF™ viene creato.{' '}
               Nessun KORA Index™ viene registrato.
             </p>
-            <p style={{ fontSize: 11.5, color: '#1E4A8A', marginTop: 6, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            <p style={{ fontSize: 11.5, color: TOKENS.info.text, marginTop: 6, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
               Per avviare un onboarding reale contatta il tuo KORA Admin o vai a{' '}
               <a href="/admin/data-intake" style={{ fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 2 }}>
                 /admin/data-intake →
@@ -712,7 +712,7 @@ export default function UploadPage() {
 
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-[#06032B] tracking-tight">
+              <h1 className="text-2xl font-bold text-kora-ink tracking-tight">
                 KORA Preview Locale™
               </h1>
               <p className="mt-1 text-[rgba(6,3,43,0.52)] text-sm leading-relaxed max-w-xl">
@@ -720,7 +720,7 @@ export default function UploadPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2 shrink-0">
-              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#06032B] text-white border border-[rgba(6,3,43,0.35)]">
+              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-kora-ink text-white border border-[rgba(6,3,43,0.35)]">
                 KORA Operator
               </span>
               <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border border-[rgba(6,3,43,0.08)]">
@@ -733,7 +733,7 @@ export default function UploadPage() {
           </div>
 
           {/* Data Pack Guidance */}
-          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper overflow-hidden">
             <div className="px-4 py-2.5 border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)]">Foundation Light Data Pack — input minimo</p>
             </div>
@@ -746,7 +746,7 @@ export default function UploadPage() {
               ].map((item, i) => (
                 <div key={item.label} className={`px-3.5 py-3 space-y-0.5 ${i < 3 ? 'border-b sm:border-b-0 sm:border-r border-[rgba(6,3,43,0.05)]' : ''}`}>
                   <div className="flex items-center gap-1.5">
-                    <span className="rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide whitespace-nowrap border-[rgba(6,3,43,0.85)] bg-[#06032B] text-white">
+                    <span className="rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide whitespace-nowrap border-[rgba(6,3,43,0.85)] bg-kora-ink text-white">
                       Richiesto
                     </span>
                   </div>
@@ -763,7 +763,7 @@ export default function UploadPage() {
         </div>
 
         {/* ── Section 2: Upload zone ─────────────────────────────────────────── */}
-        <div className="rounded-xl border-2 bg-[#F8F6F1] shadow-sm overflow-hidden">
+        <div className="rounded-xl border-2 bg-kora-paper shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)]">
             <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">
               1 — Carica file
@@ -786,8 +786,8 @@ export default function UploadPage() {
                   }
                 `}
               >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isDragging ? 'bg-[rgba(6,3,43,0.06)]' : 'bg-[#F8F6F1] border border-[rgba(6,3,43,0.08)]'}`}>
-                  <svg className={`w-6 h-6 ${isDragging ? 'text-[#C76F3D]' : 'text-[rgba(6,3,43,0.40)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isDragging ? 'bg-[rgba(6,3,43,0.06)]' : 'bg-kora-paper border border-[rgba(6,3,43,0.08)]'}`}>
+                  <svg className={`w-6 h-6 ${isDragging ? 'text-kora-accent' : 'text-[rgba(6,3,43,0.40)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                   </svg>
                 </div>
@@ -818,7 +818,7 @@ export default function UploadPage() {
             </div>
           ) : status === 'parsing' ? (
             <div className="p-12 flex flex-col items-center gap-4">
-              <div className="w-8 h-8 border-2 border-[rgba(6,3,43,0.14)] border-t-[#C76F3D] rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-[rgba(6,3,43,0.14)] border-t-kora-accent rounded-full animate-spin" />
               <p className="text-sm text-[rgba(6,3,43,0.52)]">Analisi del file in corso…</p>
             </div>
           ) : parseResult && (
@@ -835,7 +835,7 @@ export default function UploadPage() {
                   <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">
                     {parseResult.fileType.toUpperCase()} · {parseResult.rowCount} righe · {parseResult.columnCount} colonne
                     {parseResult.detectedRecordTypes.length > 0 && (
-                      <> · <span className="text-[#C76F3D] font-medium">{parseResult.detectedRecordTypes.map(recordTypeLabel).join(', ')}</span></>
+                      <> · <span className="text-kora-accent font-medium">{parseResult.detectedRecordTypes.map(recordTypeLabel).join(', ')}</span></>
                     )}
                   </p>
                 </div>
@@ -849,7 +849,7 @@ export default function UploadPage() {
 
               {/* Multi-sheet notice */}
               {parseResult.availableSheets && parseResult.availableSheets.length > 1 && (
-                <div className="flex items-start gap-2.5 p-3 rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-xs text-[#8A5A00]">
+                <div className="flex items-start gap-2.5 p-3 rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-xs text-kora-warning-text">
                   <svg className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                   </svg>
@@ -864,7 +864,7 @@ export default function UploadPage() {
               {parseResult.parsingWarnings.length > 0 && (
                 <div className="space-y-2">
                   {parseResult.parsingWarnings.map((w, i) => (
-                    <div key={i} className="flex items-start gap-2.5 p-3 rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-xs text-[#8A5A00]">
+                    <div key={i} className="flex items-start gap-2.5 p-3 rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-xs text-kora-warning-text">
                       <svg className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                       </svg>
@@ -883,7 +883,7 @@ export default function UploadPage() {
                       className={`flex items-start gap-2.5 p-3 rounded-lg border text-xs ${
                         issue.severity === 'error'
                           ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-red-800'
-                          : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]'
+                          : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-kora-warning-text'
                       }`}
                     >
                       <svg className="w-3.5 h-3.5 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -903,7 +903,7 @@ export default function UploadPage() {
                   { label: 'Non mappate', value: unmappedCount, total: null, cls: unmappedCount > 0 ? 'text-[rgba(6,3,43,0.52)]' : 'text-[rgba(6,3,43,0.40)]' },
                   { label: 'Colonne sensibili', value: sensitiveFlags.length, total: null, cls: sensitiveFlags.length > 0 ? 'text-red-600' : 'text-[rgba(6,3,43,0.40)]' },
                 ].map((stat) => (
-                  <div key={stat.label} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
+                  <div key={stat.label} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper p-3 text-center">
                     <p className={`text-xl font-bold font-mono ${stat.cls}`}>
                       {stat.value}{stat.total !== null && <span className="text-[rgba(6,3,43,0.40)] font-normal text-sm">/{stat.total}</span>}
                     </p>
@@ -917,7 +917,7 @@ export default function UploadPage() {
 
         {/* ── Operator Decision Board ────────────────────────────────────────── */}
         {status === 'parsed' && parseResult && (
-          <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+          <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
             <div className="px-6 py-3 border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)]">Operator Decision Board</p>
               <button
@@ -929,7 +929,7 @@ export default function UploadPage() {
                     ? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)] cursor-not-allowed'
                     : koraStatus === 'done'
                     ? 'bg-[rgba(6,3,43,0.65)] text-white hover:bg-[rgba(6,3,43,0.55)]'
-                    : 'bg-[#06032B] text-white hover:bg-[rgba(6,3,43,0.88)]',
+                    : 'bg-kora-ink text-white hover:bg-[rgba(6,3,43,0.88)]',
                 )}
               >
                 {koraStatus === 'running' ? 'Elaborazione…' : koraStatus === 'done' ? 'Riesegui Preview' : 'Run KORA Preview →'}
@@ -978,7 +978,7 @@ export default function UploadPage() {
               ].map((item) => (
                 <div key={item.label} className={cn(
                   'rounded-lg border p-3',
-                  item.ok ? 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]' : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]',
+                  item.ok ? 'border-[rgba(6,3,43,0.08)] bg-kora-paper' : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]',
                 )}>
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{item.label}</p>
                   <p className={cn('text-sm font-bold mt-0.5 font-mono', item.ok ? 'text-[rgba(6,3,43,0.90)]' : 'text-amber-700')}>
@@ -992,7 +992,7 @@ export default function UploadPage() {
         )}
 
         {/* ── Section 3: Template guidance ──────────────────────────────────── */}
-        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
           <button
             onClick={() => toggleSection('template')}
             className="w-full px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between text-left"
@@ -1047,7 +1047,7 @@ export default function UploadPage() {
             />
 
             {/* ── Section 4: Data preview ──────────────────────────────────── */}
-            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
               <button
                 onClick={() => toggleSection('preview')}
                 className="w-full px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between text-left"
@@ -1082,7 +1082,7 @@ export default function UploadPage() {
                           key={h}
                           className={`px-3 py-2.5 text-left font-medium whitespace-nowrap ${
                             sensitiveColNames.has(h)
-                              ? 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]'
+                              ? 'bg-[rgba(158,59,47,0.06)] text-kora-critical'
                               : 'text-[rgba(6,3,43,0.62)]'
                           }`}
                         >
@@ -1106,7 +1106,7 @@ export default function UploadPage() {
                             key={h}
                             className={`px-3 py-2 whitespace-nowrap max-w-[180px] truncate ${
                               sensitiveColNames.has(h)
-                                ? 'bg-[rgba(158,59,47,0.06)]/60 text-[#9E3B2F]'
+                                ? 'bg-[rgba(158,59,47,0.06)]/60 text-kora-critical'
                                 : 'text-[rgba(6,3,43,0.62)]'
                             }`}
                           >
@@ -1122,7 +1122,7 @@ export default function UploadPage() {
             </div>
 
             {/* ── Section 5: Column mapping ─────────────────────────────────── */}
-            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
               <button
                 onClick={() => toggleSection('mapping')}
                 className="w-full px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between text-left"
@@ -1226,7 +1226,7 @@ export default function UploadPage() {
                     </p>
                     <div className="space-y-2">
                       {sensitiveFlags.filter((f) => f.recommendedAction === 'pseudonymize').map((flag) => (
-                        <div key={flag.columnName} className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1] p-3">
+                        <div key={flag.columnName} className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-kora-paper p-3">
                           <div className="flex items-start justify-between gap-3">
                             <div className="space-y-0.5 flex-1">
                               <div className="flex items-center gap-2">
@@ -1254,7 +1254,7 @@ export default function UploadPage() {
                     </p>
                     <div className="space-y-2">
                       {sensitiveFlags.filter((f) => f.excludedByDefault).map((flag) => (
-                        <div key={flag.columnName} className="rounded-lg border border-[rgba(158,59,47,0.25)] bg-[#F8F6F1] p-3">
+                        <div key={flag.columnName} className="rounded-lg border border-[rgba(158,59,47,0.25)] bg-kora-paper p-3">
                           <div className="flex items-start justify-between gap-3">
                             <div className="space-y-0.5 flex-1">
                               <div className="flex items-center gap-2">
@@ -1262,13 +1262,13 @@ export default function UploadPage() {
                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${severityBadgeCls(flag.severity)}`}>
                                   Alto rischio
                                 </span>
-                                <span className="px-2 py-0.5 rounded text-xs font-medium bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border border-[rgba(158,59,47,0.22)]">
+                                <span className="px-2 py-0.5 rounded text-xs font-medium bg-[rgba(158,59,47,0.10)] text-kora-critical border border-[rgba(158,59,47,0.22)]">
                                   Escludi
                                 </span>
                               </div>
                               <p className="text-xs text-[rgba(6,3,43,0.52)]">{flag.reason}</p>
                             </div>
-                            <span className="text-xs text-[#9E3B2F] shrink-0 font-medium">Rimuovi dal file</span>
+                            <span className="text-xs text-kora-critical shrink-0 font-medium">Rimuovi dal file</span>
                           </div>
                         </div>
                       ))}
@@ -1284,7 +1284,7 @@ export default function UploadPage() {
             )}
 
             {/* ── Section 7: BTI readiness ──────────────────────────────────── */}
-            <div className={`rounded-xl border-2 bg-[#F8F6F1] shadow-sm overflow-hidden ${btiStatus.cls}`}>
+            <div className={`rounded-xl border-2 bg-kora-paper shadow-sm overflow-hidden ${btiStatus.cls}`}>
               <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
                 <div>
                   <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">
@@ -1296,7 +1296,7 @@ export default function UploadPage() {
                 </div>
                 <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${
                   criticalMapped === 3
-                    ? 'border-[rgba(47,125,85,0.28)] bg-[rgba(47,125,85,0.10)] text-[#2F7D55]'
+                    ? 'border-[rgba(47,125,85,0.28)] bg-[rgba(47,125,85,0.10)] text-kora-success'
                     : criticalMapped >= 1
                     ? 'border-amber-300 bg-[rgba(217,154,43,0.12)] text-amber-700'
                     : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'
@@ -1338,7 +1338,7 @@ export default function UploadPage() {
                           )}
                         </div>
                         <div className="flex-1">
-                          <span className={`text-xs font-medium ${found ? 'text-[#2F7D55]' : 'text-[rgba(6,3,43,0.52)]'}`}>
+                          <span className={`text-xs font-medium ${found ? 'text-kora-success' : 'text-[rgba(6,3,43,0.52)]'}`}>
                             {CRITICAL_BTI_LABELS[field]}
                           </span>
                           {!found && (
@@ -1361,10 +1361,10 @@ export default function UploadPage() {
             </div>
 
             {/* ── Section 8: Run KORA Preview ───────────────────────────────── */}
-            <div className="rounded-xl border-2 border-[rgba(199,111,61,0.22)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+            <div className="rounded-xl border-2 border-[rgba(199,111,61,0.22)] bg-kora-paper shadow-sm overflow-hidden">
               <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="space-y-1">
-                  <h2 className="text-base font-semibold text-[#06032B]">
+                  <h2 className="text-base font-semibold text-kora-ink">
                     6 — KORA Computation Preview
                   </h2>
                   <p className="text-xs text-[rgba(6,3,43,0.52)]">
@@ -1388,8 +1388,8 @@ export default function UploadPage() {
                       ${!canRunKora || koraStatus === 'running'
                         ? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)] border border-[rgba(6,3,43,0.08)] cursor-not-allowed'
                         : koraStatus === 'done'
-                        ? 'bg-[#C76F3D] text-white hover:bg-[rgba(6,3,43,0.75)] shadow-sm'
-                        : 'bg-[#C76F3D] text-white hover:bg-[rgba(6,3,43,0.75)] shadow-sm'
+                        ? 'bg-kora-accent text-white hover:bg-[rgba(6,3,43,0.75)] shadow-sm'
+                        : 'bg-kora-accent text-white hover:bg-[rgba(6,3,43,0.75)] shadow-sm'
                       }
                     `}
                   >
@@ -1420,10 +1420,10 @@ export default function UploadPage() {
 
             {/* ── Board Pack CTA ────────────────────────────────────────────── */}
             {koraStatus === 'done' && koraResult && (
-              <div className="rounded-xl border-2 border-[#06032B] bg-[#F8F6F1] shadow-sm overflow-hidden">
+              <div className="rounded-xl border-2 border-kora-ink bg-kora-paper shadow-sm overflow-hidden">
                 <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="space-y-1">
-                    <h2 className="text-base font-semibold text-[#06032B]">
+                    <h2 className="text-base font-semibold text-kora-ink">
                       Prepara Board Pack Preview
                     </h2>
                     <p className="text-xs text-[rgba(6,3,43,0.52)]">
@@ -1432,7 +1432,7 @@ export default function UploadPage() {
                   </div>
                   <button
                     onClick={() => setShowBoardPack((v) => !v)}
-                    className="shrink-0 px-6 py-2.5 rounded-lg text-sm font-semibold bg-[#06032B] text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors shadow-sm"
+                    className="shrink-0 px-6 py-2.5 rounded-lg text-sm font-semibold bg-kora-ink text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors shadow-sm"
                   >
                     {showBoardPack ? 'Chiudi Preview' : 'Prepara Board Pack Preview'}
                   </button>
@@ -1463,7 +1463,7 @@ export default function UploadPage() {
                 </div>
                 <Link
                   href="/company/uef-review"
-                  className="inline-flex items-center gap-2 rounded-lg border border-[rgba(6,3,43,0.35)] bg-[#06032B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors"
+                  className="inline-flex items-center gap-2 rounded-lg border border-[rgba(6,3,43,0.35)] bg-kora-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors"
                 >
                   Vai a Operator Review Queue →
                 </Link>
@@ -1471,7 +1471,7 @@ export default function UploadPage() {
             )}
 
             {/* ── Section 10: Next steps ────────────────────────────────────── */}
-            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm p-6">
+            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm p-6">
               <div className="space-y-1 mb-5">
                 <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Prossimi passi</h2>
                 <p className="text-xs text-[rgba(6,3,43,0.40)] max-w-lg">
@@ -1515,7 +1515,7 @@ export default function UploadPage() {
 
         {/* ── Idle state: quick guidance ────────────────────────────────────── */}
         {status === 'idle' && (
-          <div className="rounded-xl border border-dashed border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6">
+          <div className="rounded-xl border border-dashed border-[rgba(6,3,43,0.08)] bg-kora-paper p-6">
             <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] mb-3">Come funziona</h3>
             <ol className="space-y-2">
               {[
@@ -1597,20 +1597,20 @@ function WorkflowStepper({
   ];
 
   const DOT: Record<StepState, string> = {
-    done:    'bg-[#06032B] text-white',
-    active:  'bg-[#C76F3D] text-white animate-pulse',
+    done:    'bg-kora-ink text-white',
+    active:  'bg-kora-accent text-white animate-pulse',
     pending: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)] border border-[rgba(6,3,43,0.08)]',
     blocked: 'bg-[rgba(158,59,47,0.10)] text-red-600 border border-[rgba(158,59,47,0.22)]',
   };
   const TEXT: Record<StepState, string> = {
-    done:    'text-[#06032B] font-semibold',
+    done:    'text-kora-ink font-semibold',
     active:  'text-[rgba(6,3,43,0.72)] font-semibold',
     pending: 'text-[rgba(6,3,43,0.40)]',
     blocked: 'text-red-600',
   };
 
   return (
-    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 flex flex-wrap items-center gap-2">
+    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-3 flex flex-wrap items-center gap-2">
       {steps.map((step, i) => (
         <div key={step.label} className="flex items-center gap-1.5">
           <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${DOT[step.state]}`}>
@@ -1632,7 +1632,7 @@ function TemplatePanel({ template }: { template: SampleTemplate }) {
       <div>
         <p className="text-sm text-[rgba(6,3,43,0.62)]">{template.description}</p>
         <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1">
-          <span className="font-medium text-[#C76F3D]">Supporta:</span> {template.helpsWith}
+          <span className="font-medium text-kora-accent">Supporta:</span> {template.helpsWith}
         </p>
       </div>
 
@@ -1642,7 +1642,7 @@ function TemplatePanel({ template }: { template: SampleTemplate }) {
           <ul className="space-y-1">
             {template.requiredColumns.map((col) => (
               <li key={col} className="flex items-center gap-2 text-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-[rgba(47,125,85,0.08)]0 shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-kora-success shrink-0" />
                 <span className="font-mono text-[rgba(6,3,43,0.78)]">{col}</span>
               </li>
             ))}
@@ -1675,7 +1675,7 @@ function TemplatePanel({ template }: { template: SampleTemplate }) {
                 key={h}
                 className={`px-2.5 py-1 rounded text-xs whitespace-nowrap border ${
                   template.requiredColumns.includes(h)
-                    ? 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)] font-medium'
+                    ? 'bg-[rgba(199,111,61,0.08)] text-kora-accent border-[rgba(199,111,61,0.22)] font-medium'
                     : 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]'
                 }`}
               >
@@ -1719,7 +1719,7 @@ function KoraPreviewSection({ result }: { result: KoraComputationResult }) {
 
       {isInsufficient ? (
         <div className="rounded-xl border-2 border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-6 text-center space-y-2">
-          <p className="text-lg font-semibold text-[#8A5A00]">Dataset insufficiente</p>
+          <p className="text-lg font-semibold text-kora-warning-text">Dataset insufficiente</p>
           <p className="text-sm text-amber-700">
             I dati caricati non sono sufficienti per calcolare il KORA Index.
             Assicurarsi che il file contenga iniziative aziendali con nome, categoria e possibilmente importo.
@@ -1802,7 +1802,7 @@ function KoraSummaryCards({ result }: { result: KoraComputationResult }) {
   ];
 
   return (
-    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Sintesi risultati</h3>
         <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${sg.bg} ${sg.text} ${sg.border}`}>
@@ -1836,22 +1836,22 @@ function KoraEligibilityPanel({ result }: { result: KoraComputationResult }) {
       label: 'Eligible',
       count: es.eligibleCount,
       desc: 'Può contribuire al KORA Index se l\'evidenza lo supporta',
-      cls: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-      barCls: 'bg-[rgba(47,125,85,0.08)]0',
+      cls: 'bg-[rgba(47,125,85,0.10)] text-kora-success border-[rgba(47,125,85,0.22)]',
+      barCls: 'bg-kora-success',
     },
     {
       label: 'Limited',
       count: es.limitedCount,
       desc: 'Sollievo economico — tracciato in BTI, 0 Impact Unit',
       cls: 'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',
-      barCls: 'bg-[#D99A2B]',
+      barCls: 'bg-kora-warning',
     },
     {
       label: 'Blocked',
       count: es.blockedCount,
       desc: 'Baseline normativa obbligatoria — escluso per design',
-      cls: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
-      barCls: 'bg-[#9E3B2F]',
+      cls: 'bg-[rgba(158,59,47,0.10)] text-kora-critical border-[rgba(158,59,47,0.22)]',
+      barCls: 'bg-kora-critical',
     },
     {
       label: 'Review Required',
@@ -1863,7 +1863,7 @@ function KoraEligibilityPanel({ result }: { result: KoraComputationResult }) {
   ];
 
   return (
-    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Eligibility Gate</h3>
         <span className="text-xs text-[rgba(6,3,43,0.40)]">{es.totalCount} record totali</span>
@@ -1875,7 +1875,7 @@ function KoraEligibilityPanel({ result }: { result: KoraComputationResult }) {
               <span className="text-xs font-semibold">{b.label}</span>
               <span className="text-lg font-bold">{b.count}</span>
             </div>
-            <div className="h-1.5 rounded-full bg-[#F8F6F1]/50 overflow-hidden">
+            <div className="h-1.5 rounded-full bg-kora-paper/50 overflow-hidden">
               <div className={`h-full rounded-full ${b.barCls}`} style={{ width: barW(b.count, total) }} />
             </div>
             <p className="text-[10px] leading-relaxed opacity-80">{b.desc}</p>
@@ -1900,7 +1900,7 @@ function KoraPillarPanel({ result }: { result: KoraComputationResult }) {
   const pillars = Object.entries(dist) as [string, number][];
 
   return (
-    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Distribuzione Pillar</h3>
         <span className="text-xs text-[rgba(6,3,43,0.40)]">{total} record classificati</span>
@@ -1940,7 +1940,7 @@ function KoraBTIPanel({ result }: { result: KoraComputationResult }) {
   ];
 
   return (
-    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Budget-to-Human-Impact (BTI)</h3>
@@ -1956,7 +1956,7 @@ function KoraBTIPanel({ result }: { result: KoraComputationResult }) {
           {rows.map((row) => (
             <div key={row.label} className={`flex items-center justify-between py-2 px-3 rounded-lg text-sm ${row.highlight ? 'bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)]' : 'bg-[rgba(6,3,43,0.03)]'}`}>
               <div>
-                <span className={`font-medium ${row.highlight ? 'text-[#8A5A00]' : 'text-[rgba(6,3,43,0.78)]'}`}>{row.label}</span>
+                <span className={`font-medium ${row.highlight ? 'text-kora-warning-text' : 'text-[rgba(6,3,43,0.78)]'}`}>{row.label}</span>
                 {row.note && <span className="text-xs text-[rgba(6,3,43,0.40)] ml-2">{row.note}</span>}
               </div>
               <span className={`font-mono text-sm ${row.highlight && row.label === 'Activation Debt' && bti.activationDebt > 0 ? 'text-amber-700 font-semibold' : 'text-[rgba(6,3,43,0.62)]'}`}>
@@ -1995,7 +1995,7 @@ function KoraActivationPanel({ result }: { result: KoraComputationResult }) {
   );
 
   return (
-    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Activation & Reach Quality</h3>
@@ -2066,7 +2066,7 @@ function KoraActivationPanel({ result }: { result: KoraComputationResult }) {
 
 function KoraCarePanel({ careSignalCount }: { careSignalCount: number }) {
   return (
-    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Care Economy</h3>
@@ -2129,7 +2129,7 @@ function KoraWarningsPanel({ result }: { result: KoraComputationResult }) {
   ];
 
   return (
-    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Confidence & Avvertenze</h3>
@@ -2165,7 +2165,7 @@ function KoraWarningsPanel({ result }: { result: KoraComputationResult }) {
             <ul className="space-y-1.5">
               {allWarnings.map((w, i) => (
                 <li key={i} className="flex items-start gap-2 text-xs text-[rgba(6,3,43,0.62)]">
-                  <span className="w-1 h-1 rounded-full bg-[#D99A2B] shrink-0 mt-1.5" />
+                  <span className="w-1 h-1 rounded-full bg-kora-warning shrink-0 mt-1.5" />
                   {w}
                 </li>
               ))}
@@ -2242,12 +2242,12 @@ function EligibilityReviewSection({
   const isTruncated = filtered.length > REVIEW_MAX_DISPLAY;
 
   return (
-    <div className="rounded-xl border-2 border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+    <div className="rounded-xl border-2 border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
       {/* Header */}
       <div className="px-6 py-5 border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]/80">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="space-y-1">
-            <h2 className="text-base font-semibold text-[#06032B]">
+            <h2 className="text-base font-semibold text-kora-ink">
               7 — Eligibility &amp; Evidence Review per Iniziativa
             </h2>
             <p className="text-xs text-[rgba(6,3,43,0.52)] max-w-2xl leading-relaxed">
@@ -2288,8 +2288,8 @@ function EligibilityReviewSection({
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {[
-              { label: 'Iniziative in review',  value: counts.review_required + counts.mixed, dotCls: 'bg-[#D99A2B]', valCls: 'text-amber-700', sub: 'Classificazione mista o incompleta' },
-              { label: 'Budget mancante',        value: counts.missingBudget,                  dotCls: 'bg-[#9E3B2F]',   valCls: 'text-red-600',   sub: 'Fonte budget assente o L0' },
+              { label: 'Iniziative in review',  value: counts.review_required + counts.mixed, dotCls: 'bg-kora-warning', valCls: 'text-amber-700', sub: 'Classificazione mista o incompleta' },
+              { label: 'Budget mancante',        value: counts.missingBudget,                  dotCls: 'bg-kora-critical',   valCls: 'text-red-600',   sub: 'Fonte budget assente o L0' },
               { label: 'Escluse per design',     value: counts.blocked,                        dotCls: 'bg-[rgba(6,3,43,0.18)]', valCls: 'text-[rgba(6,3,43,0.52)]', sub: 'Compliance obbligatoria baseline' },
               { label: 'Evidenza debole (L0/L1)',value: counts.l0l1,                           dotCls: 'bg-amber-300', valCls: 'text-amber-600', sub: 'Qualità evidenza budget bassa' },
               { label: 'Campi identità',         value: identityColCount,                      dotCls: 'bg-blue-300',  valCls: 'text-blue-600',  sub: "Record con campi identità — esclusi dall'output" },
@@ -2324,7 +2324,7 @@ function EligibilityReviewSection({
                 onClick={() => setActiveFilter(f.key)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   activeFilter === f.key
-                    ? 'bg-[#06032B] text-white shadow-sm'
+                    ? 'bg-kora-ink text-white shadow-sm'
                     : 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.12)]'
                 }`}
               >
@@ -2350,7 +2350,7 @@ function EligibilityReviewSection({
                 className={`px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors ${
                   secondaryFilters.has(f.key)
                     ? 'bg-[rgba(6,3,43,0.06)] text-[rgba(6,3,43,0.72)] border-[rgba(199,111,61,0.22)]'
-                    : 'bg-[#F8F6F1] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)] hover:bg-[rgba(6,3,43,0.03)]'
+                    : 'bg-kora-paper text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)] hover:bg-[rgba(6,3,43,0.03)]'
                 }`}
               >
                 {secondaryFilters.has(f.key) ? '✕ ' : ''}{f.label}
@@ -2512,7 +2512,7 @@ function EligibilityReviewSection({
           </div>
           {/* Status legend */}
           <div className="px-4 py-3 bg-[rgba(6,3,43,0.03)] border-t border-[rgba(6,3,43,0.08)] flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-[rgba(6,3,43,0.52)]">
-            <span><strong className="text-[#2F7D55]">Eligible</strong> — può contribuire se evidenza e attivazione sono sufficienti</span>
+            <span><strong className="text-kora-success">Eligible</strong> — può contribuire se evidenza e attivazione sono sufficienti</span>
             <span><strong className="text-amber-700">Limited</strong> — sollievo economico / bassa profondità di attivazione</span>
             <span><strong className="text-red-600">Blocked</strong> — baseline legale/compliance, 0 impatto per design</span>
             <span><strong className="text-[rgba(6,3,43,0.62)]">Review Required</strong> — revisione umana/advisor necessaria</span>
@@ -2592,10 +2592,10 @@ function BpDocFooter({ fileName }: { fileName: string }) {
 function BpSectionTitle({ n, title, sub }: { n: string; title: string; sub?: string }) {
   return (
     <div className="mb-5">
-      <div className="border-t-2 border-[#06032B] pt-3">
+      <div className="border-t-2 border-kora-ink pt-3">
         <div className="flex items-baseline gap-2.5">
           <span className="text-[9px] font-mono text-[rgba(6,3,43,0.40)] uppercase tracking-widest">{n}</span>
-          <h2 className="text-[15px] font-bold tracking-tight text-[#06032B] leading-tight">{title}</h2>
+          <h2 className="text-[15px] font-bold tracking-tight text-kora-ink leading-tight">{title}</h2>
         </div>
         {sub && <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5 ml-7">{sub}</p>}
       </div>
@@ -2675,7 +2675,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
       `}</style>
 
       {/* Screen-only bar */}
-      <div className="bp-upload-no-print flex items-center justify-between gap-4 rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-4">
+      <div className="bp-upload-no-print flex items-center justify-between gap-4 rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper px-6 py-4">
         <div>
           <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">KORA Board Pack Preview — Dataset caricato</p>
           <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">
@@ -2684,18 +2684,18 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
         </div>
         <button
           onClick={() => window.print()}
-          className="shrink-0 px-4 py-2 rounded-lg border border-[#06032B] bg-[#06032B] text-xs font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors"
+          className="shrink-0 px-4 py-2 rounded-lg border border-kora-ink bg-kora-ink text-xs font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors"
         >
           Stampa / salva PDF
         </button>
       </div>
 
       {/* ── Document body ── */}
-      <div className="bp-upload-print max-w-[794px] mx-auto bg-[#F8F6F1] text-[#06032B] pb-8">
+      <div className="bp-upload-print max-w-[794px] mx-auto bg-kora-paper text-kora-ink pb-8">
 
         {/* ═══ PAGE 1 — COVER ═══ */}
         <div className="bp-avoid-break px-1 pt-6 min-h-[820px] flex flex-col">
-          <div className="border-t-4 border-[#06032B] pt-5 mb-8">
+          <div className="border-t-4 border-kora-ink pt-5 mb-8">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[9px] uppercase tracking-[0.15em] text-[rgba(6,3,43,0.40)] font-semibold mb-0.5">
@@ -2713,7 +2713,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           </div>
 
           <div className="mb-5">
-            <h1 className="text-[38px] font-bold tracking-tight text-[#06032B] leading-none mb-2">
+            <h1 className="text-[38px] font-bold tracking-tight text-kora-ink leading-none mb-2">
               Board Pack Preview
             </h1>
             <div className="flex flex-wrap items-center gap-2">
@@ -2743,7 +2743,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
             <div className="grid grid-cols-4 gap-5 mb-10 bp-avoid-break">
               <div className="space-y-1">
                 <p className="text-[9px] uppercase tracking-[0.1em] text-[rgba(6,3,43,0.40)] font-semibold">KORA Index Preview</p>
-                <p className="text-[44px] font-bold text-[#06032B] leading-none">{koraIndex.value}</p>
+                <p className="text-[44px] font-bold text-kora-ink leading-none">{koraIndex.value}</p>
                 <p className="text-[10px] text-[rgba(6,3,43,0.52)]">/ 100 · pre-calibration</p>
               </div>
               <div className="space-y-1 border-l border-[rgba(6,3,43,0.08)] pl-5">
@@ -2758,7 +2758,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
               </div>
               <div className="space-y-1 border-l border-[rgba(6,3,43,0.08)] pl-5">
                 <p className="text-[9px] uppercase tracking-[0.1em] text-[rgba(6,3,43,0.40)] font-semibold">BTI Score</p>
-                <p className="text-[24px] font-bold text-[#06032B] leading-none mt-1">{bti.btiScore}</p>
+                <p className="text-[24px] font-bold text-kora-ink leading-none mt-1">{bti.btiScore}</p>
                 <p className="text-[10px] text-[rgba(6,3,43,0.52)]">/ 100 · macroblocco 20%</p>
               </div>
             </div>
@@ -2789,7 +2789,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <BpSectionTitle n="01" title="Executive Summary" sub={`Dataset: ${fileName} · ${totalRecords} record · ${groups.length} iniziative`} />
 
           {isInsufficient ? (
-            <div className="border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded p-4 text-[12px] text-[#8A5A00]">
+            <div className="border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded p-4 text-[12px] text-kora-warning-text">
               <p className="font-bold mb-1">Dataset insufficiente — KORA Index non calcolabile</p>
               <p>I dati caricati non contengono iniziative sufficienti per il calcolo del KORA Index. Assicurarsi che il file includa nome iniziativa, categoria e almeno un importo budget.</p>
             </div>
@@ -2798,7 +2798,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
               <div className="grid grid-cols-4 gap-4 mb-5 bp-avoid-break">
                 <div className="border-t-2 border-[rgba(6,3,43,0.85)] pt-3 space-y-1">
                   <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">KORA Index</p>
-                  <p className="text-[28px] font-bold text-[#06032B] leading-none">{koraIndex.value}<span className="text-[12px] font-normal text-[rgba(6,3,43,0.40)]">/100</span></p>
+                  <p className="text-[28px] font-bold text-kora-ink leading-none">{koraIndex.value}<span className="text-[12px] font-normal text-[rgba(6,3,43,0.40)]">/100</span></p>
                   <p className="text-[10px] text-[rgba(6,3,43,0.62)]">{CALIB}</p>
                 </div>
                 <div className="border-t-2 border-[rgba(6,3,43,0.14)] pt-3 space-y-1">
@@ -2806,14 +2806,14 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                   <p className="text-[28px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{confidence.score}<span className="text-[12px] font-normal text-[rgba(6,3,43,0.40)]">/100</span></p>
                   <p className="text-[10px] text-[rgba(6,3,43,0.62)]">Esterno · peso 0</p>
                 </div>
-                <div className={`border-t-2 pt-3 space-y-1 ${activation.safeguardStatus === 'CLEAR' ? 'border-[#2F7D55]' : activation.safeguardStatus === 'FLAGGED' ? 'border-[#9E3B2F]' : 'border-[#D99A2B]'}`}>
+                <div className={`border-t-2 pt-3 space-y-1 ${activation.safeguardStatus === 'CLEAR' ? 'border-kora-success' : activation.safeguardStatus === 'FLAGGED' ? 'border-kora-critical' : 'border-kora-warning'}`}>
                   <p className={`text-[9px] uppercase tracking-wider font-semibold ${activation.safeguardStatus === 'CLEAR' ? 'text-[rgba(47,125,85,0.90)]' : activation.safeguardStatus === 'FLAGGED' ? 'text-red-600' : 'text-amber-600'}`}>Safeguard</p>
                   <p className={`text-[24px] font-bold leading-none ${sg.text}`}>{activation.safeguardStatus}</p>
                   <p className="text-[10px] text-[rgba(6,3,43,0.62)]">AR {formatPct(activation.activationReach)} · MAR {formatPct(activation.meaningfulActivationReach)}</p>
                 </div>
                 <div className="border-t-2 border-[rgba(6,3,43,0.08)] pt-3 space-y-1">
                   <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Activation Debt</p>
-                  <p className="text-[22px] font-bold text-[#06032B] leading-none mt-1">{formatEur(bti.activationDebt)}</p>
+                  <p className="text-[22px] font-bold text-kora-ink leading-none mt-1">{formatEur(bti.activationDebt)}</p>
                   <p className="text-[10px] text-[rgba(6,3,43,0.62)]">Budget non convertito</p>
                 </div>
               </div>
@@ -2831,7 +2831,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                 <div>
                   <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-2 border-b border-[rgba(6,3,43,0.08)] pb-1">Eligibility Gate</p>
                   <ul className="space-y-1.5 text-[11px] text-[rgba(6,3,43,0.78)]">
-                    <li className="flex justify-between"><span>Eligible</span><span className="font-mono font-bold text-[#2F7D55]">{eligibilitySummary.eligibleCount}</span></li>
+                    <li className="flex justify-between"><span>Eligible</span><span className="font-mono font-bold text-kora-success">{eligibilitySummary.eligibleCount}</span></li>
                     <li className="flex justify-between"><span>Limited (0 IU)</span><span className="font-mono font-bold text-amber-600">{eligibilitySummary.limitedCount}</span></li>
                     <li className="flex justify-between"><span>Blocked</span><span className="font-mono font-bold text-[rgba(6,3,43,0.40)]">{eligibilitySummary.blockedCount}</span></li>
                     <li className="flex justify-between"><span>Review Required</span><span className="font-mono font-bold text-[rgba(6,3,43,0.62)]">{eligibilitySummary.reviewRequiredCount}</span></li>
@@ -2860,7 +2860,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="grid grid-cols-3 gap-6 mb-5 bp-avoid-break">
             <div className="border-t-2 border-[rgba(6,3,43,0.85)] pt-3 space-y-0.5">
               <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Record totali</p>
-              <p className="text-[32px] font-bold text-[#06032B] leading-none">{totalRecords}</p>
+              <p className="text-[32px] font-bold text-kora-ink leading-none">{totalRecords}</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.52)]">righe nel file caricato</p>
             </div>
             <div className="border-t-2 border-[rgba(6,3,43,0.14)] pt-3 space-y-0.5">
@@ -2879,7 +2879,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="bp-avoid-break mb-5">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-[#06032B]">
+                <tr className="border-b-2 border-kora-ink">
                   <th scope="col" className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Indicatore</th>
                   <th scope="col" className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Conteggio</th>
                   <th scope="col" className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Nota</th>
@@ -2897,7 +2897,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                 ] as [string, string, string][]).map(([label, val, note]) => (
                   <tr key={label} className="border-b border-[rgba(6,3,43,0.05)]">
                     <td className="py-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.78)]">{label}</td>
-                    <td className="py-1.5 pr-4 text-right font-mono font-bold text-[#06032B]">{val}</td>
+                    <td className="py-1.5 pr-4 text-right font-mono font-bold text-kora-ink">{val}</td>
                     <td className="py-1.5 text-[rgba(6,3,43,0.52)] text-[10px]">{note}</td>
                   </tr>
                 ))}
@@ -2911,7 +2911,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
               <div key={s.label} className="flex items-center gap-4">
                 <span className="w-36 text-[10px] text-[rgba(6,3,43,0.62)] shrink-0">{s.label}</span>
                 <div className="flex-1 h-1.5 bg-[rgba(6,3,43,0.05)] rounded-full">
-                  <div className={`h-1.5 rounded-full ${s.pct >= 60 ? 'bg-[rgba(6,3,43,0.65)]' : s.pct >= 35 ? 'bg-[#D99A2B]' : 'bg-[#9E3B2F]'}`} style={{ width: `${s.pct}%` }} />
+                  <div className={`h-1.5 rounded-full ${s.pct >= 60 ? 'bg-[rgba(6,3,43,0.65)]' : s.pct >= 35 ? 'bg-kora-warning' : 'bg-kora-critical'}`} style={{ width: `${s.pct}%` }} />
                 </div>
                 <span className="w-10 text-right text-[10px] font-mono text-[rgba(6,3,43,0.52)]">{s.pct}%</span>
               </div>
@@ -2938,7 +2938,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
             ] as { label: string; count: number; note: string; border: string }[]).map((b) => (
               <div key={b.label} className={`border-t-2 pt-3 space-y-0.5 ${b.border}`}>
                 <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">{b.label}</p>
-                <p className="text-[28px] font-bold text-[#06032B] leading-none">{b.count}</p>
+                <p className="text-[28px] font-bold text-kora-ink leading-none">{b.count}</p>
                 <p className="text-[10px] text-[rgba(6,3,43,0.52)]">{b.note}</p>
               </div>
             ))}
@@ -2955,7 +2955,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="bp-avoid-break overflow-x-auto mb-3">
             <table className="w-full text-[10px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-[#06032B]">
+                <tr className="border-b-2 border-kora-ink">
                   <th scope="col" className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Iniziativa</th>
                   <th scope="col" className="py-1.5 pr-2 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Rec.</th>
                   <th scope="col" className="py-1.5 pr-2 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Lav. unici</th>
@@ -2979,7 +2979,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                     </td>
                     <td className="py-1.5 pr-2 align-top">
                       <span className={`text-[9px] font-bold rounded px-1 py-0.5 ${
-                        grp.primaryEligibility === 'eligible' ? 'bg-[#06032B] text-white' :
+                        grp.primaryEligibility === 'eligible' ? 'bg-kora-ink text-white' :
                         grp.primaryEligibility === 'limited' ? 'bg-[rgba(6,3,43,0.12)] text-[rgba(6,3,43,0.78)]' :
                         grp.primaryEligibility === 'blocked' ? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)]' :
                         'bg-[rgba(217,154,43,0.12)] text-amber-700'
@@ -3010,7 +3010,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="grid grid-cols-3 gap-5 mb-5 bp-avoid-break">
             <div className="border-t-2 border-[rgba(6,3,43,0.85)] pt-3 space-y-0.5">
               <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Budget totale rilevato</p>
-              <p className="text-[26px] font-bold text-[#06032B] leading-none">{formatEur(bti.totalBudget)}</p>
+              <p className="text-[26px] font-bold text-kora-ink leading-none">{formatEur(bti.totalBudget)}</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.52)]">da colonne budget nel dataset</p>
             </div>
             <div className="border-t-2 border-[rgba(6,3,43,0.14)] pt-3 space-y-0.5">
@@ -3020,7 +3020,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
             </div>
             <div className="border-t-2 border-[rgba(6,3,43,0.08)] pt-3 space-y-0.5">
               <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Activation Debt</p>
-              <p className="text-[26px] font-bold text-[#06032B] leading-none">{formatEur(bti.activationDebt)}</p>
+              <p className="text-[26px] font-bold text-kora-ink leading-none">{formatEur(bti.activationDebt)}</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.52)]">budget non convertito in IU</p>
             </div>
           </div>
@@ -3029,7 +3029,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="bp-avoid-break mb-5">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-[#06032B]">
+                <tr className="border-b-2 border-kora-ink">
                   <th scope="col" className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Categoria</th>
                   <th scope="col" className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Importo</th>
                   <th scope="col" className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Share</th>
@@ -3045,7 +3045,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                 ] as { label: string; amount: number; treatment: string }[]).map((r) => (
                   <tr key={r.label} className="border-b border-[rgba(6,3,43,0.05)]">
                     <td className="py-2 pr-4 font-semibold text-[rgba(6,3,43,0.90)]">{r.label}</td>
-                    <td className="py-2 pr-4 text-right font-mono font-bold text-[#06032B]">{formatEur(r.amount)}</td>
+                    <td className="py-2 pr-4 text-right font-mono font-bold text-kora-ink">{formatEur(r.amount)}</td>
                     <td className="py-2 pr-4 text-right font-mono text-[rgba(6,3,43,0.62)]">
                       {bti.totalBudget > 0 ? `${Math.round((r.amount / bti.totalBudget) * 100)}%` : '—'}
                     </td>
@@ -3060,11 +3060,11 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="flex items-center gap-4 mb-2 bp-avoid-break">
             <div className="flex-1 h-3 bg-[rgba(6,3,43,0.05)] rounded-full">
               <div
-                className={`h-3 rounded-full ${bti.budgetEvidenceQuality >= 0.6 ? 'bg-[#06032B]' : bti.budgetEvidenceQuality >= 0.35 ? 'bg-[#D99A2B]' : 'bg-[#9E3B2F]'}`}
+                className={`h-3 rounded-full ${bti.budgetEvidenceQuality >= 0.6 ? 'bg-kora-ink' : bti.budgetEvidenceQuality >= 0.35 ? 'bg-kora-warning' : 'bg-kora-critical'}`}
                 style={{ width: `${Math.round(bti.budgetEvidenceQuality * 100)}%` }}
               />
             </div>
-            <span className="text-[13px] font-bold font-mono text-[#06032B] w-10 text-right">{Math.round(bti.budgetEvidenceQuality * 100)}%</span>
+            <span className="text-[13px] font-bold font-mono text-kora-ink w-10 text-right">{Math.round(bti.budgetEvidenceQuality * 100)}%</span>
           </div>
           <p className="text-[10px] text-[rgba(6,3,43,0.52)] mb-4">
             {bti.totalBudget === 0
@@ -3091,7 +3091,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="grid grid-cols-4 gap-4 mb-5 bp-avoid-break">
             <div className="border-t-2 border-[rgba(6,3,43,0.85)] pt-3 space-y-0.5">
               <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Lavoratori attivi</p>
-              <p className="text-[28px] font-bold text-[#06032B] leading-none">{activation.activeWorkers}</p>
+              <p className="text-[28px] font-bold text-kora-ink leading-none">{activation.activeWorkers}</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.52)]">AR {formatPct(activation.activationReach)}</p>
             </div>
             <div className="border-t-2 border-[rgba(6,3,43,0.14)] pt-3 space-y-0.5">
@@ -3104,7 +3104,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
               <p className="text-[28px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{activation.neverActivatedWorkers}</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.52)]">potenziale non convertito</p>
             </div>
-            <div className={`border-t-2 pt-3 space-y-0.5 ${activation.safeguardStatus === 'CLEAR' ? 'border-[#2F7D55]' : activation.safeguardStatus === 'FLAGGED' ? 'border-[#9E3B2F]' : 'border-[#D99A2B]'}`}>
+            <div className={`border-t-2 pt-3 space-y-0.5 ${activation.safeguardStatus === 'CLEAR' ? 'border-kora-success' : activation.safeguardStatus === 'FLAGGED' ? 'border-kora-critical' : 'border-kora-warning'}`}>
               <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Safeguard</p>
               <p className={`text-[22px] font-bold leading-none mt-1 ${sg.text}`}>{activation.safeguardStatus}</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.52)]">D-21 threshold</p>
@@ -3124,7 +3124,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                 </div>
                 <div className="relative h-2 rounded-full bg-[rgba(6,3,43,0.05)]">
                   <div
-                    className={`h-2 rounded-full ${m.val >= m.threshold ? 'bg-[rgba(47,125,85,0.08)]0' : m.val >= m.threshold * 0.5 ? 'bg-[#D99A2B]' : 'bg-[#9E3B2F]'}`}
+                    className={`h-2 rounded-full ${m.val >= m.threshold ? 'bg-kora-success' : m.val >= m.threshold * 0.5 ? 'bg-kora-warning' : 'bg-kora-critical'}`}
                     style={{ width: `${Math.min(100, Math.round(m.val * 100))}%` }}
                   />
                   <div className="absolute top-0 bottom-0 w-px bg-[rgba(6,3,43,0.35)]" style={{ left: `${m.threshold * 100}%` }} />
@@ -3156,7 +3156,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="bp-avoid-break mb-6">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-[#06032B]">
+                <tr className="border-b-2 border-kora-ink">
                   <th scope="col" className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold w-16">Prior.</th>
                   <th scope="col" className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Azione</th>
                   <th scope="col" className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Razionale</th>
@@ -3167,9 +3167,9 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                   <tr key={i} className={i < recs.length - 1 ? 'border-b border-[rgba(6,3,43,0.05)]' : ''}>
                     <td className="py-2 pr-3 align-top">
                       <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold ${
-                        r.priority === 'Alta'  ? 'border-[rgba(6,3,43,0.85)] bg-[#06032B] text-white' :
+                        r.priority === 'Alta'  ? 'border-[rgba(6,3,43,0.85)] bg-kora-ink text-white' :
                         r.priority === 'Media' ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.78)]' :
-                                                 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.40)]'
+                                                 'border-[rgba(6,3,43,0.08)] bg-kora-paper text-[rgba(6,3,43,0.40)]'
                       }`}>{r.priority}</span>
                     </td>
                     <td className="py-2 pr-3 align-top font-semibold text-[rgba(6,3,43,0.90)]">{r.title}</td>
@@ -3191,7 +3191,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="bp-avoid-break mb-4">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-[#06032B]">
+                <tr className="border-b-2 border-kora-ink">
                   <th scope="col" className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold w-48">Elemento</th>
                   <th scope="col" className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Nota</th>
                 </tr>
@@ -3243,7 +3243,7 @@ function KoraExplainPanel({ trace }: { trace: ExplainabilityTraceItem[] }) {
   const [open, setOpen] = useState<string | null>(null);
 
   return (
-    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)]">
         <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Explainability Trace</h3>
         <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
@@ -3257,7 +3257,7 @@ function KoraExplainPanel({ trace }: { trace: ExplainabilityTraceItem[] }) {
               onClick={() => setOpen(open === item.id ? null : item.id)}
               className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[rgba(6,3,43,0.03)]/80 transition-colors"
             >
-              <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.warning ? 'bg-[#D99A2B]' : 'bg-[#2F7D55]'}`} />
+              <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.warning ? 'bg-kora-warning' : 'bg-kora-success'}`} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-[rgba(6,3,43,0.78)] truncate">{item.stage}</p>
                 <p className="text-[10px] text-[rgba(6,3,43,0.40)] font-mono truncate">{item.output}</p>

@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
-import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -59,10 +59,10 @@ const PILLAR_LABELS: Record<string, string> = {
 const PILLAR_ORDER = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 
 const SF_COLOR: Record<string, string> = {
-  CLEAR: '#059669', WARNING: '#d97706', FLAGGED: '#dc2626',
+  CLEAR: BADGE_TOKENS.eligible.text, WARNING: BADGE_TOKENS.limited.text, FLAGGED: BADGE_TOKENS.blocked.text,
 };
 const SF_BG: Record<string, string> = {
-  CLEAR: '#ecfdf5', WARNING: '#fffbeb', FLAGGED: '#fef2f2',
+  CLEAR: BADGE_TOKENS.eligible.bg, WARNING: BADGE_TOKENS.limited.bg, FLAGGED: BADGE_TOKENS.blocked.bg,
 };
 const PILOT_LABEL: Record<string, string> = {
   not_started:             'Non avviato',
@@ -77,16 +77,16 @@ const PILOT_LABEL: Record<string, string> = {
 const PILOT_CLS: Record<string, string> = {
   not_started:            'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   batch_pending:          'bg-blue-50 text-blue-600 border-blue-200',
-  review_ready:           'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  needs_enrichment:       'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  review_ready:           'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
+  needs_enrichment:       'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.22)]',
   ready_for_scoring:      'bg-purple-50 text-purple-700 border-purple-200',
-  scored:                 'bg-[#C76F3D]/10 text-[#C76F3D] border-[#C76F3D]/30',
-  decision_pack_ready:    'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  decision_pack_exported: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-green-300',
+  scored:                 'bg-kora-accent/10 text-kora-accent border-kora-accent/30',
+  decision_pack_ready:    'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
+  decision_pack_exported: 'bg-[rgba(47,125,85,0.10)] text-kora-success border-green-300',
 };
 const READINESS_BADGE: Record<string, string> = {
   report_ready:      'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]',
-  usable_with_caveat:'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
+  usable_with_caveat:'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
   needs_evidence:    'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]',
   not_ready:         'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
@@ -112,8 +112,8 @@ function pct(n: number | null) {
 
 function Card({ title, children, accent }: { title: string; children: React.ReactNode; accent?: boolean }) {
   return (
-    <div className="rounded-xl border bg-[#F8F6F1] p-5" style={{ borderColor: accent ? '#c7c4f8' : '#eaebf4', background: accent ? '#f5f4ff' : '#fff' }}>
-      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: '#9899b3' }}>{title}</p>
+    <div className="rounded-xl border bg-kora-paper p-5" style={{ borderColor: accent ? TOKENS.violet : TOKENS.taupe, background: accent ? TOKENS.accentSoft : '#fff' }}>
+      <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: TOKENS.inkTertiary }}>{title}</p>
       {children}
     </div>
   );
@@ -123,7 +123,7 @@ function Stat({ label, value, sub, color }: { label: string; value: string | num
   return (
     <div>
       <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[rgba(6,3,43,0.40)] mb-0.5">{label}</p>
-      <p className="text-2xl font-bold leading-tight" style={{ color: color ?? '#06032B' }}>{value}</p>
+      <p className="text-2xl font-bold leading-tight" style={{ color: color ?? TOKENS.ink }}>{value}</p>
       {sub && <p className="text-[11px] text-[rgba(6,3,43,0.40)] mt-0.5">{sub}</p>}
     </div>
   );
@@ -189,28 +189,28 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
   }, [tenantCode, period]);
 
   return (
-    <div className="min-h-screen" style={{ background: '#f4f4f9' }}>
+    <div className="min-h-screen" style={{ background: TOKENS.surface }}>
 
       {/* ── Header ───────────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-10 border-b border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-8 py-4 shadow-sm">
+      <div className="sticky top-0 z-10 border-b border-[rgba(6,3,43,0.08)] bg-kora-paper px-8 py-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-1 rounded bg-[#C76F3D]" />
+            <div className="h-8 w-1 rounded bg-kora-accent" />
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#C76F3D]">Company Live Preview</p>
-              <p className="text-lg font-bold text-[#06032B] leading-tight">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-kora-accent">Company Live Preview</p>
+              <p className="text-lg font-bold text-kora-ink leading-tight">
                 {data ? data.tenant.companyName : 'Seleziona azienda'}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <BoundaryBadge mode="LIVE" variant="light" />
-            <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#8A5A00]">
+            <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.15em] text-kora-warning-text">
               Read-only · Live Preview
             </span>
             <Link
               href="/admin/company-workspace"
-              className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-1.5 text-[12px] font-medium text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.78)] transition-colors"
+              className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-1.5 text-[12px] font-medium text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.78)] transition-colors"
             >
               ← KORA Admin Workspace
             </Link>
@@ -219,14 +219,14 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
       </div>
 
       {/* ── Selector bar — hidden when initialTenantCode provided (drill-in context) ── */}
-      {showSelector && <div className="border-b border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-8 py-3">
+      {showSelector && <div className="border-b border-[rgba(6,3,43,0.08)] bg-kora-paper px-8 py-3">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[rgba(6,3,43,0.40)]">Azienda</label>
             <select
               value={tenantCode}
               onChange={e => setTenantCode(e.target.value)}
-              className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-1.5 text-sm text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-2 focus:ring-[#C76F3D]/30"
+              className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-1.5 text-sm text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-2 focus:ring-kora-accent/30"
             >
               <option value="">— seleziona —</option>
               {tenants.map(t => (
@@ -239,7 +239,7 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
             <select
               value={period}
               onChange={e => setPeriod(e.target.value)}
-              className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-1.5 text-sm text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-2 focus:ring-[#C76F3D]/30"
+              className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-1.5 text-sm text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-2 focus:ring-kora-accent/30"
             >
               {['2026-Q1','2026-Q2','2026-H1','2025-Q4'].map(p => (
                 <option key={p} value={p}>{p}</option>
@@ -268,7 +268,7 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
 
           {/* Synthetic data warning */}
           {data.tenant.tenantCode === 'OP-001' && (
-            <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-3 text-[12px] text-[#8A5A00]">
+            <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-3 text-[12px] text-kora-warning-text">
               <strong>Dati sintetici / Demo.</strong> Questo tenant usa dati di test. Non è un cliente reale.
             </div>
           )}
@@ -303,14 +303,14 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
               {data.scoring ? (
                 <div className="space-y-3">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-5xl font-bold text-[#C76F3D] leading-none">{Math.round(data.scoring.koraIndex * 10) / 10}</span>
+                    <span className="text-5xl font-bold text-kora-accent leading-none">{Math.round(data.scoring.koraIndex * 10) / 10}</span>
                     <span className="text-xl text-[rgba(6,3,43,0.40)]">/100</span>
                   </div>
                   <div className="flex gap-2 flex-wrap">
-                    <span className="rounded border px-2 py-0.5 text-[11px] font-bold" style={{ background: SF_BG[data.scoring.safeguard] ?? '#f3f4f6', color: SF_COLOR[data.scoring.safeguard] ?? '#6b7280', borderColor: SF_COLOR[data.scoring.safeguard] ?? '#d1d5db' }}>
+                    <span className="rounded border px-2 py-0.5 text-[11px] font-bold" style={{ background: SF_BG[data.scoring.safeguard] ?? TOKENS.surface, color: SF_COLOR[data.scoring.safeguard] ?? TOKENS.inkSecondary, borderColor: SF_COLOR[data.scoring.safeguard] ?? TOKENS.taupe }}>
                       {data.scoring.safeguard}
                     </span>
-                    <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-2 py-0.5 text-[11px] font-bold text-[#C76F3D]">
+                    <span className="rounded border border-kora-accent/25 bg-kora-accent/8 px-2 py-0.5 text-[11px] font-bold text-kora-accent">
                       CS {Math.round(data.scoring.confidenceScore * 100)}%
                     </span>
                   </div>
@@ -334,15 +334,15 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
                 return (
                   <div className="space-y-3">
                     <div>
-                      <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[rgba(6,3,43,0.40)] mb-0.5">Meaningful AR <span className="text-[#C76F3D]">· SEGNALE PRIMARIO</span></p>
-                      <p className="text-3xl font-bold text-[#C76F3D] leading-none">{pct(mar)}</p>
+                      <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[rgba(6,3,43,0.40)] mb-0.5">Meaningful AR <span className="text-kora-accent">· SEGNALE PRIMARIO</span></p>
+                      <p className="text-3xl font-bold text-kora-accent leading-none">{pct(mar)}</p>
                     </div>
                     <div>
                       <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[rgba(6,3,43,0.40)] mb-0.5">Activation Rate · reach complessivo</p>
-                      <p className="text-2xl font-bold text-[#06032B] leading-none">{pct(ar)}</p>
+                      <p className="text-2xl font-bold text-kora-ink leading-none">{pct(ar)}</p>
                     </div>
                     {gapPp > 0 && (
-                      <div className={`rounded px-2.5 py-2 text-[10px] leading-relaxed ${gapWarn ? 'bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)] text-[#8A5A00]' : 'bg-[rgba(6,3,43,0.03)] border border-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'}`}>
+                      <div className={`rounded px-2.5 py-2 text-[10px] leading-relaxed ${gapWarn ? 'bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)] text-kora-warning-text' : 'bg-[rgba(6,3,43,0.03)] border border-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'}`}>
                         {gapWarn
                           ? `⚠ Gap AR→MAR: +${gapPp}pp — differenza attribuibile principalmente a benefit economici ad ampia copertura (voucher, fringe benefit). MAR è il segnale rilevante.`
                           : `Gap AR→MAR: +${gapPp}pp (economic relief reach)`}
@@ -365,7 +365,7 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
               const total = PILLAR_ORDER.reduce((s, k) => s + (data.pillarDistribution![k] ?? 0), 0);
               return (
                 <div className="space-y-3">
-                  <div className="rounded bg-[#f5f4ff] border border-[#c7c4f8] px-3 py-2 text-[10px] text-[#3d3a6a] leading-relaxed">
+                  <div className="rounded bg-kora-accent/8 border border-kora-accent/25 px-3 py-2 text-[10px] text-kora-ink-secondary leading-relaxed">
                     <strong>EQUITY</strong> = Pillar Coverage (PC) · quanti pillar hanno presenza significativa + Pillar Balance (PB) · quanto è equa la distribuzione. Non misura equità tra lavoratori individuali.
                   </div>
                   {PILLAR_ORDER.map(k => {
@@ -375,7 +375,7 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
                     return (
                       <div key={k}>
                         <div className="flex justify-between mb-1">
-                          <span className="text-[12px] font-semibold text-[#06032B]">{PILLAR_LABELS[k]}</span>
+                          <span className="text-[12px] font-semibold text-kora-ink">{PILLAR_LABELS[k]}</span>
                           <span className="text-[13px] font-bold" style={{ color }}>{p}%</span>
                         </div>
                         <div className="h-2.5 rounded-full bg-[rgba(6,3,43,0.05)]">
@@ -406,8 +406,8 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
                 <div>
                   <div className="grid grid-cols-4 gap-4 mb-5">
                     <Stat label="Budget People / Welfare" value={fmtEur(totalBudget)} />
-                    <Stat label="BTI Score" value={btiScore > 0 ? `${Math.round(btiScore)}/100` : '—'} color="#C76F3D" />
-                    <Stat label="Activation Debt (stima)" value={activationDebt > 0 ? fmtEur(activationDebt) : '—'} color="#d97706" />
+                    <Stat label="BTI Score" value={btiScore > 0 ? `${Math.round(btiScore)}/100` : '—'} color={TOKENS.accent} />
+                    <Stat label="Activation Debt (stima)" value={activationDebt > 0 ? fmtEur(activationDebt) : '—'} color={BADGE_TOKENS.limited.text} />
                     <Stat label="Costo/Impact Unit" value={data.bti.costPerIU !== null ? fmtEur(data.bti.costPerIU) : '—'} />
                   </div>
                   {totalBudget > 0 && (
@@ -415,14 +415,14 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
                       <p className="text-[10px] text-[rgba(6,3,43,0.40)] uppercase tracking-[0.12em] mb-2">Classificazione budget</p>
                       <div className="h-4 rounded flex overflow-hidden">
                         <div style={{ width: `${deepPct}%`, background: TOKENS.ink }} title={`Deep ${deepPct}%`} />
-                        <div style={{ width: `${reliefPct}%`, background: '#c7c8dc' }} title={`Relief ${reliefPct}%`} />
-                        <div style={{ width: `${blockedPct}%`, background: '#fde68a' }} title={`Blocked ${blockedPct}%`} />
-                        <div style={{ flex: 1, background: '#eaebf4' }} />
+                        <div style={{ width: `${reliefPct}%`, background: TOKENS.taupe }} title={`Relief ${reliefPct}%`} />
+                        <div style={{ width: `${blockedPct}%`, background: BADGE_TOKENS.limited.bg }} title={`Blocked ${blockedPct}%`} />
+                        <div style={{ flex: 1, background: TOKENS.taupe }} />
                       </div>
                       <div className="flex gap-5 mt-2 text-[11px] text-[rgba(6,3,43,0.52)]">
                         <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: TOKENS.ink }} />Deep {deepPct}%</span>
-                        <span><span className="inline-block w-2 h-2 rounded-full mr-1 border border-[rgba(6,3,43,0.14)]" style={{ background: '#c7c8dc' }} />Relief {reliefPct}%</span>
-                        <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: '#fde68a' }} />Blocked {blockedPct}%</span>
+                        <span><span className="inline-block w-2 h-2 rounded-full mr-1 border border-[rgba(6,3,43,0.14)]" style={{ background: TOKENS.taupe }} />Relief {reliefPct}%</span>
+                        <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: BADGE_TOKENS.limited.bg }} />Blocked {blockedPct}%</span>
                       </div>
                     </div>
                   )}
@@ -445,10 +445,10 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
                   {/* Counters */}
                   <div className="grid grid-cols-4 gap-3 mb-5">
                     {[
-                      { label: 'Report Ready',     value: reportReady,      color: '#166534', bg: '#f0fdf4', border: '#bbf7d0' },
-                      { label: 'Usable + Caveat',  value: usableWithCaveat, color: '#854d0e', bg: '#fffbeb', border: '#fde68a' },
-                      { label: 'Needs Evidence',   value: needsEvidence,    color: '#991b1b', bg: '#fef2f2', border: '#fca5a5' },
-                      { label: 'Not Ready',        value: notReady,         color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb' },
+                      { label: 'Report Ready',     value: reportReady,      color: BADGE_TOKENS.eligible.text, bg: BADGE_TOKENS.eligible.bg, border: BADGE_TOKENS.eligible.border },
+                      { label: 'Usable + Caveat',  value: usableWithCaveat, color: BADGE_TOKENS.limited.text, bg: BADGE_TOKENS.limited.bg, border: BADGE_TOKENS.limited.border },
+                      { label: 'Needs Evidence',   value: needsEvidence,    color: BADGE_TOKENS.blocked.text, bg: BADGE_TOKENS.blocked.bg, border: BADGE_TOKENS.blocked.border },
+                      { label: 'Not Ready',        value: notReady,         color: TOKENS.inkSecondary, bg: TOKENS.surface, border: TOKENS.inkBorder },
                     ].map(c => (
                       <div key={c.label} className="rounded-lg border text-center p-3" style={{ background: c.bg, borderColor: c.border }}>
                         <p className="text-2xl font-bold leading-none" style={{ color: c.color }}>{c.value}</p>
@@ -465,7 +465,7 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
                       {topGaps.map(g => (
                         <div key={g.areaCode} className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]/60 p-3">
                           <div className="flex items-start justify-between gap-3 mb-2">
-                            <span className="text-[12px] font-semibold text-[#06032B]">{g.areaLabel}</span>
+                            <span className="text-[12px] font-semibold text-kora-ink">{g.areaLabel}</span>
                             <div className="flex items-center gap-2 flex-shrink-0">
                               <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold ${READINESS_BADGE[g.readiness] ?? 'bg-[rgba(6,3,43,0.05)] border-[rgba(6,3,43,0.08)] text-[rgba(6,3,43,0.52)]'}`}>
                                 {READINESS_LABEL[g.readiness] ?? g.readiness}
@@ -490,7 +490,7 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
                     </div>
                   )}
 
-                  <div className="mt-4 rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2 text-[11px] text-[rgba(6,3,43,0.40)] leading-relaxed">
+                  <div className="mt-4 rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-2 text-[11px] text-[rgba(6,3,43,0.40)] leading-relaxed">
                     <strong className="text-[rgba(6,3,43,0.52)]">Nota:</strong> Readiness ≠ compliance CSRD/ESRS. Report Ready = evidenza sufficiente per supportare rendicontazione. Non costituisce assurance o certificazione.
                   </div>
                 </div>
@@ -511,12 +511,12 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
                 {data.reportingAlignment.areas.slice(0, 6).map(a => (
                   <div key={a.code} className="flex items-center justify-between rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2">
                     <div>
-                      <p className="text-[12px] font-semibold text-[#06032B]">{a.label}</p>
+                      <p className="text-[12px] font-semibold text-kora-ink">{a.label}</p>
                       <p className="text-[10px] text-[rgba(6,3,43,0.40)]">{a.code} · {a.count} iniziative</p>
                     </div>
                     <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold capitalize ${
                       a.maxStrength === 'strong' ? 'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]' :
-                      a.maxStrength === 'medium' ? 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]' :
+                      a.maxStrength === 'medium' ? 'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]' :
                                                     'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]'
                     }`}>
                       {a.maxStrength}
@@ -537,8 +537,8 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
                 <div className="space-y-2">
                   <span className={`inline-block rounded border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${
                     data.decisionPack.status === 'exported' ? 'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]' :
-                    data.decisionPack.status === 'ready'    ? 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]' :
-                                                              'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]'
+                    data.decisionPack.status === 'ready'    ? 'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]' :
+                                                              'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]'
                   }`}>
                     {data.decisionPack.status.toUpperCase()}
                   </span>
@@ -552,7 +552,7 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
                     href={data.decisionPack.previewUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded border border-[#C76F3D]/30 bg-[#C76F3D]/10 px-4 py-2 text-[12px] font-semibold text-[#C76F3D] hover:bg-[#C76F3D]/20 transition-colors"
+                    className="rounded border border-kora-accent/30 bg-kora-accent/10 px-4 py-2 text-[12px] font-semibold text-kora-accent hover:bg-kora-accent/20 transition-colors"
                   >
                     Apri Preview
                   </a>
@@ -560,7 +560,7 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
                     href={data.decisionPack.pdfUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-2 text-[12px] font-semibold text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.03)] transition-colors"
+                    className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-2 text-[12px] font-semibold text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.03)] transition-colors"
                   >
                     Scarica PDF
                   </a>
@@ -572,8 +572,8 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
           </Card>
 
           {/* ── Row 7: Privacy & Methodology Boundary ─────────────────────── */}
-          <div className="rounded-xl border border-[#c7c4f8] bg-[#f5f4ff] p-5">
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#C76F3D] mb-3">Privacy & Methodology Boundary</p>
+          <div className="rounded-xl border border-kora-accent/25 bg-kora-accent/8 p-5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-kora-accent mb-3">Privacy & Methodology Boundary</p>
             <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[12px] text-[rgba(6,3,43,0.62)]">
               <p>🔒 <strong>Organization-Level Only</strong> — nessun worker identificabile</p>
               <p>🛡️ <strong>N≥10 Threshold</strong> — segmenti sotto soglia soppressi</p>
@@ -582,7 +582,7 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
               <p>🚫 <strong>No Worker Surveillance</strong> — PIB individuale non visibile</p>
               <p>📋 <strong>Read-Only Preview</strong> — nessuna azione operativa da questa vista</p>
             </div>
-            <div className="mt-4 rounded border border-[#c7c4f8] bg-[#F8F6F1] px-3 py-2 text-[11px] text-[rgba(6,3,43,0.52)] leading-relaxed">
+            <div className="mt-4 rounded border border-kora-accent/25 bg-kora-paper px-3 py-2 text-[11px] text-[rgba(6,3,43,0.52)] leading-relaxed">
               KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
               Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
               Decision Pack supporta discussioni board/HR/ESG — non è certificazione.
@@ -601,7 +601,7 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
               </div>
               <a
                 href={`/admin/company-evidence-archive?tenantCode=${encodeURIComponent(tenantCode)}&reportingPeriod=${encodeURIComponent(period)}`}
-                className="rounded-lg border border-[#C76F3D] text-[#C76F3D] px-4 py-2 text-xs font-semibold hover:bg-[#f5f4ff] transition-colors flex-shrink-0"
+                className="rounded-lg border border-kora-accent text-kora-accent px-4 py-2 text-xs font-semibold hover:bg-kora-accent/8 transition-colors flex-shrink-0"
               >
                 Apri Evidence Archive →
               </a>

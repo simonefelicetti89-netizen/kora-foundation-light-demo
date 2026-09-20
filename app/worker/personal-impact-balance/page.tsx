@@ -32,7 +32,7 @@ import {
   fetchWorkerParticipationRows,
 } from '@/app/api/worker/activation-profile/route';
 import { ActivationProfileSection } from '../workspace/_components/ActivationProfileSection';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
@@ -55,7 +55,7 @@ export default async function WorkerPersonalImpactBalancePage() {
   const activationProfile = computeActivationProfile(participationRows);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fafafa', fontFamily: FONT }}>
+    <div style={{ minHeight: '100vh', background: TOKENS.surface, fontFamily: FONT }}>
       <SessionBar email={worker.email} role={worker.koraRole} />
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 20px 64px' }}>
         <h1 style={{
@@ -100,7 +100,7 @@ export default async function WorkerPersonalImpactBalancePage() {
         </div>
 
         <p style={{
-          fontSize: 11, color: '#1a4731', background: 'rgba(47,125,85,0.06)',
+          fontSize: 11, color: BADGE_TOKENS.eligible.text, background: 'rgba(47,125,85,0.06)',
           border: '1px solid rgba(47,125,85,0.18)', borderRadius: 8, padding: '12px 16px',
           marginBottom: 20,
         }}>

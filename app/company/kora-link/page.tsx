@@ -100,7 +100,7 @@ export default function CompanyKoraLinkPage() {
       </Panel>
 
       {/* No individual visibility — explicit, prominent */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Nessuna visibilità individuale</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           Questa pagina non mostrerà mai, nemmeno in futuro con i gate chiusi: nomi dei worker, identificativi

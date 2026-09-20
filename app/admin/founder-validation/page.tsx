@@ -7,7 +7,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { founderValidationService } from '@/services/founder-validation/FounderValidationService';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 import {
   STAGE_META,
   INTEREST_META,
@@ -28,7 +28,7 @@ const C = {
   surface:  TOKENS.surface,
   accent:   TOKENS.accent,
   green:    TOKENS.success,
-  blue:     '#1E4DA0',
+  blue:     BADGE_TOKENS.info.text,
   amber:    TOKENS.safeguard.watch.text,
 };
 
@@ -36,13 +36,13 @@ const C = {
 
 const STAGE_PILL: Record<ValidationStage, string> = {
   contacted:         'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.55)] border-[rgba(6,3,43,0.12)]',
-  meeting_scheduled: 'bg-[rgba(74,127,224,0.08)] text-[#1E4DA0] border-[rgba(74,127,224,0.25)]',
-  meeting_done:      'bg-[rgba(74,127,224,0.12)] text-[#1E4DA0] border-[rgba(74,127,224,0.30)]',
-  pilot_interested:  'bg-[rgba(199,111,61,0.10)] text-[#C76F3D] border-[rgba(199,111,61,0.28)]',
-  loi_discussed:     'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.30)]',
-  loi_signed:        'bg-[rgba(47,125,85,0.12)] text-[#2F7D55] border-[rgba(47,125,85,0.30)]',
+  meeting_scheduled: 'bg-[rgba(74,127,224,0.08)] text-kora-info-text border-[rgba(74,127,224,0.25)]',
+  meeting_done:      'bg-[rgba(74,127,224,0.12)] text-kora-info-text border-[rgba(74,127,224,0.30)]',
+  pilot_interested:  'bg-[rgba(199,111,61,0.10)] text-kora-accent border-[rgba(199,111,61,0.28)]',
+  loi_discussed:     'bg-[rgba(217,154,43,0.12)] text-kora-warning-text border-[rgba(217,154,43,0.30)]',
+  loi_signed:        'bg-[rgba(47,125,85,0.12)] text-kora-success border-[rgba(47,125,85,0.30)]',
   not_now:           'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.40)] border-[rgba(6,3,43,0.08)]',
-  lost:              'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.18)]',
+  lost:              'bg-[rgba(158,59,47,0.06)] text-kora-critical border-[rgba(158,59,47,0.18)]',
 };
 
 function StagePill({ stage }: { stage: ValidationStage }) {
@@ -125,8 +125,8 @@ function FunnelRow({ label, count, total, rate, isLast }: {
 
 function UrgencyBadge({ urgency }: { urgency: 'urgent' | 'normal' | 'low' }) {
   const cfg = {
-    urgent: { label: 'URGENTE', cls: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.25)]' },
-    normal: { label: 'QUESTA SETTIMANA', cls: 'bg-[rgba(217,154,43,0.10)] text-[#8A5A00] border-[rgba(217,154,43,0.28)]' },
+    urgent: { label: 'URGENTE', cls: 'bg-[rgba(158,59,47,0.10)] text-kora-critical border-[rgba(158,59,47,0.25)]' },
+    normal: { label: 'QUESTA SETTIMANA', cls: 'bg-[rgba(217,154,43,0.10)] text-kora-warning-text border-[rgba(217,154,43,0.28)]' },
     low:    { label: 'IN PROGRAMMA', cls: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.45)] border-[rgba(6,3,43,0.10)]' },
   }[urgency];
   return (

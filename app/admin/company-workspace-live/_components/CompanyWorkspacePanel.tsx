@@ -107,7 +107,7 @@ export function CompanyWorkspacePanel({
 
   if (error) {
     return (
-      <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-[#9E3B2F]">
+      <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-kora-critical">
         ⚠ {error}
       </div>
     );
@@ -119,18 +119,18 @@ export function CompanyWorkspacePanel({
     <div className="space-y-4">
       <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-white px-4 py-3">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">Tenant</p>
-        <p className="text-sm font-bold text-[#06032B]">{companyName}</p>
+        <p className="text-sm font-bold text-kora-ink">{companyName}</p>
         <p className="text-xs font-mono text-[rgba(6,3,43,0.40)]">{tenantCode} · periodo {data.reportingPeriod}</p>
       </div>
 
       <div className="rounded-lg border border-[rgba(199,111,61,0.25)] bg-[rgba(199,111,61,0.06)] px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">Stato pilot</p>
-          <p className="text-sm font-bold text-[#06032B]">{PILOT_STATUS_LABEL[data.pilotStatus] ?? data.pilotStatus}</p>
+          <p className="text-sm font-bold text-kora-ink">{PILOT_STATUS_LABEL[data.pilotStatus] ?? data.pilotStatus}</p>
         </div>
         <Link
           href={data.recommendedNextAction.href}
-          className="rounded-lg bg-[#C76F3D] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4f44e0] transition-colors whitespace-nowrap"
+          className="rounded-lg bg-kora-accent text-white px-4 py-2 text-xs font-semibold hover:bg-kora-accent-hover transition-colors whitespace-nowrap"
         >
           {data.recommendedNextAction.label} →
         </Link>
@@ -139,7 +139,7 @@ export function CompanyWorkspacePanel({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Card label="Forza lavoro">
           {data.workforce.exists ? (
-            <p className="text-sm text-[#06032B]">{data.workforce.totalWorkers ?? '—'} lavoratori (baseline)</p>
+            <p className="text-sm text-kora-ink">{data.workforce.totalWorkers ?? '—'} lavoratori (baseline)</p>
           ) : (
             <p className="text-xs text-[rgba(6,3,43,0.40)]">Nessuna baseline caricata.</p>
           )}
@@ -148,7 +148,7 @@ export function CompanyWorkspacePanel({
         <Card label="Ultimo batch">
           {data.latestBatch ? (
             <>
-              <p className="text-sm text-[#06032B]">{data.latestBatch.sourceName ?? 'senza nome'}</p>
+              <p className="text-sm text-kora-ink">{data.latestBatch.sourceName ?? 'senza nome'}</p>
               <p className="text-xs text-[rgba(6,3,43,0.50)]">
                 {data.latestBatch.status} · {data.latestBatch.rowCount} righe
               </p>
@@ -171,7 +171,7 @@ export function CompanyWorkspacePanel({
         <Card label="KORA Index">
           {data.scoring?.hasResult ? (
             <>
-              <p className="text-sm text-[#06032B]">{data.scoring.koraIndex.toFixed(1)}</p>
+              <p className="text-sm text-kora-ink">{data.scoring.koraIndex.toFixed(1)}</p>
               <p className="text-xs text-[rgba(6,3,43,0.50)]">
                 Confidence {data.scoring.confidenceScore.toFixed(1)} · Safeguard {data.scoring.safeguard}
               </p>

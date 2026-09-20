@@ -16,7 +16,7 @@ import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { getRoleHome } from '@/lib/auth/role-home';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Il tuo account · KORA' };
 
@@ -27,7 +27,7 @@ const ROLE_INFO: Record<string, { label: string; spaceLabel: string; description
     label:       'KORA Admin',
     spaceLabel:  'Piattaforma KORA',
     description: 'Accesso completo alla piattaforma. Puoi gestire company, advisor, partner e configurazioni metodologia.',
-    color:       '#3b30c9',
+    color:       TOKENS.violet,
     bg:          'rgba(97,86,245,0.10)',
     border:      'rgba(97,86,245,0.28)',
   },
@@ -35,7 +35,7 @@ const ROLE_INFO: Record<string, { label: string; spaceLabel: string; description
     label:       'Company Admin',
     spaceLabel:  'Workspace aziendale',
     description: 'Accesso al workspace aziendale. KORA Index, ingestion dati, report aggregati. Nessun dato individuale lavoratore è visibile a questo ruolo.',
-    color:       '#166534',
+    color:       BADGE_TOKENS.eligible.text,
     bg:          'rgba(22,101,52,0.10)',
     border:      'rgba(22,101,52,0.28)',
   },
@@ -43,7 +43,7 @@ const ROLE_INFO: Record<string, { label: string; spaceLabel: string; description
     label:       'Worker',
     spaceLabel:  'Spazio personale — My KORA',
     description: 'Il tuo spazio personale è privato. I tuoi dati di attivazione non sono visibili al datore di lavoro — l\'azienda vede solo medie aggregate anonime.',
-    color:       '#1e4a8a',
+    color:       TOKENS.info.text,
     bg:          'rgba(37,99,235,0.10)',
     border:      'rgba(37,99,235,0.28)',
   },
@@ -170,7 +170,7 @@ export default async function AccountPage() {
               display:        'inline-block',
               fontSize:       12,
               fontWeight:     600,
-              color:          '#3b30c9',
+              color:          TOKENS.violet,
               textDecoration: 'none',
               padding:        '7px 14px',
               border:         '1px solid rgba(97,86,245,0.28)',

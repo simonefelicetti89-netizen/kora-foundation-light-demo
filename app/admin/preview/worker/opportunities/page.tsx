@@ -16,7 +16,7 @@
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = {
   title: 'Worker Opportunities — Admin Preview · KORA',
@@ -94,7 +94,7 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
       >
         <span style={{ fontSize: 18, lineHeight: 1 }}>👁</span>
         <div>
-          <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: '#8B4513', margin: 0, marginBottom: 4 }}>
+          <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: BADGE_TOKENS.limited.text, margin: 0, marginBottom: 4 }}>
             KORA Admin Preview — non sei loggato come worker reale
           </p>
           <p style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(139,69,19,0.80)', margin: 0, lineHeight: 1.6 }}>
@@ -127,7 +127,7 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
           borderRadius: 10, padding: '14px 18px', marginBottom: 24,
         }}
       >
-        <p style={{ fontSize: 12, color: '#1a4731', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 12, color: BADGE_TOKENS.eligible.text, margin: 0, lineHeight: 1.6 }}>
           <strong>Privacy (come la vede il lavoratore):</strong>{' '}
           La navigazione tra i partner non viene mostrata al datore di lavoro.
           L&apos;azienda vede solo dati aggregati anonimi, non le scelte individuali.
@@ -163,7 +163,7 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
                 border: '1px solid rgba(6,3,43,0.10)',
                 borderRadius: 12,
                 padding: '16px 18px',
-                background: '#FAFAFA',
+                background: TOKENS.surface,
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
@@ -172,7 +172,7 @@ export default async function AdminPreviewWorkerOpportunitiesPage() {
                     display: 'inline-block',
                     fontFamily: FONT, fontWeight: 700, fontSize: 9,
                     letterSpacing: '0.12em', textTransform: 'uppercase',
-                    color: PILLAR_COLOR[p.pillar] ?? '#06032B',
+                    color: PILLAR_COLOR[p.pillar] ?? TOKENS.ink,
                     marginBottom: 4,
                   }}>
                     {p.pillar}

@@ -1,4 +1,5 @@
 // lib/admin-lifecycle/lifecycle-rules.ts
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 // Pure, deterministic lifecycle status engine for Admin Pipeline Orchestrator.
 // No React, no services, no side effects — fully testable in isolation.
 // No AI, no random logic.
@@ -192,29 +193,29 @@ export const STATUS_META: Record<LifecycleStepStatus, {
   },
   IN_PROGRESS: {
     label:       'In corso',
-    dotColor:    '#D99A2B',
-    textColor:   '#8A5A00',
+    dotColor:    TOKENS.warning,
+    textColor:   TOKENS.safeguard.watch.text,
     bgColor:     'rgba(217,154,43,0.08)',
     borderColor: 'rgba(217,154,43,0.28)',
   },
   READY: {
     label:       'Pronto',
-    dotColor:    '#4A7FE0',
-    textColor:   '#1E4DA0',
+    dotColor:    BADGE_TOKENS.info.text,
+    textColor:   BADGE_TOKENS.info.text,
     bgColor:     'rgba(74,127,224,0.08)',
     borderColor: 'rgba(74,127,224,0.30)',
   },
   BLOCKED: {
     label:       'Bloccato',
-    dotColor:    '#9E3B2F',
-    textColor:   '#9E3B2F',
+    dotColor:    TOKENS.critical,
+    textColor:   TOKENS.critical,
     bgColor:     'rgba(158,59,47,0.06)',
     borderColor: 'rgba(158,59,47,0.20)',
   },
   DONE: {
     label:       'Completato',
-    dotColor:    '#2F7D55',
-    textColor:   '#2F7D55',
+    dotColor:    TOKENS.success,
+    textColor:   TOKENS.success,
     bgColor:     'rgba(47,125,85,0.08)',
     borderColor: 'rgba(47,125,85,0.28)',
   },
@@ -224,6 +225,6 @@ export const STATUS_META: Record<LifecycleStepStatus, {
 
 export const OWNER_META: Record<string, { label: string; chip: string }> = {
   KORA_ADMIN:    { label: 'KORA Admin',                  chip: 'bg-[rgba(6,3,43,0.07)] text-[rgba(6,3,43,0.65)] border-[rgba(6,3,43,0.14)]' },
-  COMPANY_ADMIN: { label: 'Company Admin',               chip: 'bg-[rgba(199,111,61,0.10)] text-[#7A4019] border-[rgba(199,111,61,0.28)]' },
-  WORKER:        { label: 'Lavoratore / Admin preview',  chip: 'bg-[rgba(47,125,85,0.09)] text-[#2F7D55] border-[rgba(47,125,85,0.28)]' },
+  COMPANY_ADMIN: { label: 'Company Admin',               chip: 'bg-[rgba(199,111,61,0.10)] text-kora-accent border-[rgba(199,111,61,0.28)]' },
+  WORKER:        { label: 'Lavoratore / Admin preview',  chip: 'bg-[rgba(47,125,85,0.09)] text-kora-success border-[rgba(47,125,85,0.28)]' },
 };

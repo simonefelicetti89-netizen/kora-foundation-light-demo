@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface WorkerRow {
   workerId:  string;
@@ -104,7 +104,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
       </p>
 
       {/* Provision form */}
-      <section style={{ background: '#f9f9fb', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10, padding: '24px', marginBottom: 32 }}>
+      <section style={{ background: TOKENS.surface, border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10, padding: '24px', marginBottom: 32 }}>
         <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: TOKENS.ink, marginBottom: 16 }}>
           Invita un nuovo worker
         </h2>
@@ -164,12 +164,12 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
         </form>
 
         {result && (
-          <div style={{ marginTop: 16, padding: '12px 14px', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 6, fontSize: 12, color: '#15803d' }}>
+          <div style={{ marginTop: 16, padding: '12px 14px', background: BADGE_TOKENS.eligible.bg, border: `1px solid ${BADGE_TOKENS.eligible.border}`, borderRadius: 6, fontSize: 12, color: BADGE_TOKENS.eligible.text }}>
             ✓ {result}
           </div>
         )}
         {error && (
-          <div style={{ marginTop: 16, padding: '12px 14px', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 6, fontSize: 12, color: '#b91c1c' }}>
+          <div style={{ marginTop: 16, padding: '12px 14px', background: BADGE_TOKENS.blocked.bg, border: `1px solid ${BADGE_TOKENS.blocked.border}`, borderRadius: 6, fontSize: 12, color: BADGE_TOKENS.blocked.text }}>
             ✗ {error}
           </div>
         )}
@@ -177,7 +177,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
 
       {/* Worker list */}
       <section style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ padding: '16px 20px', background: '#f9f9fb', borderBottom: '1px solid rgba(6,3,43,0.08)', display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ padding: '16px 20px', background: TOKENS.surface, borderBottom: '1px solid rgba(6,3,43,0.08)', display: 'flex', gap: 10, alignItems: 'center' }}>
           <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: TOKENS.ink, margin: 0 }}>
             Worker per tenant
           </h2>
@@ -219,7 +219,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
             </thead>
             <tbody>
               {workers.map((w, i) => (
-                <tr key={w.workerId} style={{ borderTop: '1px solid rgba(6,3,43,0.05)', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
+                <tr key={w.workerId} style={{ borderTop: '1px solid rgba(6,3,43,0.05)', background: i % 2 === 0 ? '#fff' : TOKENS.surface }}>
                   <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: TOKENS.ink }}>{w.workerRef}</td>
                   <td style={{ padding: '10px 16px' }}>
                     <span className={STATUS_COLOR[w.status] ?? 'bg-gray-100 text-gray-600'} style={{ fontSize: 10, fontWeight: 700, borderRadius: 4, padding: '2px 7px', display: 'inline-block' }}>

@@ -2,6 +2,7 @@
 
 import * as Sentry from '@sentry/nextjs';
 import { useEffect }   from 'react';
+import { ACTIVATION_SIGNATURE } from '@/lib/design/kora-design-tokens';
 
 // global-error.tsx sostituisce l'intero layout in caso di crash del root layout.
 // Richiede <html><body> espliciti.
@@ -29,8 +30,8 @@ export default function GlobalRootError({
           minHeight: '100vh',
           gap: '16px',
           padding: '32px',
-          background: '#F6F4EF',
-          color: '#211F1A',
+          background: ACTIVATION_SIGNATURE.canvas,
+          color: ACTIVATION_SIGNATURE.inkWarm,
           fontFamily: 'system-ui, sans-serif',
         }}
         data-testid="global-error-boundary"
@@ -43,7 +44,7 @@ export default function GlobalRootError({
           style={{
             padding: '8px 16px',
             borderRadius: '8px',
-            background: '#B5512E',
+            background: ACTIVATION_SIGNATURE.cotto,
             color: '#fff',
             fontSize: '14px',
             border: 'none',

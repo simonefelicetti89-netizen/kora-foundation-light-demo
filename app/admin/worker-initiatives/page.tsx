@@ -8,7 +8,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { WorkerInitiativesClient } from './_components/WorkerInitiativesClient';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = {
   title: 'Worker Initiatives — KORA Admin',
@@ -61,7 +61,7 @@ export default async function WorkerInitiativesPage() {
       <div style={{
         background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.30)',
         borderRadius: 8, padding: '12px 16px', marginBottom: 28,
-        fontSize: 12, color: '#78350f', lineHeight: 1.5,
+        fontSize: 12, color: BADGE_TOKENS.limited.text, lineHeight: 1.5,
       }}>
         <strong>Privacy:</strong> I dati di partecipazione individuale dei worker non sono mai visibili qui.
         L&apos;aggregato di partecipazione per pillar è accessibile solo via <code>/api/company/workers/activation-aggregate</code>

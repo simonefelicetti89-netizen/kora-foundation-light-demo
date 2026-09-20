@@ -35,7 +35,7 @@ export function EnvironmentSwitcher() {
                 i > 0 && 'border-l border-[var(--env-border)]',
                 isActive
                   ? 'text-white'
-                  : 'bg-[#F8F6F1] text-[rgba(6,3,43,0.40)] hover:bg-[rgba(6,3,43,0.03)] hover:text-[rgba(6,3,43,0.62)]',
+                  : 'bg-kora-paper text-[rgba(6,3,43,0.40)] hover:bg-[rgba(6,3,43,0.03)] hover:text-[rgba(6,3,43,0.62)]',
               )}
               style={isActive ? { backgroundColor: 'var(--env-accent)' } : undefined}
             >

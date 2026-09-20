@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { KoraRole } from '@/lib/types';
 import { formatRole } from '@/lib/formatters';
 import { useRole } from '@/lib/demo-state';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BUTTON_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface AccessDeniedStateProps {
   role: KoraRole;
@@ -138,7 +138,7 @@ export function AccessDeniedState({ role, route, reason, requiredRole, className
                 boxShadow:    `0 4px 14px rgba(199,111,61,0.25)`,
                 transition:   'all 140ms ease',
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#B5602E'; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = BUTTON_TOKENS.primary.hover; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = TOKENS.accent; }}
             >
               Cambia ruolo e apri →

@@ -169,7 +169,7 @@ export default async function PartnerWorkspacePage() {
             borderRadius: 14,
             padding:      '20px 24px',
             marginBottom: 20,
-            background:   '#FAFAFA',
+            background:   TOKENS.surface,
           }}
         >
           <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: 'rgba(6,3,43,0.35)', margin: '0 0 14px' }}>
@@ -208,7 +208,7 @@ export default async function PartnerWorkspacePage() {
                     href={profile.website_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ fontSize: 12, color: '#3B6EBA', textDecoration: 'none' }}
+                    style={{ fontSize: 12, color: TOKENS.info.base, textDecoration: 'none' }}
                   >
                     {profile.website_url}
                   </a>
@@ -245,7 +245,7 @@ export default async function PartnerWorkspacePage() {
           borderRadius: 14,
           padding:      '20px 24px',
           marginBottom: 20,
-          background:   '#FAFAFA',
+          background:   TOKENS.surface,
         }}
       >
         <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: 'rgba(6,3,43,0.35)', margin: '0 0 10px' }}>

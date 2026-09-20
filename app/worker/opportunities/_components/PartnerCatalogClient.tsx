@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import type { PartnerItem } from '../page';
-import { TOKENS, PILLAR_COLORS, type PillarColorKey } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS, type PillarColorKey } from '@/lib/design/kora-design-tokens';
 
 const PILLARS   = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 
@@ -154,7 +154,7 @@ function PartnerCard({ partner }: { partner: PartnerItem }) {
             target="_blank"
             rel="noreferrer noopener"
             style={{
-              fontSize: 11, fontWeight: 600, color: '#2563eb',
+              fontSize: 11, fontWeight: 600, color: BADGE_TOKENS.info.text,
               textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4,
             }}
           >
@@ -178,9 +178,9 @@ function FilterChip({
       style={{
         padding: '4px 14px', borderRadius: 99, fontSize: 11, fontWeight: 600,
         cursor: 'pointer', border: '1px solid',
-        background: active ? (color ?? '#06032B') : 'transparent',
+        background: active ? (color ?? TOKENS.ink) : 'transparent',
         color: active ? '#fff' : (color ?? 'rgba(6,3,43,0.55)'),
-        borderColor: active ? (color ?? '#06032B') : 'rgba(6,3,43,0.15)',
+        borderColor: active ? (color ?? TOKENS.ink) : 'rgba(6,3,43,0.15)',
         transition: 'all 0.1s',
       }}
     >

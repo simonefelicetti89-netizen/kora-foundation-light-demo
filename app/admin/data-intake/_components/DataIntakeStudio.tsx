@@ -174,15 +174,15 @@ function pct(n: number | null | undefined) { return n != null ? `${Math.round(n 
 function fmt(n: number | null | undefined, d = 1) { return n != null ? n.toFixed(d) : '—'; }
 
 const ELIGIBILITY_COLOR: Record<string, string> = {
-  eligible:        'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  limited:         'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  blocked:         'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
+  eligible:        'bg-[rgba(47,125,85,0.10)] text-kora-success border-[rgba(47,125,85,0.22)]',
+  limited:         'bg-[rgba(217,154,43,0.12)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
+  blocked:         'bg-[rgba(158,59,47,0.10)] text-kora-critical border-[rgba(158,59,47,0.22)]',
   review_required: 'bg-purple-100 text-purple-800 border-purple-200',
 };
 const SAFEGUARD_COLOR: Record<string, string> = {
-  CLEAR:   'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  WARNING: 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  FLAGGED: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
+  CLEAR:   'bg-[rgba(47,125,85,0.10)] text-kora-success border-[rgba(47,125,85,0.22)]',
+  WARNING: 'bg-[rgba(217,154,43,0.12)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
+  FLAGGED: 'bg-[rgba(158,59,47,0.10)] text-kora-critical border-[rgba(158,59,47,0.22)]',
 };
 function badge(val: string, colorMap: Record<string,string>, fallback = 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]') {
   const cls = colorMap[val] ?? fallback;
@@ -567,8 +567,8 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
   const PHASE_BADGE: Record<string, string> = {
     ready:     'bg-blue-100 text-blue-700 border-blue-200',
     passed:    'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]',
-    completed: 'bg-[#06032B] text-white border-[#06032B]',
-    review:    'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
+    completed: 'bg-kora-ink text-white border-kora-ink',
+    review:    'bg-[rgba(217,154,43,0.12)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
     'not-run': 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   };
   const PHASE_LABEL: Record<string, string> = {
@@ -597,10 +597,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
     <div className="max-w-4xl mx-auto py-6 px-3 space-y-5" data-testid="admin-data-intake-page">
 
       {/* ── A. HEADER ── */}
-      <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
+      <div className="rounded-xl bg-kora-ink px-6 py-5 flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D]">KORA</span>
+            <span className="text-xs font-semibold tracking-widest uppercase text-kora-accent">KORA</span>
             <span className="text-xs text-white/30">·</span>
             <span className="text-xs font-semibold tracking-widest uppercase text-white/40">Admin</span>
           </div>
@@ -609,9 +609,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <p className="text-sm text-white/45 mt-0.5">Synthetic Live v1 · {TENANT} · {PERIOD}</p>
         </div>
         <div className="flex flex-col items-end gap-2 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
+          <span className="rounded border border-kora-accent/60 bg-kora-accent/15 px-2 py-0.5 text-xs font-semibold text-white">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
-          <span className="rounded border border-[#C8FF47]/40 bg-[#C8FF47]/10 px-2 py-0.5 text-xs font-semibold text-[#d4ff6b]">Synthetic data only</span>
+          <span className="rounded border border-kora-accent/40 bg-kora-accent/10 px-2 py-0.5 text-xs font-semibold text-kora-accent">Synthetic data only</span>
         </div>
       </div>
 
@@ -626,7 +626,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       <PilotOnboardingChecklist currentStep={3} compact />
 
       {/* DATA-INGESTION-UX-01: static operator pre-flight checklist — reference only, no dynamic state */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-3">
         <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-2">Prima di accettare il batch — checklist operatore</p>
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-[rgba(6,3,43,0.62)] list-none">
           {[
@@ -646,7 +646,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       </div>
 
       {/* Task B — page-local step indicator for the live upload flow */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-3">
         <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-2">In questa pagina</p>
         <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
           {UPLOAD_STEPS.map((step, i) => {
@@ -654,15 +654,15 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             return (
               <div key={step.id} className="flex items-center gap-1.5">
                 <span className={`flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-bold shrink-0 ${
-                  status === 'done'    ? 'bg-[rgba(47,125,85,0.15)] text-[#2F7D55] border border-[rgba(47,125,85,0.30)]' :
-                  status === 'current' ? 'bg-[#06032B] text-white' :
+                  status === 'done'    ? 'bg-[rgba(47,125,85,0.15)] text-kora-success border border-[rgba(47,125,85,0.30)]' :
+                  status === 'current' ? 'bg-kora-ink text-white' :
                   'bg-[rgba(6,3,43,0.06)] text-[rgba(6,3,43,0.38)] border border-[rgba(6,3,43,0.10)]'
                 }`}>
                   {status === 'done' ? '✓' : step.id}
                 </span>
                 <span className={`text-[11px] ${
                   status === 'current' ? 'font-bold text-[rgba(6,3,43,0.90)]' :
-                  status === 'done'    ? 'text-[#2F7D55] font-medium' :
+                  status === 'done'    ? 'text-kora-success font-medium' :
                   'text-[rgba(6,3,43,0.42)]'
                 }`}>
                   {step.label}
@@ -675,7 +675,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       </div>
 
       {/* ── B4.1 / B26. CSV + XLSX DRY-RUN PREVIEW ── */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4 space-y-3">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-5 py-4 space-y-3">
         <div className="flex items-start justify-between flex-wrap gap-2">
           <div>
             <p className="text-xs font-bold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Live Intake Preview — dry run</p>
@@ -685,8 +685,8 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A00]">Dry-run only: no data is stored.</span>
-            <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-2 py-0.5 text-[10px] font-semibold text-[#9E3B2F]">PII direct identifiers are strictly rejected.</span>
+            <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-kora-warning-text">Dry-run only: no data is stored.</span>
+            <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-2 py-0.5 text-[10px] font-semibold text-kora-critical">PII direct identifiers are strictly rejected.</span>
           </div>
         </div>
 
@@ -723,7 +723,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               onClick={handleValidateCsv}
               disabled={!csvFile || csvStatus === 'loading' || !isTenantSelected}
               data-testid="data-intake-dry-run-button"
-              className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[rgba(6,3,43,0.88)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="rounded-lg bg-kora-ink text-white px-4 py-1.5 text-xs font-semibold hover:bg-[rgba(6,3,43,0.88)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {csvStatus === 'loading' ? '⏳ Validating…' : '✓ Validate CSV'}
             </button>
@@ -733,7 +733,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <button
               onClick={handleLoadXlsxSheets}
               disabled={!csvFile || xlsxSheetStatus === 'loading' || !isTenantSelected}
-              className="rounded-lg bg-[#C76F3D] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#4d48d0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="rounded-lg bg-kora-accent text-white px-4 py-1.5 text-xs font-semibold hover:bg-kora-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {xlsxSheetStatus === 'loading' ? '⏳ Reading workbook…' : '📋 Load sheet list'}
             </button>
@@ -763,7 +763,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 setMultiFileResult(null); setMultiFileStatus('idle');
                 setMatchDecisions({});
               }}
-              className="text-xs text-[rgba(6,3,43,0.62)] file:mr-3 file:py-1 file:px-2 file:rounded file:border file:border-[rgba(6,3,43,0.08)] file:bg-[#F8F6F1] file:text-xs file:font-medium file:text-[rgba(6,3,43,0.62)] file:cursor-pointer"
+              className="text-xs text-[rgba(6,3,43,0.62)] file:mr-3 file:py-1 file:px-2 file:rounded file:border file:border-[rgba(6,3,43,0.08)] file:bg-kora-paper file:text-xs file:font-medium file:text-[rgba(6,3,43,0.62)] file:cursor-pointer"
             />
             {additionalFiles.length > 0 && (
               <div className="space-y-2">
@@ -773,7 +773,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                     <select
                       value={additionalFileRoles[i] ?? 'unknown'}
                       onChange={e => setAdditionalFileRoles(r => ({ ...r, [i]: e.target.value }))}
-                      className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]"
+                      className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent"
                     >
                       <option value="unknown">— Tipo file —</option>
                       <option value="initiatives">Iniziative / Programmi</option>
@@ -789,7 +789,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <button
                   onClick={handleMultiFilePreview}
                   disabled={multiFileStatus === 'loading' || !isTenantSelected}
-                  className="rounded-lg bg-[#C76F3D] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#4d48d0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="rounded-lg bg-kora-accent text-white px-4 py-1.5 text-xs font-semibold hover:bg-kora-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {multiFileStatus === 'loading' ? '⏳ Analisi multi-file…' : '⚡ Preview multi-file batch'}
                 </button>
@@ -800,9 +800,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             {multiFileStatus === 'done' && multiFileResult?.ok && multiFileResult.matchSummary && (
               <div className="space-y-3">
                 {/* Quick summary header */}
-                <div className="rounded-lg border border-[#C76F3D]/20 bg-[#F8F6F1] px-4 py-3 space-y-2">
+                <div className="rounded-lg border border-kora-accent/20 bg-kora-paper px-4 py-3 space-y-2">
                   <div className="flex items-center justify-between flex-wrap gap-2">
-                    <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">Initiative Matching — Risultati</p>
+                    <p className="text-[10px] font-bold text-kora-accent uppercase tracking-wide">Initiative Matching — Risultati</p>
                     <p className="text-[10px] text-[rgba(6,3,43,0.40)]">
                       {multiFileResult.fileCount} file · {multiFileResult.rowCount} righe totali
                     </p>
@@ -811,17 +811,17 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                     <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-green-700 font-medium">
                       ✓ Matched: {multiFileResult.matchSummary.matched}
                     </span>
-                    <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[#8A5A00] font-medium">
+                    <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-kora-warning-text font-medium">
                       ≈ Possible: {multiFileResult.matchSummary.possibleMatch}
                     </span>
                     <span className="rounded border border-purple-200 bg-purple-50 px-2 py-0.5 text-purple-700 font-medium">
                       ? Review: {multiFileResult.matchSummary.needsReview}
                     </span>
-                    <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[rgba(6,3,43,0.62)] font-medium">
+                    <span className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-0.5 text-[rgba(6,3,43,0.62)] font-medium">
                       ✗ Unmatched: {multiFileResult.matchSummary.unmatched}
                     </span>
                   </div>
-                  <p className="text-[10px] text-[#C76F3D] font-medium">
+                  <p className="text-[10px] text-kora-accent font-medium">
                     ↓ Rivedi i match qui sotto prima di creare il batch.
                     I <strong>possible match</strong> e i match <strong>needs_review</strong> richiedono conferma esplicita — non vengono mergiati automaticamente.
                   </p>
@@ -838,7 +838,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               </div>
             )}
             {multiFileStatus === 'error' && multiFileResult && !multiFileResult.ok && (
-              <div className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-3 py-2 text-[10px] text-[#9E3B2F]">
+              <div className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-3 py-2 text-[10px] text-kora-critical">
                 ⚠ {multiFileResult.error ?? 'Errore nel multi-file preview.'}
               </div>
             )}
@@ -847,32 +847,32 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* B26: XLSX sheet selector — shown after workbook is read */}
         {fileType === 'xlsx' && xlsxSheetStatus === 'loaded' && xlsxSheetList?.ok && xlsxSheetList.sheets && (
-          <div className="rounded-lg border border-[#C76F3D]/25 bg-[#f5f4ff] px-4 py-3 space-y-3">
-            <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">
+          <div className="rounded-lg border border-kora-accent/25 bg-kora-accent/8 px-4 py-3 space-y-3">
+            <p className="text-[10px] font-bold text-kora-accent uppercase tracking-wide">
               Seleziona foglio — {xlsxSheetList.sheetCount} sheet trovati
             </p>
             <div className="space-y-2">
               {xlsxSheetList.sheets.map(s => (
-                <label key={s.sheetName} className={`flex items-start gap-3 p-2.5 rounded border cursor-pointer transition-colors ${selectedSheet === s.sheetName ? 'border-[#C76F3D] bg-[#F8F6F1]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]/60 hover:bg-[#F8F6F1]'}`}>
+                <label key={s.sheetName} className={`flex items-start gap-3 p-2.5 rounded border cursor-pointer transition-colors ${selectedSheet === s.sheetName ? 'border-kora-accent bg-kora-paper' : 'border-[rgba(6,3,43,0.08)] bg-kora-paper/60 hover:bg-kora-paper'}`}>
                   <input
                     type="radio"
                     name="sheetSelector"
                     value={s.sheetName}
                     checked={selectedSheet === s.sheetName}
                     onChange={() => { setSelectedSheet(s.sheetName); setCsvResult(null); setCsvStatus('idle'); setAcceptStatus('idle'); setAcceptResult(null); }}
-                    className="mt-0.5 h-3.5 w-3.5 text-[#C76F3D] focus:ring-[#C76F3D]"
+                    className="mt-0.5 h-3.5 w-3.5 text-kora-accent focus:ring-kora-accent"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">{s.sheetName}</span>
                       <span className="text-[10px] text-[rgba(6,3,43,0.40)]">{s.rowCount} righe · {s.headers.length} colonne</span>
-                      {s.errors.length > 0 && <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-1.5 py-0.5 text-[9px] font-bold text-[#9E3B2F]">Errore</span>}
+                      {s.errors.length > 0 && <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-1.5 py-0.5 text-[9px] font-bold text-kora-critical">Errore</span>}
                     </div>
                     {s.headers.length > 0 && (
                       <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5 font-mono truncate">{s.headers.slice(0, 6).join(' · ')}{s.headers.length > 6 ? ` +${s.headers.length - 6}` : ''}</p>
                     )}
                     {s.errors.length > 0 && (
-                      <p className="text-[10px] text-[#9E3B2F] mt-0.5">{s.errors[0].message}</p>
+                      <p className="text-[10px] text-kora-critical mt-0.5">{s.errors[0].message}</p>
                     )}
                   </div>
                 </label>
@@ -882,20 +882,20 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <button
                 onClick={handlePreviewXlsxSheet}
                 disabled={csvStatus === 'loading' || !isTenantSelected}
-                className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[rgba(6,3,43,0.88)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="rounded-lg bg-kora-ink text-white px-4 py-1.5 text-xs font-semibold hover:bg-[rgba(6,3,43,0.88)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {csvStatus === 'loading' ? '⏳ Previewing…' : `✓ Preview sheet "${selectedSheet}"`}
               </button>
             )}
             {!selectedSheet && (
-              <p className="text-[10px] text-[#8A5A00] font-medium">⚠ Seleziona un foglio per procedere.</p>
+              <p className="text-[10px] text-kora-warning-text font-medium">⚠ Seleziona un foglio per procedere.</p>
             )}
           </div>
         )}
 
         {/* B26: XLSX workbook load error */}
         {fileType === 'xlsx' && xlsxSheetStatus === 'error' && xlsxSheetList && !xlsxSheetList.ok && (
-          <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-[#9E3B2F]">
+          <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-kora-critical">
             ⚠ {xlsxSheetList.error ?? 'Errore nel leggere il workbook Excel.'}
           </div>
         )}
@@ -906,15 +906,15 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-bold text-green-700">✓ File validation passed</span>
               <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.10)] px-2 py-0.5 text-[10px] font-semibold text-green-700">PII: passed</span>
-              <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.62)]">{csvResult.rowCount} rows</span>
+              <span className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.62)]">{csvResult.rowCount} rows</span>
             </div>
             {csvResult.eligibilityPreview && (
               <div className="flex flex-wrap gap-2 text-[10px]">
-                <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[#F8F6F1] px-2 py-0.5 text-green-700 font-medium">Eligible: {csvResult.eligibilityPreview.eligible}</span>
-                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1] px-2 py-0.5 text-[#8A5A00] font-medium">Limited: {csvResult.eligibilityPreview.limited}</span>
-                <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[#F8F6F1] px-2 py-0.5 text-[#9E3B2F] font-medium">Blocked: {csvResult.eligibilityPreview.blocked}</span>
+                <span className="rounded border border-[rgba(47,125,85,0.22)] bg-kora-paper px-2 py-0.5 text-green-700 font-medium">Eligible: {csvResult.eligibilityPreview.eligible}</span>
+                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-kora-paper px-2 py-0.5 text-kora-warning-text font-medium">Limited: {csvResult.eligibilityPreview.limited}</span>
+                <span className="rounded border border-[rgba(158,59,47,0.22)] bg-kora-paper px-2 py-0.5 text-kora-critical font-medium">Blocked: {csvResult.eligibilityPreview.blocked}</span>
                 {csvResult.eligibilityPreview.reviewRequired > 0 && (
-                  <span className="rounded border border-purple-200 bg-[#F8F6F1] px-2 py-0.5 text-purple-700 font-medium">Review required: {csvResult.eligibilityPreview.reviewRequired}</span>
+                  <span className="rounded border border-purple-200 bg-kora-paper px-2 py-0.5 text-purple-700 font-medium">Review required: {csvResult.eligibilityPreview.reviewRequired}</span>
                 )}
               </div>
             )}
@@ -923,7 +923,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Sample rows (max 5)</p>
                 <div className="space-y-0.5">
                   {csvResult.sampleRows.map((row, i) => (
-                    <div key={i} className="text-[10px] font-mono text-[rgba(6,3,43,0.52)] bg-[#F8F6F1] border border-[rgba(6,3,43,0.05)] rounded px-2 py-1 truncate">
+                    <div key={i} className="text-[10px] font-mono text-[rgba(6,3,43,0.52)] bg-kora-paper border border-[rgba(6,3,43,0.05)] rounded px-2 py-1 truncate">
                       {Object.entries(row).slice(0, 6).map(([k, v]) => `${k}=${v}`).join(' · ')}
                     </div>
                   ))}
@@ -938,7 +938,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             {csvResult.warnings && csvResult.warnings.length > 0 && (
               <div className="space-y-0.5">
                 {csvResult.warnings.map((w, i) => (
-                  <p key={i} className="text-[10px] text-[#8A5A00]">⚠ {w}</p>
+                  <p key={i} className="text-[10px] text-kora-warning-text">⚠ {w}</p>
                 ))}
               </div>
             )}
@@ -951,9 +951,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         {/* B27 — Column Mapping Assistant */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' &&
           csvResult.mappingSuggestions && csvResult.mappingSuggestions.length > 0 && (
-          <div className="rounded-lg border border-[#C76F3D]/20 bg-[#F8F6F1] px-4 py-4 space-y-3">
+          <div className="rounded-lg border border-kora-accent/20 bg-kora-paper px-4 py-4 space-y-3">
             <div>
-              <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">Column Mapping Assistant</p>
+              <p className="text-[10px] font-bold text-kora-accent uppercase tracking-wide">Column Mapping Assistant</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">
                 KORA ha suggerito un mapping per le colonne del file. Verifica e modifica se necessario.
                 Colonne non mappate vengono mantenute con il nome originale.
@@ -964,10 +964,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               if (!coverage.looksOutdatedTemplate) return null;
               return (
                 <div className="rounded-lg border border-[rgba(217,154,43,0.30)] bg-[rgba(217,154,43,0.08)] px-3 py-2.5 space-y-1">
-                  <p className="text-[10px] font-bold text-[#8A5A00] uppercase tracking-wide">
+                  <p className="text-[10px] font-bold text-kora-warning-text uppercase tracking-wide">
                     ⚠ {coverage.unmatchedCount}/{coverage.total} colonne non riconosciute con sicurezza
                   </p>
-                  <p className="text-[10px] text-[#8A5A00] leading-relaxed">
+                  <p className="text-[10px] text-kora-warning-text leading-relaxed">
                     Questo file potrebbe usare un template più vecchio o semplificato rispetto allo schema canonico attuale.
                     Continua solo dopo aver rivisto il mapping riga per riga qui sotto — non accettare il batch finché
                     dry-run, mapping e controlli privacy non sono puliti. Questo sprint non modifica il template stesso:
@@ -988,13 +988,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <tbody>
                   {csvResult.mappingSuggestions.map((s, i) => {
                     const currentVal = userMapping[s.sourceHeader] ?? s.suggestedField ?? 'keep_original';
-                    const confColor = s.confidence >= 0.9 ? 'text-green-700' : s.confidence >= 0.7 ? 'text-[#8A5A00]' : 'text-[rgba(6,3,43,0.40)]';
+                    const confColor = s.confidence >= 0.9 ? 'text-green-700' : s.confidence >= 0.7 ? 'text-kora-warning-text' : 'text-[rgba(6,3,43,0.40)]';
                     const PILLAR_COLORS: Record<string, string> = {
                       LIFE: 'bg-blue-50 text-blue-700 border-blue-200',
                       GROWTH: 'bg-green-50 text-green-700 border-green-200',
                       CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
-                      IMPACT: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.28)]',
-                      LEGACY: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.28)]',
+                      IMPACT: 'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.28)]',
+                      LEGACY: 'bg-[rgba(199,111,61,0.08)] text-kora-accent border-[rgba(199,111,61,0.28)]',
                     };
                     return (
                       <tr key={i} className="border-b border-[rgba(6,3,43,0.05)] hover:bg-[rgba(6,3,43,0.03)]">
@@ -1003,7 +1003,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                           <select
                             value={currentVal}
                             onChange={e => setUserMapping(m => ({ ...m, [s.sourceHeader]: e.target.value }))}
-                            className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D] min-w-[160px]"
+                            className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent min-w-[160px]"
                           >
                             <option value="keep_original">— Mantieni originale —</option>
                             <option value="ignore">✕ Ignora colonna</option>
@@ -1034,7 +1034,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             </div>
             <button
               onClick={fileType === 'xlsx' ? handlePreviewXlsxSheet : handleValidateCsv}
-              className="rounded-lg bg-[#C76F3D] text-white px-3 py-1.5 text-[10px] font-semibold hover:bg-[#4d48d0] transition-colors"
+              className="rounded-lg bg-kora-accent text-white px-3 py-1.5 text-[10px] font-semibold hover:bg-kora-accent-hover transition-colors"
             >
               ↻ Applica mapping e ri-preview
             </button>
@@ -1055,23 +1055,23 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <p className="text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.62)]">Missing Fields</p>
             <div className="flex flex-wrap gap-2 text-[10px]">
               {csvResult.missingFieldSummary.blockingCount > 0 && (
-                <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[#F8F6F1] px-2 py-0.5 text-[#9E3B2F] font-medium">
+                <span className="rounded border border-[rgba(158,59,47,0.22)] bg-kora-paper px-2 py-0.5 text-kora-critical font-medium">
                   ⊗ Blocking: {csvResult.missingFieldSummary.blockingCount} righe
                 </span>
               )}
               {csvResult.missingFieldSummary.warningCount > 0 && (
-                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1] px-2 py-0.5 text-[#8A5A00] font-medium">
+                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-kora-paper px-2 py-0.5 text-kora-warning-text font-medium">
                   ⚠ Warning: {csvResult.missingFieldSummary.warningCount} righe
                 </span>
               )}
               {csvResult.missingFieldSummary.overallSeverity === 'ok' && (
-                <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[#F8F6F1] px-2 py-0.5 text-green-700 font-medium">✓ Campi chiave presenti</span>
+                <span className="rounded border border-[rgba(47,125,85,0.22)] bg-kora-paper px-2 py-0.5 text-green-700 font-medium">✓ Campi chiave presenti</span>
               )}
             </div>
             {Object.keys(csvResult.missingFieldSummary.missingByField).length > 0 && (
               <div className="flex flex-wrap gap-1 pt-1">
                 {Object.entries(csvResult.missingFieldSummary.missingByField).slice(0, 8).map(([f, n]) => (
-                  <span key={f} className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-[9px] font-mono text-[rgba(6,3,43,0.52)]">
+                  <span key={f} className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-1.5 py-0.5 text-[9px] font-mono text-[rgba(6,3,43,0.52)]">
                     {f}: {n}/{csvResult.missingFieldSummary!.totalRows}
                   </span>
                 ))}
@@ -1087,7 +1087,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* B27 — Manual Completion Light (batch-level defaults) */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
-          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-4 space-y-3">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-4 space-y-3">
             <div>
               <p className="text-[10px] font-bold text-[rgba(6,3,43,0.62)] uppercase tracking-wide">Manual Completion — Default Batch</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">
@@ -1100,12 +1100,12 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Fonte default</label>
                 <input value={manualSource} onChange={e => setManualSource(e.target.value)}
                   placeholder="es. provider_export, hr_declaration" aria-label="Fonte default"
-                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent" />
               </div>
               <div>
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Evidence level default</label>
                 <select value={manualEvidLevel} onChange={e => setManualEvidLevel(e.target.value)}
-                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent">
                   <option value="">— Non specificato —</option>
                   <option value="L0">L0 — Nessuna evidenza</option>
                   <option value="L1">L1 — Auto-dichiarato</option>
@@ -1116,7 +1116,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Budget class default</label>
                 <select value={manualBudgetClass} onChange={e => setManualBudgetClass(e.target.value)}
-                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent">
                   <option value="">— Non specificato —</option>
                   <option value="deep_activation">Deep Activation</option>
                   <option value="economic_relief">Economic Relief</option>
@@ -1127,13 +1127,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Provider default</label>
                 <input value={manualProvider} onChange={e => setManualProvider(e.target.value)}
                   placeholder="es. Welfare Provider S.p.A." aria-label="Provider default"
-                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent" />
               </div>
               <div>
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Periodo di default</label>
                 <input value={manualPeriod} onChange={e => setManualPeriod(e.target.value)}
                   placeholder="es. 2026-Q1"
-                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent" />
               </div>
             </div>
           </div>
@@ -1141,9 +1141,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* B11.3 — Financial metadata panel (shown after dry-run passed, before accept) */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
-          <div className="rounded-lg border border-[#C76F3D]/25 bg-[#f5f4ff] px-4 py-4 space-y-3">
+          <div className="rounded-lg border border-kora-accent/25 bg-kora-accent/8 px-4 py-4 space-y-3">
             <div>
-              <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">Metadati finanziari del batch</p>
+              <p className="text-[10px] font-bold text-kora-accent uppercase tracking-wide">Metadati finanziari del batch</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">
                 Questi metadati aiutano KORA a interpretare la qualità finanziaria del batch. Non sovrascrivono i dati riga-per-riga e non inventano importi mancanti.
               </p>
@@ -1153,14 +1153,14 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               {/* Valuta */}
               <div>
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Valuta</label>
-                <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-1.5 text-xs text-[rgba(6,3,43,0.52)] font-mono">EUR</div>
+                <div className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-1.5 text-xs text-[rgba(6,3,43,0.52)] font-mono">EUR</div>
               </div>
 
               {/* Fonte finanziaria */}
               <div>
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Fonte finanziaria prevalente</label>
                 <select value={finSourceType} onChange={e => setFinSourceType(e.target.value)}
-                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent">
                   <option value="unknown">Non specificata</option>
                   <option value="provider_export">Export fornitore welfare</option>
                   <option value="lms_export">Export piattaforma LMS</option>
@@ -1174,7 +1174,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Evidence level di default</label>
                 <select value={finEvidLevel} onChange={e => setFinEvidLevel(e.target.value)}
-                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent">
                   <option value="L0">L0 — Nessuna evidenza (default)</option>
                   <option value="L1">L1 — Auto-dichiarato / Spreadsheet</option>
                   <option value="L2">L2 — Documento interno</option>
@@ -1186,7 +1186,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Ambito budget</label>
                 <select value={finBudgetScope} onChange={e => setFinBudgetScope(e.target.value)}
-                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent">
                   <option value="unknown">Non specificato</option>
                   <option value="welfare">Welfare</option>
                   <option value="fringe_benefit">Fringe benefit</option>
@@ -1201,7 +1201,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Il file contiene importi?</label>
                 <select value={finContainsAmt} onChange={e => setFinContainsAmt(e.target.value)}
-                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent">
                   <option value="unknown">Non noto</option>
                   <option value="yes">Sì</option>
                   <option value="no">No</option>
@@ -1212,7 +1212,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Contiene benefit monetari / fringe / voucher?</label>
                 <select value={finEconRelief} onChange={e => setFinEconRelief(e.target.value)}
-                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent">
                   <option value="unknown">Non noto</option>
                   <option value="yes">Sì</option>
                   <option value="no">No</option>
@@ -1223,7 +1223,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Contiene spese compliance / HSE?</label>
                 <select value={finComplianceSpd} onChange={e => setFinComplianceSpd(e.target.value)}
-                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent">
                   <option value="unknown">Non noto</option>
                   <option value="yes">Sì</option>
                   <option value="no">No</option>
@@ -1235,13 +1235,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <div>
               <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
                 Note finanziarie interne
-                <span className="ml-1.5 rounded bg-[rgba(217,154,43,0.12)] text-[#8A5A00] px-1 py-0.5 text-[9px] font-bold">Solo locale — non salvato</span>
+                <span className="ml-1.5 rounded bg-[rgba(217,154,43,0.12)] text-kora-warning-text px-1 py-0.5 text-[9px] font-bold">Solo locale — non salvato</span>
               </label>
               <textarea
                 value={finNotes} onChange={e => setFinNotes(e.target.value)}
                 rows={2}
                 placeholder="Note operative interne (non vengono salvate nel sistema)"
-                className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2 text-xs text-[rgba(6,3,43,0.78)] placeholder-slate-300 focus:outline-none focus:ring-1 focus:ring-[#C76F3D] resize-none"
+                className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-2 text-xs text-[rgba(6,3,43,0.78)] placeholder-slate-300 focus:outline-none focus:ring-1 focus:ring-kora-accent resize-none"
               />
             </div>
           </div>
@@ -1249,7 +1249,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* B13 FASE 3 — Pseudonymization confirmation gate (shown after dry-run passed) */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
-          <div className="rounded-lg border border-[rgba(6,3,43,0.14)] bg-[#F8F6F1] px-4 py-4 space-y-3">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.14)] bg-kora-paper px-4 py-4 space-y-3">
             <div>
               <p className="text-[10px] font-bold text-[rgba(6,3,43,0.62)] uppercase tracking-wide">Conferma pseudonimizzazione</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">
@@ -1275,7 +1275,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <label key={i} className="flex items-start gap-2 cursor-pointer">
                   <input type="checkbox" checked={val} onChange={e => setter(e.target.checked)}
                     data-testid={`data-intake-pseudonymization-checkbox-${i}`}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-[rgba(6,3,43,0.14)] text-[#C76F3D] focus:ring-[#C76F3D]" />
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-[rgba(6,3,43,0.14)] text-kora-accent focus:ring-kora-accent" />
                   <span className="text-xs text-[rgba(6,3,43,0.78)]">{label}</span>
                 </label>
               ))}
@@ -1292,23 +1292,23 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               Solo file privi di PII / pseudonimizzati possono essere persistiti. Nessuno scoring viene eseguito in questo passaggio.
               Il server ripete tutti i controlli — il dry-run non viene mai considerato sufficiente da solo.
             </p>
-            <p className="text-[10px] text-[#9E3B2F]">
+            <p className="text-[10px] text-kora-critical">
               Se emergono PII inattesi o dati sensibili in questo passaggio, interrompi: non procedere, non tentare di correggere manualmente il file da qui — richiedi un file corretto all&apos;azienda.
             </p>
             {fileType === 'xlsx' && selectedSheet && (
-              <p className="text-[10px] text-[#C76F3D] font-medium">📋 Sheet selezionato: <strong>{selectedSheet}</strong></p>
+              <p className="text-[10px] text-kora-accent font-medium">📋 Sheet selezionato: <strong>{selectedSheet}</strong></p>
             )}
             {!isTenantSelected && (
-              <p className="text-[10px] text-[#9E3B2F] font-medium">⚠ Seleziona un&apos;azienda prima di procedere.</p>
+              <p className="text-[10px] text-kora-critical font-medium">⚠ Seleziona un&apos;azienda prima di procedere.</p>
             )}
             {!allPseudonymChecked && isTenantSelected && (
-              <p className="text-[10px] text-[#8A5A00] font-medium">⚠ Conferma tutte le dichiarazioni di pseudonimizzazione per procedere.</p>
+              <p className="text-[10px] text-kora-warning-text font-medium">⚠ Conferma tutte le dichiarazioni di pseudonimizzazione per procedere.</p>
             )}
             <button
               onClick={handleAcceptBatch}
               disabled={!isTenantSelected || !allPseudonymChecked || (fileType === 'xlsx' && !selectedSheet && additionalFiles.length === 0)}
               data-testid="data-intake-accept-batch-button"
-              className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="rounded-lg bg-kora-ink text-white px-4 py-1.5 text-xs font-semibold hover:bg-kora-ink-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               ↓ {additionalFiles.length > 0 ? `Create multi-file batch (${1 + additionalFiles.length} file)` : 'Create intake batch'}
             </button>
@@ -1327,16 +1327,16 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 px-4 py-3 space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-bold text-green-700">✓ Batch created</span>
-              <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[#F8F6F1] px-2 py-0.5 text-[10px] font-mono text-green-700">{acceptResult.batchId?.slice(0, 8)}…</span>
-              <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[10px] font-semibold text-[rgba(6,3,43,0.62)]">status: {acceptResult.batchStatus}</span>
+              <span className="rounded border border-[rgba(47,125,85,0.22)] bg-kora-paper px-2 py-0.5 text-[10px] font-mono text-green-700">{acceptResult.batchId?.slice(0, 8)}…</span>
+              <span className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-0.5 text-[10px] font-semibold text-[rgba(6,3,43,0.62)]">status: {acceptResult.batchStatus}</span>
               {acceptResult.fileType === 'xlsx' && acceptResult.selectedSheetName && (
-                <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-2 py-0.5 text-[10px] font-semibold text-[#C76F3D]">xlsx · {acceptResult.selectedSheetName}</span>
+                <span className="rounded border border-kora-accent/25 bg-kora-accent/8 px-2 py-0.5 text-[10px] font-semibold text-kora-accent">xlsx · {acceptResult.selectedSheetName}</span>
               )}
               {acceptResult.mappingApplied && (
-                <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[10px] text-[rgba(6,3,43,0.52)]">mapping applicato</span>
+                <span className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-0.5 text-[10px] text-[rgba(6,3,43,0.52)]">mapping applicato</span>
               )}
               {acceptResult.manualCompletionApplied && acceptResult.manualCompletionApplied.length > 0 && (
-                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] text-[#8A5A00]">manual: {acceptResult.manualCompletionApplied.join(', ')}</span>
+                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] text-kora-warning-text">manual: {acceptResult.manualCompletionApplied.join(', ')}</span>
               )}
               {acceptResult.matchReviewSummary && (acceptResult.matchReviewSummary.override_accepted ?? 0) > 0 && (
                 <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-[10px] text-green-700">match review applicato</span>
@@ -1344,10 +1344,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             </div>
             {acceptResult.eligibilitySummary && (
               <div className="flex flex-wrap gap-2 text-[10px]">
-                <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[#F8F6F1] px-2 py-0.5 text-green-700 font-medium">Eligible: {acceptResult.eligibilitySummary.eligible}</span>
-                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1] px-2 py-0.5 text-[#8A5A00] font-medium">Limited: {acceptResult.eligibilitySummary.limited}</span>
-                <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[#F8F6F1] px-2 py-0.5 text-[#9E3B2F] font-medium">Blocked: {acceptResult.eligibilitySummary.blocked}</span>
-                <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[rgba(6,3,43,0.62)] font-medium">Total: {acceptResult.rowCount}</span>
+                <span className="rounded border border-[rgba(47,125,85,0.22)] bg-kora-paper px-2 py-0.5 text-green-700 font-medium">Eligible: {acceptResult.eligibilitySummary.eligible}</span>
+                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-kora-paper px-2 py-0.5 text-kora-warning-text font-medium">Limited: {acceptResult.eligibilitySummary.limited}</span>
+                <span className="rounded border border-[rgba(158,59,47,0.22)] bg-kora-paper px-2 py-0.5 text-kora-critical font-medium">Blocked: {acceptResult.eligibilitySummary.blocked}</span>
+                <span className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-0.5 text-[rgba(6,3,43,0.62)] font-medium">Total: {acceptResult.rowCount}</span>
               </div>
             )}
             {/* B33: match review summary */}
@@ -1357,10 +1357,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                   <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-green-700">✓ Accepted: {acceptResult.matchReviewSummary.override_accepted}</span>
                 )}
                 {(acceptResult.matchReviewSummary.override_rejected ?? 0) > 0 && (
-                  <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-2 py-0.5 text-[#9E3B2F]">✗ Rejected: {acceptResult.matchReviewSummary.override_rejected}</span>
+                  <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-2 py-0.5 text-kora-critical">✗ Rejected: {acceptResult.matchReviewSummary.override_rejected}</span>
                 )}
                 {(acceptResult.matchReviewSummary.override_needs_review ?? 0) > 0 && (
-                  <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[#8A5A00]">? Needs review: {acceptResult.matchReviewSummary.override_needs_review}</span>
+                  <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-kora-warning-text">? Needs review: {acceptResult.matchReviewSummary.override_needs_review}</span>
                 )}
                 {(acceptResult.matchReviewSummary.default_merged ?? 0) > 0 && (
                   <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-[rgba(6,3,43,0.62)]">Default merged: {acceptResult.matchReviewSummary.default_merged}</span>
@@ -1378,7 +1378,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             {acceptResult.warnings && acceptResult.warnings.length > 0 && (
               <div className="space-y-0.5">
                 {acceptResult.warnings.map((w, i) => (
-                  <p key={i} className="text-[10px] text-[#8A5A00]">⚠ {w}</p>
+                  <p key={i} className="text-[10px] text-kora-warning-text">⚠ {w}</p>
                 ))}
               </div>
             )}
@@ -1394,7 +1394,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <a
                   href={`/admin/uef-review?batchId=${encodeURIComponent(acceptResult.batchId)}`}
                   data-testid="data-intake-goto-uef-review-link"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-kora-ink text-white px-4 py-2 text-xs font-semibold hover:bg-kora-ink-hover transition-colors"
                 >
                   → Genera candidati UEF
                 </a>
@@ -1406,24 +1406,24 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         {/* Accept: rejected (PII found on re-run) */}
         {acceptStatus === 'rejected' && acceptResult && !acceptResult.ok && (
           <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 space-y-2">
-            <p className="text-xs font-bold text-[#9E3B2F]">⚠ {acceptResult.error ?? 'Batch rejected during server-side re-validation.'}</p>
+            <p className="text-xs font-bold text-kora-critical">⚠ {acceptResult.error ?? 'Batch rejected during server-side re-validation.'}</p>
             {acceptResult.forbiddenHeaders && acceptResult.forbiddenHeaders.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                <span className="text-[10px] text-[#9E3B2F] font-medium">Forbidden headers:</span>
+                <span className="text-[10px] text-kora-critical font-medium">Forbidden headers:</span>
                 {acceptResult.forbiddenHeaders.map(h => (
-                  <span key={h} className="rounded border border-[rgba(158,59,47,0.22)] bg-[#F8F6F1] px-1.5 py-0.5 text-[10px] font-mono text-[#9E3B2F]">{h}</span>
+                  <span key={h} className="rounded border border-[rgba(158,59,47,0.22)] bg-kora-paper px-1.5 py-0.5 text-[10px] font-mono text-kora-critical">{h}</span>
                 ))}
               </div>
             )}
             {acceptResult.findings && acceptResult.findings.length > 0 && (
               <div>
-                <p className="text-[10px] font-semibold text-[#9E3B2F] mb-1">PII findings (field paths only — no values):</p>
+                <p className="text-[10px] font-semibold text-kora-critical mb-1">PII findings (field paths only — no values):</p>
                 {acceptResult.findings.slice(0, 8).map((f, i) => (
-                  <p key={i} className="text-[10px] font-mono text-[#9E3B2F]">Row {f.rowIndex} · {f.fieldPath} · {f.riskType} · {f.severity}</p>
+                  <p key={i} className="text-[10px] font-mono text-kora-critical">Row {f.rowIndex} · {f.fieldPath} · {f.riskType} · {f.severity}</p>
                 ))}
               </div>
             )}
-            <p className="text-[10px] text-[#9E3B2F] border-t border-red-100 pt-1">
+            <p className="text-[10px] text-kora-critical border-t border-red-100 pt-1">
               {acceptResult.note ?? 'No data has been stored.'}
             </p>
           </div>
@@ -1431,7 +1431,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* Accept: error */}
         {acceptStatus === 'error' && acceptResult && (
-          <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-[#9E3B2F]">
+          <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-kora-critical">
             ⚠ {acceptResult.error ?? 'Unknown error during batch creation.'}
           </div>
         )}
@@ -1439,21 +1439,21 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         {/* Result: rejected */}
         {csvStatus === 'rejected' && csvResult && !csvResult.ok && (
           <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 space-y-2">
-            <p className="text-xs font-bold text-[#9E3B2F]">⚠ {csvResult.error ?? 'Batch rejected.'}</p>
+            <p className="text-xs font-bold text-kora-critical">⚠ {csvResult.error ?? 'Batch rejected.'}</p>
             {csvResult.forbiddenHeaders && csvResult.forbiddenHeaders.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                <span className="text-[10px] text-[#9E3B2F] font-medium">Forbidden headers:</span>
+                <span className="text-[10px] text-kora-critical font-medium">Forbidden headers:</span>
                 {csvResult.forbiddenHeaders.map(h => (
-                  <span key={h} className="rounded border border-[rgba(158,59,47,0.22)] bg-[#F8F6F1] px-1.5 py-0.5 text-[10px] font-mono text-[#9E3B2F]">{h}</span>
+                  <span key={h} className="rounded border border-[rgba(158,59,47,0.22)] bg-kora-paper px-1.5 py-0.5 text-[10px] font-mono text-kora-critical">{h}</span>
                 ))}
               </div>
             )}
             {csvResult.findings && csvResult.findings.length > 0 && (
               <div>
-                <p className="text-[10px] font-semibold text-[#9E3B2F] mb-1">PII findings (field paths only — no values shown):</p>
+                <p className="text-[10px] font-semibold text-kora-critical mb-1">PII findings (field paths only — no values shown):</p>
                 <div className="space-y-0.5">
                   {csvResult.findings.slice(0, 10).map((f, i) => (
-                    <p key={i} className="text-[10px] font-mono text-[#9E3B2F]">
+                    <p key={i} className="text-[10px] font-mono text-kora-critical">
                       Row {f.rowIndex} · {f.fieldPath} · {f.riskType} · {f.severity}
                     </p>
                   ))}
@@ -1463,7 +1463,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 </div>
               </div>
             )}
-            <p className="text-[10px] text-[#9E3B2F] border-t border-red-100 pt-2">
+            <p className="text-[10px] text-kora-critical border-t border-red-100 pt-2">
               {csvResult.note ?? 'No data has been stored. Remove direct personal identifiers and re-submit.'}
             </p>
           </div>
@@ -1471,14 +1471,14 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* Result: error */}
         {csvStatus === 'error' && csvResult && (
-          <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-[#9E3B2F]">
+          <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-kora-critical">
             ⚠ {csvResult.error ?? 'Unknown error during validation.'}
           </div>
         )}
       </div>
 
       {/* ── B9. TENANT SELECTOR ── */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 flex flex-wrap items-end gap-4">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-4 py-3 flex flex-wrap items-end gap-4">
         <div>
           <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Azienda</p>
           {tenantList.length > 0 ? (
@@ -1509,13 +1509,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           )}
           {/* B13: OP-001 synthetic warning */}
           {isOp001 && (
-            <span className="rounded border border-amber-300 bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A00]">
+            <span className="rounded border border-amber-300 bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-kora-warning-text">
               Synthetic demo tenant — non usare per dati reali.
             </span>
           )}
           {/* B13: no tenant selected alert */}
           {!isTenantSelected && (
-            <p className="text-[10px] text-[#9E3B2F] font-medium">
+            <p className="text-[10px] text-kora-critical font-medium">
               Seleziona un&apos;azienda prima di caricare dati. OP-001 è riservato alla demo synthetic.
             </p>
           )}
@@ -1530,7 +1530,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           />
         </div>
         <a href="/admin/tenants"
-          className="text-[10px] text-[#C76F3D] underline underline-offset-2 hover:text-[#4a41d4] pb-1.5">
+          className="text-[10px] text-kora-accent underline underline-offset-2 hover:text-kora-accent-hover pb-1.5">
           + Crea azienda
         </a>
         {/* B103: Golden Path hint */}
@@ -1544,7 +1544,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       </div>
 
       {/* ── B. FLOW TIMELINE ── */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-5 py-4">
         <p className="text-xs font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wider mb-3">Data Intake Flow</p>
         <div className="flex items-start gap-0 overflow-x-auto pb-1">
           {FLOW_PHASES.map((ph, i) => {
@@ -1573,7 +1573,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         </div>
       )}
       {loadErr && (
-        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-5 py-3 text-sm text-[#9E3B2F]">⚠ {loadErr}</div>
+        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-5 py-3 text-sm text-kora-critical">⚠ {loadErr}</div>
       )}
 
       {preview && <>
@@ -1614,9 +1614,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <KPICard label="Findings" value={String(preview.piiGuard.totalFindings)} />
             <KPICard label="Status" value={preview.piiGuard.status === 'passed' ? '✓ Passed' : '⚠ Review'} ok={preview.piiGuard.status === 'passed'} />
           </div>
-          <div className="rounded bg-[#f5f4ff] border border-[#c7c4f8] px-4 py-2.5 text-xs text-[#3d3a6a]">
+          <div className="rounded bg-kora-accent/8 border border-kora-accent/25 px-4 py-2.5 text-xs text-kora-ink-secondary">
             <strong>PII Guard</strong> è un livello di sicurezza tecnico, non un sostituto per la pseudonimizzazione all&apos;origine, il DPA o le clausole contrattuali.
-            Sostituisce i valori PII rilevati con <code className="bg-[#F8F6F1]/60 px-1 rounded">[REDACTED_PII:TYPE]</code> — nessun valore viene mai salvato in audit o response.
+            Sostituisce i valori PII rilevati con <code className="bg-kora-paper/60 px-1 rounded">[REDACTED_PII:TYPE]</code> — nessun valore viene mai salvato in audit o response.
           </div>
         </Section>
 
@@ -1654,7 +1654,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wider mb-1.5">Distribuzione categorie</p>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(preview.uefPreview.categoryDistribution).map(([cat, n]) => (
-                <span key={cat} className="rounded border border-[#C76F3D]/30 bg-[#f5f4ff] px-2 py-0.5 text-xs text-[#4d48d0] font-medium">
+                <span key={cat} className="rounded border border-kora-accent/30 bg-kora-accent/8 px-2 py-0.5 text-xs text-kora-accent font-medium">
                   {cat}: {n}
                 </span>
               ))}
@@ -1691,7 +1691,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         </Section>
 
         {/* ── G. ACTIONS ── */}
-        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-5 py-4">
           <p className="text-xs font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wider mb-1">Actions</p>
           <p className="text-[10px] text-[rgba(6,3,43,0.40)] mb-3">
             {isOp001
@@ -1700,7 +1700,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           </p>
           <div className="flex flex-wrap gap-2.5">
             <button onClick={handleRun} disabled={isOp}
-              className="bg-[#06032B] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#1a1756] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              className="bg-kora-ink text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-kora-ink-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
               {opStatus === 'running' ? '⏳ Esecuzione…' : '▶ Run operator flow'}
             </button>
             <button onClick={handleRead} disabled={isOp}
@@ -1709,17 +1709,17 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             </button>
             <a href={`/api/admin/decision-pack/preview?tenantCode=${TENANT}&reportingPeriod=${PERIOD}`}
               target="_blank" rel="noopener noreferrer"
-              className="border border-[#C76F3D] text-[#C76F3D] rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#f5f4ff] transition-colors">
+              className="border border-kora-accent text-kora-accent rounded-lg px-4 py-2 text-sm font-medium hover:bg-kora-accent/8 transition-colors">
               ↗ Decision Pack Preview
             </a>
             <a href={`/api/admin/decision-pack/pdf?tenantCode=${TENANT}&reportingPeriod=${PERIOD}`}
               download={`kora-decision-pack-${TENANT}-${PERIOD}.pdf`}
-              className="bg-[#C76F3D] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#4d48d0] transition-colors">
+              className="bg-kora-accent text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-kora-accent-hover transition-colors">
               ↓ Download Decision Pack PDF
             </a>
           </div>
           {opStatus === 'error' && opErr && (
-            <div className="mt-2 rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-3 py-2 text-xs text-[#9E3B2F]">⚠ {opErr}</div>
+            <div className="mt-2 rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-3 py-2 text-xs text-kora-critical">⚠ {opErr}</div>
           )}
         </div>
 
@@ -1727,7 +1727,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         {snapshot && (
           <Section title="Result Snapshot" sub={`${TENANT} · ${PERIOD} · dati live persistiti`}>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 mb-3">
-              <div className="col-span-2 sm:col-span-1 rounded-lg bg-[#06032B] px-5 py-4">
+              <div className="col-span-2 sm:col-span-1 rounded-lg bg-kora-ink px-5 py-4">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">KORA Index</p>
                 <p className="text-4xl font-bold text-white tracking-tight leading-none">{fmt(snapshot.ki)}</p>
                 <p className="text-[10px] text-white/30 mt-2 font-mono">pre_empirical_calibration</p>
@@ -1758,7 +1758,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               'CSV + XLSX (.xlsx)', 'Sheet selection required for XLSX',
               'No scoring recalculation', 'Gate 3B required before real data',
             ].map(n => (
-              <span key={n} className="text-[10px] border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] rounded px-2 py-0.5 text-[rgba(6,3,43,0.52)] font-medium">{n}</span>
+              <span key={n} className="text-[10px] border border-[rgba(6,3,43,0.08)] bg-kora-paper rounded px-2 py-0.5 text-[rgba(6,3,43,0.52)] font-medium">{n}</span>
             ))}
           </div>
         </div>
@@ -1773,9 +1773,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
 function Section({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4 space-y-3">
+    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-5 py-4 space-y-3">
       <div className="flex items-center gap-2.5">
-        <div className="w-0.5 h-4 bg-[#C76F3D] rounded-full flex-shrink-0" />
+        <div className="w-0.5 h-4 bg-kora-accent rounded-full flex-shrink-0" />
         <div>
           <p className="text-xs font-bold text-[rgba(6,3,43,0.78)] uppercase tracking-wide leading-none">{title}</p>
           {sub && <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">{sub}</p>}
@@ -1789,9 +1789,9 @@ function Section({ title, sub, children }: { title: string; sub?: string; childr
 function KPICard({ label, value, ok, warn, accent, raw, children }: {
   label: string; value?: string; ok?: boolean; warn?: boolean; accent?: boolean; raw?: boolean; children?: React.ReactNode;
 }) {
-  const valColor = ok ? 'text-green-700' : warn ? 'text-[#8A5A00]' : accent ? 'text-[#C76F3D]' : 'text-[#06032B]';
+  const valColor = ok ? 'text-green-700' : warn ? 'text-kora-warning-text' : accent ? 'text-kora-accent' : 'text-kora-ink';
   return (
-    <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[#fafafa] px-3 py-2.5">
+    <div className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-2.5">
       <p className="text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-1">{label}</p>
       {!raw && value && <p className={`text-base font-bold ${valColor} leading-tight`}>{value}</p>}
       {children}

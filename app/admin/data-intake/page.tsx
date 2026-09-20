@@ -17,7 +17,7 @@ export default async function DataIntakePage() {
   if (isKoraAuthError(auth)) {
     const is403 = auth.status === 403;
     return (
-      <div className="max-w-md mx-auto mt-16 p-8 border border-[rgba(6,3,43,0.08)] rounded-xl bg-[#F8F6F1] shadow-sm text-center space-y-4">
+      <div className="max-w-md mx-auto mt-16 p-8 border border-[rgba(6,3,43,0.08)] rounded-xl bg-kora-paper shadow-sm text-center space-y-4">
         <h1 className="text-lg font-semibold text-[rgba(6,3,43,0.90)]">
           {is403 ? 'Accesso non autorizzato' : 'Sessione non trovata'}
         </h1>
@@ -28,7 +28,7 @@ export default async function DataIntakePage() {
         </p>
         <Link
           href="/admin/login"
-          className="inline-block mt-2 bg-[#06032B] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[rgba(6,3,43,0.88)] transition-colors"
+          className="inline-block mt-2 bg-kora-ink text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[rgba(6,3,43,0.88)] transition-colors"
         >
           Vai al login KORA Admin
         </Link>

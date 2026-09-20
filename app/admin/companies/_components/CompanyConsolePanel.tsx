@@ -106,20 +106,20 @@ const LIFECYCLE_LABEL: Record<TenantLifecycleStatus, string> = {
 
 const LIFECYCLE_CLS: Record<TenantLifecycleStatus, string> = {
   suspended:              'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.14)]',
-  no_users:               'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]',
-  workspace_ready:        'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  data_pending:           'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
-  review_in_progress:     'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  enrichment_needed:      'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
-  scoring_available:      'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]',
-  scored:                 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  decision_pack_available:'bg-green-50 text-[#2F7D55] border-green-300',
+  no_users:               'bg-[rgba(158,59,47,0.06)] text-kora-critical border-[rgba(158,59,47,0.20)]',
+  workspace_ready:        'bg-[rgba(43,92,230,0.08)] text-kora-info-text border-[rgba(43,92,230,0.20)]',
+  data_pending:           'bg-[rgba(199,111,61,0.08)] text-kora-accent border-[rgba(199,111,61,0.22)]',
+  review_in_progress:     'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]',
+  enrichment_needed:      'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.22)]',
+  scoring_available:      'bg-[rgba(107,122,146,0.10)] text-kora-ink-secondary border-[rgba(107,122,146,0.22)]',
+  scored:                 'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]',
+  decision_pack_available:'bg-green-50 text-kora-success border-green-300',
 };
 
 const SAFEGUARD_CLS: Record<string, string> = {
   CLEAR:   'text-green-700 bg-green-50 border-[rgba(47,125,85,0.22)]',
-  WARNING: 'text-[#8A5A00] bg-[rgba(217,154,43,0.08)] border-[rgba(217,154,43,0.25)]',
-  FLAGGED: 'text-[#9E3B2F] bg-[rgba(158,59,47,0.06)] border-[rgba(158,59,47,0.22)]',
+  WARNING: 'text-kora-warning-text bg-[rgba(217,154,43,0.08)] border-[rgba(217,154,43,0.25)]',
+  FLAGGED: 'text-kora-critical bg-[rgba(158,59,47,0.06)] border-[rgba(158,59,47,0.22)]',
 };
 
 const DP_STATUS_LABEL: Record<string, string> = {
@@ -130,7 +130,7 @@ const DP_STATUS_LABEL: Record<string, string> = {
 };
 
 const DP_CLS: Record<string, string> = {
-  draft:    'text-[#8A5A00] bg-[rgba(217,154,43,0.08)] border-[rgba(217,154,43,0.25)]',
+  draft:    'text-kora-warning-text bg-[rgba(217,154,43,0.08)] border-[rgba(217,154,43,0.25)]',
   ready:    'text-blue-700 bg-blue-50 border-blue-200',
   exported: 'text-green-700 bg-green-50 border-[rgba(47,125,85,0.22)]',
   archived: 'text-[rgba(6,3,43,0.52)] bg-[rgba(6,3,43,0.03)] border-[rgba(6,3,43,0.08)]',
@@ -203,9 +203,9 @@ export function CompanyConsolePanel({ userEmail }: Props) {
     <div className="max-w-[1100px] mx-auto py-6 px-3 space-y-5">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between gap-4 flex-wrap">
+      <div className="rounded-xl bg-kora-ink px-6 py-5 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">
+          <p className="text-xs font-semibold tracking-widest uppercase text-kora-accent mb-1">
             KORA Admin · Company Console
           </p>
           <h1 className="text-xl font-bold text-white tracking-tight">Live Tenant Registry</h1>
@@ -217,24 +217,24 @@ export function CompanyConsolePanel({ userEmail }: Props) {
           <BoundaryBadge mode="LIVE" variant="dark" />
           <Link
             href="/admin/companies/new"
-            className="rounded-lg bg-[#C76F3D] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4f44e0] transition-colors whitespace-nowrap"
+            className="rounded-lg bg-kora-accent text-white px-4 py-2 text-xs font-semibold hover:bg-kora-accent-hover transition-colors whitespace-nowrap"
           >
             + Crea Azienda Live
           </Link>
           <div className="flex flex-col items-end gap-1">
-            <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">KORA_ADMIN</span>
+            <span className="rounded border border-kora-accent/60 bg-kora-accent/15 px-2 py-0.5 text-xs font-semibold text-white">KORA_ADMIN</span>
             <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           </div>
           <div className="flex gap-1 flex-wrap justify-end">
             {['No PII', 'No Worker Data'].map(m => (
-              <span key={m} className="rounded border border-white/15 bg-[#F8F6F1]/5 px-1.5 py-0.5 text-[9px] text-white/40 font-semibold uppercase">{m}</span>
+              <span key={m} className="rounded border border-white/15 bg-kora-paper/5 px-1.5 py-0.5 text-[9px] text-white/40 font-semibold uppercase">{m}</span>
             ))}
           </div>
         </div>
       </div>
 
       {/* ── Caveat ─────────────────────────────────────────────────────────── */}
-      <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2 text-[10.5px] text-[#8A5A00]">
+      <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2 text-[10.5px] text-kora-warning-text">
         Live Company Registry — solo aziende ufficiali (tenant_kind = LIVE). Tenant demo/test non inclusi. ·
         Lifecycle status is pilot-derived from available KORA Admin data. · Confidence Score è esterno al KORA Index. · Foundation Light = pre_empirical_calibration.
       </div>
@@ -246,7 +246,7 @@ export function CompanyConsolePanel({ userEmail }: Props) {
         </div>
       )}
       {error && (
-        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-[#9E3B2F]">⚠ {error}</div>
+        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-kora-critical">⚠ {error}</div>
       )}
 
       {data && !loading && (
@@ -258,10 +258,10 @@ export function CompanyConsolePanel({ userEmail }: Props) {
               { label: 'Attivi',              value: String(data.summary.active),           cls: 'text-green-700' },
               { label: 'Sospesi',             value: String(data.summary.suspended),        cls: data.summary.suspended > 0 ? 'text-[rgba(6,3,43,0.52)]' : undefined },
               { label: 'Scored',              value: String(data.summary.scored),           cls: 'text-violet-700' },
-              { label: 'Decision Pack ready', value: String(data.summary.decisionPackReady), cls: 'text-[#2F7D55]' },
-              { label: 'Needs action',        value: String(data.summary.needsAction),      cls: data.summary.needsAction > 0 ? 'text-[#8A5A00]' : undefined },
+              { label: 'Decision Pack ready', value: String(data.summary.decisionPackReady), cls: 'text-kora-success' },
+              { label: 'Needs action',        value: String(data.summary.needsAction),      cls: data.summary.needsAction > 0 ? 'text-kora-warning-text' : undefined },
             ].map(({ label, value, cls }) => (
-              <div key={label} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2.5 text-center">
+              <div key={label} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-2.5 text-center">
                 <p className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{label}</p>
                 <p className={`text-xl font-bold text-[rgba(6,3,43,0.90)] mt-0.5 ${cls ?? ''}`}>{value}</p>
               </div>
@@ -323,7 +323,7 @@ export function CompanyConsolePanel({ userEmail }: Props) {
 
           {/* ── Empty state ─────────────────────────────────────────────────── */}
           {data.tenants.length === 0 && (
-            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-10 text-center space-y-3">
+            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper px-6 py-10 text-center space-y-3">
               <p className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">
                 No live company tenant has been provisioned yet.
               </p>
@@ -332,7 +332,7 @@ export function CompanyConsolePanel({ userEmail }: Props) {
               </p>
               <div className="flex gap-3 justify-center pt-2 flex-wrap">
                 <Link href="/admin/companies/new"
-                  className="rounded-lg bg-[#C76F3D] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4f44e0] transition-colors">
+                  className="rounded-lg bg-kora-accent text-white px-4 py-2 text-xs font-semibold hover:bg-kora-accent-hover transition-colors">
                   + Crea Azienda Live
                 </Link>
                 <Link href="/admin/tenants"
@@ -355,7 +355,7 @@ export function CompanyConsolePanel({ userEmail }: Props) {
 
           {/* ── Tenant table ─────────────────────────────────────────────────── */}
           {filtered.length > 0 && (
-            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-[11px]">
                   <thead>
@@ -409,10 +409,10 @@ function TenantRow({ tenant: t }: { tenant: ConsoleTenant }) {
         <div className="flex gap-1 mt-1 flex-wrap">
           <Badge
             label={t.tenantStatus === 'active' ? 'ACTIVE' : 'SUSPENDED'}
-            cls={t.tenantStatus === 'active' ? 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' : 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.14)]'}
+            cls={t.tenantStatus === 'active' ? 'bg-[rgba(47,125,85,0.08)] text-kora-success border-[rgba(47,125,85,0.22)]' : 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.14)]'}
           />
           {t.warningFlags.length > 0 && (
-            <Badge label={`${t.warningFlags.length} warn`} cls="bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]" />
+            <Badge label={`${t.warningFlags.length} warn`} cls="bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.25)]" />
           )}
         </div>
       </td>
@@ -462,7 +462,7 @@ function TenantRow({ tenant: t }: { tenant: ConsoleTenant }) {
         {t.latestKoraIndex ? (
           <div className="space-y-1">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-bold text-[#06032B]">{t.latestKoraIndex.value}</span>
+              <span className="text-lg font-bold text-kora-ink">{t.latestKoraIndex.value}</span>
               <span className="text-[9px] text-[rgba(6,3,43,0.40)]">/100</span>
             </div>
             {/* Confidence Score visually separated from KORA Index (per doc 21b) */}
@@ -489,16 +489,16 @@ function TenantRow({ tenant: t }: { tenant: ConsoleTenant }) {
           <div className="space-y-0.5 text-[10px]">
             <p className="text-[rgba(6,3,43,0.62)]">{t.submissions.total} totali</p>
             {t.submissions.pending > 0 && (
-              <p className="text-[#D99A2B]">⏳ {t.submissions.pending} in attesa</p>
+              <p className="text-kora-warning">⏳ {t.submissions.pending} in attesa</p>
             )}
             {t.submissions.needsClarification > 0 && (
-              <p className="text-[#D99A2B]">⚠ {t.submissions.needsClarification} chiarimento</p>
+              <p className="text-kora-warning">⚠ {t.submissions.needsClarification} chiarimento</p>
             )}
             {t.submissions.accepted > 0 && (
               <p className="text-green-600">✓ {t.submissions.accepted} accettate</p>
             )}
             {t.quickActions.submissions && (
-              <Link href={t.quickActions.submissions} className="text-[#C76F3D] hover:underline text-[9px]">
+              <Link href={t.quickActions.submissions} className="text-kora-accent hover:underline text-[9px]">
                 Vedi →
               </Link>
             )}
@@ -528,7 +528,7 @@ function TenantRow({ tenant: t }: { tenant: ConsoleTenant }) {
         <div className="flex flex-col gap-1">
           <Link
             href={t.quickActions.viewWorkspace}
-            className="text-[10px] text-[#C76F3D] hover:underline font-medium"
+            className="text-[10px] text-kora-accent hover:underline font-medium"
           >
             Workspace →
           </Link>
@@ -561,7 +561,7 @@ function TenantRow({ tenant: t }: { tenant: ConsoleTenant }) {
           {t.quickActions.uefReview && (
             <Link
               href={t.quickActions.uefReview}
-              className="text-[10px] text-[#D99A2B] hover:underline font-medium"
+              className="text-[10px] text-kora-warning hover:underline font-medium"
             >
               ⏳ UEF Review
             </Link>

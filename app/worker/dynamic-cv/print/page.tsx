@@ -108,7 +108,7 @@ export default async function DynamicCVPrintPage() {
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
           *, *::before, *::after { box-sizing: border-box; }
-          body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #fff; color: #06032B; }
+          body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #fff; color: ${TOKENS.ink}; }
           @media print {
             .no-print { display: none !important; }
             body { padding: 0; }
@@ -139,7 +139,7 @@ export default async function DynamicCVPrintPage() {
           </div>
 
           {/* Hero */}
-          <div style={{ borderBottom: '2px solid #06032B', paddingBottom: 20, marginBottom: 24 }}>
+          <div style={{ borderBottom: `2px solid ${TOKENS.ink}`, paddingBottom: 20, marginBottom: 24 }}>
             <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.40)', margin: '0 0 6px' }}>
               Dynamic Impact CV &middot; KORA Foundation Light
             </p>
@@ -176,10 +176,10 @@ export default async function DynamicCVPrintPage() {
                       textAlign:    'center',
                     }}
                   >
-                    <p style={{ fontSize: 7, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta?.color ?? '#06032B', margin: '0 0 4px' }}>
+                    <p style={{ fontSize: 7, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta?.color ?? TOKENS.ink, margin: '0 0 4px' }}>
                       {p}
                     </p>
-                    <p style={{ fontSize: '1.25rem', fontWeight: 900, color: meta?.color ?? '#06032B', margin: 0 }}>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 900, color: meta?.color ?? TOKENS.ink, margin: 0 }}>
                       {count}
                     </p>
                   </div>
@@ -207,7 +207,7 @@ export default async function DynamicCVPrintPage() {
                     const meta = PILLAR_META[exp.pillar];
                     return (
                       <tr key={i} style={{ borderBottom: '1px solid rgba(6,3,43,0.05)' }}>
-                        <td style={{ fontSize: 10, fontWeight: 700, color: meta?.color ?? '#06032B', padding: '7px 8px 7px 0', whiteSpace: 'nowrap' }}>{exp.pillar}</td>
+                        <td style={{ fontSize: 10, fontWeight: 700, color: meta?.color ?? TOKENS.ink, padding: '7px 8px 7px 0', whiteSpace: 'nowrap' }}>{exp.pillar}</td>
                         <td style={{ fontSize: 12, color: TOKENS.ink, padding: '7px 8px 7px 0' }}>{exp.title}</td>
                         <td style={{ fontSize: 10, color: 'rgba(6,3,43,0.55)', padding: '7px 8px 7px 0', whiteSpace: 'nowrap' }}>{exp.statusLabel}</td>
                         <td style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', padding: '7px 0', whiteSpace: 'nowrap' }}>{exp.date}</td>

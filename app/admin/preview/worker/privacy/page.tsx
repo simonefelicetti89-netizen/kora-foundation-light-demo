@@ -12,7 +12,7 @@
 
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { redirect } from 'next/navigation';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata = { title: 'Admin Preview — Privacy & Condivisione · KORA' };
 
@@ -57,7 +57,7 @@ export default async function AdminPreviewWorkerPrivacyPage() {
       >
         <span style={{ fontSize: 16, lineHeight: 1 }}>&#9888;&#65039;</span>
         <div>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#8B4513', margin: '0 0 4px' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: BADGE_TOKENS.limited.text, margin: '0 0 4px' }}>
             KORA Admin Preview — esempio sintetico, non impostazioni reali di un worker.
           </p>
           <p style={{ fontSize: 11, color: 'rgba(139,69,19,0.80)', margin: 0, lineHeight: 1.6 }}>
@@ -91,7 +91,7 @@ export default async function AdminPreviewWorkerPrivacyPage() {
           marginBottom: 20,
         }}
       >
-        <p style={{ fontSize: 13, fontWeight: 700, color: '#1a4731', margin: '0 0 4px' }}>
+        <p style={{ fontSize: 13, fontWeight: 700, color: BADGE_TOKENS.eligible.text, margin: '0 0 4px' }}>
           &#128274; Il tuo datore di lavoro non vede questi dati.
         </p>
         <p style={{ fontSize: 11, color: 'rgba(26,71,49,0.80)', margin: 0, lineHeight: 1.6 }}>

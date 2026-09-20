@@ -136,7 +136,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           <div className="flex items-start gap-3">
             <span className="text-green-600 text-lg font-bold mt-0.5">✓</span>
             <div>
-              <p className="text-base font-bold text-[#2F7D55]">Azienda live creata</p>
+              <p className="text-base font-bold text-kora-success">Azienda live creata</p>
               <p className="text-sm text-green-600 mt-0.5">
                 {result.companyName} ({result.tenantCode})
               </p>
@@ -150,7 +150,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
               ['Ruolo',             result.adminRole ?? 'COMPANY_ADMIN'],
               ['Baseline workforce', result.baselineCreated ? '✓ Creato' : '— Non creato'],
             ].map(([label, val]) => (
-              <div key={label} className="rounded border border-[rgba(47,125,85,0.22)] bg-[#F8F6F1] px-3 py-2">
+              <div key={label} className="rounded border border-[rgba(47,125,85,0.22)] bg-kora-paper px-3 py-2">
                 <p className="text-[9px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-0.5">{label}</p>
                 <p className="text-[rgba(6,3,43,0.78)] font-semibold">{val}</p>
               </div>
@@ -163,7 +163,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
               ? 'border-blue-200 bg-blue-50 text-blue-700'
               : result.inviteStatus === 'user_existed'
               ? 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]'
-              : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]'
+              : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-kora-warning-text'
           }`}>
             <span className="font-semibold">
               {result.inviteStatus === 'sent' ? '✉ Invito inviato' :
@@ -179,7 +179,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           {result.warnings && result.warnings.length > 0 && (
             <div className="space-y-1">
               {result.warnings.map((w, i) => (
-                <div key={i} className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-[#8A5A00]">
+                <div key={i} className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-kora-warning-text">
                   ⚠ {w}
                 </div>
               ))}
@@ -195,7 +195,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
 
           {/* Baseline missing — recovery note */}
           {!result.baselineCreated && (
-            <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2.5 text-[10.5px] text-[#8A5A00]">
+            <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2.5 text-[10.5px] text-kora-warning-text">
               <span className="font-semibold">Azione richiesta: </span>
               La baseline forza lavoro non è stata creata. Imposta la baseline nello Spazio Azienda prima di caricare dati.
             </div>
@@ -207,7 +207,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
               <p className="text-[9px] font-bold uppercase tracking-widest text-green-700">Passo successivo obbligatorio</p>
               <Link
                 href={result.links.manageUsers}
-                className="flex items-center justify-between rounded-lg bg-[#06032B] text-white px-4 py-2.5 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
+                className="flex items-center justify-between rounded-lg bg-kora-ink text-white px-4 py-2.5 text-xs font-semibold hover:bg-kora-ink-hover transition-colors"
               >
                 <span>Assegna utente aziendale</span>
                 <span>→</span>
@@ -246,10 +246,10 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
       <div className="max-w-2xl mx-auto py-6 px-3 space-y-5">
         <div className="rounded-xl border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-6 py-5 space-y-4">
           <div className="flex items-start gap-3">
-            <span className="text-[#D99A2B] text-lg font-bold mt-0.5">⚠</span>
+            <span className="text-kora-warning text-lg font-bold mt-0.5">⚠</span>
             <div>
-              <p className="text-base font-bold text-[#8A5A00]">Creazione parziale</p>
-              <p className="text-sm text-[#D99A2B] mt-0.5">
+              <p className="text-base font-bold text-kora-warning-text">Creazione parziale</p>
+              <p className="text-sm text-kora-warning mt-0.5">
                 {result.tenantId
                   ? `Tenant ${result.tenantCode} creato. Provisioning utente non completato.`
                   : result.error ?? 'Errore sconosciuto.'}
@@ -258,7 +258,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           </div>
 
           {result.recovery && (
-            <div className="rounded-lg border border-amber-300 bg-[#F8F6F1] px-4 py-3 text-[10.5px] text-[#8A5A00]">
+            <div className="rounded-lg border border-amber-300 bg-kora-paper px-4 py-3 text-[10.5px] text-kora-warning-text">
               <span className="font-semibold">Azione richiesta: </span>{result.recovery}
             </div>
           )}
@@ -266,7 +266,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           {result.warnings && result.warnings.length > 0 && (
             <ul className="space-y-1">
               {result.warnings.map((w, i) => (
-                <li key={i} className="text-[10px] text-[#8A5A00]">⚠ {w}</li>
+                <li key={i} className="text-[10px] text-kora-warning-text">⚠ {w}</li>
               ))}
             </ul>
           )}
@@ -274,7 +274,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           {result.links && (
             <div className="flex flex-wrap gap-2 pt-2 border-t border-amber-100">
               <Link href={result.links.companyConsole}
-                className="rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[#1a1756] transition-colors">
+                className="rounded-lg bg-kora-ink text-white px-4 py-2 text-xs font-semibold hover:bg-kora-ink-hover transition-colors">
                 Company Console →
               </Link>
               {result.links.manageUsers && (
@@ -302,9 +302,9 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
       <PilotOnboardingChecklist currentStep={1} compact />
 
       {/* Header */}
-      <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between gap-4 flex-wrap">
+      <div className="rounded-xl bg-kora-ink px-6 py-5 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA Admin · Pilot</p>
+          <p className="text-xs font-semibold tracking-widest uppercase text-kora-accent mb-1">KORA Admin · Pilot</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Crea Azienda Live</h1>
           <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">
@@ -312,15 +312,15 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1 shrink-0">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">KORA_ADMIN</span>
+          <span className="rounded border border-kora-accent/60 bg-kora-accent/15 px-2 py-0.5 text-xs font-semibold text-white">KORA_ADMIN</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
-          <span className="rounded border border-white/15 bg-[#F8F6F1]/5 px-1.5 py-0.5 text-[9px] text-white/40 font-semibold uppercase">LIVE PILOT</span>
+          <span className="rounded border border-white/15 bg-kora-paper/5 px-1.5 py-0.5 text-[9px] text-white/40 font-semibold uppercase">LIVE PILOT</span>
         </div>
       </div>
 
       {/* Error banner */}
       {status === 'error' && result?.error && (
-        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-[#9E3B2F]">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-kora-critical">
           ⚠ {result.error}
         </div>
       )}
@@ -328,7 +328,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
       <form onSubmit={handleSubmit} className="space-y-5">
 
         {/* ── Company section ──────────────────────────────────────────────── */}
-        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-4">
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper px-6 py-5 space-y-4">
           <p className="text-[10px] font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-widest">Dati Azienda</p>
 
           {/* Company Name */}
@@ -392,7 +392,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
         </div>
 
         {/* ── Company Admin section ─────────────────────────────────────────── */}
-        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-4">
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper px-6 py-5 space-y-4">
           <p className="text-[10px] font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-widest">Primo Company Admin</p>
 
           <div className="grid grid-cols-2 gap-3">
@@ -411,14 +411,14 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           <div className="flex items-center gap-2.5">
             <input type="checkbox" id="sendInvite" checked={sendInvite}
               onChange={e => setSendInvite(e.target.checked)}
-              className="rounded border-[rgba(6,3,43,0.14)] text-[#C76F3D]" />
+              className="rounded border-[rgba(6,3,43,0.14)] text-kora-accent" />
             <label htmlFor="sendInvite" className="text-xs text-[rgba(6,3,43,0.78)] cursor-pointer">
               Invia email di invito per impostare la password
             </label>
           </div>
 
           {!sendInvite && (
-            <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-[#8A5A00]">
+            <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-kora-warning-text">
               ⚠ L&apos;utente sarà creato senza invito email. Dovrai inviare manualmente il link di accesso.
             </div>
           )}
@@ -443,7 +443,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="rounded-lg bg-[#06032B] text-white px-6 py-2.5 text-sm font-semibold hover:bg-[#1a1756] disabled:opacity-50 transition-colors"
+            className="rounded-lg bg-kora-ink text-white px-6 py-2.5 text-sm font-semibold hover:bg-kora-ink-hover disabled:opacity-50 transition-colors"
           >
             {status === 'loading' ? '⏳ Creazione in corso…' : 'Crea Azienda Live'}
           </button>

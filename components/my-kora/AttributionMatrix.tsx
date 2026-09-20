@@ -26,14 +26,14 @@ const MATRIX_ROWS: MatrixRow[] = [
 function EligCell({ value }: { value: 'yes' | 'conditional' | 'no' }) {
   if (value === 'yes') {
     return (
-      <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] px-2 py-0.5 text-[10px] font-semibold text-[#2F7D55]">
+      <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] px-2 py-0.5 text-[10px] font-semibold text-kora-success">
         Sì
       </span>
     );
   }
   if (value === 'conditional') {
     return (
-      <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A00]">
+      <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-kora-warning-text">
         Condizionale
       </span>
     );
@@ -47,7 +47,7 @@ function EligCell({ value }: { value: 'yes' | 'conditional' | 'no' }) {
 
 export function AttributionMatrix() {
   return (
-    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden" data-testid="attribution-matrix">
+    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper overflow-hidden" data-testid="attribution-matrix">
       <div className="px-4 py-3 border-b border-[rgba(6,3,43,0.05)]">
         <p className="text-xs font-semibold text-[rgba(6,3,43,0.72)]">Classi di Attribuzione KORA</p>
         <p className="text-[11px] text-[rgba(6,3,43,0.40)] mt-0.5">

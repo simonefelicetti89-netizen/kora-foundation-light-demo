@@ -1,4 +1,5 @@
 'use client';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 // components/auth/LogoutButton.tsx
 // Client form component that POSTs to /api/auth/logout.
@@ -30,7 +31,7 @@ export function LogoutButton({ label = 'Esci' }: LogoutButtonProps) {
           whiteSpace:   'nowrap',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.color = '#9E3B2F';
+          e.currentTarget.style.color = TOKENS.critical;
           e.currentTarget.style.borderColor = 'rgba(158,59,47,0.35)';
         }}
         onMouseLeave={(e) => {

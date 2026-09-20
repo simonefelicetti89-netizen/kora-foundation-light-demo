@@ -5,7 +5,7 @@
 // NEVER shows rankings, percentiles, or comparisons with other workers.
 
 import type { WorkerActivationProfile, PillarDistributionEntry } from '@/app/api/worker/activation-profile/route';
-import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 
 const PILLAR_LABELS: Record<string, string> = {
@@ -39,7 +39,7 @@ function PillarBar({ entry, max }: { entry: PillarDistributionEntry; max: number
             flexShrink: 0, display: 'inline-block',
           }} />
           <span style={{
-            fontSize: 11, fontWeight: 700, color: hasActivity ? '#06032B' : 'rgba(6,3,43,0.35)',
+            fontSize: 11, fontWeight: 700, color: hasActivity ? TOKENS.ink : 'rgba(6,3,43,0.35)',
           }}>
             {PILLAR_LABELS[entry.pillar] ?? entry.pillar}
           </span>
@@ -200,7 +200,7 @@ function PrivacyCard() {
       background: 'rgba(47,125,85,0.06)', border: '1px solid rgba(47,125,85,0.18)',
       borderRadius: 8, padding: '12px 16px',
     }}>
-      <p style={{ fontSize: 11, color: '#1a4731', margin: 0, lineHeight: 1.6 }}>
+      <p style={{ fontSize: 11, color: BADGE_TOKENS.eligible.text, margin: 0, lineHeight: 1.6 }}>
         <strong>Profilo privato.</strong>{' '}
         Il tuo datore di lavoro vede solo dati aggregati sopra soglia — mai questo profilo individuale.
         Non è una valutazione individuale e non genera ranking.
@@ -223,7 +223,7 @@ function InsightRow({
       }}>
         {label}
       </span>
-      <span style={{ fontSize: 11, color: muted ? 'rgba(6,3,43,0.40)' : '#06032B', fontStyle: muted ? 'italic' : 'normal' }}>
+      <span style={{ fontSize: 11, color: muted ? 'rgba(6,3,43,0.40)' : TOKENS.ink, fontStyle: muted ? 'italic' : 'normal' }}>
         <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: color, marginRight: 5, verticalAlign: 'middle' }} />
         {value}
       </span>

@@ -5,16 +5,16 @@
 
 import { useState, useEffect, useCallback, useId, isValidElement, cloneElement } from 'react';
 import type { WorkerInitiativeRow } from '@/lib/supabase/types';
-import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 type Tenant = { id: string; company_name: string; tenant_code: string };
 type Initiative = WorkerInitiativeRow;
 
 const PILLARS: WorkerInitiativeRow['pillar'][] = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'];
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  draft:     { bg: '#f3f4f6', text: '#6b7280' },
-  published: { bg: '#dcfce7', text: '#15803d' },
-  closed:    { bg: '#fef9c3', text: '#854d0e' },
+  draft:     { bg: TOKENS.surface, text: TOKENS.inkSecondary },
+  published: { bg: BADGE_TOKENS.eligible.bg, text: BADGE_TOKENS.eligible.text },
+  closed:    { bg: BADGE_TOKENS.limited.bg, text: BADGE_TOKENS.limited.text },
 };
 const STATUS_LABELS_IT: Record<WorkerInitiativeRow['status'], string> = {
   draft:     'Bozza',
@@ -166,7 +166,7 @@ export function WorkerInitiativesClient({
           </div>
 
           {formSuccess && (
-            <div style={{ background: '#dcfce7', color: '#15803d', borderRadius: 7, padding: '10px 14px', fontSize: 12, marginBottom: 16 }}>
+            <div style={{ background: BADGE_TOKENS.eligible.bg, color: BADGE_TOKENS.eligible.text, borderRadius: 7, padding: '10px 14px', fontSize: 12, marginBottom: 16 }}>
               {formSuccess}
             </div>
           )}
@@ -174,7 +174,7 @@ export function WorkerInitiativesClient({
           {/* Create form */}
           {showForm && (
             <form onSubmit={handleCreate} style={{
-              background: '#f9f9fb', border: '1px solid rgba(6,3,43,0.10)', borderRadius: 10,
+              background: TOKENS.surface, border: '1px solid rgba(6,3,43,0.10)', borderRadius: 10,
               padding: '24px', marginBottom: 24,
             }}>
               <h3 style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, marginBottom: 18, marginTop: 0 }}>Nuova iniziativa</h3>
@@ -220,7 +220,7 @@ export function WorkerInitiativesClient({
                   </Field>
                 </div>
               </div>
-              {formError && <div style={{ color: '#dc2626', fontSize: 12, marginTop: 12 }}>{formError}</div>}
+              {formError && <div style={{ color: BADGE_TOKENS.blocked.text, fontSize: 12, marginTop: 12 }}>{formError}</div>}
               <button type="submit" disabled={formLoading} style={{
                 marginTop: 18, padding: '10px 24px', borderRadius: 7, border: 'none',
                 background: TOKENS.ink, color: '#fff', fontSize: 12, fontWeight: 700, cursor: formLoading ? 'not-allowed' : 'pointer',
@@ -232,9 +232,9 @@ export function WorkerInitiativesClient({
           )}
 
           {/* Initiative list */}
-          {error && <div style={{ color: '#dc2626', fontSize: 12, marginBottom: 12 }}>{error}</div>}
+          {error && <div style={{ color: BADGE_TOKENS.blocked.text, fontSize: 12, marginBottom: 12 }}>{error}</div>}
           {statusError && (
-            <div style={{ background: '#fee2e2', color: '#9b1c1c', borderRadius: 7, padding: '8px 12px', fontSize: 11, marginBottom: 12 }}>
+            <div style={{ background: BADGE_TOKENS.blocked.bg, color: BADGE_TOKENS.blocked.text, borderRadius: 7, padding: '8px 12px', fontSize: 11, marginBottom: 12 }}>
               {statusError}
             </div>
           )}
@@ -262,7 +262,7 @@ export function WorkerInitiativesClient({
                         {STATUS_LABELS_IT[init.status] ?? init.status}
                       </span>
                       {init.eligibility_class === 'limited' && (
-                        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', background: '#fef9c3', color: '#854d0e', borderRadius: 4, padding: '1px 5px' }}>
+                        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', background: BADGE_TOKENS.limited.bg, color: BADGE_TOKENS.limited.text, borderRadius: 4, padding: '1px 5px' }}>
                           {ELIGIBILITY_LABELS_IT['limited']}
                         </span>
                       )}
@@ -280,17 +280,17 @@ export function WorkerInitiativesClient({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0, alignItems: 'flex-end' }}>
                     {init.status === 'draft' && (
                       <>
-                        <StatusBtn label="Pubblica" onClick={() => handleStatusChange(init.id, 'published')} color="#15803d" />
+                        <StatusBtn label="Pubblica" onClick={() => handleStatusChange(init.id, 'published')} color={BADGE_TOKENS.eligible.text} />
                         <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.35)', textAlign: 'right' }}>
                           Visibile ai worker del tenant
                         </span>
                       </>
                     )}
                     {init.status === 'published' && (
-                      <StatusBtn label="Chiudi" onClick={() => handleStatusChange(init.id, 'closed')} color="#854d0e" />
+                      <StatusBtn label="Chiudi" onClick={() => handleStatusChange(init.id, 'closed')} color={BADGE_TOKENS.limited.text} />
                     )}
                     {init.status === 'closed' && (
-                      <StatusBtn label="Riapri" onClick={() => handleStatusChange(init.id, 'published')} color="#15803d" />
+                      <StatusBtn label="Riapri" onClick={() => handleStatusChange(init.id, 'published')} color={BADGE_TOKENS.eligible.text} />
                     )}
                   </div>
                 </div>

@@ -55,7 +55,7 @@ export function PilotOnboardingChecklist({ currentStep, compact = false }: Pilot
                 style={{
                   fontSize:      10,
                   fontWeight:    isActive ? 700 : 500,
-                  color:         isActive ? '#06032B' : isPast ? 'rgba(47,125,85,0.80)' : 'rgba(6,3,43,0.38)',
+                  color:         isActive ? TOKENS.ink : isPast ? 'rgba(47,125,85,0.80)' : 'rgba(6,3,43,0.38)',
                   background:    isActive ? 'rgba(6,3,43,0.08)' : 'transparent',
                   borderRadius:  4,
                   padding:       isActive ? '1px 5px' : '0',
@@ -131,7 +131,7 @@ export function PilotOnboardingChecklist({ currentStep, compact = false }: Pilot
                 background:   isPast  ? 'rgba(47,125,85,0.15)'
                             : isActive ? 'rgba(6,3,43,0.85)'
                             : 'rgba(6,3,43,0.07)',
-                color:        isPast  ? '#2F7D55'
+                color:        isPast  ? TOKENS.success
                             : isActive ? '#FFFFFF'
                             : 'rgba(6,3,43,0.38)',
                 border:       isPast  ? '1px solid rgba(47,125,85,0.30)'
@@ -146,7 +146,7 @@ export function PilotOnboardingChecklist({ currentStep, compact = false }: Pilot
                 flex:       1,
                 fontSize:   12,
                 fontWeight: isActive ? 700 : isFuture ? 400 : 500,
-                color:      isPast  ? '#2F7D55'
+                color:      isPast  ? TOKENS.success
                           : isActive ? 'rgba(6,3,43,0.90)'
                           : 'rgba(6,3,43,0.42)',
                 fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',

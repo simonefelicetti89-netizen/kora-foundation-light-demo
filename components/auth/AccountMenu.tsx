@@ -9,14 +9,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { LogoutButton } from './LogoutButton';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
 const ROLE_BADGE: Record<string, { label: string; bg: string; color: string; border: string }> = {
-  KORA_ADMIN:     { label: 'KORA Admin',     bg: 'rgba(97,86,245,0.10)',  color: '#3b30c9', border: 'rgba(97,86,245,0.28)'  },
-  COMPANY_ADMIN:  { label: 'Company Admin',  bg: 'rgba(22,101,52,0.10)',  color: '#166534', border: 'rgba(22,101,52,0.28)'  },
-  WORKER:         { label: 'Worker',         bg: 'rgba(37,99,235,0.10)',  color: '#1e4a8a', border: 'rgba(37,99,235,0.28)'  },
+  KORA_ADMIN:     { label: 'KORA Admin',     bg: 'rgba(97,86,245,0.10)',  color: TOKENS.violet, border: 'rgba(97,86,245,0.28)'  },
+  COMPANY_ADMIN:  { label: 'Company Admin',  bg: 'rgba(22,101,52,0.10)',  color: BADGE_TOKENS.eligible.text, border: 'rgba(22,101,52,0.28)'  },
+  WORKER:         { label: 'Worker',         bg: 'rgba(37,99,235,0.10)',  color: TOKENS.info.text, border: 'rgba(37,99,235,0.28)'  },
   PARTNER:        { label: 'Partner',        bg: 'rgba(192,125,42,0.10)', color: TOKENS.safeguard.watch.text, border: 'rgba(192,125,42,0.28)' },
 };
 

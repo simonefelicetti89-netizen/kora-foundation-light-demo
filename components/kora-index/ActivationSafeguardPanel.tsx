@@ -11,9 +11,9 @@ interface ActivationSafeguardPanelProps {
 }
 
 const STATUS_STYLES: Record<SafeguardStatus, { bar: string; text: string; bg: string }> = {
-  CLEAR:   { bar: 'bg-[#2F7D55]',  text: 'text-[#06032B]', bg: 'bg-[rgba(47,125,85,0.10)] border-[rgba(47,125,85,0.30)]' },
-  WARNING: { bar: 'bg-[#D99A2B]',  text: 'text-[#7A5200]',  bg: 'bg-[rgba(217,154,43,0.10)] border-[rgba(217,154,43,0.22)]' },
-  FLAGGED: { bar: 'bg-[#9E3B2F]',  text: 'text-[#9E3B2F]',  bg: 'bg-[rgba(158,59,47,0.06)] border-[rgba(158,59,47,0.22)]' },
+  CLEAR:   { bar: 'bg-kora-success',  text: 'text-kora-ink', bg: 'bg-[rgba(47,125,85,0.10)] border-[rgba(47,125,85,0.30)]' },
+  WARNING: { bar: 'bg-kora-warning',  text: 'text-kora-warning-text',  bg: 'bg-[rgba(217,154,43,0.10)] border-[rgba(217,154,43,0.22)]' },
+  FLAGGED: { bar: 'bg-kora-critical',  text: 'text-kora-critical',  bg: 'bg-[rgba(158,59,47,0.06)] border-[rgba(158,59,47,0.22)]' },
 };
 
 function ThresholdGauge({
@@ -57,8 +57,8 @@ function ThresholdGauge({
         <div
           className={cn(
             'absolute h-full rounded-full transition-all',
-            value < flaggedMax ? 'bg-[#9E3B2F]' :
-            value < clearMin  ? 'bg-[#D99A2B]' : 'bg-[#2F7D55]',
+            value < flaggedMax ? 'bg-kora-critical' :
+            value < clearMin  ? 'bg-kora-warning' : 'bg-kora-success',
           )}
           style={{ width: `${pct}%` }}
         />
@@ -90,7 +90,7 @@ export function ActivationSafeguardPanel({
   const styles = STATUS_STYLES[status];
 
   return (
-    <div className={cn('rounded-lg border bg-[#F8F6F1] p-4 space-y-4', className)}>
+    <div className={cn('rounded-lg border bg-kora-paper p-4 space-y-4', className)}>
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Activation Safeguard</h3>
         <span

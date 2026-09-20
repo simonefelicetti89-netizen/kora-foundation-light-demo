@@ -25,7 +25,7 @@ import {
 } from '@/services/kora-contribution/KoraContributionService';
 import type { ContributionSummary } from '@/services/kora-contribution/KoraContributionService';
 import { getCalibrationStatus } from '@/lib/methodology-config/v0.1';
-import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 import type { ContributionPillarBreakdown } from '@/lib/commons/contribution-views';
 
 export const metadata = { title: 'KORA Contribution™ · Company' };
@@ -258,7 +258,7 @@ export default async function KoraContributionPage() {
               accentColor={TOKENS.accent}
               metrics={[
                 { value: promoterView!.distinct_initiatives,    label: 'iniziative promosse',       color: TOKENS.accent   },
-                { value: promoterView!.participations_received, label: 'partecipazioni ricevute',   color: '#3B6EBA'       },
+                { value: promoterView!.participations_received, label: 'partecipazioni ricevute',   color: TOKENS.info.base       },
                 { value: promoterView!.external_outreach_events, label: 'eventi con esterni',       color: TOKENS.inkHint  },
               ]}
               narrative={promoterView!.narrative}
@@ -270,9 +270,9 @@ export default async function KoraContributionPage() {
               testId="contribution-section-origin"
               title="I tuoi lavoratori nell'ecosistema"
               subtitle="Partecipazioni dei tuoi lavoratori a iniziative di altre organizzazioni"
-              accentColor="#3B6EBA"
+              accentColor={TOKENS.info.base}
               metrics={[
-                { value: originView!.participations_sent,    label: 'partecipazioni effettuate', color: '#3B6EBA'     },
+                { value: originView!.participations_sent,    label: 'partecipazioni effettuate', color: TOKENS.info.base     },
                 { value: originView!.distinct_initiatives,   label: 'iniziative raggiunte',      color: TOKENS.accent },
                 { value: originView!.distinct_promoters,     label: 'organizzazioni coinvolte',  color: TOKENS.inkHint },
               ]}
@@ -304,7 +304,7 @@ export default async function KoraContributionPage() {
               padding:      '3px 8px',
               borderRadius: 4,
               background:   'rgba(74,127,224,0.12)',
-              color:        '#3B6EBA',
+              color:        TOKENS.info.base,
               letterSpacing: '0.04em',
               border:       '1px solid rgba(74,127,224,0.25)',
             }}>
@@ -324,7 +324,7 @@ export default async function KoraContributionPage() {
               padding:      '12px 16px',
               marginBottom: 24,
               fontSize:     11,
-              color:        '#3B5A8A',
+              color:        BADGE_TOKENS.info.text,
               lineHeight:   1.6,
             }}
           >
@@ -350,7 +350,7 @@ export default async function KoraContributionPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                   <span style={{
                     fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 4,
-                    background: 'rgba(74,127,224,0.10)', color: '#3B6EBA', letterSpacing: '0.06em',
+                    background: 'rgba(74,127,224,0.10)', color: TOKENS.info.base, letterSpacing: '0.06em',
                     border: '1px solid rgba(74,127,224,0.20)',
                   }}>
                     MODELLO v0.2
@@ -401,8 +401,8 @@ export default async function KoraContributionPage() {
                       <span style={{
                         fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em',
                         color: flPreview.v2.maturityBand === 'systemic' ? TOKENS.success
-                             : flPreview.v2.maturityBand === 'active'   ? '#2F7D55'
-                             : flPreview.v2.maturityBand === 'emerging' ? '#D99A2B'
+                             : flPreview.v2.maturityBand === 'active'   ? TOKENS.success
+                             : flPreview.v2.maturityBand === 'emerging' ? TOKENS.warning
                              : TOKENS.inkHint,
                         fontFamily: FONT, lineHeight: 1,
                       }}>
@@ -428,7 +428,7 @@ export default async function KoraContributionPage() {
                     <div style={{ flex: 1, background: TOKENS.taupe, borderRadius: 6, height: 6, overflow: 'hidden' }}>
                       <div style={{
                         width: `${Math.round(flPreview.v2.confidence * 100)}%`,
-                        background: flPreview.v2.confidence >= 0.70 ? TOKENS.success : flPreview.v2.confidence >= 0.40 ? '#D99A2B' : TOKENS.accent,
+                        background: flPreview.v2.confidence >= 0.70 ? TOKENS.success : flPreview.v2.confidence >= 0.40 ? TOKENS.warning : TOKENS.accent,
                         height: '100%', borderRadius: 6,
                       }} />
                     </div>
@@ -502,10 +502,10 @@ export default async function KoraContributionPage() {
                 <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.success, margin: '0 0 8px', fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Contribution Events
                 </p>
-                <p style={{ fontSize: 11, color: '#2F5A42', margin: '0 0 8px', lineHeight: 1.6, fontFamily: FONT }}>
+                <p style={{ fontSize: 11, color: BADGE_TOKENS.eligible.text, margin: '0 0 8px', lineHeight: 1.6, fontFamily: FONT }}>
                   KORA Space è prima di tutto l&apos;ambiente di attivazione — KORA Contribution™ è uno dei segnali aggregati che ne emergono, non il suo scopo principale.
                 </p>
-                <ul style={{ fontSize: 11, color: '#2F5A42', lineHeight: 1.75, margin: 0, paddingLeft: 18 }}>
+                <ul style={{ fontSize: 11, color: BADGE_TOKENS.eligible.text, lineHeight: 1.75, margin: 0, paddingLeft: 18 }}>
                   <li style={{ marginBottom: 4 }}>Le partecipazioni confermate nelle iniziative KORA Space creano <strong>Contribution Events</strong>.</li>
                   <li style={{ marginBottom: 4 }}>Questi eventi alimenteranno la dashboard live di KORA Contribution™ quando il profilo pilot sarà attivo.</li>
                   <li>KORA Contribution™ è un indicatore companion — <strong>non è una componente del KORA Index™</strong>.</li>
@@ -522,7 +522,7 @@ export default async function KoraContributionPage() {
                   padding:      '10px 14px',
                   marginBottom: 16,
                   fontSize:     11,
-                  color:        '#3B5A8A',
+                  color:        BADGE_TOKENS.info.text,
                   lineHeight:   1.6,
                 }}
               >

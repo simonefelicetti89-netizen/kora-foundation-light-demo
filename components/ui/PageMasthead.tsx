@@ -23,7 +23,7 @@ export function PageMasthead({ eyebrow, title, subline, meta }: PageMastheadProp
           fontWeight:    600,
           fontSize:      '11px',
           letterSpacing: '0.09em',
-          color:         TOKENS.accent,  // was '#C76F3D' — now token
+          color:         TOKENS.accent,  // was TOKENS.accent — now token
         }}
       >
         {eyebrow}

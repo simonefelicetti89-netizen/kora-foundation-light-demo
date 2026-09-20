@@ -191,7 +191,7 @@ export default function PublishPage() {
     padding:      '9px 12px',
     borderRadius: 8,
     border:       '1px solid rgba(6,3,43,0.14)',
-    background:   '#FAFAFA',
+    background:   TOKENS.surface,
     fontSize:     13,
     color:        TOKENS.ink,
     fontFamily:   'Plus Jakarta Sans, system-ui, sans-serif',

@@ -17,7 +17,7 @@ import {
   type KoraLinkActivationOutcome,
 } from '@/lib/kora-link/activation';
 import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -289,7 +289,7 @@ function ActivationPanel({
     case 'unavailable':
       return (
         <div style={boxStyle} data-testid="kora-link-activation-unavailable">
-          <p style={{ ...noteStyle, color: '#B3261E' }}>
+          <p style={{ ...noteStyle, color: BADGE_TOKENS.blocked.text }}>
             Servizio di attivazione temporaneamente non disponibile. Riprova più tardi.
           </p>
         </div>
@@ -298,7 +298,7 @@ function ActivationPanel({
     case 'error':
       return (
         <div style={boxStyle} data-testid="kora-link-activation-error">
-          <p style={{ ...noteStyle, color: '#B3261E' }}>
+          <p style={{ ...noteStyle, color: BADGE_TOKENS.blocked.text }}>
             Non è stato possibile completare l&apos;attivazione. Riprova più tardi.
           </p>
         </div>

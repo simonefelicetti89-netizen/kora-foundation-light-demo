@@ -206,7 +206,7 @@ export default function PartnerKoraLinkInitiativesPage() {
       </Panel>
 
       {/* Privacy-safe interaction — mirrors /partner/kora-link */}
-      <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Interazione privacy-safe</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           Il modello Track A è progettato perché il partner non riceva mai dati identificativi non

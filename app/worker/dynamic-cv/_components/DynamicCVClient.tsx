@@ -16,7 +16,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { DynamicCVResponse, CVPillarEntry } from '@/app/api/worker/dynamic-cv/route';
 import type { SharesResponse, ShareLinkItem } from '@/app/api/worker/dynamic-cv/shares/route';
-import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_SURFACE, TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -30,8 +30,8 @@ const PILLAR_META: Record<string, { color: string; bg: string; border: string }>
 
 const STATUS_STYLE: Record<string, { color: string; bg: string }> = {
   attended:   { color: TOKENS.success, bg: 'rgba(47,125,85,0.10)'  },
-  registered: { color: '#3B6EBA', bg: 'rgba(59,110,186,0.10)' },
-  interested: { color: '#C07D2A', bg: 'rgba(192,125,42,0.10)' },
+  registered: { color: TOKENS.info.base, bg: 'rgba(59,110,186,0.10)' },
+  interested: { color: BADGE_TOKENS.limited.text, bg: 'rgba(192,125,42,0.10)' },
 };
 
 interface DynamicCVClientProps {
@@ -180,7 +180,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
           marginBottom: 14,
         }}
       >
-        <p style={{ fontSize: 12, fontWeight: 700, color: '#3B6EBA', margin: '0 0 3px' }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: TOKENS.info.base, margin: '0 0 3px' }}>
           Il Dynamic Impact CV non contiene tutte le Impact Units.
         </p>
         <p style={{ fontSize: 11, color: 'rgba(59,110,186,0.75)', margin: 0, lineHeight: 1.5 }}>
@@ -242,7 +242,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
               border:       '1px solid rgba(6,3,43,0.08)',
               borderRadius: 12,
               padding:      '16px 18px',
-              background:   '#FAFAFA',
+              background:   TOKENS.surface,
             }}
           >
             <p style={{ fontSize: 24, fontWeight: 900, color: TOKENS.ink, margin: '0 0 4px', letterSpacing: '-0.03em' }}>
@@ -274,14 +274,14 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
                   border:       `1px solid ${meta?.border ?? '#ddd'}`,
                   borderRadius: 10,
                   padding:      '12px 12px',
-                  background:   p.total_active > 0 ? (meta?.bg ?? '#f9f9f9') : 'rgba(6,3,43,0.02)',
+                  background:   p.total_active > 0 ? (meta?.bg ?? TOKENS.surface) : 'rgba(6,3,43,0.02)',
                   opacity:      p.total_active > 0 ? 1 : 0.5,
                 }}
               >
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta?.color ?? '#06032B', margin: '0 0 6px' }}>
+                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta?.color ?? TOKENS.ink, margin: '0 0 6px' }}>
                   {p.pillar}
                 </p>
-                <p style={{ fontSize: '1.25rem', fontWeight: 900, color: p.total_active > 0 ? (meta?.color ?? '#06032B') : 'rgba(6,3,43,0.25)', margin: '0 0 2px', letterSpacing: '-0.02em' }}>
+                <p style={{ fontSize: '1.25rem', fontWeight: 900, color: p.total_active > 0 ? (meta?.color ?? TOKENS.ink) : 'rgba(6,3,43,0.25)', margin: '0 0 2px', letterSpacing: '-0.02em' }}>
                   {p.total_active}
                 </p>
                 <p style={{ fontSize: 9, color: 'rgba(6,3,43,0.40)', margin: 0 }}>
@@ -304,10 +304,10 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {narrative.strengths.map((s, i) => (
-              <NarrativeCard key={i} label="Aree più attive" text={s} color="#2F7D55" />
+              <NarrativeCard key={i} label="Aree più attive" text={s} color={TOKENS.success} />
             ))}
             {narrative.emergingAreas.map((e, i) => (
-              <NarrativeCard key={i} label="Aree in esplorazione" text={e} color="#C07D2A" />
+              <NarrativeCard key={i} label="Aree in esplorazione" text={e} color={BADGE_TOKENS.limited.text} />
             ))}
             {missingPillarList.length > 0 && (
               <NarrativeCard
@@ -349,7 +349,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
                 marginTop:      16,
                 fontSize:       12,
                 fontWeight:     600,
-                color:          '#3B6EBA',
+                color:          TOKENS.info.base,
                 textDecoration: 'none',
                 padding:        '7px 14px',
                 border:         '1px solid rgba(59,110,186,0.28)',
@@ -392,7 +392,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
                       justifyContent: 'center',
                     }}
                   >
-                    <span style={{ fontSize: 8, fontWeight: 800, color: meta?.color ?? '#06032B', letterSpacing: '0.06em' }}>
+                    <span style={{ fontSize: 8, fontWeight: 800, color: meta?.color ?? TOKENS.ink, letterSpacing: '0.06em' }}>
                       {exp.pillar.slice(0, 2)}
                     </span>
                   </div>
@@ -439,7 +439,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: 0 }}>
               Esperienze badge-ready
             </p>
-            <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'rgba(192,125,42,0.10)', color: '#C07D2A', border: '1px solid rgba(192,125,42,0.22)' }}>
+            <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'rgba(192,125,42,0.10)', color: BADGE_TOKENS.limited.text, border: '1px solid rgba(192,125,42,0.22)' }}>
               {(badgeItems ?? []).length} idonee al badge
             </span>
           </div>
@@ -571,7 +571,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
               borderRadius: 8,
               border:       '1px solid rgba(59,110,186,0.30)',
               background:   'rgba(59,110,186,0.08)',
-              color:        '#3B6EBA',
+              color:        TOKENS.info.base,
               cursor:       creating ? 'not-allowed' : 'pointer',
               opacity:      creating ? 0.6 : 1,
             }}
@@ -592,14 +592,14 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
               marginBottom: 12,
             }}
           >
-            <p style={{ fontSize: 11, fontWeight: 700, color: '#1a4731', margin: '0 0 6px' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: BADGE_TOKENS.eligible.text, margin: '0 0 6px' }}>
               Link creato — copialo ora, non verrà mostrato di nuovo.
             </p>
             <code
               style={{
                 display:      'block',
                 fontSize:     11,
-                color:        '#1a4731',
+                color:        BADGE_TOKENS.eligible.text,
                 wordBreak:    'break-all',
                 marginBottom: 4,
               }}
