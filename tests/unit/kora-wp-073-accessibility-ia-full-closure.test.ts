@@ -40,7 +40,25 @@ describe('KORA-WP-073 — raw-input accessible-name remediation (confirmed defec
     { file: 'app/admin/partners/_components/PartnersAdminClient.tsx', mustContain: [/function FormField/, /useId\(\)/, /htmlFor=\{fieldId\}/] },
     { file: 'app/admin/companies/new/_components/CreateLiveCompanyForm.tsx', mustContain: [/function Field/, /useId\(\)/, /htmlFor=\{fieldId\}/] },
     { file: 'app/admin/worker-initiatives/_components/WorkerInitiativesClient.tsx', mustContain: [/function Field/, /useId\(\)/, /htmlFor=\{fieldId\}/] },
-    { file: 'app/advisor/companies/page.tsx', mustContain: [/aria-label="Oggetto del nuovo Case"/, /aria-label="ID della Review"/, /aria-label="Scrivi un messaggio"/] },
+    // KORA-WP-064 (Founder ruling READING 1 — DECOMPOSE, 2026-09-21):
+    // INTENTIONAL TEST-MECHANISM SUPERSESSION — SEMANTIC GUARANTEE PRESERVED /
+    // MADE MORE PRECISE. These three raw inputs still exist and still carry an
+    // accessible name; they simply no longer live in one 950-line page, because
+    // that page was decomposed into per-capability routes. The guarantee this
+    // guard protects is "this input has an accessible name", never "this string
+    // sits in that file", so each pattern now points at the file that actually
+    // owns the input. The message textarea is additionally checked through a
+    // real <label htmlFor>/id association — a stronger accessible-name
+    // mechanism than aria-label, not a weaker one.
+    { file: 'app/advisor/companies/[assignmentId]/_components/CasesClient.tsx', mustContain: [/aria-label="Oggetto del nuovo Case"/] },
+    { file: 'app/advisor/companies/[assignmentId]/_components/AssessmentsClient.tsx', mustContain: [/aria-label="ID della Review"/, /aria-label="Narrativa della valutazione"/] },
+    { file: 'app/advisor/companies/[assignmentId]/_components/MessagesClient.tsx', mustContain: [/htmlFor="advisor-message"/, /id="advisor-message"/] },
+    { file: 'app/advisor/companies/[assignmentId]/_components/ContentClient.tsx', mustContain: [/htmlFor="content-class"/, /id="content-class"/, /aria-label="Scopo del riferimento riservato"/] },
+    // KORA-WP-064 second pass: the KORAL target <select> became a set of
+    // selectable transformation rows (a clearer control for the job), so only
+    // the interpretation textarea remains a raw input — and it keeps both a
+    // real <label htmlFor> association and an aria-label.
+    { file: 'app/advisor/companies/[assignmentId]/_components/KoralReviewClient.tsx', mustContain: [/htmlFor="koral-interpretation"/, /id="koral-interpretation"/, /aria-label="Interpretazione"/] },
     { file: 'app/company/advisor/page.tsx', mustContain: [/aria-label="Scrivi un messaggio"/, /aria-label="Oggetto appuntamento"/, /aria-label="Data e ora inizio appuntamento"/, /aria-label="Data e ora fine appuntamento"/] },
     { file: 'app/company/data/upload/page.tsx', mustContain: [/aria-label="Carica file ricevuto dal cliente \(CSV, XLSX, XLS\)"/] },
     { file: 'components/admin/CompanyEvidenceArchivePanel.tsx', mustContain: [/aria-label="Codice azienda"/, /aria-label="Reporting Period"/, /aria-label="Cerca iniziativa"/] },
