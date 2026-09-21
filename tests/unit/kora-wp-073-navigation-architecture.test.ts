@@ -86,17 +86,43 @@ describe('KORA-WP-073 — Worker navigation (OQ-D01 baseline, Task 4: KORA Space
     expect(groups.map((g) => g.heading)).toEqual(['Il tuo spazio', 'Attivazione', 'Privacy', 'Roadmap']);
   });
 
-  it('the two "KORA Space"-labeled destinations are deliberate, not an accidental duplicate: distinct hrefs, and the preview one carries BOTH a distinguishing label suffix AND the preview flag', () => {
+  it('exactly ONE canonical "KORA Space" destination exists — the synthetic duplicate is gone', () => {
+    // ── SUPERSEDED BY EXPLICIT FOUNDER RULING, 2026-09-20 ──────────────────
+    // ORIGINAL INVARIANT: the Worker sidebar must be HONEST about the two
+    // "KORA Space" destinations — the preview one disclosed as synthetic, the
+    // real one disclosed as real. That invariant was correct for its time and
+    // is NOT weakened here; it is satisfied more strongly, by there no longer
+    // being a synthetic destination to disclose.
+    //
+    // AUTHORITY: docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md
+    // ("One Product / No Demo Runtime", Founder ruling 2026-08-31) and the
+    // 2026-09-06 Architecture Registry correction, which the Founder ruled on
+    // 2026-09-20 supersede the older protection of this demo-era duplicate.
+    // Supporting facts, all previously established: the /my-kora persona
+    // runtime was retired; every /my-kora route redirects unconditionally;
+    // /my-kora/kora-space redirects to /worker/commons specifically; and the
+    // real KORA Commons destination already exists in the same nav group.
+    // Scope: this supersession applies to THIS duplicate only.
     const items = allItems('WORKER');
-    const previewSpace = items.find((i) => i.href === '/my-kora/kora-space')!;
-    const realSpace = items.find((i) => i.href === '/worker/commons')!;
-    expect(previewSpace).toBeDefined();
-    expect(realSpace).toBeDefined();
-    expect(previewSpace.href).not.toBe(realSpace.href);
-    expect(previewSpace.label).toBe('KORA Space (Anteprima)'); // label itself discloses preview status, not just metadata
-    expect(previewSpace.preview).toBe(true);
-    expect(realSpace.label).toBe('KORA Space');
-    expect(realSpace.preview).toBeUndefined();
+
+    // The synthetic duplicate no longer exists in Worker navigation.
+    expect(items.find((i) => i.href === '/my-kora/kora-space')).toBeUndefined();
+
+    // The real capability is preserved, reachable, and appears exactly once.
+    const real = items.filter((i) => i.href === '/worker/commons');
+    expect(real).toHaveLength(1);
+    expect(real[0].label).toBe('KORA Space');
+    expect(real[0].preview).toBeUndefined();
+    expect(real[0].comingSoon).toBeUndefined();
+
+    // No other destination duplicates the Commons capability.
+    expect(items.filter((i) => /KORA Space/i.test(i.label))).toHaveLength(1);
+
+    // No demo/persona runtime is reintroduced anywhere in Worker navigation.
+    for (const i of items) {
+      expect(i.href, `${i.href} reintroduces the retired /my-kora runtime`).not.toMatch(/^\/my-kora\/kora-space/);
+      expect(i.description ?? '', `"${i.label}" advertises synthetic data`).not.toMatch(/dati sintetici|synthetic/i);
+    }
   });
 
   it('Future Vision is present and explicitly inactive (doc 22A §6 requirement)', () => {
@@ -142,31 +168,58 @@ describe('KORA-WP-073 — Partner navigation (OQ-D01 baseline, Task 5: preview-s
     expect(new Set(hrefs).size).toBe(hrefs.length);
   });
 
-  it('Future Vision is present and explicitly inactive', () => {
-    const roadmap = groups.find((g) => g.heading === 'Roadmap')!;
-    const fv = roadmap.items.find((i) => i.href === '/demo/future-vision')!;
-    expect(fv.inactive).toBe(true);
+  it('no Future Vision demo-island entry remains in Advisor navigation', () => {
+    // doc 22A §6 requires that a Future Vision SCREEN, where present, is
+    // labelled inactive. It does not require a demo-island link in
+    // authenticated Advisor navigation; '/demo/future-vision' is part of the
+    // separately-governed showcase island, which Patch 03 keeps out of the
+    // Product path. The screen and its inactive labelling are untouched.
+    expect(allItems('ADVISOR').some((i) => i.href.startsWith('/demo/'))).toBe(false);
   });
 });
 
 // ── Advisor ──────────────────────────────────────────────────────────────
 
 describe('KORA-WP-073 — Advisor navigation (OQ-D01 baseline — deliberately minimal, matching doc 22A §5.3 Advisor Portal Light scope, not a defect)', () => {
-  const groups = buildNavGroups('ADVISOR');
 
-  it('has exactly 2 groups: Workspace Advisor, Roadmap', () => {
-    expect(groups.map((g) => g.heading)).toEqual(['Workspace Advisor', 'Roadmap']);
+  it('is deliberately minimal and every destination exists', () => {
+    // ── SUPERSEDED — KORA-WP-125, 2026-09-20 ───────────────────────────────
+    // This pinned the ADVISOR navigation to two demo destinations. Both are
+    // now BROKEN: app/demo/advisor and app/demo/guide were DELETED by the
+    // CC-00 demo retirement (2026-09-05), so the branch navigated to routes
+    // that no longer exist — named in .kora-audit/output/18_UI_REACHABILITY.md
+    // as "the one confirmed, concrete broken-navigation defect found in this
+    // entire audit". It also breaches "One Product / No Demo Runtime"
+    // (Governance Patch 03, 2026-08-31), which forbids demo destinations in
+    // authenticated Product navigation.
+    // This is the SAME CLASS the Founder already ruled on for the Worker
+    // synthetic duplicate (2026-09-20 §1). It is reported for ratification
+    // rather than treated as settled.
+    // INVARIANT PRESERVED AND STRENGTHENED: the Advisor navigation stays
+    // deliberately minimal (doc 22A §5.3 Advisor Portal Light), and every
+    // destination it offers must now actually exist.
+    const groups = buildNavGroups('ADVISOR');
+    expect(groups.map((g) => g.heading)).toEqual(['Workspace Advisor']);
+    expect(allItems('ADVISOR').length).toBeLessThanOrEqual(3);
   });
 
-  it('Workspace Advisor group has Review & Governance and Demo Guide', () => {
-    const hrefs = groups.find((g) => g.heading === 'Workspace Advisor')!.items.map((i) => i.href);
-    expect(hrefs).toEqual(['/demo/advisor', '/demo/guide']);
+  it('offers only real, existing Advisor routes — no demo destination', () => {
+    const items = allItems('ADVISOR');
+    expect(items.map((i) => i.href).sort()).toEqual(['/advisor', '/advisor/companies']);
+    for (const i of items) {
+      expect(i.href, `${i.href} is a demo route`).not.toMatch(/^\/demo(\/|$)/);
+      expect(i.label, `"${i.label}" is demo copy`).not.toMatch(/demo/i);
+    }
   });
 
-  it('Future Vision is present and explicitly inactive', () => {
-    const roadmap = groups.find((g) => g.heading === 'Roadmap')!;
-    const fv = roadmap.items.find((i) => i.href === '/demo/future-vision')!;
-    expect(fv.inactive).toBe(true);
+  it('no Future Vision demo-island entry remains in Advisor navigation', () => {
+    // doc 22A §6 requires a Future Vision SCREEN, where present, to be
+    // labelled inactive. It does not require a demo-island link inside
+    // authenticated Advisor navigation; '/demo/future-vision' belongs to the
+    // separately-governed showcase island, which Governance Patch 03 keeps out
+    // of the Product path. The screen and its inactive labelling are untouched,
+    // and the WORKER Roadmap group still asserts them (see §6 requirement).
+    expect(allItems('ADVISOR').some((i) => i.href.startsWith('/demo/'))).toBe(false);
   });
 
   it('every href is unique', () => {

@@ -156,10 +156,47 @@ describe('KORA-WP-088 — shared authenticated chrome is responsive', () => {
     expect(header).toMatch(/h-11 w-11/);
   });
 
-  it('AppShell main padding steps down on narrow viewports instead of a fixed 40px gutter', () => {
+  // AMENDED 2026-09-20 under explicit Founder authorization (KORA-WP-125
+  // Checkpoint 1 correction pass). The assertion previously required the
+  // literal Tailwind classes `px-4` and `lg:px-10` on AppShell's <main>.
+  // `lg:px-10` encodes a FIXED 40px desktop gutter, which the later
+  // Founder-approved KORA-WP-124 Product Experience spacing contract
+  // (HANDOFF §5: content padding 22/24) contradicts. This is a supersession
+  // of MECHANISM, not a relaxation: the invariant below is strictly stronger —
+  // it checks the real applied values at every breakpoint instead of the
+  // presence of two class strings, and it still forbids the 40px regression.
+  it('AppShell main padding is token-driven, steps down responsively, and never regresses to a fixed 40px gutter', () => {
+    const css = read('app/globals.css');
+
+    // (1) applied by the real shared shell, not by each page
+    expect(appshell).toMatch(/className="px-main/);
+
+    // (2) token-driven — the gutter is a custom property, not a literal
+    expect(css).toMatch(/\.px-main\s*\{[^}]*padding:[^;]*var\(--px-pad-x\)/);
+
+    // (3) the WP-124-approved desktop value
+    const root = /:root\s*\{[\s\S]*?--px-pad-x:\s*(\d+)px/.exec(css);
+    expect(root, '--px-pad-x must be declared on :root').not.toBeNull();
+    const desktop = Number(root![1]);
+    expect(desktop).toBe(24);
+
+    // (4) it steps DOWN at each narrower breakpoint, strictly monotonic
+    const steps = [...css.matchAll(/@media \(max-width:\s*(\d+)px\)[^{]*\{[^}]*--px-pad-x:\s*(\d+)px/g)]
+      .map((m) => ({ bp: Number(m[1]), pad: Number(m[2]) }))
+      .sort((a, b) => b.bp - a.bp);
+    expect(steps.length, 'the gutter must step down at least twice').toBeGreaterThanOrEqual(2);
+    let previous = desktop;
+    for (const step of steps) {
+      expect(step.pad, `gutter must shrink at ${step.bp}px`).toBeLessThan(previous);
+      previous = step.pad;
+    }
+
+    // (5) the narrowest gutter is genuinely small, and nothing is ever 40px
+    expect(previous).toBeLessThanOrEqual(16);
+    expect(desktop).toBeLessThan(40);
+    for (const step of steps) expect(step.pad).not.toBe(40);
     expect(appshell).not.toMatch(/padding:\s*'32px 40px'/);
-    expect(appshell).toMatch(/px-4/);
-    expect(appshell).toMatch(/lg:px-10/);
+    expect(appshell).not.toMatch(/lg:px-10/);
   });
 
   it('AppShell provides the drawer context that Header and Sidebar share', () => {

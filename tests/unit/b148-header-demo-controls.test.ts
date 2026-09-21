@@ -16,34 +16,47 @@ const HEADER_SRC = fs.readFileSync(path.join(ROOT, 'components/layout/Header.tsx
 
 // ── Structural checks — Header source code ────────────────────────────────────
 
-describe('B148 — Header showDemoControls logic is fail-safe toward live', () => {
-  it('showDemoControls delegates to shouldShowDemoControls from demo-controls-guard (B149)', () => {
-    // B149 extracted the guard logic into demo-controls-guard.ts.
-    // Header now calls shouldShowDemoControls(realRole) — the inline pattern is gone.
-    expect(HEADER_SRC).toContain('shouldShowDemoControls(realRole)');
-    expect(HEADER_SRC).toContain('demo-controls-guard');
+
+// ── SUPERSEDED BY "ONE PRODUCT / NO DEMO RUNTIME" ───────────────────────────
+// Canonical authority: docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md
+// (Founder ruling, 2026-08-31) + Master Plan v2.1 §13, applied to the shared
+// authenticated shell by KORA-WP-125 (2026-09-20).
+//
+// ORIGINAL INVARIANT (still valid, and now enforced ABSOLUTELY):
+//   a real COMPANY_ADMIN / WORKER session must never see demo UI.
+// These cases proved it CONDITIONALLY — by asserting that the Header called
+// shouldShowDemoControls() before rendering the switchers. The switchers are
+// now absent from the authenticated Product entirely, so the condition has no
+// subject left: nobody sees them, which is strictly stronger than "real users
+// do not". The pure guard functions themselves are unchanged and remain
+// covered by tests/unit/b149-header-demo-guard.test.ts and
+// tests/unit/b150-synthetic-data-banner-guard.test.ts, which still pass — the
+// /demo/* showcase island may still use them.
+// Replacement, stronger: the block below, plus the One Product guards in
+// tests/unit/kora-wp-125-shared-product-experience-foundation.test.ts.
+
+describe('B148 — fail-safe toward live, now absolute: no demo controls exist to gate', () => {
+  const header = HEADER_SRC;
+  const code = header.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+
+  it('renders none of the demo switchers', () => {
+    for (const c of ['EnvironmentSwitcher', 'ScenarioSwitcher', 'PersonaSwitcher', 'RoleSwitcher']) {
+      expect(code, `${c} still reaches the authenticated header`).not.toContain(c);
+    }
   });
 
-  it('does NOT use the old default that showed demo during pending', () => {
-    // Old (wrong): const showDemoControls = !realRoleIsCompanyOrWorker;
-    // This evaluated to true when realRole was undefined (pending → show DEMO banner).
-    expect(HEADER_SRC).not.toMatch(/const showDemoControls\s*=\s*!realRoleIsCompanyOrWorker\s*;/);
+  it('carries no environment/demo badge copy', () => {
+    expect(code).not.toMatch(/DEMO|DATI SIMULATI|SERVICE-ASSISTED|FUTURE/);
   });
 
-  it('COMPANY_ADMIN and WORKER exclusion is enforced via shouldShowDemoControls (demo-controls-guard)', () => {
-    // The per-role logic lives in demo-controls-guard.ts (tested in b149).
-    // Header uses the guard — the old inline realRoleIsCompanyOrWorker is gone.
-    expect(HEADER_SRC).toContain('shouldShowDemoControls');
-    expect(HEADER_SRC).not.toContain('realRoleIsCompanyOrWorker');
+  it('no longer needs a demo gate, because there is nothing to gate', () => {
+    expect(code).not.toContain('shouldShowDemoControls');
   });
 
-  it('WORKER exclusion is covered by shouldShowDemoControls in demo-controls-guard', () => {
-    expect(HEADER_SRC).toContain('shouldShowDemoControls');
-    expect(HEADER_SRC).not.toContain('realRoleIsCompanyOrWorker');
-  });
-
-  it('does not contain the old "flash-of-hidden-UI in demo" comment (wrong intent)', () => {
-    expect(HEADER_SRC).not.toContain('flash-of-hidden-UI in demo');
+  it('the pure demo guards survive for the separately-governed showcase island', () => {
+    const guard = fs.readFileSync(path.join(ROOT, 'lib/demo-state/demo-controls-guard.ts'), 'utf-8');
+    expect(guard).toContain('shouldShowDemoControls');
+    expect(guard).toContain('resolveBannerEnvironment');
   });
 });
 

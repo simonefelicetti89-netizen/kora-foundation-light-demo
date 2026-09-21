@@ -29,50 +29,71 @@ const workerWorkspace   = readFile('app/worker/workspace/page.tsx');
 const companyWorkspace  = readFile('app/company/workspace/page.tsx');
 const logoutRoute       = readFile('app/api/auth/logout/route.ts');
 const callbackRoute     = readFile('app/auth/callback/route.ts');
-const sessionBar        = readFile('components/auth/SessionBar.tsx');
 const logoutButton      = readFile('components/auth/LogoutButton.tsx');
 const forgotPage        = readFile('app/auth/forgot-password/page.tsx');
 const resetForm         = readFile('app/auth/reset-password/_form.tsx');
 
 // ─── 1. Admin layout contains logout (SessionBar) ────────────────────────────
 
-describe('Admin area — logout visible', () => {
-  it('admin layout imports SessionBar', () => {
-    expect(adminLayout).toContain('SessionBar');
-    expect(adminLayout).toContain("from '@/components/auth/SessionBar'");
+describe('Authenticated account controls — present exactly once, in the shared chrome', () => {
+  // KORA-WP-125 / Founder Decision 1 (2026-09-20): the authenticated account
+  // presentation was consolidated into the shared Product top chrome. Until
+  // then this block asserted a per-layout <SessionBar> in the Admin layout,
+  // the Company workspace and the Worker workspace — three copies of the same
+  // controls. The GUARANTEE is unchanged and is what is asserted here: every
+  // authenticated environment still exposes identity, role, credential change
+  // and logout, and now exposes them exactly once. Authentication logic itself
+  // was not touched — see the kora-session byte-equality test in
+  // tests/unit/kora-wp-125-shared-product-experience-foundation.test.ts.
+  const header      = readFile('components/layout/Header.tsx');
+  const accountMenu = readFile('components/auth/AccountMenu.tsx');
+
+  it('the shared top chrome renders the account surface exactly once', () => {
+    expect((header.match(/<AccountMenu \/>/g) ?? []).length).toBe(1);
   });
 
-  it('admin layout renders SessionBar with email and role', () => {
-    expect(adminLayout).toContain('email={auth.email}');
-    expect(adminLayout).toContain('role={auth.koraRole}');
+  it('it exposes identity, role, credential change and logout', () => {
+    expect(accountMenu).toContain('{email}');
+    expect(accountMenu).toContain('account-menu-role-badge');
+    expect(accountMenu).toContain('Cambia password');
+    expect(accountMenu).toContain('<LogoutButton');
+  });
+
+  it('it renders only for a real authenticated session', () => {
+    expect(accountMenu).toContain('if (!realRole) return null;');
+  });
+
+  it('no authenticated layout or page renders a second session bar', () => {
+    for (const f of [
+      'app/admin/layout.tsx',
+      'app/company/workspace/page.tsx',
+      'app/worker/workspace/page.tsx',
+      'app/worker/onboarding/page.tsx',
+      'app/worker/opportunities/page.tsx',
+      'app/worker/personal-impact-balance/page.tsx',
+    ]) {
+      expect(readFile(f), `${f} still renders a second session bar`).not.toContain('SessionBar');
+    }
+  });
+
+  it('the admin layout still performs its own server-side auth gate', () => {
+    expect(adminLayout).toContain('requireKoraAdmin()');
+    expect(adminLayout).toContain('isKoraAuthError(auth)');
   });
 });
 
 // ─── 2. Company workspace contains logout ─────────────────────────────────────
 
-describe('Company workspace — logout visible', () => {
-  it('company workspace page imports SessionBar', () => {
-    expect(companyWorkspace).toContain('SessionBar');
-    expect(companyWorkspace).toContain("from '@/components/auth/SessionBar'");
+describe('Company and Worker workspaces — server-side session resolution intact', () => {
+  // Their account controls now come from the shared chrome (block 1 above).
+  // What must still hold of the pages themselves is that each resolves its own
+  // session server-side; the consolidation did not change that.
+  it('the company workspace still resolves its authenticated user', () => {
+    expect(companyWorkspace).toMatch(/authResult|requireCompany/);
   });
 
-  it('company workspace renders SessionBar', () => {
-    expect(companyWorkspace).toContain('<SessionBar');
-  });
-});
-
-// ─── 3. Worker workspace contains logout ──────────────────────────────────────
-
-describe('Worker workspace — logout visible', () => {
-  it('worker workspace page imports SessionBar', () => {
-    expect(workerWorkspace).toContain('SessionBar');
-    expect(workerWorkspace).toContain("from '@/components/auth/SessionBar'");
-  });
-
-  it('worker workspace renders SessionBar with email and role', () => {
-    expect(workerWorkspace).toContain('<SessionBar');
-    expect(workerWorkspace).toContain('worker.email');
-    expect(workerWorkspace).toContain('worker.koraRole');
+  it('the worker workspace still resolves its authenticated worker', () => {
+    expect(workerWorkspace).toMatch(/worker\.|requireWorker/);
   });
 });
 
@@ -227,28 +248,42 @@ describe('/auth/callback — recovery handling', () => {
   });
 });
 
-// ─── 12. SessionBar shows email and role ─────────────────────────────────────
+// ─── 12. Session identity display ────────────────────────────────────────────
+//
+// KORA-WP-125 / Founder Decision 1 (2026-09-20). These four cases asserted the
+// identity surface against components/auth/SessionBar.tsx. That component was
+// the per-page account bar; the consolidation moved the surface into the shared
+// top chrome (AccountMenu) and left SessionBar with zero runtime importers, so
+// it has been deleted. THE INVARIANT IS UNCHANGED and is asserted here against
+// the component that actually renders it — which makes these assertions
+// stronger, not weaker: they now test live code instead of a dead file.
 
-describe('SessionBar — session identity display', () => {
-  it('SessionBar renders email prop', () => {
-    expect(sessionBar).toContain('{email}');
-    expect(sessionBar).toContain('email: string');
+describe('Session identity display — shared account surface', () => {
+  const accountMenu = readFile('components/auth/AccountMenu.tsx');
+
+  it('renders the authenticated email', () => {
+    expect(accountMenu).toContain('{email}');
+    expect(accountMenu).toContain('setEmail');
   });
 
-  it('SessionBar renders role badge', () => {
-    expect(sessionBar).toContain('ROLE_BADGE');
-    expect(sessionBar).toContain('KORA_ADMIN');
-    expect(sessionBar).toContain('COMPANY_ADMIN');
-    expect(sessionBar).toContain('WORKER');
+  it('renders the role badge for every authenticated role', () => {
+    expect(accountMenu).toContain('ROLE_BADGE');
+    expect(accountMenu).toContain('KORA_ADMIN');
+    expect(accountMenu).toContain('COMPANY_ADMIN');
+    expect(accountMenu).toContain('WORKER');
   });
 
-  it('SessionBar contains logout button', () => {
-    expect(sessionBar).toContain('LogoutButton');
+  it('contains the logout control', () => {
+    expect(accountMenu).toContain('LogoutButton');
   });
 
-  it('SessionBar contains change-password link', () => {
-    expect(sessionBar).toContain('/auth/forgot-password');
-    expect(sessionBar).toContain('Cambia password');
+  it('contains the change-password link', () => {
+    expect(accountMenu).toContain('/auth/forgot-password');
+    expect(accountMenu).toContain('Cambia password');
+  });
+
+  it('the retired per-page SessionBar is gone, not merely unused', () => {
+    expect(fs.existsSync(path.join(ROOT, 'components/auth/SessionBar.tsx'))).toBe(false);
   });
 });
 

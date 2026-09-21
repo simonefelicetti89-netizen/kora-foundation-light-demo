@@ -5,21 +5,16 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { useRole, useEnvironment } from '@/lib/demo-state';
-import { resolveRealRoleFromSession, resolveBannerEnvironment } from '@/lib/demo-state/demo-controls-guard';
-import type { BannerEnvironment } from '@/lib/demo-state/demo-controls-guard';
+import { useRole } from '@/lib/demo-state';
+import { resolveRealRoleFromSession } from '@/lib/demo-state/demo-controls-guard';
 import { isWorkerRole, isAdminRole } from '@/lib/permissions';
 import { KoraLogo } from '@/components/brand/KoraLogo';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { PX, TOKENS } from '@/lib/design/kora-design-tokens';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { ADMIN_NAV_GROUPS } from '@/lib/navigation/admin-nav-groups';
 import { useSidebarDrawer, SIDEBAR_DRAWER_ID } from '@/components/layout/SidebarDrawerContext';
-
-const ENV_LABEL: Record<string, string> = {
-  demo:   'DEMO',
-  live:   'LIVE',
-  future: 'ROADMAP',
-};
+import { navIconFor } from '@/components/layout/nav-icons';
+import { usePxShellState } from '@/components/layout/usePxShellState';
 
 const ROLE_DISPLAY: Record<string, string> = {
   KORA_ADMIN:    'KORA Admin',
@@ -170,7 +165,18 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
             description: 'Catalogo partner — informativo, nessuna prenotazione',
             preview: isAdminPreview ? true : undefined,
           },
-          { href: '/my-kora/kora-space', label: 'KORA Space (Anteprima)', description: 'Dati sintetici — non il tuo spazio reale', preview: true },
+          // REMOVED by explicit Founder ruling, 2026-09-20 (KORA-WP-125 §1).
+          // The entry '/my-kora/kora-space' — label "KORA Space (Anteprima)",
+          // description "Dati sintetici — non il tuo spazio reale" — was an
+          // automatic synthetic indication in normal Worker navigation.
+          // The Founder ruled that "One Product / No Demo Runtime"
+          // (Governance Patch 03, 2026-08-31) and the 2026-09-06 Architecture
+          // Registry correction supersede KORA-WP-073's older protection of
+          // this demo-era duplicate. Nothing is lost: the route is a redirect
+          // stub (app/my-kora/kora-space/page.tsx -> '/worker/commons') and
+          // the canonical real destination '/worker/commons' is the next item
+          // below, unchanged. Worker navigation now exposes ONE real KORA
+          // Space destination instead of a real one plus a synthetic double.
           { href: '/worker/commons',   label: 'KORA Space', description: 'Iniziative e contenuti reali della tua azienda' },
           { href: '/worker/activity-discovery', label: 'Attività disponibili', description: 'Anteprima design — attività partner standard, Fase 2', preview: true },
           {
@@ -215,24 +221,27 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         items: [
           { href: '/partner/workspace', label: 'Workspace Partner' },
           { href: '/partner/kora-link', label: 'KORA Link' },
-          { href: '/partner/kora-link/initiatives', label: 'Iniziative KORA Link', description: 'Anteprima design — dati mock', preview: true },
-          { href: '/demo/guide',  label: 'Demo Guide' },
+          { href: '/partner/kora-link/initiatives', label: 'Iniziative KORA Link', description: 'Capability definita, non ancora attiva', preview: true },
+          // 'Demo Guide' -> /demo/guide removed (KORA-WP-125): the route was
+          // DELETED by the CC-00 demo retirement (2026-09-05), so this was a
+          // broken link, and a demo destination is not permitted in
+          // authenticated Product navigation (Governance Patch 03).
         ],
       },
       {
         heading: 'Iniziative & Community',
         items: [
-          { href: '/partner/initiatives', label: 'Proposte Partner', description: 'Anteprima design — dati mock', preview: true },
-          { href: '/partner/relationships', label: 'Relazioni con i lavoratori', description: 'Anteprima design — dati mock', preview: true },
-          { href: '/partner/aggregate-signals', label: 'Segnali aggregati', description: 'Anteprima design — dati mock', preview: true },
+          { href: '/partner/initiatives', label: 'Proposte Partner', description: 'Capability definita, non ancora attiva', preview: true },
+          { href: '/partner/relationships', label: 'Relazioni con i lavoratori', description: 'Capability definita, non ancora attiva', preview: true },
+          { href: '/partner/aggregate-signals', label: 'Segnali aggregati', description: 'Capability definita, non ancora attiva', preview: true },
           { href: '/partner/privacy-boundary', label: 'Confine privacy', description: 'Anteprima design', preview: true },
         ],
       },
       {
         heading: 'Catalogo Attività',
         items: [
-          { href: '/partner/activity-catalog', label: 'Catalogo Attività', description: 'Anteprima design — dati mock', preview: true },
-          { href: '/partner/activity-bookings', label: 'Richieste attività', description: 'Anteprima design — dati mock', preview: true },
+          { href: '/partner/activity-catalog', label: 'Catalogo Attività', description: 'Capability definita, non ancora attiva', preview: true },
+          { href: '/partner/activity-bookings', label: 'Richieste attività', description: 'Capability definita, non ancora attiva', preview: true },
         ],
       },
       {
@@ -245,19 +254,26 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
   }
 
   // ── Advisor: governance workspace ────────────────────────────────────────────
+  // KORA-WP-125 (2026-09-20) — DEFECT REPAIR, not an IA redesign.
+  // Every destination in this branch used to be a demo route, and two of them
+  // pointed at routes that NO LONGER EXIST (`app/demo/advisor` and
+  // `app/demo/guide` were deleted by the CC-00 demo retirement, 2026-09-05).
+  // Report `.kora-audit/output/18_UI_REACHABILITY.md` names this exact branch
+  // as "the one confirmed, concrete broken-navigation defect found in this
+  // entire audit". It also breaches "One Product / No Demo Runtime"
+  // (Governance Patch 03), which forbids demo destinations in authenticated
+  // Product navigation.
+  // The branch now points at the Advisor routes that actually ship:
+  // `/advisor` (KORA-WP-030 self-view) and `/advisor/companies` (KORA-WP-033).
+  // No destination is invented — both routes exist and are already guarded by
+  // app/advisor/layout.tsx's requireAdvisorUser().
   if (role === 'ADVISOR') {
     return [
       {
         heading: 'Workspace Advisor',
         items: [
-          { href: '/demo/advisor', label: 'Review & Governance' },
-          { href: '/demo/guide',   label: 'Demo Guide' },
-        ],
-      },
-      {
-        heading: 'Roadmap',
-        items: [
-          { href: '/demo/future-vision', label: 'Future Vision', inactive: true },
+          { href: '/advisor',           label: 'Il tuo profilo', description: 'Identità e qualifiche di ruolo' },
+          { href: '/advisor/companies', label: 'Le tue Company', description: 'Company su cui hai un\'assegnazione attiva' },
         ],
       },
     ];
@@ -268,7 +284,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
     {
       heading: 'KORA',
       items: [
-        { href: '/demo/guide',        label: 'Demo Guide' },
+        // 'Demo Guide' -> /demo/guide removed (KORA-WP-125): deleted route.
         { href: '/demo/future-vision', label: 'Future Vision', inactive: true },
       ],
     },
@@ -298,7 +314,6 @@ export function resolveNavRole(realRole: string | null | undefined, activeRole: 
 
 export function Sidebar() {
   const { activeRole } = useRole();
-  const { activeEnvironment } = useEnvironment();
   const pathname = usePathname();
 
   // B117-G: read real Supabase session role to detect admin-preview mode.
@@ -317,8 +332,6 @@ export function Sidebar() {
 
   // isAdminPreview: real session is KORA_ADMIN but demo state shows WORKER navigation
   const isAdminPreview = realRole === 'KORA_ADMIN' && isWorkerRole(activeRole as Parameters<typeof isWorkerRole>[0]);
-  // effectiveEnv: null during pending (no badge), 'live' for real users, activeEnvironment for demo/KORA_ADMIN
-  const effectiveEnv = resolveBannerEnvironment(realRole, activeEnvironment as BannerEnvironment);
 
   // Extract companyId from /admin/companies/[companyId]/... but not from /admin/companies/new.
   const companyIdMatch = pathname.match(/^\/admin\/companies\/([^/]+)(?:\/|$)/);
@@ -352,16 +365,27 @@ export function Sidebar() {
     if (!isAdmin) return;
     setExpandedGroups((prev) => {
       if (Object.keys(prev).length > 0) return prev;
+      // KORA-WP-125 (§5): Admin groups open by default. Collapsed-by-default
+      // left a 248px column showing seven labels and no destinations — a
+      // navigation surface that navigates nowhere. The groups remain
+      // collapsible and the operator's choices are still honoured; only the
+      // initial state changed. No route, label, grouping or role visibility is
+      // affected, so KORA-WP-073's IA semantics are untouched.
       const init: Record<string, boolean> = {};
-      for (const group of ADMIN_NAV_GROUPS) {
-        init[group.id] = group.items.some(
-          (item) => pathname === item.href ||
-            (item.href !== '/admin/companies' && pathname.startsWith(item.href + '/')),
-        );
-      }
+      for (const group of ADMIN_NAV_GROUPS) init[group.id] = true;
       return init;
     });
-  }, [isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isAdmin]);
+
+  // KORA-WP-125 (D-A): in the rail the group header — which is also the only
+  // expand control for Admin — is not rendered, so a collapsed Admin group
+  // would leave the rail with no reachable destinations at all. In the rail
+  // every group is therefore presented expanded. This changes PRESENTATION
+  // only: the same groups, the same items, the same hrefs, the same role
+  // visibility. The operator's own expand/collapse choices are kept in state
+  // and restored verbatim as soon as the sidebar returns to its full width.
+  const shellState = usePxShellState();
+  const railFlattened = shellState === 'rail';
 
   function toggleGroup(id: string) {
     setExpandedGroups((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -402,315 +426,371 @@ export function Sidebar() {
     <aside
       id={SIDEBAR_DRAWER_ID}
       className={[
-        'flex flex-col bg-kora-sidebar',
-        'w-[264px] min-w-[264px] shrink-0',
+        // WP-125: width is owned by .px-nav so one rule drives all three shell
+        // states (248 / 68 / drawer). The md: and translate classes below are
+        // unchanged — they are the KORA-WP-088 mobile-drawer contract.
+        'px-nav flex flex-col shrink-0 min-h-0',
         // mobile: fixed off-canvas drawer
         'fixed inset-y-0 left-0 z-50 overflow-y-auto transition-transform duration-200',
         drawer.open ? 'translate-x-0' : '-translate-x-full',
         // md+: original static column, always visible
         'md:static md:z-auto md:translate-x-0 md:overflow-visible md:transition-none',
       ].join(' ')}
-      style={{
-        borderRight: '1px solid rgba(255,255,255,0.06)',
-      }}
     >
-      {/* Logo — KoraLogo asset reale, variante on-dark */}
-      <div
-        className="flex items-center"
-        style={{
-          paddingTop:    28,
-          paddingBottom: 24,
-          paddingLeft:   24,
-          paddingRight:  20,
-          borderBottom:  '1px solid rgba(255,255,255,0.07)',
-          minHeight:     72,
-        }}
-      >
-        <KoraLogo variant="on-dark" className="h-[26px] w-auto" />
-      </div>
-
-      {/* Nav — skeleton while session is unresolved (zero hrefs in DOM) */}
-      {isPending ? (
-        <nav
-          className="flex-1 overflow-y-auto py-4 px-2"
-          aria-label="Navigazione principale"
-          aria-busy="true"
-          data-pending="true"
+      {/* The aside stretches to the full page height so the dark column is
+          continuous; this inner block is what actually pins. Keeping the
+          pinned part to one viewport is what stops a long navigation from
+          setting the document height (see globals.css, .px-nav-inner). */}
+      <div className="px-nav-inner flex flex-col">
+        {/* Logo — KoraLogo asset reale, variante on-dark */}
+        <div
+          className="px-nav-brand flex items-center"
+          style={{
+            paddingTop:    24,
+            paddingBottom: 20,
+            paddingLeft:   20,
+            paddingRight:  18,
+            borderBottom:  '1px solid var(--px-nav-line)',
+            minHeight:     64,
+          }}
         >
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              style={{
-                margin:       '1px 4px',
-                marginBottom: 6,
-                height:       32,
-                borderRadius: 12,
-                background:   'rgba(255,255,255,0.05)',
-              }}
-            />
-          ))}
-        </nav>
-      ) : (
-      <nav
-        className="flex-1 overflow-y-auto py-4 px-2"
-        aria-label="Navigazione principale"
-      >
-        {groups.map((group, groupIdx) => {
-          // For admin: use group id from ADMIN_NAV_GROUPS for collapse state.
-          const adminGroup = isAdmin ? ADMIN_NAV_GROUPS[groupIdx] : null;
-          const groupId    = adminGroup?.id ?? group.heading;
-          const isExpanded = isAdmin ? (expandedGroups[groupId] ?? false) : true;
+          <span className="px-nav-wordmark flex items-center">
+            <KoraLogo variant="on-dark" className="h-[24px] w-auto" />
+          </span>
+          {/* Rail: the wordmark is hidden by CSS and this compact mark stands in,
+              so the collapsed shell is still identifiably KORA. Brand geometry,
+              not an icon — it appears once, in the shell (HANDOFF §19). */}
+          <span
+            className="px-nav-mark"
+            aria-hidden="true"
+            style={{
+              display: 'none', width: 30, height: 30, borderRadius: 9,
+              background: 'rgba(97,86,245,0.18)', border: '1px solid rgba(97,86,245,0.42)',
+              color: PX.onViolet, fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em',
+              alignItems: 'center', justifyContent: 'center', fontFamily: PX.sans,
+            }}
+          >
+            K
+          </span>
+        </div>
 
-          return (
-          <div key={group.heading} className="mb-5">
-            {/* Section heading + badge — clickable for admin (toggle collapse) */}
-            {isAdmin ? (
-              <button
-                type="button"
-                onClick={() => toggleGroup(groupId)}
-                className="w-full flex items-center gap-1.5 px-3 pb-1.5 text-left hover:opacity-75 transition-opacity"
-                aria-expanded={isExpanded}
-              >
-                <p
-                  className="text-[9px] font-bold uppercase tracking-[0.20em] flex-1"
-                  style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
+        {/* Nav — skeleton while session is unresolved (zero hrefs in DOM) */}
+        {isPending ? (
+          <nav
+            className="flex-1 min-h-0 overflow-y-auto py-4 px-2"
+            aria-label="Navigazione principale"
+            aria-busy="true"
+            data-pending="true"
+          >
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                style={{
+                  margin:       '1px 4px',
+                  marginBottom: 6,
+                  height:       32,
+                  borderRadius: 12,
+                  background:   'rgba(255,255,255,0.05)',
+                }}
+              />
+            ))}
+          </nav>
+        ) : (
+        <nav
+          className="flex-1 min-h-0 overflow-y-auto py-4 px-2"
+          aria-label="Navigazione principale"
+        >
+          {groups.map((group, groupIdx) => {
+            // For admin: use group id from ADMIN_NAV_GROUPS for collapse state.
+            const adminGroup = isAdmin ? ADMIN_NAV_GROUPS[groupIdx] : null;
+            const groupId    = adminGroup?.id ?? group.heading;
+            const isExpanded = isAdmin ? (railFlattened || (expandedGroups[groupId] ?? false)) : true;
+
+            return (
+            <div key={group.heading} className="mb-5">
+              {/* Section heading + badge — clickable for admin (toggle collapse) */}
+              {isAdmin ? (
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(groupId)}
+                  className="w-full flex items-center gap-1.5 px-3 pb-1.5 text-left hover:opacity-75 transition-opacity"
+                  aria-expanded={isExpanded}
                 >
-                  {group.heading}
-                </p>
-                {group.groupBadge && group.badgeKey && (
-                  <span
-                    style={{
-                      borderRadius: 4,
-                      padding:      '1px 5px',
-                      fontSize:     '7.5px',
-                      fontWeight:   700,
-                      letterSpacing: '0.08em',
-                      textTransform: 'uppercase',
-                      fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                      ...BADGE[group.badgeKey],
-                    }}
+                  <p
+                    className="px-nav-group-label text-[10px] font-extrabold uppercase tracking-[0.12em] flex-1"
+                    style={{ color: 'var(--px-nav-group-label)', fontFamily: PX.sans }}
                   >
-                    {group.groupBadge}
-                  </span>
-                )}
-                <span style={{ color: 'rgba(255,255,255,0.20)', fontSize: '8px', marginLeft: 2 }}>
-                  {isExpanded ? '▾' : '▸'}
-                </span>
-              </button>
-            ) : (
-              <div className="flex items-center gap-1.5 px-3 pb-1.5">
-                <p
-                  className="text-[9px] font-bold uppercase tracking-[0.20em]"
-                  style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
-                >
-                  {group.heading}
-                </p>
-                {group.groupBadge && group.badgeKey && (
-                  <span
-                    style={{
-                      borderRadius: 4,
-                      padding:      '1px 5px',
-                      fontSize:     '7.5px',
-                      fontWeight:   700,
-                      letterSpacing: '0.08em',
-                      textTransform: 'uppercase',
-                      fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                      ...BADGE[group.badgeKey],
-                    }}
-                  >
-                    {group.groupBadge}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Nav items — hidden when group is collapsed (admin only) */}
-            {isExpanded && group.items.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== '/company' && pathname.startsWith(item.href)) ||
-                (item.href.includes('#') && pathname === item.href.split('#')[0]);
-
-              const isDisabled = item.comingSoon || item.inactive;
-
-              const sharedStyle: React.CSSProperties = {
-                fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                margin:        '1px 4px',
-                display:       'flex',
-                alignItems:    'center',
-                justifyContent: 'space-between',
-                borderRadius:  12,
-                padding:       '7px 12px',
-                fontSize:      '13px',
-                fontWeight:    500,
-                transition:    'all 150ms',
-                opacity:       isDisabled ? 0.40 : 1,
-                cursor:        isDisabled ? 'not-allowed' : 'pointer',
-                pointerEvents: isDisabled ? 'none' : undefined,
-                color:         isActive ? '#FFFFFF' : 'rgba(255,255,255,0.65)',
-                ...(isActive && !isDisabled
-                  ? {
-                      background: TOKENS.accent,
-                      border:     '1px solid rgba(255,255,255,0.10)',
-                      boxShadow:  '0 6px 20px rgba(199,111,61,0.22)',
-                    }
-                  : {}),
-              };
-
-              const innerContent = (
-                <>
-                  <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
-                      {item.label}
+                    {group.heading}
+                  </p>
+                  {group.groupBadge && group.badgeKey && (
+                    <span
+                      className="px-nav-badge"
+                      style={{
+                        borderRadius: 4,
+                        padding:      '1px 5px',
+                        fontSize:     '7.5px',
+                        fontWeight:   700,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                        ...BADGE[group.badgeKey],
+                      }}
+                    >
+                      {group.groupBadge}
                     </span>
-                    {item.description && (
-                      <span style={{ display: 'block', fontSize: '9px', color: 'rgba(255,255,255,0.30)', fontWeight: 400, marginTop: 1, whiteSpace: 'normal', lineHeight: 1.2, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-                        {item.description}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 4 }}>
-                    {item.preview && (
-                      <span
-                        style={{
-                          borderRadius: 4,
-                          padding:      '1px 5px',
-                          fontSize:     '8px',
-                          fontWeight:   700,
-                          fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                          background:   'rgba(199,111,61,0.22)',
-                          color:        'rgba(199,111,61,0.95)',
-                          border:       '1px solid rgba(199,111,61,0.35)',
-                        }}
-                      >
-                        preview
-                      </span>
-                    )}
-                    {item.comingSoon && (
-                      <span
-                        style={{
-                          borderRadius: 4,
-                          padding:      '1px 5px',
-                          fontSize:     '8px',
-                          fontWeight:   600,
-                          fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                          background:   'rgba(255,255,255,0.07)',
-                          color:        'rgba(255,255,255,0.35)',
-                        }}
-                      >
-                        preview
-                      </span>
-                    )}
-                    {item.inactive && (
-                      <span
-                        style={{
-                          borderRadius: 4,
-                          padding:      '1px 5px',
-                          fontSize:     '8px',
-                          fontWeight:   600,
-                          fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                          background:   'rgba(199,111,61,0.14)',
-                          color:        'rgba(199,111,61,0.70)',
-                        }}
-                      >
-                        inattivo
-                      </span>
-                    )}
-                  </div>
-                </>
-              );
+                  )}
+                  <span className="px-nav-caret" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '8px', marginLeft: 2 }}>
+                    {isExpanded ? '▾' : '▸'}
+                  </span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5 px-3 pb-1.5">
+                  <p
+                    className="px-nav-group-label text-[10px] font-extrabold uppercase tracking-[0.12em]"
+                    style={{ color: 'var(--px-nav-group-label)', fontFamily: PX.sans }}
+                  >
+                    {group.heading}
+                  </p>
+                  {group.groupBadge && group.badgeKey && (
+                    <span
+                      className="px-nav-badge"
+                      style={{
+                        borderRadius: 4,
+                        padding:      '1px 5px',
+                        fontSize:     '7.5px',
+                        fontWeight:   700,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                        ...BADGE[group.badgeKey],
+                      }}
+                    >
+                      {group.groupBadge}
+                    </span>
+                  )}
+                </div>
+              )}
 
-              // B80-B: inactive and comingSoon items are NOT rendered as navigable links.
-              // They render as non-interactive div elements with pointer-events: none.
-              if (isDisabled) {
+              {/* Nav items — hidden when group is collapsed (admin only) */}
+              {isExpanded && group.items.map((item) => {
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== '/company' && pathname.startsWith(item.href)) ||
+                  (item.href.includes('#') && pathname === item.href.split('#')[0]);
+
+                const isDisabled = item.comingSoon || item.inactive;
+
+                // WP-125 / HANDOFF §2 + §7: navigation is Product register, so
+                // selection is Violet with an inset ring and a left edge marker —
+                // never a plain filled block, and never an earth tone (HANDOFF §7
+                // names an earth tone on a nav item a defect). Geometry only; the
+                // route, label, role visibility and grouping are untouched.
+                const sharedStyle: React.CSSProperties = {
+                  position:      'relative',
+                  fontFamily:    PX.sans,
+                  margin:        '1px 8px',
+                  display:       'flex',
+                  alignItems:    'center',
+                  justifyContent: 'space-between',
+                  gap:           10,
+                  borderRadius:  PX.rCtl,
+                  padding:       '8px 10px',
+                  fontSize:      '13px',
+                  fontWeight:    600,
+                  letterSpacing: '-0.005em',
+                  transition:    `background ${PX.t1} ${PX.ease}, color ${PX.t1} ${PX.ease}`,
+                  opacity:       isDisabled ? 0.40 : 1,
+                  cursor:        isDisabled ? 'not-allowed' : 'pointer',
+                  pointerEvents: isDisabled ? 'none' : undefined,
+                  color:         isActive ? PX.onViolet : 'var(--px-nav-item)',
+                  ...(isActive && !isDisabled
+                    ? {
+                        background: 'rgba(97,86,245,0.22)',
+                        boxShadow:  `inset 0 0 0 1px ${PX.violetEdge}, inset 3px 0 0 ${PX.violet}`,
+                      }
+                    : {}),
+                };
+
+                // Rail glyph — presentation only. In the rail the label is
+                // hidden visually but the item keeps its accessible name, so the
+                // navigation MEANING is identical in all three shell states.
+                const NavIcon = navIconFor(item.href);
+
+                const innerContent = (
+                  <>
+                    <NavIcon
+                      size={16}
+                      strokeWidth={2}
+                      aria-hidden="true"
+                      className="px-nav-icon"
+                      style={{ flex: 'none', opacity: isActive ? 1 : 0.8 }}
+                    />
+                    <div className="px-nav-label" style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                      {/* KORA-WP-125 §3: canonical Product labels are never
+                          shortened to fit the component. At the full 248px state
+                          a long label wraps to at most two lines — no ellipsis —
+                          so "KORA Link — Governance (Anteprima)" and
+                          "Partner Ecosystem Model" read in full. The clamp keeps
+                          row rhythm coherent; the accessible name is the whole
+                          label regardless (aria-label on the link). */}
+                      <span className="px-nav-text" style={{ display: 'block', lineHeight: 1.3 }}>
+                        {item.label}
+                      </span>
+                      {item.description && (
+                        <span className="px-nav-desc" style={{ display: 'block', fontSize: '10px', color: 'rgba(255,255,255,0.52)', fontWeight: 500, marginTop: 1, whiteSpace: 'normal', lineHeight: 1.25, fontFamily: PX.sans }}>
+                          {item.description}
+                        </span>
+                      )}
+                    </div>
+                    <div className="px-nav-badge" style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 4 }}>
+                      {item.preview && (
+                        <span
+                          style={{
+                            borderRadius: 4,
+                            padding:      '1px 5px',
+                            fontSize:     '8px',
+                            fontWeight:   700,
+                            fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                            background:   'rgba(199,111,61,0.22)',
+                            color:        'rgba(199,111,61,0.95)',
+                            border:       '1px solid rgba(199,111,61,0.35)',
+                          }}
+                        >
+                          preview
+                        </span>
+                      )}
+                      {item.comingSoon && (
+                        <span
+                          style={{
+                            borderRadius: 4,
+                            padding:      '1px 5px',
+                            fontSize:     '8px',
+                            fontWeight:   600,
+                            fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                            background:   'rgba(255,255,255,0.07)',
+                            color:        'rgba(255,255,255,0.35)',
+                          }}
+                        >
+                          preview
+                        </span>
+                      )}
+                      {item.inactive && (
+                        <span
+                          style={{
+                            borderRadius: 4,
+                            padding:      '1px 5px',
+                            fontSize:     '8px',
+                            fontWeight:   600,
+                            fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                            background:   'rgba(199,111,61,0.14)',
+                            color:        'rgba(199,111,61,0.70)',
+                          }}
+                        >
+                          inattivo
+                        </span>
+                      )}
+                    </div>
+                  </>
+                );
+
+                // B80-B: inactive and comingSoon items are NOT rendered as navigable links.
+                // They render as non-interactive div elements with pointer-events: none.
+                if (isDisabled) {
+                  return (
+                    <div
+                      key={item.href}
+                      aria-hidden="true"
+                      title="Non attivo in Foundation Light"
+                      className="px-nav-item"
+                      style={sharedStyle}
+                    >
+                      {innerContent}
+                    </div>
+                  );
+                }
+
                 return (
-                  <div
+                  <Link
                     key={item.href}
-                    aria-hidden="true"
-                    title="Non attivo in Foundation Light"
+                    href={item.href}
+                    aria-current={isActive ? 'page' : undefined}
+                    // The accessible name is stated explicitly so the collapsed
+                    // rail, where the label is visually hidden, is identical to
+                    // the full sidebar for assistive technology (HANDOFF §19).
+                    aria-label={item.label}
+                    title={item.label}
+                    className="px-nav-item"
                     style={sharedStyle}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        (e.currentTarget as HTMLElement).style.background = 'var(--px-nav-item-hover)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        (e.currentTarget as HTMLElement).style.background = '';
+                      }
+                    }}
                   >
                     {innerContent}
-                  </div>
+                  </Link>
                 );
-              }
+              })}
+            </div>
+            );
+          })}
+        </nav>
+        )}
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive ? 'page' : undefined}
-                  style={sharedStyle}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      (e.currentTarget as HTMLElement).style.background = '';
-                    }
-                  }}
-                >
-                  {innerContent}
-                </Link>
-              );
-            })}
-          </div>
-          );
-        })}
-      </nav>
-      )}
-
-      {/* Footer — role + environment; skeleton while pending */}
-      <div
-        className="px-4 pt-3 pb-4 mt-auto"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
-      >
-        {isPending ? (
+        {/* Footer — role + environment; skeleton while pending */}
+        <div
+          className="px-nav-foot px-4 pt-3 pb-4 mt-auto"
+          style={{ borderTop: '1px solid var(--px-nav-line)' }}
+        >
+          {isPending ? (
+            <div
+              className="flex items-center gap-2 rounded-xl px-3 py-2.5"
+              style={{ background: 'rgba(255,255,255,0.05)' }}
+            >
+              <div className="flex-shrink-0 w-7 h-7 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              <div style={{ height: 10, width: '55%', background: 'rgba(255,255,255,0.08)', borderRadius: 6 }} />
+            </div>
+          ) : (
           <div
             className="flex items-center gap-2 rounded-xl px-3 py-2.5"
             style={{ background: 'rgba(255,255,255,0.05)' }}
           >
-            <div className="flex-shrink-0 w-7 h-7 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
-            <div style={{ height: 10, width: '55%', background: 'rgba(255,255,255,0.08)', borderRadius: 6 }} />
-          </div>
-        ) : (
-        <div
-          className="flex items-center gap-2 rounded-xl px-3 py-2.5"
-          style={{ background: 'rgba(255,255,255,0.05)' }}
-        >
-          {/* Avatar initials */}
-          <div
-            className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold"
-            aria-hidden="true"
-            style={{
-              background:  'rgba(199,111,61,0.20)',
-              border:      `1.5px solid ${TOKENS.accent}`,
-              color:       TOKENS.accent,
-              fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            }}
-          >
-            {roleLabel.charAt(0)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p
-              className="text-[10.5px] font-semibold leading-tight truncate"
-              style={{ color: 'rgba(255,255,255,0.88)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
+            {/* Avatar initials */}
+            <div
+              className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold"
+              aria-hidden="true"
+              style={{
+                background:  'rgba(199,111,61,0.20)',
+                border:      `1.5px solid ${TOKENS.accent}`,
+                color:       TOKENS.accent,
+                fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+              }}
             >
-              {roleLabel}
-            </p>
-            {effectiveEnv !== null && (
+              {roleLabel.charAt(0)}
+            </div>
+            <div className="px-nav-label flex-1 min-w-0">
               <p
-                className="text-[8.5px] font-semibold uppercase tracking-[0.10em] mt-0.5"
-                style={{ color: 'rgba(199,111,61,0.75)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
+                className="text-[10.5px] font-semibold leading-tight truncate"
+                style={{ color: 'rgba(255,255,255,0.88)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
               >
-                {ENV_LABEL[effectiveEnv]}
+                {roleLabel}
               </p>
-            )}
+              {/* KORA-WP-125 / One Product / No Demo Runtime (Governance Patch 03,
+                  2026-08-31): the automatic DEMO / LIVE / ROADMAP environment
+                  badge is removed. It was an architecture-driven environment
+                  indication in the authenticated Product, which the ruling
+                  forbids; `tenant_kind` and data origin may never alter
+                  customer-facing copy. The role label above is real session
+                  context and stays. */}
+            </div>
           </div>
+          )}
         </div>
-        )}
       </div>
     </aside>
     </>

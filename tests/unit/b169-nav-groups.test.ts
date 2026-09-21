@@ -19,26 +19,50 @@ function exists(rel: string): boolean {
 // ── Group count and IDs ───────────────────────────────────────────────────────
 
 describe('ADMIN_NAV_GROUPS — structure', () => {
-  it('has exactly 7 groups', () => {
+  // ── Updated by KORA-WP-125, 2026-09-20 ────────────────────────────────────
+  // Authority: docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md
+  // ("One Product / No Demo Runtime", Founder ruling 2026-08-31) + Master Plan
+  // v2.1 §13. The 'demo-lab' group carried a SYNTHETIC badge and existed to
+  // orchestrate a demo experience, which the ruling forbids in the
+  // authenticated Product. INVARIANT PRESERVED: the Admin navigation is
+  // data-driven, its structure is pinned here, and widening it stays a visible
+  // test edit. Its three destinations were classified before removal —
+  // /commons (real capability) moved to 'network-content', /admin/demo/acme-001
+  // (demo-only) left the Product navigation, /admin/operator escalated as
+  // UNKNOWN. See the retirement note in lib/navigation/admin-nav-groups.ts.
+  it('has exactly 6 groups', () => {
     // GOVERNANCE-UI-01 added a dedicated 'governance' group — platform-wide
     // credibility surface, deliberately not nested inside 'operations'.
-    expect(ADMIN_NAV_GROUPS).toHaveLength(7);
+    // 7 -> 6: 'demo-lab' retired (see the note above).
+    expect(ADMIN_NAV_GROUPS).toHaveLength(6);
   });
 
-  it('group IDs are: pilot-lifecycle, companies, governance, operations, network-content, demo-lab, platform', () => {
-    const ids = ADMIN_NAV_GROUPS.map((g) => g.id);
-    expect(ids).toContain('pilot-lifecycle');
-    expect(ids).toContain('companies');
-    expect(ids).toContain('governance');
-    expect(ids).toContain('operations');
-    expect(ids).toContain('network-content');
-    expect(ids).toContain('demo-lab');
-    expect(ids).toContain('platform');
+  it('group IDs are exactly: pilot-lifecycle, companies, governance, operations, network-content, platform', () => {
+    expect(ADMIN_NAV_GROUPS.map((g) => g.id)).toEqual([
+      'pilot-lifecycle', 'companies', 'governance', 'operations', 'network-content', 'platform',
+    ]);
   });
 
-  it('demo-lab group has environmentTag SYNTHETIC', () => {
-    const demoLab = ADMIN_NAV_GROUPS.find((g) => g.id === 'demo-lab');
-    expect(demoLab?.environmentTag).toBe('SYNTHETIC');
+  it('no group is a demo-orchestration group, and none is tagged SYNTHETIC', () => {
+    expect(ADMIN_NAV_GROUPS.find((g) => g.id === 'demo-lab')).toBeUndefined();
+    for (const g of ADMIN_NAV_GROUPS) {
+      expect(g.environmentTag, `${g.id} carries an environment tag`).toBeUndefined();
+      expect(g.label).not.toMatch(/demo|synthetic|sintetic/i);
+    }
+  });
+
+  it('no Admin destination is demo-only, and none advertises synthetic data', () => {
+    for (const g of ADMIN_NAV_GROUPS) {
+      for (const item of g.items) {
+        expect(item.href, `${item.href} is a demo route`).not.toMatch(/^\/admin\/demo(\/|$)/);
+        expect(item.label, `"${item.label}" advertises demo/synthetic`).not.toMatch(/demo|synthetic|sintetic/i);
+      }
+    }
+  });
+
+  it('the real /commons capability survived the retirement, relocated not deleted', () => {
+    const net = ADMIN_NAV_GROUPS.find((g) => g.id === 'network-content');
+    expect(net?.items.some((i) => i.href === '/commons')).toBe(true);
   });
 
   it('no other group has an environmentTag', () => {

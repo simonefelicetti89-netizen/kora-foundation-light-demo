@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 import { useEnvironment } from '@/lib/demo-state';
 import { resolveRealRoleFromSession, resolveBannerEnvironment } from '@/lib/demo-state/demo-controls-guard';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { TriangleAlert } from 'lucide-react';
+import { PX } from '@/lib/design/kora-design-tokens';
 import type { Environment } from '@/lib/types';
 
 const ENV_BANNER: Record<Environment, { main: string; secondary: string }> = {
@@ -47,36 +49,61 @@ export function SyntheticDataBanner() {
 
   const { main, secondary } = ENV_BANNER[effectiveEnv];
 
+  // KORA-WP-125 — presentation remediation authorized by the Founder
+  // (2026-09-20). The legacy full-bleed bright-orange strip is replaced by the
+  // WP-124 warning language: a 3px left bar + icon + text (HANDOFF §12), with
+  // severity carried by bar, icon AND wording together — never colour alone.
+  //
+  // WHAT DID NOT CHANGE, and must not: the wording of `main` and `secondary`
+  // is byte-identical; the banner is still rendered unconditionally by the
+  // shared shell for every environment that requires it; it is still the
+  // first thing in the authenticated document; `role="banner"` and the
+  // environment aria-label are unchanged. It is a warning, it is visible, it
+  // is not dismissible, and it says exactly what it said before.
   return (
     <div
       role="banner"
       aria-label={`Ambiente corrente: ${activeEnvironment}`}
-      className="w-full px-4 py-2 text-center text-white"
-      style={{ backgroundColor: 'var(--env-accent)', flexShrink: 0 }}
+      className="w-full"
+      style={{
+        flexShrink:   0,
+        display:      'flex',
+        gap:          10,
+        alignItems:   'flex-start',
+        padding:      '10px 24px',
+        background:   PX.warnTint,
+        color:        PX.warnText,
+        boxShadow:    `inset 3px 0 0 ${PX.warn}`,
+        borderBottom: `1px solid ${PX.line}`,
+      }}
     >
-      <p
-        style={{
-          fontFamily:    FONT,
-          fontSize:      '11px',
-          fontWeight:    700,
-          letterSpacing: '0.06em',
-          lineHeight:    1.3,
-        }}
-      >
-        {main}
-      </p>
-      <p
-        style={{
-          fontFamily: FONT,
-          fontSize:   '10px',
-          fontWeight: 400,
-          opacity:    0.82,
-          marginTop:  2,
-          lineHeight: 1.4,
-        }}
-      >
-        {secondary}
-      </p>
+      <TriangleAlert size={16} strokeWidth={2} aria-hidden="true" style={{ flex: 'none', marginTop: 1 }} />
+      <div style={{ minWidth: 0 }}>
+        <p
+          style={{
+            fontFamily:    FONT,
+            fontSize:      '11px',
+            fontWeight:    800,
+            letterSpacing: '0.07em',
+            lineHeight:    1.3,
+            textTransform: 'uppercase',
+          }}
+        >
+          {main}
+        </p>
+        <p
+          style={{
+            fontFamily: FONT,
+            fontSize:   '11.5px',
+            fontWeight: 500,
+            marginTop:  2,
+            lineHeight: 1.45,
+            overflowWrap: 'anywhere',
+          }}
+        >
+          {secondary}
+        </p>
+      </div>
     </div>
   );
 }

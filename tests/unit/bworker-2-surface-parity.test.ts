@@ -158,10 +158,29 @@ describe('B-WORKER-2 — KORA Space: parity incomplete (booking-status gap), cor
     expect(legacy).toContain("redirect('/worker/commons')");
   });
 
-  it('the sidebar already honestly labels /my-kora/kora-space as synthetic preview, /worker/commons as real', () => {
-    const sidebar = read('components/layout/Sidebar.tsx');
-    expect(sidebar).toContain("label: 'KORA Space (Anteprima)', description: 'Dati sintetici — non il tuo spazio reale'");
+  it('the Worker sidebar exposes ONE real KORA Space destination and no synthetic duplicate', () => {
+    // ── SUPERSEDED BY EXPLICIT FOUNDER RULING, 2026-09-20 ──────────────────
+    // ORIGINAL INVARIANT: the Worker sidebar must be HONEST about the two
+    // "KORA Space" destinations — the preview one disclosed as synthetic, the
+    // real one disclosed as real. That invariant was correct for its time and
+    // is NOT weakened here; it is satisfied more strongly, by there no longer
+    // being a synthetic destination to disclose.
+    //
+    // AUTHORITY: docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md
+    // ("One Product / No Demo Runtime", Founder ruling 2026-08-31) and the
+    // 2026-09-06 Architecture Registry correction, which the Founder ruled on
+    // 2026-09-20 supersede the older protection of this demo-era duplicate.
+    // Supporting facts, all previously established: the /my-kora persona
+    // runtime was retired; every /my-kora route redirects unconditionally;
+    // /my-kora/kora-space redirects to /worker/commons specifically; and the
+    // real KORA Commons destination already exists in the same nav group.
+    // Scope: this supersession applies to THIS duplicate only.
+    // Executable code only: the removal comment above the deleted entry
+    // necessarily quotes the string it removed.
+    const sidebar = read('components/layout/Sidebar.tsx').replace(/^\s*\/\/.*$/gm, '');
     expect(sidebar).toContain("label: 'KORA Space', description: 'Iniziative e contenuti reali della tua azienda'");
+    expect(sidebar).not.toContain("'KORA Space (Anteprima)'");
+    expect(sidebar).not.toContain('Dati sintetici');
   });
 });
 

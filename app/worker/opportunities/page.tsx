@@ -13,7 +13,6 @@
 //   - Privacy notice is non-suppressible
 
 import { getCurrentWorkerUser, requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
-import { SessionBar } from '@/components/auth/SessionBar';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PartnerCatalogClient } from './_components/PartnerCatalogClient';
@@ -62,7 +61,6 @@ export default async function WorkerOpportunitiesPage() {
 
   return (
     <>
-      <SessionBar email={worker.email} role={worker.koraRole} />
       <div
         data-testid="worker-opportunities-page"
         style={{ maxWidth: 660, margin: '0 auto', padding: '40px 24px', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}

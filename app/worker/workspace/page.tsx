@@ -5,13 +5,14 @@
 // NEVER shows PIB, rankings, employer analytics, or other workers' data.
 
 import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
-import { SessionBar } from '@/components/auth/SessionBar';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase/types';
 import { InitiativeCardsClient } from './_components/InitiativeCardsClient';
 import type { InitiativeItem } from './_components/InitiativeCardsClient';
 import { ActivationProfileSection } from './_components/ActivationProfileSection';
+import { PX } from '@/lib/design/kora-design-tokens';
+import { PageHead, Workspace, Col, Status } from '@/components/ui/px';
 import type { WorkerActivationProfile, PillarDistributionEntry } from '@/app/api/worker/activation-profile/route';
 import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
 
@@ -222,46 +223,46 @@ export default async function WorkerWorkspacePage() {
 
   return (
     <>
-    <SessionBar email={worker.email} role={worker.koraRole} />
-    <div data-testid="workspace-page" style={{ maxWidth: 660, margin: '0 auto', padding: '40px 24px', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
+    {/* KORA-WP-125 Product Experience convergence (2026-09-20): PRESENTATION
+        ONLY. Previously a 660px column of nine stacked cards — a documentation
+        feed, not a workspace. Recomposed as a personal workspace: identity,
+        activity and traces in the working column; the privacy boundary and the
+        personal-area entry points in the rail, where they are reachable
+        without scrolling past everything else. The privacy semantics are
+        unchanged and still first: nothing about what the employer can see, or
+        what belongs to the worker, is altered. No progress bar, no ranking, no
+        score is introduced — the Worker surface must never read as scoring
+        a person. */}
+    <div data-testid="workspace-page" style={{ fontFamily: PX.sans }}>
 
-      {/* Header */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <h1 data-testid="workspace-hero" style={{ fontSize: '1.7rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: 0 }}>
-            {firstName ? `Ciao, ${firstName}` : 'Il mio spazio'}
-          </h1>
-          <span style={{
-            fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-            background: sc.bg, color: sc.text, borderRadius: 4, padding: '2px 7px',
-          }}>
-            {sc.label}
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.55)', margin: 0 }}>
-            {displayName} · {companyName}
-          </p>
-          {/* Privacy active badge */}
-          <span
-            data-testid="privacy-active-badge"
-            style={{
-              fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
-              background: 'rgba(22,101,52,0.10)', color: BADGE_TOKENS.eligible.text,
-              border: '1px solid rgba(22,101,52,0.22)', borderRadius: 999, padding: '2px 8px',
-            }}
-          >
-            Spazio privato attivo
-          </span>
-          {/* Review privacy link */}
-          <a
-            href="/worker/onboarding?mode=review"
-            style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', textDecoration: 'underline', textUnderlineOffset: 2, letterSpacing: '0.01em' }}
-          >
-            Rivedi privacy boundary
-          </a>
-        </div>
-      </div>
+      <PageHead
+        eyebrow="Il tuo spazio KORA"
+        title={firstName ? `Ciao, ${firstName}` : 'Il mio spazio'}
+        lead={`${displayName} · ${companyName}`}
+        meta={
+          <>
+            <span data-testid="workspace-hero" hidden>{firstName ? `Ciao, ${firstName}` : 'Il mio spazio'}</span>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', height: 23, padding: '0 9px', borderRadius: PX.rChip,
+              fontSize: 11.5, fontWeight: 700, background: sc.bg, color: sc.text,
+            }}>
+              {sc.label}
+            </span>
+            <span data-testid="privacy-active-badge">
+              <Status tone="ok">Spazio privato attivo</Status>
+            </span>
+            <a
+              href="/worker/onboarding?mode=review"
+              style={{ fontSize: 12, fontWeight: 600, color: PX.violet700, textDecoration: 'none', alignSelf: 'center' }}
+            >
+              Rivedi privacy boundary
+            </a>
+          </>
+        }
+      />
+
+      <Workspace>
+      <Col span="main">
 
       {/* Privacy notice — always visible */}
       <div style={{
@@ -318,15 +319,6 @@ export default async function WorkerWorkspacePage() {
           Solo tu puoi vedere questo storico. Non è condiviso con l&apos;azienda.
           Ti aiuta a capire il tuo percorso di attivazione — l&apos;azienda vede solo segnali aggregati, mai la tua attività individuale.
         </p>
-      </div>
-
-      {/* Private activation profile */}
-      <div style={{
-        background: '#fff', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10,
-        padding: '20px 24px', marginBottom: 20,
-      }}>
-        <h2 style={sectionHeadingStyle}>Il mio profilo privato</h2>
-        <ActivationProfileSection profile={activationProfile} />
       </div>
 
       {/* Partner preview section */}
@@ -410,7 +402,7 @@ export default async function WorkerWorkspacePage() {
             </a>
             <a
               href="/worker/personal-impact-balance"
-              style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}
+              style={{ fontSize: 12, fontWeight: 600, color: PX.violet700, textDecoration: 'none' }}
             >
               Il tuo bilancio →
             </a>
@@ -438,11 +430,22 @@ export default async function WorkerWorkspacePage() {
         </span>
       </div>
 
+      </Col>
+
+      {/* KORA-WP-125 final composition pass: the working column previously ran
+          far below an exhausted rail. The personal-area entry points stay in
+          the rail, and the two context blocks that were padding the bottom of
+          the working column (private profile, personal traces) now sit beneath
+          them — so both columns finish at a comparable height (HANDOFF §18
+          rule 2). Nothing was removed and no privacy statement moved out of
+          the working column. */}
+      <Col span="rail">
+
       {/* My KORA — navigation bridge to personal area */}
       <div
         data-testid="workspace-my-kora-link"
         style={{
-          border:         '1px solid rgba(199,111,61,0.18)',
+          border:         '1px solid var(--px-line-2)',
           borderRadius:   14,
           padding:        '18px 22px',
           background:     TOKENS.surface,
@@ -454,7 +457,7 @@ export default async function WorkerWorkspacePage() {
         }}
       >
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.accent, margin: '0 0 6px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: PX.violet700, margin: '0 0 6px' }}>
             My KORA · Area personale
           </p>
           <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
@@ -470,12 +473,12 @@ export default async function WorkerWorkspacePage() {
               display:        'inline-block',
               fontSize:       12,
               fontWeight:     600,
-              color:          TOKENS.accent,
+              color:          PX.violet700,
               textDecoration: 'none',
               padding:        '7px 14px',
-              border:         '1px solid rgba(199,111,61,0.28)',
+              border:         `1px solid ${PX.violetEdge}`,
               borderRadius:   8,
-              background:     'rgba(199,111,61,0.06)',
+              background:     PX.violetTint,
             }}
           >
             Vai alla tua area personale →
@@ -489,8 +492,8 @@ export default async function WorkerWorkspacePage() {
             textTransform: 'uppercase',
             padding:       '3px 8px',
             borderRadius:  999,
-            background:    'rgba(199,111,61,0.10)',
-            color:         TOKENS.accent,
+            background:    'var(--px-violet-tint)',
+            color:         PX.violet700,
           }}
         >
           Privato
@@ -675,9 +678,24 @@ export default async function WorkerWorkspacePage() {
         </span>
       </div>
 
-      <div style={{ marginTop: 28, fontSize: 10, color: 'rgba(6,3,43,0.30)', lineHeight: 1.5 }}>
-        KORA Foundation Light · Spazio lavoratore · I dati aziendali rimangono aggregati e non mostrano dati individuali.
+      {/* Private activation profile */}
+      <div style={{
+        background: '#fff', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10,
+        padding: '20px 24px', marginBottom: 20,
+      }}>
+        <h2 style={sectionHeadingStyle}>Il mio profilo privato</h2>
+        <ActivationProfileSection profile={activationProfile} />
       </div>
+
+      {/* "KORA Foundation Light" removed as implementation-era scaffolding
+          (KORA-WP-125 §10). The privacy statement it carried is Product truth
+          and is preserved verbatim. */}
+      <p style={{ margin: 0, fontSize: 11, lineHeight: 1.6, color: PX.ink3 }}>
+        Spazio lavoratore · I dati aziendali rimangono aggregati e non mostrano dati individuali.
+      </p>
+
+      </Col>
+      </Workspace>
     </div>
     </>
   );

@@ -220,9 +220,15 @@ describe('B129 Fase 2 — Sidebar: old paths removed', () => {
     expect(sidebar).not.toContain('/admin/gtm');
   });
 
-  it('no reference to /demo-guide or /advisor (old paths)', () => {
+  it('no reference to the retired /demo-guide or /demo/advisor paths', () => {
+    // B129 Fase 2 moved the old top-level demo paths under /demo/*. Its
+    // invariant is that the RETIRED paths are gone — not that the string
+    // '/advisor' may never appear: KORA-WP-125 repointed the Advisor branch at
+    // the real '/advisor' and '/advisor/companies' routes, which exist and are
+    // guarded by app/advisor/layout.tsx. The retired paths remain forbidden.
     expect(sidebar).not.toContain("'/demo-guide'");
-    expect(sidebar).not.toContain("'/advisor'");
+    expect(sidebar).not.toContain("'/demo/advisor'");
+    expect(sidebar).not.toContain("'/demo/guide'");
   });
 });
 

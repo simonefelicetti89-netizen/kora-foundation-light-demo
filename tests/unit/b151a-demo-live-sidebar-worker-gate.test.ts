@@ -39,8 +39,14 @@ describe('Sidebar.tsx — source audit: null-fallback bug rimosso', () => {
     expect(sidebarSrc).toContain("demo-controls-guard");
   });
 
-  it('importa resolveBannerEnvironment da demo-controls-guard', () => {
-    expect(sidebarSrc).toContain("resolveBannerEnvironment");
+  it('la Sidebar non importa più alcun guard di ambiente — non ha più nulla da gestire', () => {
+    // INVARIANTE ORIGINALE: la Sidebar doveva usare il guard condiviso invece
+    // di una logica locale, così da non poter mostrare 'DEMO' a un utente
+    // reale. SUPERATA (KORA-WP-125, One Product / No Demo Runtime): il badge
+    // di ambiente non esiste più, quindi la Sidebar non ha alcun ambiente da
+    // risolvere. Nessun utente può vederlo — più forte dell'originale.
+    expect(sidebarSrc).not.toMatch(/resolveBannerEnvironment/);
+    expect(sidebarSrc).not.toMatch(/ENV_LABEL/);
   });
 
   it('non usa più il vecchio fallback ??"null" direttamente su app_metadata', () => {
@@ -52,13 +58,26 @@ describe('Sidebar.tsx — source audit: null-fallback bug rimosso', () => {
     expect(sidebarSrc).not.toContain('?? "DEMO"');
   });
 
-  it('usa effectiveEnv per il footer badge', () => {
-    expect(sidebarSrc).toContain('effectiveEnv');
-    expect(sidebarSrc).toContain('ENV_LABEL[effectiveEnv]');
+  it('il footer non mostra più alcun badge di ambiente — superato da One Product / No Demo Runtime', () => {
+    // INVARIANTE ORIGINALE (B151a): un utente reale non deve MAI vedere un
+    // badge 'DEMO' nel footer della sidebar — il bug era un fallback a null
+    // che lo mostrava durante il caricamento della sessione.
+    // SUPERATA il 2026-09-20 (KORA-WP-125) dalla decisione Founder
+    // "One Product / No Demo Runtime" (Governance Patch 03, 2026-08-31):
+    // `tenant_kind` e la provenienza del dato non possono alterare la copy
+    // rivolta all'utente, quindi il badge di ambiente è stato rimosso del
+    // tutto. Nessun utente lo vede più — condizione strettamente più forte
+    // dell'invariante originale, non più debole.
+    expect(sidebarSrc).not.toMatch(/ENV_LABEL\[/);
+    expect(sidebarSrc).not.toMatch(/\{effectiveEnv !== null &&/);
   });
 
-  it('condiziona il render del badge su effectiveEnv !== null', () => {
-    expect(sidebarSrc).toContain('effectiveEnv !== null');
+  it("la funzione pura resolveBannerEnvironment resta intatta per l'isola /demo/*", () => {
+    // Il guard puro non è stato indebolito: continua a forzare 'live' per ogni
+    // sessione reale ed è ancora coperto da b150-synthetic-data-banner-guard.
+    const guard = readFileSync(resolve(root, 'lib/demo-state/demo-controls-guard.ts'), 'utf-8');
+    expect(guard).toContain('resolveBannerEnvironment');
+    expect(guard).toContain("return 'live';");
   });
 });
 

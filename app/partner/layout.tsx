@@ -12,7 +12,6 @@ import type { Metadata }                                 from 'next';
 import { redirect }                                      from 'next/navigation';
 import { requirePartnerUser, getCurrentKoraUser,
          isKoraAuthError }                               from '@/lib/auth/kora-session';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false, nocache: true,
@@ -33,7 +32,10 @@ export default async function PartnerLayout({ children }: { children: React.Reac
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: TOKENS.surface }}>
+        // KORA-WP-125: the warm-paper page background is removed — the shared
+    // Product canvas (.px-main, L0) is painted by the shell, and a page must
+    // not repaint it with the superseded legacy surface.
+    <div style={{ minHeight: '100vh' }}>
       {children}
     </div>
   );

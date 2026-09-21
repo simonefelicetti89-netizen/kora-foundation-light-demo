@@ -329,3 +329,141 @@ export const ACTIVATION_SIGNATURE = {
   inkWarm: '#211F1A',  // KORA Link card background — premium warm/materico
   canvas:  '#F6F4EF',  // light surface for negative variant (STRATO on dark)
 } as const;
+
+// ════════════════════════════════════════════════════════════════════════════
+// KORA-WP-125 — SHARED PRODUCT EXPERIENCE REGISTER (PX-B)
+// ════════════════════════════════════════════════════════════════════════════
+//
+// The canonical implementation of the Founder-approved KORA Product Experience
+// (`KORA-WP-124`, Gate I, 2026-09-20). Every value below is transcribed from
+// `design/wp124-final/kora-signal.css`, the normative visual source accepted at
+// that gate. Nothing here is invented, and no value may be added that does not
+// exist in that source — a test enforces it.
+//
+// WHY IT LIVES IN THIS FILE, additively, rather than in a new module:
+// KORA-WP-088's presentation-colour guard treats this file as "the canonical
+// token source itself" and `app/globals.css` as its CSS-variable mirror. Both
+// are already the single sanctioned place for colour literals. Declaring the
+// Product Experience register here therefore needs NO new hex exemption, keeps
+// the guard at full force over every other file, and makes page-local token
+// adapters (the KORA-WP-039 pattern) permanently unnecessary. Founder-approved
+// staged strategy, Option C: additive, legacy exports untouched.
+//
+// The warm legacy register above remains valid and in use by ~196 files. It is
+// compatibility-only for new Product Experience work; its retirement belongs to
+// PX-C, never to this package.
+//
+// Consumers: the shared application shell and the shared primitives in
+// `components/ui/*`. New Product Experience surfaces consume PX, never the
+// legacy register. Data-register values (PILLAR_COLORS, MACROBLOCK_COLORS) are
+// unchanged and remain the single source for pillar and macroblock meaning.
+
+export const PX = {
+  // ── Canvas & surfaces — HANDOFF §1. Cool, never beige: white panels must
+  //    read as lit, not as paper. ───────────────────────────────────────────
+  l0:      '#EAECF4',   // application canvas
+  l1:      '#FFFFFF',   // primary working surface
+  l2:      '#F4F6FC',   // analytical / functional panel, inset in L1
+  l2Edge:  '#E7EAF5',
+
+  // ── Workspace shell — HANDOFF §2 ─────────────────────────────────────────
+  nav:     '#06032B',
+  nav2:    '#0C0742',
+  navLine: 'rgba(255,255,255,0.09)',
+  /** Real text on the shell: must clear AA, hence .62 not .25 (HANDOFF §2/§15). */
+  navGroupLabel: 'rgba(255,255,255,0.62)',
+  navItem:       'rgba(255,255,255,0.66)',
+  navItemHover:  'rgba(255,255,255,0.07)',
+
+  // ── Ink — HANDOFF §7. inkMute is NON-TEXT only. ─────────────────────────
+  ink:     '#06032B',
+  ink2:    'rgba(6,3,43,0.70)',
+  ink3:    'rgba(6,3,43,0.58)',
+  inkMute: 'rgba(6,3,43,0.34)',
+  inkWash: 'rgba(6,3,43,0.055)',
+
+  // ── Product register — HANDOFF §7 ────────────────────────────────────────
+  violet:     '#6156F5',
+  violet700:  '#4A3DE0',
+  violetTint: 'rgba(97,86,245,0.09)',
+  violetEdge: 'rgba(97,86,245,0.30)',
+  onViolet:   '#FFFFFF',
+  cyan:       '#2BB7D9',
+
+  // ── Semantic state: fill and text are separate tokens — HANDOFF §7 ───────
+  ok:       '#2F7D55',  okTint:   'rgba(47,125,85,0.10)',
+  warn:     '#D99A2B',  warnText: '#8A5A00',  warnTint: 'rgba(217,154,43,0.13)',
+  risk:     '#9E3B2F',  riskTint: 'rgba(158,59,47,0.10)',
+  info:     '#3B6EBA',  infoText: '#1E4A8A',  infoTint: 'rgba(59,110,186,0.10)',
+
+  // ── Borders — HANDOFF §6. Structure is allowed to show. ─────────────────
+  line:  'rgba(6,3,43,0.09)',
+  line2: 'rgba(6,3,43,0.14)',
+
+  // ── Elevation — two levels, cool, no coloured shadow, no glow (§6) ──────
+  sh1: '0 1px 2px rgba(6,3,43,0.06), 0 1px 3px rgba(6,3,43,0.04)',
+  sh2: '0 1px 2px rgba(6,3,43,0.05), 0 8px 18px -8px rgba(6,3,43,0.14)',
+  sh3: '0 2px 6px rgba(6,3,43,0.07), 0 18px 40px -12px rgba(6,3,43,0.22)',
+
+  // ── Interaction surfaces — HANDOFF §6, §9 ───────────────────────────────
+  rowHover:              '#FAFBFF',
+  ctlHoverBorder:        'rgba(6,3,43,0.24)',
+  ctlHoverBorderStrong:  'rgba(6,3,43,0.22)',
+  skelInk:               'rgba(6,3,43,0.07)',
+
+  // ── Primary control gradient — HANDOFF §6 ───────────────────────────────
+  btnFrom:      '#6F64F7',
+  btnTo:        '#5648EC',
+  btnHoverFrom: '#7A70FF',
+  btnHoverTo:   '#4A3DE0',
+  btnShadow:    '0 1px 2px rgba(6,3,43,0.16), inset 0 1px 0 rgba(255,255,255,0.22)',
+  inkHover:     '#17123F',   // solid-ink control hover — kora-signal.css .btn-ink:hover
+  inkShadow:    '0 1px 2px rgba(6,3,43,0.18), inset 0 1px 0 rgba(255,255,255,0.12)',
+
+  // ── Geometry — HANDOFF §6 ────────────────────────────────────────────────
+  rPanel: '14px', rInner: '10px', rCtl: '8px', rChip: '6px', rPill: '999px',
+
+  // ── Shell geometry — HANDOFF §2, §14 ─────────────────────────────────────
+  navW:     '248px',
+  navRailW: '68px',
+  topH:     '56px',
+
+  // ── Motion — HANDOFF §13 ─────────────────────────────────────────────────
+  t1: '90ms', t2: '160ms', t3: '280ms',
+  ease: 'cubic-bezier(.2,.6,.25,1)',
+
+  // ── Type — HANDOFF §4. Plus Jakarta Sans only; NO serif in Product UI. ──
+  sans: "'Plus Jakarta Sans', var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+} as const;
+
+/** Breakpoints — HANDOFF §14. The shell is viewport-governed at these widths
+ *  (Founder Decision 3); content primitives adapt to their own container. */
+/** Breakpoint values. `mobile` is 767, not HANDOFF §14's 720, deliberately:
+ *  767 is Tailwind's `md` boundary, which KORA-WP-088's completed guard already
+ *  pins in Sidebar (`md:static`, `md:translate-x-0`). Any other value would open
+ *  a band where the CSS shell state and those pinned classes disagree — exactly
+ *  the viewport/reality mismatch KORA-WP-039 was broken by. Deviation recorded
+ *  for Founder review rather than silently absorbed. */
+export const PX_BREAKPOINTS = { rail: 1200, stack: 900, mobile: 767 } as const;
+
+/** Shell state derived from viewport width. Presentation only — it changes no
+ *  route, no navigation item and no role visibility. */
+export type PxShellState = 'full' | 'rail' | 'mobile';
+
+export function resolvePxShellState(viewportWidth: number): PxShellState {
+  if (viewportWidth <= PX_BREAKPOINTS.mobile) return 'mobile';
+  if (viewportWidth <= PX_BREAKPOINTS.rail) return 'rail';
+  return 'full';
+}
+
+/** Semantic tone → its fill/text/tint triple. Colour is never the only signal:
+ *  every consumer pairs this with a word and a dot (HANDOFF §12, §15). */
+export const PX_TONE = {
+  ok:   { fill: PX.ok,   text: PX.ok,       tint: PX.okTint   },
+  warn: { fill: PX.warn, text: PX.warnText, tint: PX.warnTint },
+  risk: { fill: PX.risk, text: PX.risk,     tint: PX.riskTint },
+  info: { fill: PX.info, text: PX.infoText, tint: PX.infoTint },
+  idle: { fill: PX.inkMute, text: PX.ink3,  tint: PX.inkWash  },
+} as const;
+
+export type PxTone = keyof typeof PX_TONE;

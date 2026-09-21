@@ -1,7 +1,7 @@
 'use client';
 
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
-import { TOKENS, BUTTON_TOKENS } from '@/lib/design/kora-design-tokens';
+import { PX } from '@/lib/design/kora-design-tokens';
 
 type Variant = 'primary' | 'ghost' | 'ink' | 'digital';
 type Size    = 'sm' | 'md' | 'lg';
@@ -13,36 +13,41 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
+// KORA-WP-125: the shared Product button now speaks the Product register.
+// HANDOFF §7 is explicit that an earth tone on a button is a defect, so the
+// primary CTA is the Violet gradient, not terracotta. The API — variant, size,
+// fullWidth — is unchanged, so every existing call site keeps working.
+// md/lg preserve the WP-047 44px touch-target baseline.
 const SIZES: Record<Size, { padding: string; fontSize: string; minHeight: string }> = {
-  sm: { padding: '7px 14px',  fontSize: '12px', minHeight: '36px' },
-  md: { padding: '10px 20px', fontSize: '13px', minHeight: '44px' },
-  lg: { padding: '13px 28px', fontSize: '14px', minHeight: '48px' },
+  sm: { padding: '7px 13px',  fontSize: '12px', minHeight: '32px' },
+  md: { padding: '10px 18px', fontSize: '13px', minHeight: '44px' },
+  lg: { padding: '13px 26px', fontSize: '14px', minHeight: '48px' },
 };
 
 const VARIANTS: Record<Variant, React.CSSProperties> = {
   primary: {
-    background:  BUTTON_TOKENS.primary.background,
-    color:       BUTTON_TOKENS.primary.color,
-    border:      'none',
-    boxShadow:   BUTTON_TOKENS.primary.shadow,
+    background: `linear-gradient(180deg, ${PX.btnFrom}, ${PX.btnTo})`,
+    color:      PX.onViolet,
+    border:     'none',
+    boxShadow:  PX.btnShadow,
   },
   ghost: {
-    background:  BUTTON_TOKENS.secondary.background,
-    color:       BUTTON_TOKENS.secondary.color,
-    border:      BUTTON_TOKENS.secondary.border,
-    boxShadow:   'none',
+    background: PX.l1,
+    color:      PX.ink,
+    border:     `1px solid ${PX.line2}`,
+    boxShadow:  PX.sh1,
   },
   ink: {
-    background:  TOKENS.ink,
-    color:       BUTTON_TOKENS.primary.color, // white text on dark background — same token as the primary variant, never a raw literal
-    border:      'none',
-    boxShadow:   '0 4px 14px rgba(6,3,43,0.20)',
+    background: PX.ink,
+    color:      PX.onViolet,
+    border:     'none',
+    boxShadow:  PX.inkShadow,
   },
   digital: {
-    background:  BUTTON_TOKENS.digital.background,
-    color:       BUTTON_TOKENS.digital.color,
-    border:      'none',
-    boxShadow:   'none',
+    background: 'transparent',
+    color:      PX.ink2,
+    border:     'none',
+    boxShadow:  'none',
   },
 };
 
@@ -63,12 +68,13 @@ export function Button({
       {...props}
       disabled={disabled}
       style={{
-        fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+        fontFamily:    PX.sans,
         fontWeight:    700,
         letterSpacing: '-0.005em',
-        borderRadius:  BUTTON_TOKENS.primary.radius,
+        borderRadius:  PX.rCtl,
         cursor:        disabled ? 'not-allowed' : 'pointer',
-        transition:    'transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease',
+        // HANDOFF §13: 90ms feedback. Motion never decorates — so no lift.
+        transition:    `background ${PX.t1} ${PX.ease}, box-shadow ${PX.t1} ${PX.ease}, opacity ${PX.t1} ${PX.ease}`,
         display:       'inline-flex',
         alignItems:    'center',
         justifyContent: 'center',
@@ -84,13 +90,14 @@ export function Button({
         if (disabled) return;
         const el = e.currentTarget;
         if (variant === 'primary') {
-          el.style.transform  = 'translateY(-2px)';
-          el.style.boxShadow  = '0 8px 22px rgba(199,111,61,0.35)';
+          el.style.background = `linear-gradient(180deg, ${PX.btnHoverFrom}, ${PX.btnHoverTo})`;
         } else if (variant === 'ghost') {
-          el.style.background = TOKENS.accentHover;
-          el.style.borderColor = TOKENS.accent;
+          el.style.background  = PX.rowHover;
+          el.style.borderColor = PX.ctlHoverBorderStrong;
         } else if (variant === 'ink') {
-          el.style.transform  = 'translateY(-1px)';
+          el.style.background = PX.inkHover;
+        } else if (variant === 'digital') {
+          el.style.background = PX.inkWash;
         }
       }}
       onMouseLeave={(e) => {

@@ -12,7 +12,6 @@ import { redirect } from 'next/navigation';
 import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { OnboardingFlow } from './_flow';
-import { SessionBar } from '@/components/auth/SessionBar';
 
 interface PageProps {
   searchParams: Promise<{ mode?: string }>;
@@ -45,7 +44,6 @@ export default async function WorkerOnboardingPage({ searchParams }: PageProps) 
 
   return (
     <>
-      <SessionBar email={worker.email} role={worker.koraRole} />
       <OnboardingFlow
         reviewMode={isReview && isCompleted}
         initialDisplayName={(row?.display_name as string | null) ?? null}

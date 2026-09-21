@@ -25,7 +25,6 @@
 import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { SessionBar } from '@/components/auth/SessionBar';
 import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
 import {
   computeActivationProfile,
@@ -56,7 +55,6 @@ export default async function WorkerPersonalImpactBalancePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: TOKENS.surface, fontFamily: FONT }}>
-      <SessionBar email={worker.email} role={worker.koraRole} />
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 20px 64px' }}>
         <h1 style={{
           fontWeight: 800, fontSize: '1.8rem', letterSpacing: '-0.02em',

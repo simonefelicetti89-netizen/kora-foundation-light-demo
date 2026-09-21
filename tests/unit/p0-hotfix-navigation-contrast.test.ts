@@ -112,15 +112,22 @@ describe('Sidebar — KORA Commons nav item', () => {
     expect(commons?.comingSoon).toBeUndefined();
   });
 
-  it('KORA_ADMIN nav has KORA Commons in Demo Lab group (B169 — SYNTHETIC group badge replaces preview flag)', () => {
+  it('KORA_ADMIN nav still reaches KORA Commons — now in Network & Content, not a demo group', () => {
+    // KORA-WP-125 (2026-09-20): the 'Demo Lab' group was retired under
+    // "One Product / No Demo Runtime" (Governance Patch 03, 2026-08-31).
+    // INVARIANT PRESERVED — and it is the one that mattered here: KORA Commons
+    // remains reachable from the Admin navigation and is not disabled. It is a
+    // real capability (CC-052, 2026-08-31, retired its synthetic-preview path;
+    // it now reads live commons.post), so it belongs in the group that already
+    // owns Commons/Partner/Network, never behind a SYNTHETIC badge.
     const groups = buildNavGroups('KORA_ADMIN');
-    const demoLabGroup = groups.find((g) => g.heading === 'Demo Lab');
-    expect(demoLabGroup).toBeDefined();
-    const commons = demoLabGroup?.items.find((i) => i.href === '/commons');
+    const netGroup = groups.find((g) => g.heading === 'Network & Content');
+    expect(netGroup).toBeDefined();
+    const commons = netGroup?.items.find((i) => i.href === '/commons');
     expect(commons).toBeDefined();
     expect(commons?.comingSoon).toBeUndefined();
-    // preview flag replaced by group-level SYNTHETIC badge in B169 FASE 3
-    expect(demoLabGroup?.groupBadge).toBe('SYNTHETIC');
+    expect(groups.find((g) => g.heading === 'Demo Lab')).toBeUndefined();
+    expect(netGroup?.groupBadge).toBeUndefined();
   });
 
   it('WORKER Collettivo remains comingSoon (correctly disabled); Prenotazioni is a real live feature (not disabled)', () => {

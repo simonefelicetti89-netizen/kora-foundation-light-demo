@@ -2,19 +2,24 @@
 
 import { useId } from 'react';
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, ReactNode } from 'react';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { PX, TOKENS } from '@/lib/design/kora-design-tokens';
 
+// KORA-WP-125 — HANDOFF §11: bordered, elevated inputs on L1, 36px, radius 8.
+// The control is the shared one, so adapting it here is what makes every form
+// in the Product converge rather than each page restyling its own inputs.
 const BASE_INPUT: React.CSSProperties = {
-  fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-  fontSize:      14,
-  color:         TOKENS.ink,
-  background:    TOKENS.surface,
-  border:        TOKENS.cardBorder,
-  borderRadius:  10,
-  padding:       '10px 13px',
+  fontFamily:    PX.sans,
+  fontSize:      13,
+  color:         PX.ink,
+  background:    PX.l1,
+  border:        `1px solid ${PX.line2}`,
+  borderRadius:  PX.rCtl,
+  boxShadow:     PX.sh1,
+  padding:       '8px 12px',
+  minHeight:     36,
   width:         '100%',
   outline:       'none',
-  transition:    'border-color 200ms ease',
+  transition:    `border-color ${PX.t1} ${PX.ease}, box-shadow ${PX.t1} ${PX.ease}`,
   lineHeight:    1.4,
 };
 
@@ -24,17 +29,15 @@ function FieldLabel({ htmlFor, children, required }: { htmlFor: string; children
     <label
       htmlFor={htmlFor}
       style={{
-        fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-        fontSize:      11,
-        fontWeight:    600,
-        letterSpacing: '0.06em',
-        textTransform: 'uppercase',
-        color:         TOKENS.inkHint,
+        fontFamily:    PX.sans,
+        fontSize:      12.5,
+        fontWeight:    700,
+        color:         PX.ink2,
         display:       'block',
-        marginBottom:  5,
+        marginBottom:  7,
       }}
     >
-      {children}{required && <span style={{ color: TOKENS.accent, marginLeft: 3 }}>*</span>}
+      {children}{required && <span style={{ color: PX.risk, marginLeft: 3 }}>*</span>}
     </label>
   );
 }

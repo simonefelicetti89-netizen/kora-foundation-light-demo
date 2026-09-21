@@ -17,11 +17,15 @@ export const dynamic = 'force-dynamic';
 import { requirePartnerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import { PX, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import {
+  PageHead, Workspace, Col, Band, SplitRegion, SplitPart, Region,
+  Facts, Status, StateBlock,
+} from '@/components/ui/px';
 
 export const metadata = { title: 'Partner Workspace · KORA' };
 
-const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
+
 
 const PILLAR_META: Record<string, { color: string; bg: string; border: string }> = {
   LIFE:       { color: PILLAR_SURFACE.LIFE.color, bg: PILLAR_SURFACE.LIFE.bg, border: PILLAR_SURFACE.LIFE.border },
@@ -31,10 +35,53 @@ const PILLAR_META: Record<string, { color: string; bg: string; border: string }>
   LEGACY:     { color: PILLAR_SURFACE.LEGACY.color, bg: PILLAR_SURFACE.LEGACY.bg, border: PILLAR_SURFACE.LEGACY.border },
 };
 
-const STATUS_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  published: { label: 'Pubblicato',  color: TOKENS.success, bg: 'rgba(47,125,85,0.08)',  border: 'rgba(47,125,85,0.22)'  },
-  draft:     { label: 'In revisione', color: TOKENS.safeguard.watch.text, bg: 'rgba(192,125,42,0.08)', border: 'rgba(192,125,42,0.22)' },
-  archived:  { label: 'Archiviato',  color: 'rgba(6,3,43,0.45)', bg: 'rgba(6,3,43,0.04)', border: 'rgba(6,3,43,0.12)' },
+const STATUS_META: Record<string, { label: string; tone: 'ok' | 'warn' | 'idle' }> = {
+  published: { label: 'Pubblicato',   tone: 'ok'   },
+  draft:     { label: 'In revisione', tone: 'warn' },
+  archived:  { label: 'Archiviato',   tone: 'idle' },
+};
+
+/** The publication chain, derived ONLY from network.partner_profile.status.
+ *  Three real stages exist in the Product: the profile is provisioned by KORA
+ *  Admin, KORA reviews it, and only then is it visible in the worker
+ *  opportunity catalogue. Nothing here is a projected or future step. */
+type StageState = 'done' | 'current' | 'pending' | 'stopped';
+
+function publicationStages(status: string | null): Array<{ label: string; note: string; state: StageState }> {
+  const registered = { label: 'Profilo registrato', note: 'Provisioning eseguito da KORA Admin.', state: 'done' as StageState };
+  if (status === 'published') {
+    return [
+      registered,
+      { label: 'Review KORA', note: 'Completata.', state: 'done' },
+      { label: 'Visibile nel catalogo worker', note: 'Stato corrente.', state: 'current' },
+    ];
+  }
+  if (status === 'archived') {
+    return [
+      registered,
+      { label: 'Review KORA', note: 'Completata in passato.', state: 'done' },
+      { label: 'Visibile nel catalogo worker', note: 'Interrotta: profilo archiviato.', state: 'stopped' },
+    ];
+  }
+  if (status === 'draft') {
+    return [
+      registered,
+      { label: 'Review KORA', note: 'In corso. Nessuna azione richiesta da parte tua.', state: 'current' },
+      { label: 'Visibile nel catalogo worker', note: 'Non ancora raggiunta.', state: 'pending' },
+    ];
+  }
+  return [
+    { ...registered, state: 'pending', note: 'Nessun profilo collegato a questo account.' },
+    { label: 'Review KORA', note: 'Non avviata.', state: 'pending' },
+    { label: 'Visibile nel catalogo worker', note: 'Non raggiungibile.', state: 'pending' },
+  ];
+}
+
+const STAGE_DOT: Record<StageState, { fill: string; ring: string }> = {
+  done:    { fill: PX.ok,      ring: PX.okTint },
+  current: { fill: PX.violet,  ring: PX.violetTint },
+  pending: { fill: PX.inkMute, ring: PX.inkWash },
+  stopped: { fill: PX.risk,    ring: PX.riskTint },
 };
 
 export default async function PartnerWorkspacePage() {
@@ -71,241 +118,220 @@ export default async function PartnerWorkspacePage() {
           ? 'Non visibile nel catalogo. Contatta KORA per riattivare.'
           : 'Profilo non trovato — contatta KORA Admin.';
 
-  return (
-    <div
-      data-testid="partner-workspace"
-      style={{ maxWidth: 760, margin: '0 auto', padding: '40px 24px 60px', fontFamily: FONT }}
-    >
-      {/* ── Back nav ─────────────────────────────────────────────────────── */}
-      <a
-        href="/account"
-        style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', textDecoration: 'none', display: 'inline-block', marginBottom: 24 }}
-      >
-        ← Account
-      </a>
+  const stages = publicationStages(profile?.status ?? null);
 
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <div
-        data-testid="partner-workspace-hero"
-        style={{
-          background:   TOKENS.ink,
-          borderRadius: 16,
-          padding:      '28px 32px',
-          marginBottom: 20,
-        }}
-      >
-        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', margin: '0 0 8px' }}>
-          Area Partner KORA
-        </p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#FFFFFF', margin: '0 0 4px', letterSpacing: '-0.025em' }}>
-          {profile?.name ?? 'Partner KORA'}
-        </h1>
-        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.40)', margin: '0 0 12px' }}>
-          {email}
-          {partnerStatus !== 'active' && (
-            <span style={{ marginLeft: 8, color: 'rgba(255,200,100,0.80)' }}>
-              · Stato: {partnerStatus}
-            </span>
-          )}
-        </p>
-        {profile && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {pillarMeta && (
+  return (
+    <div data-testid="partner-workspace" style={{ fontFamily: PX.sans }}>
+      {/* KORA-WP-125 micro-polish (2026-09-21): the Partner surface was a
+          correct profile page, which is not the same thing as a workspace.
+          The operating question a Partner opens this page with is "is my
+          offer live to workers, and what may my organisation see?" — so the
+          page now leads with that chain (registrazione -> review KORA ->
+          catalogo worker, derived only from partner_profile.status) with the
+          profile record beside it as its supporting evidence, and closes on a
+          single provenance strip instead of a third floating card. No
+          marketplace, no leads, no analytics, no fabricated activity: every
+          privacy statement is still verbatim and no new data is read. */}
+      <PageHead
+        eyebrow="Area Partner KORA"
+        title={profile?.name ?? 'Partner'}
+        lead="Il tuo profilo partner, la sua visibilità nel catalogo delle opportunità e il perimetro esatto dei dati a cui la tua organizzazione ha accesso."
+        meta={
+          <>
+            {statusMeta && <Status tone={statusMeta.tone}>{statusMeta.label}</Status>}
+            {profile?.pillar && pillarMeta && (
               <span
                 data-testid="partner-workspace-pillar"
-                style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 999, background: pillarMeta.bg, color: pillarMeta.color, border: `1px solid ${pillarMeta.border}` }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', height: 23, padding: '0 9px',
+                  borderRadius: PX.rChip, fontSize: 11.5, fontWeight: 700,
+                  background: pillarMeta.bg, color: pillarMeta.color, border: `1px solid ${pillarMeta.border}`,
+                }}
               >
                 {profile.pillar}
               </span>
             )}
-            {profile.delivery_mode && (
-              <span
-                data-testid="partner-workspace-delivery-mode"
-                style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.60)', border: '1px solid rgba(255,255,255,0.15)' }}
-              >
-                {profile.delivery_mode}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
+            <Status tone={partnerStatus === 'active' ? 'ok' : 'warn'}>Account {partnerStatus}</Status>
+          </>
+        }
+      />
 
-      {/* ── Data boundary — non-suppressible ─────────────────────────────── */}
-      <div
-        data-testid="partner-workspace-boundary"
-        style={{
-          background:   'rgba(47,125,85,0.07)',
-          border:       '1.5px solid rgba(47,125,85,0.22)',
-          borderRadius: 12,
-          padding:      '16px 20px',
-          marginBottom: 20,
-        }}
-      >
-        <p style={{ fontSize: 12, fontWeight: 700, color: TOKENS.success, margin: '0 0 8px' }}>
-          Perimetro dati — accesso partner
-        </p>
-        <ul style={{ margin: 0, padding: '0 0 0 18px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {[
-            'Non hai accesso a dati individuali dei lavoratori.',
-            'Non hai accesso al KORA Index delle aziende.',
-            'Non hai accesso a Dynamic Impact CV o PIB individuali.',
-            'Non hai accesso a nominativi, email o ID worker.',
-            'Le opportunità sono visibili ai worker solo se il tuo profilo è pubblicato da KORA.',
-            'Nessun marketplace, nessuna prenotazione, nessun pagamento in questa area.',
-          ].map((item, i) => (
-            <li key={i} style={{ fontSize: 12, color: TOKENS.success, lineHeight: 1.5 }}>
-              {item}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <div data-testid="partner-workspace-hero" hidden />
 
-      {/* ── Partner profile ───────────────────────────────────────────────── */}
-      {profile ? (
-        <div
-          data-testid="partner-workspace-profile"
-          style={{
-            border:       '1px solid rgba(6,3,43,0.09)',
-            borderRadius: 14,
-            padding:      '20px 24px',
-            marginBottom: 20,
-            background:   TOKENS.surface,
-          }}
-        >
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: 'rgba(6,3,43,0.35)', margin: '0 0 14px' }}>
-            Il tuo profilo partner
-          </p>
-
-          <div style={{ display: 'grid', gap: 14 }}>
-            {profile.description && (
-              <div>
-                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: '0 0 4px' }}>Descrizione</p>
-                <p style={{ fontSize: 13, color: TOKENS.ink, margin: 0, lineHeight: 1.6 }}>
-                  {profile.description}
-                </p>
-              </div>
-            )}
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <div>
-                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: '0 0 4px' }}>Categoria</p>
-                <p style={{ fontSize: 12, color: TOKENS.ink, margin: 0 }}>{profile.category ?? '—'}</p>
-              </div>
-              <div>
-                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: '0 0 4px' }}>Modalità</p>
-                <p style={{ fontSize: 12, color: TOKENS.ink, margin: 0, textTransform: 'capitalize' }}>{profile.delivery_mode}</p>
-              </div>
-              {profile.city && (
-                <div>
-                  <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: '0 0 4px' }}>Città</p>
-                  <p style={{ fontSize: 12, color: TOKENS.ink, margin: 0 }}>{profile.city}</p>
-                </div>
-              )}
-              {profile.website_url && (
-                <div>
-                  <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: '0 0 4px' }}>Sito web</p>
-                  <a
-                    href={profile.website_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: 12, color: TOKENS.info.base, textDecoration: 'none' }}
-                  >
-                    {profile.website_url}
-                  </a>
-                </div>
-              )}
+      <Workspace>
+        {!profile ? (
+          <Band>
+            <div data-testid="partner-workspace-no-profile">
+              <StateBlock
+                tone="pending"
+                title="Profilo partner non trovato"
+                body="Il tuo account è autenticato ma nessun profilo partner risulta collegato. Il provisioning di un profilo partner è una decisione di KORA Admin. Contatta l'amministrazione KORA per completarlo."
+              />
             </div>
-          </div>
-        </div>
-      ) : (
-        <div
-          data-testid="partner-workspace-no-profile"
-          style={{
-            border:       '1px dashed rgba(6,3,43,0.12)',
-            borderRadius: 12,
-            padding:      '24px',
-            textAlign:    'center',
-            marginBottom: 20,
-          }}
-        >
-          <p style={{ fontSize: 13, fontWeight: 600, color: TOKENS.ink, margin: '0 0 8px' }}>
-            Profilo partner non trovato
-          </p>
-          <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', margin: 0 }}>
-            Contatta KORA Admin per associare il tuo account al profilo partner.
-          </p>
-        </div>
-      )}
+          </Band>
+        ) : (
+          <Band>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '12px 18px', borderBottom: `1px solid ${PX.line}` }}>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.075em', textTransform: 'uppercase', color: PX.ink3 }}>
+                Pubblicazione e visibilità
+              </span>
+              <span style={{ marginLeft: 'auto' }}>
+                {statusMeta && (
+                  <span data-testid="partner-workspace-status-badge">
+                    <Status tone={statusMeta.tone}>{statusMeta.label}</Status>
+                  </span>
+                )}
+              </span>
+            </div>
 
-      {/* ── Opportunities status ─────────────────────────────────────────── */}
-      <div
-        data-testid="partner-workspace-opportunity-status"
-        style={{
-          border:       '1px solid rgba(6,3,43,0.09)',
-          borderRadius: 14,
-          padding:      '20px 24px',
-          marginBottom: 20,
-          background:   TOKENS.surface,
-        }}
-      >
-        <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: 'rgba(6,3,43,0.35)', margin: '0 0 10px' }}>
-          Visibilità nel catalogo opportunità
-        </p>
-        {statusMeta && (
-          <span
-            data-testid="partner-workspace-status-badge"
-            style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '3px 10px', borderRadius: 999, background: statusMeta.bg, color: statusMeta.color, border: `1px solid ${statusMeta.border}`, display: 'inline-block', marginBottom: 10 }}
-          >
-            {statusMeta.label}
-          </span>
+            <SplitRegion columns={2}>
+              <SplitPart label="Percorso di pubblicazione">
+                <div data-testid="partner-workspace-opportunity-status">
+                  <ol style={{ margin: '0 0 14px', padding: 0, listStyle: 'none', display: 'grid', gap: 0 }}>
+                    {stages.map((stage, i) => {
+                      const dot = STAGE_DOT[stage.state];
+                      const last = i === stages.length - 1;
+                      return (
+                        <li key={stage.label} style={{ display: 'grid', gridTemplateColumns: '18px minmax(0,1fr)', columnGap: 11 }}>
+                          <span aria-hidden="true" style={{ display: 'grid', justifyItems: 'center', rowGap: 0 }}>
+                            <span style={{
+                              width: 14, height: 14, borderRadius: PX.rPill, display: 'grid', placeItems: 'center',
+                              background: dot.ring, border: `1px solid ${dot.fill}`,
+                            }}>
+                              <span style={{ width: 6, height: 6, borderRadius: PX.rPill, background: dot.fill }} />
+                            </span>
+                            {!last && <span style={{ width: 1, minHeight: 26, flex: 1, background: PX.line2 }} />}
+                          </span>
+                          <span style={{ display: 'block', paddingBottom: last ? 0 : 12 }}>
+                            <span style={{
+                              display: 'block', fontSize: 13, fontWeight: 700, letterSpacing: '-0.008em',
+                              color: stage.state === 'pending' ? PX.inkMute : PX.ink,
+                            }}>
+                              {stage.label}
+                            </span>
+                            <span style={{ display: 'block', marginTop: 1, fontSize: 11.5, lineHeight: 1.5, color: PX.ink3 }}>
+                              {stage.note}
+                            </span>
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ol>
+
+                  <p data-testid="partner-workspace-visibility-note" style={{ margin: '0 0 8px', paddingTop: 12, borderTop: `1px solid ${PX.line}`, fontSize: 13.5, lineHeight: 1.6, color: PX.ink, fontWeight: 650 }}>
+                    {visibilityNote}
+                  </p>
+                  <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: PX.ink3 }}>
+                    La pubblicazione nel catalogo è una decisione di KORA: il tuo profilo diventa visibile ai
+                    worker solo dopo la review. Nessuna prenotazione, nessun pagamento e nessun contatto
+                    individuale transita da questa area.
+                  </p>
+                </div>
+              </SplitPart>
+
+              <SplitPart label="Profilo pubblicato">
+                <div data-testid="partner-workspace-profile">
+                  {profile.description && (
+                    <p style={{ margin: '0 0 14px', fontSize: 13.5, lineHeight: 1.65, color: PX.ink2 }}>
+                      {profile.description}
+                    </p>
+                  )}
+                  <Facts
+                    rows={[
+                      ['Categoria', profile.category ?? '—'],
+                      ['Pilastro', profile.pillar ?? '—'],
+                      ['Modalità', <span key="dm" data-testid="partner-workspace-delivery-mode" style={{ textTransform: 'capitalize' }}>{profile.delivery_mode}</span>],
+                      ['Territorio', [profile.city, profile.country].filter(Boolean).join(' · ') || '—'],
+                      ['Sito web', profile.website_url
+                        ? <a key="w" href={profile.website_url} rel="noreferrer noopener" target="_blank" style={{ color: PX.violet700, fontWeight: 700 }}>{profile.website_url}</a>
+                        : '—'],
+                      ['Account', email],
+                    ]}
+                  />
+                  <p style={{ margin: '12px 0 0', paddingTop: 12, borderTop: `1px solid ${PX.line}`, fontSize: 11.5, lineHeight: 1.6, color: PX.ink3 }}>
+                    Questi campi sono ciò che un worker vede quando il profilo è pubblicato. Le modifiche
+                    sono gestite da KORA Admin.
+                  </p>
+                </div>
+              </SplitPart>
+            </SplitRegion>
+          </Band>
         )}
-        <p
-          data-testid="partner-workspace-visibility-note"
-          style={{ fontSize: 13, color: TOKENS.ink, margin: 0, lineHeight: 1.6 }}
-        >
-          {visibilityNote}
-        </p>
-      </div>
 
-      {/* ── Future capabilities — coming soon ────────────────────────────── */}
-      <div
-        data-testid="partner-workspace-future"
-        style={{
-          border:       '1px dashed rgba(6,3,43,0.12)',
-          borderRadius: 12,
-          padding:      '20px 24px',
-          marginBottom: 20,
-          background:   'rgba(6,3,43,0.02)',
-        }}
-      >
-        <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: 'rgba(6,3,43,0.35)', margin: '0 0 10px' }}>
-          Funzionalità future — prossimamente
-        </p>
-        <ul style={{ margin: 0, padding: '0 0 0 18px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {[
-            'Richieste di contatto da aziende (no chat, no leads individuali)',
-            'Performance aggregate dell\'attivazione — nessun dato individuale worker',
-            'Protocollo evidenze e stato audit',
-            'Coordination KORA per iniziative collettive',
-          ].map((item, i) => (
-            <li key={i} style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', lineHeight: 1.5 }}>
-              {item} <span style={{ color: 'rgba(6,3,43,0.30)', fontSize: 10 }}>— prossimamente</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+        <Col span={7}>
+          <Region label="Perimetro dati — accesso partner">
+            {/* The six boundary statements are reproduced VERBATIM from the
+                B127 original. They are privacy semantics, not UI copy: the
+                B127 guard pins their exact wording, and WP-125's authorization
+                is presentational only. Only their presentation changed. */}
+            <div data-testid="partner-workspace-boundary">
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '9px 24px' }}>
+                {[
+                  'Non hai accesso a dati individuali dei lavoratori.',
+                  'Non hai accesso al KORA Index delle aziende.',
+                  'Non hai accesso a Dynamic Impact CV o PIB individuali.',
+                  'Non hai accesso a nominativi, email o ID worker.',
+                  'Le opportunità sono visibili ai worker solo se il tuo profilo è pubblicato da KORA.',
+                  'Nessun marketplace, nessuna prenotazione, nessun pagamento in questa area.',
+                ].map((item) => (
+                  <li key={item} style={{ display: 'flex', gap: 9, alignItems: 'flex-start', fontSize: 12.5, lineHeight: 1.55, color: PX.ink2 }}>
+                    <span aria-hidden="true" style={{ width: 5, height: 5, borderRadius: PX.rPill, background: PX.ok, flex: 'none', marginTop: 6 }} />
+                    <span style={{ minWidth: 0 }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <p style={{ margin: '14px 0 0', paddingTop: 12, borderTop: `1px solid ${PX.line}`, fontSize: 11.5, lineHeight: 1.6, color: PX.ink3 }}>
+                Il perimetro è applicato lato server a ogni richiesta: non dipende da questa schermata e
+                non è modificabile da questa area.
+              </p>
+            </div>
+          </Region>
+        </Col>
 
-      {/* ── Privacy footer — non-suppressible ────────────────────────────── */}
-      <div
-        data-testid="partner-workspace-footer"
-        style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 16 }}
-      >
-        <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', margin: 0, lineHeight: 1.6 }}>
-          KORA Foundation Light · Area Partner · Metodologia v0.1 pre-empirical ·
-          Nessun dato individuale worker esposto in questa area.
-          Il tuo account partner è stato provisionato da KORA Admin.
-        </p>
-      </div>
+        <Col span={5}>
+          <Region label="Funzionalità future — capability definite, non ancora attive">
+            <div data-testid="partner-workspace-future">
+              <p style={{ margin: '0 0 11px', fontSize: 12.5, lineHeight: 1.6, color: PX.ink3 }}>
+                Queste capability sono definite ma non ancora attive. Sono elencate per trasparenza:
+                quando si attiveranno, compariranno qui con lo stesso perimetro dati.
+              </p>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 8 }}>
+                {[
+                  'Richieste di contatto da aziende — nessuna chat, nessun lead individuale',
+                  'Performance aggregate di attivazione — nessun dato individuale worker',
+                  'Protocollo evidenze e stato di audit',
+                  'Coordinamento KORA per iniziative collettive',
+                ].map((item) => (
+                  <li key={item} style={{ display: 'flex', gap: 9, alignItems: 'flex-start', fontSize: 12.5, lineHeight: 1.5, color: PX.ink2 }}>
+                    <span aria-hidden="true" style={{ width: 5, height: 5, borderRadius: PX.rPill, background: PX.inkMute, flex: 'none', marginTop: 6 }} />
+                    <span style={{ minWidth: 0 }}>
+                      {item} <span style={{ color: PX.inkMute, fontWeight: 600 }}>— prossimamente</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Region>
+        </Col>
+
+        {/* Provenance closes the page as one strip rather than a third card
+            floating beside two taller ones. */}
+        <Band tone="inset">
+          <div data-testid="partner-workspace-footer" style={{ display: 'flex', alignItems: 'center', gap: '14px 30px', flexWrap: 'wrap', padding: '14px 18px' }}>
+            {[
+              ['Metodologia', 'KORA v0.1'],
+              ['Calibrazione', 'pre-empirica'],
+              ['Provisioning', 'KORA Admin'],
+              ['Dati individuali', 'Nessuno esposto in quest\'area'],
+            ].map(([label, value]) => (
+              <span key={label} style={{ minWidth: 0 }}>
+                <span style={{ display: 'block', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: PX.ink3 }}>{label}</span>
+                <span style={{ display: 'block', marginTop: 2, fontSize: 12.5, fontWeight: 700, color: PX.ink }}>{value}</span>
+              </span>
+            ))}
+          </div>
+        </Band>
+      </Workspace>
     </div>
   );
 }

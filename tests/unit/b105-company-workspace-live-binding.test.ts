@@ -94,10 +94,20 @@ describe('B105 — CompanyWorkspaceView company name prominence', () => {
   const view = readFile('app/company/workspace/_components/CompanyWorkspaceView.tsx');
 
   it('shows company name in H1 dynamically', () => {
+    // KORA-WP-125 (2026-09-20): MECHANISM superseded, INVARIANT unchanged and
+    // now verified end-to-end. The view previously wrote a literal <h1> here;
+    // it now passes the dynamic company name as the `title` of the shared
+    // PageHead primitive, which is the element that renders the <h1>. The
+    // assertion follows the composition instead of the string — it proves the
+    // same thing (the H1 is the live company name, never hardcoded) across
+    // both files rather than one.
     expect(view).toContain('tenant.companyName');
-    // H1 must contain the dynamic company name, not hardcoded text
-    const h1Block = view.split('<h1')[1]?.split('</h1>')[0] ?? '';
-    expect(h1Block).toContain('companyName');
+    const titleProp = /title=\{[^}]*\}/.exec(view)?.[0] ?? '';
+    expect(titleProp, 'PageHead must receive the dynamic company name').toContain('companyName');
+
+    const pageHead = readFileSync(resolve(root, 'components/ui/px/Workspace.tsx'), 'utf-8');
+    const h1Block = pageHead.split('<h1')[1]?.split('</h1>')[0] ?? '';
+    expect(h1Block, 'PageHead must render its title inside the H1').toContain('{title}');
   });
 
   it('shows tenantCode in header', () => {

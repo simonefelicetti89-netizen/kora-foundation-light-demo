@@ -218,3 +218,335 @@ body {
   opacity: 0.75;
   font-weight: inherit;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   KORA-WP-125 — SHARED PRODUCT EXPERIENCE REGISTER (PX-B)
+   CSS-variable mirror of the `PX` register in lib/design/kora-design-tokens.ts.
+   That module is the canonical source; this file mirrors it, exactly as it
+   already mirrors the legacy register above. Additive: no legacy variable is
+   removed or redefined, so the ~196 existing consumers are untouched.
+   Values transcribed from design/wp124-final/kora-signal.css (Gate I).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --px-l0: #EAECF4;
+  --px-l1: #FFFFFF;
+  --px-l2: #F4F6FC;
+  --px-l2-edge: #E7EAF5;
+
+  --px-nav: #06032B;
+  --px-nav-2: #0C0742;
+  --px-nav-line: rgba(255,255,255,0.09);
+  --px-nav-group-label: rgba(255,255,255,0.62);
+  --px-nav-item: rgba(255,255,255,0.66);
+  --px-nav-item-hover: rgba(255,255,255,0.07);
+
+  --px-ink: #06032B;
+  --px-ink-2: rgba(6,3,43,0.70);
+  --px-ink-3: rgba(6,3,43,0.58);
+  --px-ink-mute: rgba(6,3,43,0.34);
+  --px-ink-wash: rgba(6,3,43,0.055);
+
+  --px-violet: #6156F5;
+  --px-violet-700: #4A3DE0;
+  --px-violet-tint: rgba(97,86,245,0.09);
+  --px-violet-edge: rgba(97,86,245,0.30);
+  --px-on-violet: #FFFFFF;
+  --px-cyan: #2BB7D9;
+
+  --px-ok: #2F7D55;        --px-ok-tint: rgba(47,125,85,0.10);
+  --px-warn: #D99A2B;      --px-warn-text: #8A5A00;  --px-warn-tint: rgba(217,154,43,0.13);
+  --px-risk: #9E3B2F;      --px-risk-tint: rgba(158,59,47,0.10);
+  --px-info: #3B6EBA;      --px-info-text: #1E4A8A;  --px-info-tint: rgba(59,110,186,0.10);
+
+  --px-line: rgba(6,3,43,0.09);
+  --px-line-2: rgba(6,3,43,0.14);
+
+  --px-sh-1: 0 1px 2px rgba(6,3,43,0.06), 0 1px 3px rgba(6,3,43,0.04);
+  --px-sh-2: 0 1px 2px rgba(6,3,43,0.05), 0 8px 18px -8px rgba(6,3,43,0.14);
+  --px-sh-3: 0 2px 6px rgba(6,3,43,0.07), 0 18px 40px -12px rgba(6,3,43,0.22);
+
+  --px-row-hover: #FAFBFF;
+  --px-ctl-hover-border: rgba(6,3,43,0.24);
+  --px-ctl-hover-border-strong: rgba(6,3,43,0.22);
+  --px-skel-ink: rgba(6,3,43,0.07);
+
+  --px-btn-from: #6F64F7;
+  --px-btn-to: #5648EC;
+  --px-btn-hover-from: #7A70FF;
+  --px-btn-hover-to: #4A3DE0;
+  --px-btn-shadow: 0 1px 2px rgba(6,3,43,0.16), inset 0 1px 0 rgba(255,255,255,0.22);
+
+  --px-r-panel: 14px;
+  --px-r-inner: 10px;
+  --px-r-ctl: 8px;
+  --px-r-chip: 6px;
+  --px-r-pill: 999px;
+
+  --px-nav-w: 248px;
+  --px-nav-rail-w: 68px;
+  --px-top-h: 56px;
+  --px-gap: 20px;
+  --px-pad-x: 24px;
+
+  --px-t1: 90ms;
+  --px-t2: 160ms;
+  --px-t3: 280ms;
+  --px-ease: cubic-bezier(.2,.6,.25,1);
+
+  --px-sans: 'Plus Jakarta Sans', var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* ── Product canvas — the authenticated shell only. Public routes keep the
+      legacy canvas untouched (Founder Decision 4). ──────────────────────── */
+.px-shell {
+  background: var(--px-l0);
+  color: var(--px-ink);
+  font-family: var(--px-sans);
+  font-variant-numeric: tabular-nums;   /* analytical by default — HANDOFF §4 */
+  -webkit-font-smoothing: antialiased;
+}
+
+.px-main {
+  background: var(--px-l0);
+  padding: 22px var(--px-pad-x) 40px;
+  min-width: 0;
+}
+
+/* ── Shared workspace frame — HANDOFF §5, §18 ─────────────────────────────
+   WHITESPACE IS ALLOWED. DEAD SPACE IS NOT.
+   The shell must use the viewport deliberately rather than floating a narrow
+   editorial column inside an empty canvas, so there is NO narrow max-width
+   here: content is fluid and the gutters are controlled. `--px-measure` is a
+   generous upper bound that only engages on very wide displays, where an
+   unbounded line length would itself become the defect; it is centred so the
+   growth is symmetric and never reads as a left-hugging column.
+   Page-owned composition (grids, rails, cards) stays with the page WPs — this
+   rule sets the frame, not the contents. */
+.px-main > * {
+  --px-measure: 1680px;
+  max-width: var(--px-measure);
+  margin-inline: auto;
+}
+
+/* ── Density: the shell narrows its own gutters before it narrows content ── */
+@media (max-width: 1200px) { :root { --px-gap: 16px; --px-pad-x: 20px; } }
+@media (max-width: 720px)  { :root { --px-gap: 14px; --px-pad-x: 16px; }
+                             .px-main { padding: 16px var(--px-pad-x) 32px; } }
+
+/* ── One focus ring everywhere, never removed — HANDOFF §15 ─────────────── */
+.px-shell :focus-visible {
+  outline: 2px solid var(--px-violet);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── WORKSPACE SHELL — HANDOFF §2 ────────────────────────────────────────
+   Three states, governed by viewport (Founder Decision 3):
+     full   >1200   248px sidebar
+     rail   721-1200 68px icon rail
+     mobile <=720   off-canvas drawer + header toggle
+   `data-px-shell` is set by the shell from the same resolvePxShellState()
+   the tests assert, so CSS and TS can never disagree. */
+
+.px-nav {
+  background: linear-gradient(180deg, #0A0636, var(--px-nav) 62%, #05021F);
+  border-right: 1px solid var(--px-nav-line);
+  width: var(--px-nav-w);
+  min-width: var(--px-nav-w);
+  transition: width var(--px-t2) var(--px-ease), min-width var(--px-t2) var(--px-ease);
+}
+
+/* Navigation height, from md up. Before this rule the aside was the tallest
+   item in the shell row, so a long navigation — the Admin one is ~1350px —
+   set the document height and stretched an empty canvas under every short
+   page. Now the pinned inner block is exactly one viewport tall, which is
+   what the row measures, while the aside itself still stretches to the full
+   page height so the dark column never breaks on a long page. Below md the
+   navigation is the WP-088 off-canvas drawer (position: fixed) and neither
+   rule applies. */
+.px-nav-inner { height: 100%; min-height: 0; }
+
+@media (min-width: 768px) {
+  .px-nav-inner {
+    position: sticky;
+    top: var(--px-top-h);
+    height: calc(100vh - var(--px-top-h));
+  }
+}
+
+[data-px-shell='rail'] .px-nav {
+  width: var(--px-nav-rail-w);
+  min-width: var(--px-nav-rail-w);
+}
+
+/* In the rail only the glyph survives; the label, description and badges are
+   removed from the visual flow but remain in the accessibility tree via the
+   item's own aria-label, so navigation MEANING is unchanged. */
+[data-px-shell='rail'] .px-nav-label,
+[data-px-shell='rail'] .px-nav-desc,
+[data-px-shell='rail'] .px-nav-badge,
+[data-px-shell='rail'] .px-nav-group-label,
+[data-px-shell='rail'] .px-nav-caret { display: none !important; }
+
+/* Primary navigation labels wrap to at most two lines and never ellipsise
+   at the full sidebar width (KORA-WP-125 §3). The row grows with the label
+   instead of the label shrinking to the row. */
+.px-nav-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  /* break-word, not anywhere, and no hyphenation: the label must wrap at word
+     boundaries. `hyphens: auto` produced "KORA Link — Governan-ce", which is
+     worse than the truncation it replaced. A single unbreakable token still
+     breaks rather than overflowing. */
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+.px-nav-item { align-items: flex-start; }
+.px-nav-item > svg { margin-top: 1px; }
+.px-nav-badge { align-self: flex-start; margin-top: 1px; }
+
+[data-px-shell='rail'] .px-nav-item {
+  justify-content: center;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 8px !important;
+  margin-right: 8px !important;
+}
+[data-px-shell='rail'] .px-nav-brand { padding-left: 0 !important; padding-right: 0 !important; justify-content: center; }
+[data-px-shell='rail'] .px-nav-wordmark { display: none !important; }
+
+/* Mobile: the drawer opens at the FULL width even though the viewport is
+   narrow — a 68px rail behind a toggle would be useless. */
+[data-px-shell='mobile'] .px-nav {
+  width: var(--px-nav-w);
+  min-width: var(--px-nav-w);
+}
+
+/* ── Top chrome — HANDOFF §3: sticky, 56px, translucent L0, blur, 1px rule ── */
+.px-top {
+  height: var(--px-top-h);
+  min-height: var(--px-top-h);
+  background: color-mix(in srgb, var(--px-l0) 82%, transparent);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--px-line);
+}
+@supports not (backdrop-filter: blur(4px)) { .px-top { background: var(--px-l0); } }
+
+/* ── Environment watermark must never sit over content (WP-039 observation) ── */
+@media (max-width: 720px) { .px-watermark { display: none; } }
+
+/* ── Motion — HANDOFF §13 ───────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .px-shell *, .px-nav { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+/* Rail: the compact brand mark replaces the wordmark; the footer identity
+   block keeps only its avatar. Nothing is removed from the DOM — the labels
+   remain available to assistive technology through each item's aria-label. */
+[data-px-shell='rail'] .px-nav-mark { display: flex !important; }
+/* The navigation list scrolls inside one viewport, so it can cut an entry in
+   half at the boundary. This rule turns that cut into a deliberate edge
+   instead of reading as the account block overlapping the list. */
+.px-nav-foot { border-top: 1px solid var(--px-nav-line); }
+
+[data-px-shell='rail'] .px-nav-foot { padding-left: 8px !important; padding-right: 8px !important; }
+[data-px-shell='rail'] .px-nav-foot > div { justify-content: center; }
+[data-px-shell='rail'] .px-nav-icon { opacity: 1 !important; }
+[data-px-shell='rail'] .px-nav [aria-label]:hover { background: var(--px-nav-item-hover); }
+
+/* Native date control: the platform's own text is suppressed (the Italian
+   rendering is overlaid by DateField) but the picker affordance stays
+   operable — WebKit draws its indicator via a shadow pseudo-element. */
+@keyframes px-spin { to { transform: rotate(360deg); } }
+input[type='date']::-webkit-datetime-edit { opacity: 0; }
+input[type='date']::-webkit-calendar-picker-indicator { opacity: 0; cursor: pointer; }
+
+/* ── Workspace composition — KORA-WP-125, HANDOFF §5 / §18 ───────────────── */
+.px-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--px-gap);
+  align-items: start;
+}
+.px-col { min-width: 0; display: grid; gap: var(--px-gap); align-content: start; }
+.px-col-main { grid-column: span 8; }
+.px-col-rail { grid-column: span 4; }
+.px-col-half { grid-column: span 6; }
+.px-col-full { grid-column: span 12; }
+
+/* Auto-fitting metric strip: never a ragged final row, never a rigid repeat(N). */
+.px-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+
+.px-facts {
+  display: grid; grid-template-columns: minmax(0, 132px) minmax(0, 1fr);
+  gap: 9px 14px; margin: 0; font-size: 12.5px;
+}
+
+@media (max-width: 1200px) {
+  .px-col-main, .px-col-rail, .px-col-half { grid-column: span 12; }
+}
+@media (max-width: 720px) {
+  .px-facts { grid-template-columns: minmax(0, 1fr); gap: 2px 0; }
+  .px-facts dd { margin-bottom: 9px; }
+  .px-metrics { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); }
+}
+
+/* Numeric column spans — for surfaces whose real content is wide and shallow.
+   A short page composed as 8+4 leaves the lower canvas empty; composed across
+   the full 12 it reads as a finished workspace. */
+.px-col-3 { grid-column: span 3; }
+.px-col-4 { grid-column: span 4; }
+.px-col-5 { grid-column: span 5; }
+.px-col-6 { grid-column: span 6; }
+.px-col-7 { grid-column: span 7; }
+.px-col-8 { grid-column: span 8; }
+.px-col-9 { grid-column: span 9; }
+
+/* A narrow container must never be handed a squeezed or sideways-scrolling
+   table — the KORA-WP-125 shared-table rule (HANDOFF §9), applied to a
+   server-rendered table that cannot measure its own container. Below the
+   stack width each row becomes one record, every cell labelled by its own
+   header, so no column is ever clipped away. */
+.px-record-table { width: 100%; min-width: 520px; border-collapse: collapse; table-layout: fixed; }
+
+@media (max-width: 720px) {
+  .px-record-table { min-width: 0; display: block; }
+  .px-record-table thead { display: none; }
+  .px-record-table tbody, .px-record-table tr, .px-record-table td { display: block; width: auto; }
+  .px-record-table tr { padding: 12px 18px; border-bottom: 1px solid var(--px-line); }
+  .px-record-table td { border: 0 !important; padding: 3px 0 !important; }
+  .px-record-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--px-ink-3);
+  }
+}
+
+/* Related regions sharing one surface, divided by a rule rather than a gap.
+   The column count is declared by the surface (--px-split-cols) rather than
+   auto-fitted: an auto-fit track can wrap a three-region split into 2+1, and
+   the dividing rule then lands on the left edge of a region that starts a new
+   row. Below the stack breakpoint every split is one column. */
+.px-split { display: grid; grid-template-columns: repeat(var(--px-split-cols, 2), minmax(0, 1fr)); }
+.px-split > * + * { border-left: 1px solid var(--px-line); }
+
+@media (max-width: 900px) {
+  .px-split { grid-template-columns: minmax(0, 1fr); }
+  .px-split > * + * { border-left: 0; border-top: 1px solid var(--px-line); }
+}
+
+/* One breakpoint, one behaviour: above it the declared spans hold (8+4 and
+   7+5 both still pay for themselves in the 1032px rail workspace); below it
+   every numeric span is a full row. The previous two-step collapse turned
+   an 8+4 row into 12+6 — a full-width panel followed by a half-width one
+   with nothing beside it, which is dead space by construction. */
+@media (max-width: 900px) {
+  .px-col-3, .px-col-4, .px-col-5, .px-col-6,
+  .px-col-7, .px-col-8, .px-col-9 { grid-column: span 12; }
+}

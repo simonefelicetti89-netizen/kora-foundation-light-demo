@@ -31,7 +31,6 @@ const roleHome           = readFile('lib/auth/role-home.ts');
 const workerLoginPage    = readFile('app/worker/login/page.tsx');
 const companyLoginPage   = readFile('app/company/login/page.tsx');
 const authCallback       = readFile('app/auth/callback/route.ts');
-const header             = readFile('components/layout/Header.tsx');
 const appShell           = readFile('components/layout/AppShell.tsx');
 const adminPartners      = readFile('app/admin/partners/page.tsx');
 
@@ -139,30 +138,47 @@ describe('auth/callback — unified login fallback', () => {
 
 // ─── 5. Header — demo controls gated behind real session ─────────────────────
 
-describe('Header — demo controls gated on real session role', () => {
-  it('Header reads real Supabase session with getSession()', () => {
-    expect(header).toContain('getSession()');
-    expect(header).toContain('getSupabaseBrowserClient');
+
+// ── SUPERSEDED BY "ONE PRODUCT / NO DEMO RUNTIME" ───────────────────────────
+// Canonical authority: docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1_PATCH_03.md
+// (Founder ruling, 2026-08-31) + Master Plan v2.1 §13, applied to the shared
+// authenticated shell by KORA-WP-125 (2026-09-20).
+//
+// ORIGINAL INVARIANT (still valid, and now enforced ABSOLUTELY):
+//   a real COMPANY_ADMIN / WORKER session must never see demo UI.
+// These cases proved it CONDITIONALLY — by asserting that the Header called
+// shouldShowDemoControls() before rendering the switchers. The switchers are
+// now absent from the authenticated Product entirely, so the condition has no
+// subject left: nobody sees them, which is strictly stronger than "real users
+// do not". The pure guard functions themselves are unchanged and remain
+// covered by tests/unit/b149-header-demo-guard.test.ts and
+// tests/unit/b150-synthetic-data-banner-guard.test.ts, which still pass — the
+// /demo/* showcase island may still use them.
+// Replacement, stronger: the block below, plus the One Product guards in
+// tests/unit/kora-wp-125-shared-product-experience-foundation.test.ts.
+
+describe('Header — no demo orchestration reaches the authenticated Product', () => {
+  const header = readFile('components/layout/Header.tsx');
+  const code = header.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+
+  it('renders none of the demo switchers', () => {
+    for (const c of ['EnvironmentSwitcher', 'ScenarioSwitcher', 'PersonaSwitcher', 'RoleSwitcher']) {
+      expect(code, `${c} still reaches the authenticated header`).not.toContain(c);
+    }
   });
 
-  it('Header has showDemoControls conditional', () => {
-    expect(header).toContain('showDemoControls');
+  it('carries no environment/demo badge copy', () => {
+    expect(code).not.toMatch(/DEMO|DATI SIMULATI|SERVICE-ASSISTED|FUTURE/);
   });
 
-  it('Header hides EnvironmentSwitcher from real COMPANY/WORKER sessions', () => {
-    expect(header).toContain('{showDemoControls && <EnvironmentSwitcher />}');
+  it('no longer needs a demo gate, because there is nothing to gate', () => {
+    expect(code).not.toContain('shouldShowDemoControls');
   });
 
-  it('Header hides RoleSwitcher from real COMPANY/WORKER sessions', () => {
-    expect(header).toContain('{showDemoControls && <RoleSwitcher />}');
-  });
-
-  it('COMPANY_ADMIN and WORKER exclusion delegated to shouldShowDemoControls (B149, COMPANY_VIEWER rimosso in B143)', () => {
-    // B149 moved the per-role exclusion into demo-controls-guard.shouldShowDemoControls.
-    // Header no longer contains the inline realRoleIsCompanyOrWorker variable.
-    expect(header).toContain('shouldShowDemoControls');
-    expect(header).not.toContain("realRole === 'COMPANY_VIEWER'");
-    expect(header).not.toContain('realRoleIsCompanyOrWorker');
+  it('the pure demo guards survive for the separately-governed showcase island', () => {
+    const guard = readFile('lib/demo-state/demo-controls-guard.ts');
+    expect(guard).toContain('shouldShowDemoControls');
+    expect(guard).toContain('resolveBannerEnvironment');
   });
 });
 
