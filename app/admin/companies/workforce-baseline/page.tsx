@@ -1,7 +1,7 @@
 'use client';
-// A-01e: Workforce Baseline Admin — inserimento baseline workforce.
-// Scopo: caricare o verificare la baseline headcount/segmenti
-//        necessaria come fondamento per il calcolo KORA Index™.
+// A-01e: Workforce Baseline Admin — validazione baseline workforce.
+// Scopo: verificare la baseline headcount/segmenti necessaria come fondamento
+//        per il calcolo KORA Index.
 //
 // B-TRUTH first canonical seed group (2026-08-31): retired the synthetic
 // data path (WorkforceBaselineService, data/synthetic/workforce-baseline.json).
@@ -12,10 +12,24 @@
 // warnings/limitations text, activation/equity readiness flags) have no live
 // source and are not shown — see lib/live/workforce-baseline-view.ts for the
 // full field disposition. No placeholder values invented for any of them.
+//
+// KORA-WP-012 visual remediation (Founder ruling, 2026-09-21): this route
+// became reachable from normal Admin navigation, which exposed a legacy page
+// interior below the accepted WP-124/WP-125 Product Experience. Recomposed on
+// the shared WP-125 primitives around the three real Product questions —
+// validation verdict (primary), company context (secondary), aggregate groups
+// by dimension (tertiary). READ-ONLY, exactly as before: no write path, no API
+// change, no threshold change, no schema change. The privacy model is
+// unchanged and is now stated where the operator reads the verdict.
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { PX } from '@/lib/design/kora-design-tokens';
+import { ADMIN_NAV_GROUPS } from '@/lib/navigation/admin-nav-groups';
+import {
+  PageHead, Workspace, Col, Region, Metric, MetricStrip, Facts,
+  Status, Chip, Notice, StateBlock, SkeletonRows,
+} from '@/components/ui/px';
 import type { WorkforceBaselineView } from '@/lib/live/workforce-baseline-view';
 
 interface LiveTenant {
@@ -25,6 +39,9 @@ interface LiveTenant {
   onboardingStatus: string;
 }
 
+// Canonical dimension keys are written by persistWorkforceBaseline() and are
+// plural (`departments`). This map kept only singular forms, so the UI default
+// never matched real data — see dimensionLabel() and effectiveDimension below.
 const DIMENSION_LABELS: Record<string, string> = {
   site:              'Sede',
   department:        'Dipartimento',
@@ -35,14 +52,51 @@ const DIMENSION_LABELS: Record<string, string> = {
   other:             'Altro',
 };
 
+/** KORA-WP-012: resolve a stored dimension key against the label map in either
+ *  number — the canonical writer emits plural keys, the legacy map was
+ *  singular. The raw key is the last resort, never an invented label. */
+function dimensionLabel(dimension: string): string {
+  return DIMENSION_LABELS[dimension]
+    ?? DIMENSION_LABELS[dimension.replace(/s$/, '')]
+    ?? dimension;
+}
+
+const shareLabel = (share: number) => `${(share * 100).toFixed(1)}%`;
+
+// KORA-WP-012 Blocker A (Founder, 2026-09-21): one stored group label is
+// misspelled at source (`organisazione`, written by the canonical POST path).
+// The stored value and the API payload are TRUTH and stay exactly as they are;
+// only the rendered Product copy is corrected, here at the presentation
+// boundary. This is a fixed one-entry correction list, never a spelling
+// engine: any other label renders verbatim.
+const DISPLAY_LABEL_CORRECTIONS: Record<string, string> = {
+  organisazione: 'organizzazione',
+};
+
+/** Display-only: corrects a known malformed stored label, nothing else. */
+export function groupDisplayLabel(rawLabel: string): string {
+  return DISPLAY_LABEL_CORRECTIONS[rawLabel] ?? rawLabel;
+}
+
+function formatStamp(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
 // A-18: KORA Admin — Workforce Baseline
 export default function AdminWorkforceBaselinePage() {
   const [tenants, setTenants] = useState<LiveTenant[]>([]);
   const [tenantIdsWithBaseline, setTenantIdsWithBaseline] = useState<Set<string>>(new Set());
   const [selectedTenantId, setSelectedTenantId] = useState<string>('');
-  const [activeDimension, setActiveDimension] = useState<string>('department');
+  const [activeDimension, setActiveDimension] = useState<string>('');
   const [baseline, setBaseline] = useState<WorkforceBaselineView | null>(null);
   const [loading, setLoading] = useState(true);
+  // Which tenant the currently-held baseline answer belongs to. Set only from
+  // the fetch callbacks, so the pending state below is derived rather than a
+  // second source of truth updated synchronously inside an effect.
+  const [resolvedTenantId, setResolvedTenantId] = useState<string>('');
 
   useEffect(() => {
     let cancelled = false;
@@ -67,7 +121,8 @@ export default function AdminWorkforceBaselinePage() {
     fetch(`/api/admin/workforce-baseline?tenantId=${encodeURIComponent(tenantId)}`)
       .then((r) => (r.ok ? r.json() : { baseline: null }))
       .then((res) => setBaseline(res.baseline ?? null))
-      .catch(() => setBaseline(null));
+      .catch(() => setBaseline(null))
+      .finally(() => setResolvedTenantId(tenantId));
   }, []);
 
   useEffect(() => {
@@ -75,206 +130,329 @@ export default function AdminWorkforceBaselinePage() {
   }, [selectedTenantId, fetchBaseline]);
 
   const selectedTenant = tenants.find((t) => t.id === selectedTenantId);
-  const visibleGroups = (baseline?.aggregateGroups ?? []).filter((g) => g.dimension_type === activeDimension);
-  const dimensionKeys = [...new Set((baseline?.aggregateGroups ?? []).map((g) => g.dimension_type))];
+  // A baseline answer for another tenant is not this tenant's answer: the
+  // regions show their pending state until the selected tenant resolves.
+  const baselineLoading = Boolean(selectedTenantId) && resolvedTenantId !== selectedTenantId;
 
-  if (loading) {
-    return (
-      <div className="space-y-6 max-w-5xl">
-        <p className="text-xs text-[rgba(6,3,43,0.40)]">Caricamento…</p>
-      </div>
-    );
-  }
+  const dimensionKeys = useMemo(
+    () => [...new Set((baseline?.aggregateGroups ?? []).map((g) => g.dimension_type))],
+    [baseline],
+  );
 
-  if (!baseline) {
-    return (
-      <div className="space-y-6 max-w-5xl">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">KORA Admin — Validazione Workforce</p>
-          <h1 className="text-xl font-bold text-kora-ink mt-0.5">Workforce Baseline</h1>
-        </div>
-        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper p-4 space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Azienda cliente</p>
-          <div className="flex flex-wrap gap-2">
-            {tenants.map((t) => {
-              const hasBaseline = tenantIdsWithBaseline.has(t.id);
-              return (
-                <button key={t.id} type="button" onClick={() => setSelectedTenantId(t.id)}
-                  className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${selectedTenantId === t.id ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]' : 'border-[rgba(6,3,43,0.08)] bg-kora-paper text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'}`}>
-                  {t.companyName}{!hasBaseline && <span className="ml-1 text-[9px] text-[rgba(6,3,43,0.40)]">(nessuna baseline)</span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-5 text-xs text-kora-warning-text space-y-2">
-          <p className="font-semibold">Baseline non ancora caricata</p>
-          <p>{selectedTenant?.companyName ?? 'Azienda selezionata'} non ha ancora una workforce baseline.</p>
-          <p>Onboarding status: {selectedTenant?.onboardingStatus?.replace(/_/g, ' ') ?? 'non avviato'}</p>
-        </div>
-      </div>
-    );
-  }
+  // KORA-WP-012 correctness fix: the visible dimension is DERIVED from the data
+  // the API actually returned, never from a hard-coded default. A stale or
+  // absent selection falls back to the first real dimension, so the first
+  // render already shows the group the baseline contains.
+  const effectiveDimension = activeDimension && dimensionKeys.includes(activeDimension)
+    ? activeDimension
+    : (dimensionKeys[0] ?? '');
 
-  return (
-    <div className="space-y-8 max-w-5xl">
+  const visibleGroups = (baseline?.aggregateGroups ?? [])
+    .filter((g) => g.dimension_type === effectiveDimension)
+    .sort((a, b) => b.employee_count - a.employee_count);
 
-      {/* ── Header ── */}
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
-          KORA Admin — Validazione Workforce Azienda Cliente
-        </p>
-        <h1 className="text-xl font-bold text-kora-ink mt-0.5">Workforce Baseline</h1>
-        <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">
-          Validazione aggregata della popolazione aziendale — gestita lato KORA Admin.
-        </p>
-      </div>
+  const thresholdMet = baseline?.minimumCompanyThresholdMet ?? false;
 
-      {/* ── Admin identity ── */}
-      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-[rgba(6,3,43,0.88)] leading-relaxed space-y-1">
-        <p>
-          <span className="font-semibold">KORA Admin — gestione azienda cliente.</span>{' '}
-          Questa sezione è riservata agli operatori KORA.
-        </p>
-        <p>
-          Il portale azienda mostra solo output e stato; il setup operativo resta lato KORA Admin.
-          KORA misura l&apos;organizzazione, non gli individui.
-        </p>
-      </div>
-
-      {/* ── Company selector ── */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper p-4 space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Azienda cliente</p>
-        <div className="flex flex-wrap gap-2">
+  // ── rail: company context / selection ─────────────────────────────────
+  const companyRail = (
+    <Region label="Azienda cliente">
+      {loading ? (
+        <SkeletonRows rows={3} rowHeight={44} />
+      ) : tenants.length === 0 ? (
+        <StateBlock
+          title="Nessuna azienda cliente registrata"
+          body="Il registro tenant non contiene ancora aziende. La baseline si valida dopo la registrazione dell'azienda."
+        />
+      ) : (
+        <div style={{ display: 'grid', gap: 7 }}>
           {tenants.map((t) => {
+            const isSelected = t.id === selectedTenantId;
             const hasBaseline = tenantIdsWithBaseline.has(t.id);
             return (
               <button
                 key={t.id}
                 type="button"
+                aria-pressed={isSelected}
                 onClick={() => setSelectedTenantId(t.id)}
-                className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${
-                  selectedTenantId === t.id
-                    ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]'
-                    : 'border-[rgba(6,3,43,0.08)] bg-kora-paper text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'
-                }`}
+                style={{
+                  display: 'grid', gap: 5, width: '100%', textAlign: 'left', cursor: 'pointer',
+                  padding: '10px 12px', minWidth: 0,
+                  borderRadius: PX.rInner,
+                  border: `1px solid ${isSelected ? PX.violetEdge : PX.line}`,
+                  background: isSelected ? PX.violetTint : PX.l1,
+                  fontFamily: PX.sans,
+                  transition: `border-color ${PX.t1} ${PX.ease}, background ${PX.t1} ${PX.ease}`,
+                }}
               >
-                {t.companyName}
-                {!hasBaseline && <span className="ml-1 text-[9px] text-[rgba(6,3,43,0.40)]">(nessuna baseline)</span>}
+                <span style={{
+                  fontSize: 13, fontWeight: 700, letterSpacing: '-0.008em', minWidth: 0,
+                  overflowWrap: 'anywhere', color: isSelected ? PX.violet700 : PX.ink,
+                }}>
+                  {t.companyName}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 11, fontWeight: 650, color: PX.ink3, fontVariantNumeric: 'tabular-nums' }}>
+                    {t.tenantCode}
+                  </span>
+                  <Status tone={hasBaseline ? 'ok' : 'idle'}>
+                    {hasBaseline ? 'Baseline presente' : 'Nessuna baseline'}
+                  </Status>
+                </span>
               </button>
             );
           })}
         </div>
-      </div>
+      )}
+    </Region>
+  );
 
-      {/* ── Validation result ── */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-kora-paper p-5 space-y-3">
-        <div className="flex items-center gap-2">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Validazione</p>
-          <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
-            baseline.minimumCompanyThresholdMet
-              ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-kora-success'
-              : 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-kora-critical'
-          )}>
-            {baseline.minimumCompanyThresholdMet ? 'SOGLIA SODDISFATTA' : 'SOTTO SOGLIA'}
-          </span>
+  const privacyRail = (
+    <Region label="Regola di privacy" tone="inset">
+      <Notice tone="info">
+        Nessun dato individuale: la baseline è aggregata per costruzione. I cluster sotto la soglia di
+        gruppo sono soppressi prima della scrittura, non nascosti a schermo. KORA misura
+        l&apos;organizzazione, non gli individui.
+      </Notice>
+    </Region>
+  );
+
+  // KORA-WP-012 Blocker B (Founder, 2026-09-21): this region used to send a
+  // KORA Admin operator into the Company portal (`/company/ingestion`). The
+  // Admin Product owns its own intake destination, so the link now resolves
+  // from ADMIN_NAV_GROUPS — label included — and can never drift from the
+  // Product's own terminology. An unresolvable destination is omitted rather
+  // than rendered under an invented label.
+  const adminIntake = ADMIN_NAV_GROUPS
+    .flatMap((g) => g.items)
+    .find((i) => i.href === '/admin/data-intake');
+
+  const relatedPaths: Array<{ href: string; label: string; hint: string }> = [
+    { href: '/admin/companies', label: 'Company Registry', hint: 'registro aziende cliente' },
+    ...(adminIntake ? [{ href: adminIntake.href, label: adminIntake.label, hint: 'caricamento dati azienda' }] : []),
+  ];
+
+  const pathsRail = (
+    <Region label="Percorsi collegati">
+      <div style={{ display: 'grid', gap: 9 }}>
+        {relatedPaths.map((l) => (
+          <Link
+            key={l.href}
+            href={l.href}
+            style={{
+              display: 'grid', gap: 2, padding: '9px 11px', minWidth: 0,
+              borderRadius: PX.rInner, border: `1px solid ${PX.line}`, background: PX.l1,
+              textDecoration: 'none', fontFamily: PX.sans,
+            }}
+          >
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: PX.violet700, overflowWrap: 'anywhere' }}>
+              {l.label}
+            </span>
+            <span style={{ fontSize: 11.5, fontWeight: 600, color: PX.ink3 }}>{l.hint}</span>
+          </Link>
+        ))}
+      </div>
+    </Region>
+  );
+
+  // ── primary: the validation verdict ───────────────────────────────────
+  const verdictRegion = (
+    <Region label="Baseline corrente — validazione">
+      {loading || baselineLoading ? (
+        <SkeletonRows rows={4} rowHeight={40} />
+      ) : !selectedTenant ? (
+        <StateBlock
+          title="Nessuna azienda selezionata"
+          body="Seleziona un'azienda cliente per verificarne la workforce baseline."
+        />
+      ) : !baseline ? (
+        <StateBlock
+          tone="pending"
+          title="Baseline non ancora caricata"
+          body={
+            <>
+              {selectedTenant.companyName} non ha ancora una workforce baseline, quindi non è validabile
+              e non può entrare nel calcolo KORA Index. Onboarding status:{' '}
+              <strong>{selectedTenant.onboardingStatus?.replace(/_/g, ' ') || 'non avviato'}</strong>.
+              La baseline si registra dal Tenant Registry.
+            </>
+          }
+          action={
+            <Link
+              href="/admin/tenants"
+              style={{
+                display: 'inline-flex', alignItems: 'center', minHeight: 34, padding: '0 13px',
+                borderRadius: PX.rCtl, border: `1px solid ${PX.violetEdge}`, background: PX.violetTint,
+                color: PX.violet700, fontFamily: PX.sans, fontSize: 12.5, fontWeight: 700,
+                textDecoration: 'none',
+              }}
+            >
+              Apri Tenant Registry
+            </Link>
+          }
+        />
+      ) : (
+        <div style={{ display: 'grid', gap: 16, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', minWidth: 0 }}>
+            <span style={{
+              fontSize: 42, fontWeight: 800, letterSpacing: '-0.035em', lineHeight: 1,
+              fontVariantNumeric: 'tabular-nums', color: PX.ink, fontFamily: PX.sans,
+            }}>
+              {baseline.totalWorkers}
+            </span>
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: PX.ink2, fontFamily: PX.sans }}>
+              lavoratori nella baseline
+            </span>
+            <span style={{ marginLeft: 'auto' }}>
+              <Status tone={thresholdMet ? 'ok' : 'risk'}>
+                {thresholdMet ? 'Soglia soddisfatta' : 'Sotto soglia'}
+              </Status>
+            </span>
+          </div>
+
+          <p style={{
+            margin: 0, maxWidth: '72ch', fontSize: 13, lineHeight: 1.6,
+            color: PX.ink2, fontFamily: PX.sans,
+          }}>
+            {thresholdMet
+              ? `${baseline.totalWorkers} lavoratori contro una soglia minima di ${baseline.minimumCompanyThreshold}: la popolazione è sufficiente perché l'azienda entri nel calcolo KORA Index per il periodo ${baseline.reportingPeriod}.`
+              : `${baseline.totalWorkers} lavoratori contro una soglia minima di ${baseline.minimumCompanyThreshold}: la popolazione non è sufficiente, quindi l'azienda non è validata per il calcolo KORA Index del periodo ${baseline.reportingPeriod}.`}
+          </p>
+
+          <MetricStrip>
+            <Metric label="Soglia minima azienda" value={baseline.minimumCompanyThreshold} hint="richiesta per la validazione" />
+            <Metric label="Soglia gruppo (N≥)" value={baseline.minimumGroupSize} hint="sotto questa soglia il cluster è soppresso" />
+            <Metric label="Periodo" value={baseline.reportingPeriod} hint="periodo di riferimento" />
+          </MetricStrip>
+
+          <Facts rows={[
+            ['Azienda',   `${baseline.companyName} · ${baseline.tenantCode}`],
+            ['Registrata', `${formatStamp(baseline.createdAt)} · ${baseline.createdBy}`],
+          ]} />
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-[10px]">
-          {[
-            ['Lavoratori totali',   baseline.totalWorkers],
-            ['Soglia minima',       baseline.minimumCompanyThreshold],
-            ['Soglia gruppo (N≥)',  baseline.minimumGroupSize],
-          ].map(([label, value]) => (
-            <div key={label as string}>
-              <p className="text-[rgba(6,3,43,0.40)]">{label}</p>
-              <p className="text-[rgba(6,3,43,0.78)] font-semibold">{value}</p>
+      )}
+    </Region>
+  );
+
+  // ── tertiary: aggregate groups by dimension ───────────────────────────
+  const groupsRegion = (
+    <Region
+      label="Gruppi aggregati per dimensione"
+      actions={
+        baseline && dimensionKeys.length > 0 ? (
+          <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', minWidth: 0 }}>
+            {dimensionKeys.map((dim) => (
+              <button
+                key={dim}
+                type="button"
+                aria-pressed={dim === effectiveDimension}
+                onClick={() => setActiveDimension(dim)}
+                style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
+              >
+                <Chip selected={dim === effectiveDimension}>{dimensionLabel(dim)}</Chip>
+              </button>
+            ))}
+          </div>
+        ) : undefined
+      }
+    >
+      {loading || baselineLoading ? (
+        <SkeletonRows rows={3} rowHeight={34} />
+      ) : !baseline ? (
+        <StateBlock
+          title="Nessuna distribuzione da mostrare"
+          body="La distribuzione per dimensione esiste solo dopo la registrazione di una baseline."
+        />
+      ) : dimensionKeys.length === 0 ? (
+        <StateBlock
+          title="Baseline senza suddivisione per dimensione"
+          body="Questa baseline registra il solo totale dei lavoratori: non contiene gruppi per sede, dipartimento o altra dimensione. Il totale resta valido per la soglia minima."
+        />
+      ) : visibleGroups.length === 0 ? (
+        <StateBlock
+          title={`Nessun gruppo visibile per ${dimensionLabel(effectiveDimension)}`}
+          body={`Tutti i cluster di questa dimensione sono sotto la soglia di ${baseline.minimumGroupSize} lavoratori e sono stati soppressi prima della scrittura.`}
+        />
+      ) : (
+        <div style={{ display: 'grid', gap: 9, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 11.5, fontWeight: 600, color: PX.ink3, fontFamily: PX.sans }}>
+            {dimensionLabel(effectiveDimension)} · {visibleGroups.length === 1 ? '1 gruppo visibile' : `${visibleGroups.length} gruppi visibili`}
+            {' '}· solo gruppi ≥ {baseline.minimumGroupSize} lavoratori
+            {dimensionKeys.length > 1 ? ` · ${dimensionKeys.length} dimensioni registrate` : ''}
+          </p>
+          {visibleGroups.map((g) => (
+            <div
+              key={g.group_id}
+              style={{
+                display: 'grid', gap: 7, padding: '11px 13px', minWidth: 0,
+                borderRadius: PX.rInner, border: `1px solid ${PX.l2Edge}`, background: PX.l2,
+                fontFamily: PX.sans,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', minWidth: 0 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: PX.ink, minWidth: 0, overflowWrap: 'anywhere' }}>
+                  {groupDisplayLabel(g.group_label)}
+                </span>
+                <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                  <span style={{ fontSize: 17, fontWeight: 750, fontVariantNumeric: 'tabular-nums', color: PX.ink }}>
+                    {g.employee_count}
+                  </span>
+                  <span style={{ fontSize: 11.5, fontWeight: 650, color: PX.ink3, fontVariantNumeric: 'tabular-nums' }}>
+                    {shareLabel(g.share_of_workforce)}
+                  </span>
+                </span>
+              </div>
+              <div
+                role="img"
+                aria-label={`${groupDisplayLabel(g.group_label)}: ${g.employee_count} lavoratori, ${shareLabel(g.share_of_workforce)} del totale`}
+                style={{ height: 6, borderRadius: PX.rPill, background: PX.inkWash, overflow: 'hidden' }}
+              >
+                <div style={{
+                  height: 6, borderRadius: PX.rPill, background: PX.violet,
+                  width: `${Math.min(Math.max(g.share_of_workforce * 100, 1.5), 100)}%`,
+                }} />
+              </div>
             </div>
           ))}
         </div>
-        <div className="rounded border border-blue-100 bg-blue-50 px-3 py-2 text-[10px] text-blue-700 leading-relaxed">
-          Nessun dato individuale — solo aggregati. Cluster &lt; {baseline.minimumGroupSize} lavoratori soppressi per privacy prima della scrittura.
-          KORA misura l&apos;organizzazione, non gli individui.
-        </div>
-      </div>
+      )}
+    </Region>
+  );
 
-      {/* ── Aggregate groups by dimension ── */}
-      <div className="space-y-4">
-        <div>
-          <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">Gruppi Aggregati per Dimensione</p>
-          <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
-            Solo gruppi ≥ {baseline.minimumGroupSize} lavoratori. Nessun dato individuale — aggregati per privacy.
-          </p>
-        </div>
+  return (
+    <>
+      <PageHead
+        eyebrow="KORA Admin — Validazione workforce"
+        title="Workforce Baseline"
+        lead="Validazione aggregata della popolazione di un'azienda cliente: soglia minima, soglia di gruppo e distribuzione per dimensione. Il setup operativo resta lato KORA Admin; il portale azienda mostra solo output e stato."
+        meta={
+          baseline ? (
+            <>
+              <Chip>{baseline.companyName}</Chip>
+              <Chip>Periodo {baseline.reportingPeriod}</Chip>
+              <Status tone={thresholdMet ? 'ok' : 'risk'}>
+                {thresholdMet ? 'Soglia soddisfatta' : 'Sotto soglia'}
+              </Status>
+            </>
+          ) : selectedTenant && !loading ? (
+            <>
+              <Chip>{selectedTenant.companyName}</Chip>
+              <Status tone="idle">Nessuna baseline</Status>
+            </>
+          ) : undefined
+        }
+      />
 
-        {dimensionKeys.length > 0 ? (
-          <>
-            {/* Dimension tabs */}
-            <div className="flex flex-wrap gap-2">
-              {dimensionKeys.map((dim) => (
-                <button
-                  key={dim}
-                  type="button"
-                  onClick={() => setActiveDimension(dim)}
-                  className={cn(
-                    'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                    activeDimension === dim
-                      ? 'border-[rgba(6,3,43,0.35)] bg-kora-ink text-white'
-                      : 'border-[rgba(6,3,43,0.08)] bg-kora-paper text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]',
-                  )}
-                >
-                  {DIMENSION_LABELS[dim] ?? dim}
-                </button>
-              ))}
-            </div>
-
-            {/* Groups grid */}
-            {visibleGroups.length > 0 ? (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {visibleGroups.map((g) => (
-                  <div key={g.group_id} className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-kora-paper p-3 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)]">{g.group_label}</p>
-                        <p className="text-[9px] font-mono text-[rgba(6,3,43,0.40)]">{g.dimension_type}</p>
-                      </div>
-                      <span className="text-lg font-bold text-[rgba(6,3,43,0.78)] shrink-0">{g.employee_count}</span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-[rgba(6,3,43,0.05)]">
-                      <div
-                        className="h-1.5 rounded-full bg-kora-accent"
-                        style={{ width: `${Math.min(g.share_of_workforce * 100, 100)}%` }}
-                      />
-                    </div>
-                    <div className="text-[9px] text-[rgba(6,3,43,0.40)]">
-                      {(g.share_of_workforce * 100).toFixed(1)}% del totale
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-[rgba(6,3,43,0.40)] italic">Nessun gruppo visibile per questa dimensione.</p>
-            )}
-          </>
-        ) : (
-          <p className="text-xs text-[rgba(6,3,43,0.40)] italic">
-            Nessuna suddivisione per dimensione registrata per questa baseline.
-          </p>
-        )}
-      </div>
-
-      {/* ── Navigation ── */}
-      <div className="border-t border-[rgba(6,3,43,0.05)] pt-4 flex items-center gap-4 flex-wrap">
-        <Link href="/admin/companies" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
-          ← Company Registry
-        </Link>
-        <Link href="/admin/companies" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
-          Onboarding Studio
-        </Link>
-        <Link href="/company/ingestion" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
-          KORA Intake Engine™ →
-        </Link>
-      </div>
-
-    </div>
+      <Workspace>
+        <Col span="main">
+          {verdictRegion}
+          {groupsRegion}
+        </Col>
+        <Col span="rail">
+          {companyRail}
+          {privacyRail}
+          {pathsRail}
+        </Col>
+      </Workspace>
+    </>
   );
 }

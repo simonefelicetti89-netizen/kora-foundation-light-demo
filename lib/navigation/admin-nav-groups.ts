@@ -32,6 +32,13 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { label: 'All Companies',    href: '/admin/companies' },
       { label: 'Tenant Registry',  href: '/admin/tenants' },
+      // KORA-WP-012 (Founder ruling READING A — SURFACE, 2026-09-21): restores
+      // the one inbound link this real capability lost as a side effect of
+      // B9.2's sidebar restructure (acb3a73), not by any decision to retire it.
+      // It is the only surface rendering baseline threshold validation and the
+      // N>=10 aggregate groups; the write paths (/admin/tenants,
+      // CompanyWorkspacePanel) render neither and are unaffected.
+      { label: 'Workforce Baseline', href: '/admin/companies/workforce-baseline' },
     ],
   },
   {

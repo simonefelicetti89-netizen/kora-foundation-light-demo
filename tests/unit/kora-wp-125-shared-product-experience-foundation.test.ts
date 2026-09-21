@@ -149,7 +149,13 @@ describe('KORA-WP-125 — navigation changed ONLY where a later Founder ruling r
     // Only the demo-only destination left; /admin/operator was reclassified as
     // a real capability (§5) and therefore stayed.
     expect([...before].filter((h) => !after.has(h))).toEqual(["href: '/admin/demo/acme-001'"]);
-    expect([...after].filter((h) => !before.has(h))).toEqual([]);
+    // KORA-WP-012 (Founder ruling READING A — SURFACE, 2026-09-21) restored
+    // exactly one destination that B9.2 (acb3a73) had dropped as a side effect
+    // of a sidebar restructure — a real Admin capability, never retired by any
+    // decision. It is named here rather than tolerated by a loosened matcher,
+    // so this guard keeps its full force: any OTHER admin destination added
+    // after WP-125's baseline still fails this test.
+    expect([...after].filter((h) => !before.has(h))).toEqual(["href: '/admin/companies/workforce-baseline'"]);
   });
 
   it('the rail keeps every item nameable — a hidden label is not a removed label', () => {
