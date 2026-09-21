@@ -213,9 +213,15 @@ describe('CC-023 — no retired component is reachable', () => {
     // Master-Plan stubs above — see that registry entry's own
     // `deletableWhen` for the (non-urgent) condition under which the shells
     // themselves could be removed.
+    // KORA-WP-063 (2026-09-21): services/booking-request/BookingRequestService.ts
+    // left this allow-list because it was DELETED. Its scheduled-deletion
+    // condition was satisfied — the B-REG registry is live and the KILL
+    // CHALLENGE #2 importer re-scan found zero references — so the stronger
+    // rule below now applies to it: a DEAD primary path eligible for deletion
+    // must not exist on disk. The registry entry survives as the historical
+    // record of the deletion, exactly as for every other retired service.
     const scheduledStubs = new Set([
       'app/company/reports/board-pack/page.tsx',
-      'services/booking-request/BookingRequestService.ts',
       'app/my-kora/',
     ]);
     for (const p of deadPrimaryPaths) {
@@ -224,16 +230,15 @@ describe('CC-023 — no retired component is reachable', () => {
     }
   });
 
-  it('the 2 scheduled-DEAD stubs are genuinely inert — redirect-only / always-empty-return, not hidden runtime authority', () => {
+  it('the remaining scheduled-DEAD stub is genuinely inert — redirect-only, not hidden runtime authority', () => {
     const boardPack = read('app/company/reports/board-pack/page.tsx');
     expect(boardPack).toContain("redirect('/api/company/decision-pack')");
-    const booking = stripComments(read('services/booking-request/BookingRequestService.ts'));
-    // getRequests/applyAction each have exactly 2 return statements, both empty.
-    const returns = booking.match(/return\s+[^;]+;/g) ?? [];
-    expect(returns.length).toBe(4);
-    for (const r of returns) {
-      expect(r).toMatch(/return (\[\]|null);/);
-    }
+    // KORA-WP-063 (2026-09-21): the BookingRequestService half of this
+    // assertion proved a DELETED file was inert by reading it. That mechanism
+    // cannot survive the deletion it was waiting for, and absence is a
+    // stronger guarantee than inertness — the assertion above (a DEAD
+    // eligible path must not exist) now covers it.
+    expect(exists('services/booking-request/BookingRequestService.ts')).toBe(false);
   });
 });
 
