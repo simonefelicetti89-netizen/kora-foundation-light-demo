@@ -6,10 +6,18 @@ name: KORA CI
 # use any repository secrets — see docs/CI.md for scope and rationale.
 
 on:
+  # R0-A (2026-09-22): the canonical release model declared by R0-B (report 243)
+  # makes `integration/**` the Product-truth line and `main` an ARCHIVAL branch
+  # fast-forwarded only AFTER release. Watching `main` alone would run the
+  # real-DB gates only after code had already reached Production — i.e. never
+  # continuously, for the line that actually carries Product truth.
+  # `main` is deliberately KEPT as a trigger (it must stay verified), and is
+  # deliberately NOT restored as the integration path.
+  workflow_dispatch:
   pull_request:
-    branches: [main]
+    branches: [main, 'integration/**', 'release/**']
   push:
-    branches: [main]
+    branches: [main, 'integration/**', 'release/**']
 
 jobs:
   ci:
@@ -303,6 +311,86 @@ jobs:
             if (r.numFailedTests !== 0) { console.error('::error::' + r.numFailedTests + ' RLS test(s) failed — a cross-tenant/cross-worker isolation or KORA_ADMIN control regression.'); process.exit(1); }
           "
 
+      # ── R0-A (2026-09-22): CI REAL-DB ENFORCEMENT ────────────────────────
+      # Six canonical DB-gated suites existed in the repository but were never
+      # executed by CI, so 186 real-database assertions were passing locally
+      # and enforced nowhere. Each was verified individually against the local
+      # Supabase stack before being wired here.
+      #
+      # This is a SEPARATE step from the RLS gate above on purpose: the RLS
+      # gate and its 0-skip assertion are untouched and unweakened.
+      #
+      # Supabase URL / service-role key come from `supabase status -o json`,
+      # the same mechanism this workflow already uses elsewhere. No secret is
+      # introduced: these are the local ephemeral stack's own throwaway keys.
+      - name: Run previously-unenforced DB-gated suites (R0-A — mandatory, no skip)
+        run: |
+          set -e
+          eval "$(supabase status -o json | node -e "
+            let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>{
+              const s=JSON.parse(d);
+              for (const k of ['API_URL','DB_URL','SERVICE_ROLE_KEY']) {
+                if (!s[k]) { console.error('::error::missing '+k+' from supabase status -o json'); process.exit(1); }
+              }
+              console.log('export SB_API_URL='+s.API_URL);
+              console.log('export SB_DB_URL='+s.DB_URL);
+              console.log('export SB_SRK='+s.SERVICE_ROLE_KEY);
+            });
+          ")"
+          COMMONS_GRANT_ALLOW_RUN=true COMMONS_GRANT_PG_URL="$SB_DB_URL" \
+          WP045_ALLOW_RUN=true WP045_PG_URL="$SB_DB_URL" WP045_SUPABASE_URL="$SB_API_URL" WP045_SERVICE_ROLE_KEY="$SB_SRK" \
+          WP112_ALLOW_RUN=true WP112_PG_URL="$SB_DB_URL" WP112_SUPABASE_URL="$SB_API_URL" WP112_SERVICE_ROLE_KEY="$SB_SRK" \
+          WP113_ALLOW_RUN=true WP113_PG_URL="$SB_DB_URL" WP113_SUPABASE_URL="$SB_API_URL" WP113_SERVICE_ROLE_KEY="$SB_SRK" \
+          WP116_ALLOW_RUN=true WP116_PG_URL="$SB_DB_URL" WP116_SUPABASE_URL="$SB_API_URL" WP116_SERVICE_ROLE_KEY="$SB_SRK" \
+          WP117_ALLOW_RUN=true WP117_PG_URL="$SB_DB_URL" WP117_SUPABASE_URL="$SB_API_URL" WP117_SERVICE_ROLE_KEY="$SB_SRK" \
+          npx vitest run \
+            tests/integration/commons-schema-usage-grant.test.ts \
+            tests/integration/wp-045-first-pilot-e2e-scenario.test.ts \
+            tests/unit/kora-wp-112-material-change-layer.test.ts \
+            tests/unit/kora-wp-113-transformation-ledger-morphogenesis.test.ts \
+            tests/unit/kora-wp-116-koral-review.test.ts \
+            tests/unit/kora-wp-117-koral-mark-substrate.test.ts \
+            --reporter=json --outputFile=r0a-db-gate-report.json
+
+      # Same machine-readable discipline the RLS gate uses: a skipped suite
+      # here means an env var did not resolve, which is a hard failure and
+      # never a quiet pass.
+      - name: Assert 0 R0-A DB-gated tests skipped and 0 failed
+        if: always()
+        run: |
+          node -e "
+            const r = require('./r0a-db-gate-report.json');
+            console.log('R0-A DB-gated suites — total:', r.numTotalTests, 'passed:', r.numPassedTests, 'failed:', r.numFailedTests, 'skipped:', r.numPendingTests);
+            if (r.numTotalTests === 0) { console.error('::error::R0-A DB-gated suites ran 0 tests — they did not execute at all.'); process.exit(1); }
+            if (r.numPendingTests !== 0) { console.error('::error::' + r.numPendingTests + ' R0-A DB-gated test(s) skipped — a *_ALLOW_RUN/PG_URL env var did not resolve. R0-A requires 0 skipped.'); process.exit(1); }
+            if (r.numFailedTests !== 0) { console.error('::error::' + r.numFailedTests + ' R0-A DB-gated test(s) failed.'); process.exit(1); }
+          "
+
+      # Truthful coverage reporting: states what was discovered, enforced and
+      # excluded, so no run can imply 'all DB tests passed' while a canonical
+      # suite was silently skipped.
+      - name: DB-gate coverage summary
+        if: always()
+        run: |
+          node -e "
+            const fs = require('fs');
+            const rls = fs.existsSync('./rls-integration-report.json') ? require('./rls-integration-report.json') : null;
+            const r0a = fs.existsSync('./r0a-db-gate-report.json') ? require('./r0a-db-gate-report.json') : null;
+            const lines = [];
+            lines.push('### KORA DB-gate coverage');
+            lines.push('');
+            lines.push('| Gate group | Tests | Passed | Failed | Skipped |');
+            lines.push('|---|---|---|---|---|');
+            if (rls) lines.push('| RLS integration (RLS-03…28) | ' + rls.numTotalTests + ' | ' + rls.numPassedTests + ' | ' + rls.numFailedTests + ' | ' + rls.numPendingTests + ' |');
+            if (r0a) lines.push('| R0-A newly enforced (6 suites) | ' + r0a.numTotalTests + ' | ' + r0a.numPassedTests + ' | ' + r0a.numFailedTests + ' | ' + r0a.numPendingTests + ' |');
+            lines.push('');
+            lines.push('Deliberate exclusions: see tests/unit/r0a-db-gate-enforcement.test.ts (DELIBERATE_EXCLUSIONS).');
+            lines.push('A gate absent from both this job and that list fails the coverage guard.');
+            const out = lines.join('\n');
+            console.log(out);
+            if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, out + '\n');
+          "
+
       - name: Run KORA Link behavioral suite (C1-C10)
         env:
           KORA_LINK_SKIP_DB_RESET: '1' # supabase start already applied every tracked migration fresh
@@ -315,6 +403,7 @@ jobs:
           name: db-backed-gate-reports
           path: |
             rls-integration-report.json
+            r0a-db-gate-report.json
             kora-link-behavioral-report.json
           retention-days: 30
 
