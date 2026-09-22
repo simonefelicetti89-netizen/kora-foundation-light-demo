@@ -147,13 +147,42 @@ describe('B122 -- Sharing controls are disabled', () => {
     expect(clientComp).toContain('data-testid="privacy-sharing-controls"');
   });
 
-  it('all sharing toggle buttons are disabled in Foundation Light', () => {
+  // MECHANISM SUPERSEDED, INVARIANT STRENGTHENED — KORA-WP-048, 2026-09-21.
+  //
+  // This used to count occurrences of the word `disabled` in the sharing
+  // section, because the page rendered dead switches for capabilities that do
+  // not exist. The KORA-WP-048 Founder ruling (Reading A) forbids exactly that
+  // presentation: "Do NOT render fake switches or disabled form controls
+  // simply to make the page appear interactive… If a capability is future,
+  // use canonical future-state language." A capability that is stated rather
+  // than switched-off contains no `disabled` attribute to count, so the old
+  // mechanism could only be satisfied by the theatre the ruling prohibits.
+  //
+  // The guarantee it protected — NO sharing capability can be activated from
+  // this page — is now asserted directly, and more strictly: the section
+  // contains no activation control of any kind, the two future capabilities
+  // are stated as unavailable Product state, and the client issues no write
+  // request anywhere. That is a stronger claim than a word count.
+  it('no sharing capability can be activated from this page', () => {
     const sharingSection = clientComp.slice(
       clientComp.indexOf('privacy-sharing-controls'),
       clientComp.indexOf('privacy-links-section'),
     );
-    const disabledCount = (sharingSection.match(/\bdisabled\b/g) ?? []).length;
-    expect(disabledCount).toBeGreaterThanOrEqual(3);
+    // No activation control: no button, no input, no click handler. The only
+    // control in the section is a link INTO the surface that owns the
+    // lifecycle (/worker/dynamic-cv), which activates nothing here.
+    expect(sharingSection).not.toMatch(/<button\b/);
+    expect(sharingSection).not.toMatch(/<input\b/);
+    expect(sharingSection).not.toMatch(/onClick=/);
+
+    // The two future capabilities are stated, never offered.
+    expect(clientComp).toContain('Snapshot pubblico anonimo');
+    expect(clientComp).toContain('Condivisione LinkedIn');
+    expect(clientComp).toContain('Non disponibile');
+    expect(clientComp).toContain('Employer access: non consentito');
+
+    // The whole client is read-only: no write verb reaches any endpoint.
+    expect(clientComp).not.toMatch(/method:\s*'(POST|PATCH|PUT|DELETE)'/);
   });
 
   it('client does not generate a real public link', () => {
