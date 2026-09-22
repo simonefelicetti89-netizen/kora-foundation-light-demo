@@ -211,7 +211,15 @@ describe('KORA-WP-012 (H/I) — nothing deleted, no schema change', () => {
   it('no migration was added and no baseline schema was touched: 089 is still the highest', () => {
     const files = readdirSync(join(ROOT, 'supabase/migrations')).filter((f) => f.endsWith('.sql'));
     const highest = Math.max(...files.map((f) => Number.parseInt(f.slice(0, 3), 10)).filter(Number.isFinite));
-    expect(highest).toBe(89);
+    // INTEGRATION SUPERSESSION (canonical Product integration, 2026-09-22):
+    // converted from equality to >=. This guard's intent is "THIS WP added no
+    // migration of its own" — asserted independently by the filename-ownership
+    // check, which still passes. 089 was the ceiling at this WP's own completion;
+    // KORA-WP-066 legitimately raised it to 090 on the integrated line. Equality
+    // is the brittle form the repository already documented a remedy for (see
+    // tests/unit/kora-wp-029-manual-remap-governance.test.ts: "never equality,
+    // same disclosed pattern already fixed for WP-011/WP-120/WP-013/WP-046").
+    expect(highest).toBeGreaterThanOrEqual(89);
     expect(files.some((f) => /wp[-_]?012|reachab/i.test(f))).toBe(false);
   });
 });
@@ -372,7 +380,15 @@ describe('KORA-WP-012 (O-A) — the misspelled stored label is corrected for dis
     expect(read(API_ROUTE)).toContain('organisazione');
     expect(code(ADMIN_PAGE)).not.toContain('persistWorkforceBaseline');
     const files = readdirSync(join(ROOT, 'supabase/migrations')).filter((f) => f.endsWith('.sql'));
-    expect(Math.max(...files.map((f) => Number.parseInt(f.slice(0, 3), 10)).filter(Number.isFinite))).toBe(89);
+    // INTEGRATION SUPERSESSION (canonical Product integration, 2026-09-22):
+    // converted from equality to >=. This guard's intent is "THIS WP added no
+    // migration of its own" — asserted independently by the filename-ownership
+    // check, which still passes. 089 was the ceiling at this WP's own completion;
+    // KORA-WP-066 legitimately raised it to 090 on the integrated line. Equality
+    // is the brittle form the repository already documented a remedy for (see
+    // tests/unit/kora-wp-029-manual-remap-governance.test.ts: "never equality,
+    // same disclosed pattern already fixed for WP-011/WP-120/WP-013/WP-046").
+    expect(Math.max(...files.map((f) => Number.parseInt(f.slice(0, 3), 10)).filter(Number.isFinite))).toBeGreaterThanOrEqual(89);
   });
 });
 
