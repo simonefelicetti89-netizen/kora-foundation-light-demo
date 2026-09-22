@@ -15,6 +15,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import {
   PX, PX_BREAKPOINTS, PX_TONE, resolvePxShellState,
@@ -23,7 +24,64 @@ import { formatIsoDateItalian } from '@/app/../components/ui/px/DateField';
 
 const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf-8');
+/**
+ * IA-PRESERVATION BASELINE, PINNED RATHER THAN READ FROM GIT HISTORY.
+ *
+ * This block previously ran `git show <BASELINE>:<file>` — twice, once at
+ * module scope. Under `actions/checkout@v4` the clone is depth 1, the baseline
+ * commit is absent, and git exits `fatal: bad object`; the module-scope call
+ * meant the whole file failed at COLLECTION. The first genuine GitHub run
+ * (35763067234) surfaced exactly that.
+ *
+ * The comparison is unchanged: current navigation is still diffed against the
+ * WP-124 baseline, and every expected delta below is still asserted exactly.
+ * Only the baseline's source changed — from a commit the runner cannot see, to
+ * the literal sets extracted from that same commit
+ * (84128e81b0bb5a617bb7c3ac7802d1a5491c2a84). This is equal in force and more
+ * auditable: a reader can now see what the baseline WAS without resolving a
+ * SHA, and the guard still fails for any destination or group added since.
+ */
 const BASELINE = '84128e81b0bb5a617bb7c3ac7802d1a5491c2a84';
+const BASELINE_KORA_SESSION_SHA256 = '7a3512668670584c377db0a09a4d545c344205a11b230370115fd884d085ec76';
+const BASELINE_PUBLIC_ROUTE_PREFIXES = "'/', '/demo', '/pilot', '/login', '/admin/login', '/auth/', '/request-access', '/cv/share/', '/link/'";
+const BASELINE_BANNER_WORDING: readonly string[] = [
+  "main:      'DEMO \u00b7 DATI SIMULATI'",
+  "secondary: 'Ambiente commerciale dimostrativo. Il pilot reale usa dati ricevuti e processati da KORA Operator.'",
+  "main:      'LIVE \u00b7 SERVICE-ASSISTED'",
+  "secondary: 'KORA Operator gestisce intake, review, scoring e Decision Pack. Il cliente consuma output aggregati.'",
+  "main:      'FUTURE \u00b7 ROADMAP \u00b7 NON ATTIVO'",
+  "secondary: 'Funzionalit\u00e0 future non disponibili in Foundation Light. Nessun production claim.'",
+];
+const sha256 = (rel: string) => createHash('sha256').update(readFileSync(join(ROOT, rel))).digest('hex');
+
+const BASELINE_ADMIN_NAV_HREFS: readonly string[] = [
+  "href: '/admin/activation-signal-pipeline'",
+  "href: '/admin/cases'",
+  "href: '/admin/commons'",
+  "href: '/admin/companies'",
+  "href: '/admin/data-intake'",
+  "href: '/admin/data-lifecycle'",
+  "href: '/admin/demo/acme-001'",
+  "href: '/admin/founder-validation'",
+  "href: '/admin/future-vision'",
+  "href: '/admin/governance'",
+  "href: '/admin/impact-units'",
+  "href: '/admin/kora-activation-layer'",
+  "href: '/admin/kora-link'",
+  "href: '/admin/kora-link/governance'",
+  "href: '/admin/kora-link/pilot-readiness'",
+  "href: '/admin/operator'",
+  "href: '/admin/partner-ecosystem-model'",
+  "href: '/admin/partners'",
+  "href: '/admin/pipeline'",
+  "href: '/admin/platform/diagnostics'",
+  "href: '/admin/tenants'",
+  "href: '/admin/trial-control-center'",
+  "href: '/admin/uef-review'",
+  "href: '/admin/worker-initiatives'",
+  "href: '/admin/workers'",
+  "href: '/commons'",
+];
 
 const sidebar = read('components/layout/Sidebar.tsx');
 const appshell = read('components/layout/AppShell.tsx');
@@ -85,13 +143,66 @@ describe('KORA-WP-125 — the shell has three states, not two', () => {
 // ── IA PRESERVATION — the boundary WP-125 must not cross ──────────────────
 
 describe('KORA-WP-125 — navigation changed ONLY where a later Founder ruling required it', () => {
-  const baselineSidebar = execFileSync('git', ['show', `${BASELINE}:components/layout/Sidebar.tsx`], {
-    cwd: ROOT, encoding: 'utf-8', maxBuffer: 8 * 1024 * 1024,
-  });
   const extract = (src: string, field: string) =>
     (src.match(new RegExp(`${field}: '[^']+'`, 'g')) ?? []).sort();
+  const BASELINE_SIDEBAR: Record<string, readonly string[]> = {
+    href: [
+      "href: '/company'",
+      "href: '/company/activation'",
+      "href: '/company/activity-selection'",
+      "href: '/company/activity-signals'",
+      "href: '/company/advisor'",
+      "href: '/company/commons'",
+      "href: '/company/contribution'",
+      "href: '/company/data'",
+      "href: '/company/financial'",
+      "href: '/company/kora-index'",
+      "href: '/company/kora-link'",
+      "href: '/company/kora-link/campaigns'",
+      "href: '/company/living-koral'",
+      "href: '/company/needs'",
+      "href: '/company/opportunities'",
+      "href: '/company/pillars'",
+      "href: '/company/profile'",
+      "href: '/company/reports'",
+      "href: '/company/status'",
+      "href: '/company/wallboard'",
+      "href: '/company/workspace'",
+      "href: '/demo/advisor'",
+      "href: '/demo/future-vision'",
+      "href: '/demo/guide'",
+      "href: '/my-kora/collective'",
+      "href: '/my-kora/kora-space'",
+      "href: '/partner/activity-bookings'",
+      "href: '/partner/activity-catalog'",
+      "href: '/partner/aggregate-signals'",
+      "href: '/partner/initiatives'",
+      "href: '/partner/kora-link'",
+      "href: '/partner/kora-link/initiatives'",
+      "href: '/partner/privacy-boundary'",
+      "href: '/partner/relationships'",
+      "href: '/partner/workspace'",
+      "href: '/worker/activity-discovery'",
+      "href: '/worker/commons'",
+    ],
+    heading: [
+      "heading: 'Attivazione'",
+      "heading: 'Catalogo Attivit\u00e0'",
+      "heading: 'Command'",
+      "heading: 'Evidence & Report'",
+      "heading: 'Governance'",
+      "heading: 'Iniziative & Community'",
+      "heading: 'Intelligence'",
+      "heading: 'KORA'",
+      "heading: 'Network'",
+      "heading: 'Portale Partner'",
+      "heading: 'Privacy'",
+      "heading: 'Roadmap'",
+      "heading: 'Workspace Advisor'",
+    ],
+  };
   const delta = (field: string) => {
-    const before = new Set(extract(baselineSidebar, field));
+    const before = new Set(BASELINE_SIDEBAR[field] ?? []);
     const after = new Set(extract(sidebar, field));
     return {
       removed: [...before].filter((x) => !after.has(x)).sort(),
@@ -141,10 +252,7 @@ describe('KORA-WP-125 — navigation changed ONLY where a later Founder ruling r
 
   it('the admin navigation changed only by the demo retirement and the classified restoration', () => {
     const hrefs = (src: string) => new Set(src.match(/href:\s+'[^']+'/g) ?? []);
-    const baseline = execFileSync('git', ['show', `${BASELINE}:lib/navigation/admin-nav-groups.ts`], {
-      cwd: ROOT, encoding: 'utf-8', maxBuffer: 8 * 1024 * 1024,
-    });
-    const before = hrefs(baseline);
+    const before = new Set(BASELINE_ADMIN_NAV_HREFS);
     const after = hrefs(read('lib/navigation/admin-nav-groups.ts'));
     // Only the demo-only destination left; /admin/operator was reclassified as
     // a real capability (§5) and therefore stayed.
@@ -192,11 +300,12 @@ describe('KORA-WP-125 — authenticated account chrome appears exactly once', ()
   });
 
   it('authentication logic itself is untouched by this package', () => {
-    const session = read('lib/auth/kora-session.ts');
-    const baseline = execFileSync('git', ['show', `${BASELINE}:lib/auth/kora-session.ts`], {
-      cwd: ROOT, encoding: 'utf-8', maxBuffer: 8 * 1024 * 1024,
-    });
-    expect(session).toBe(baseline);
+    // Byte-identity, proven by content digest rather than by reading the
+    // baseline commit — see the BASELINE block above for why.
+    expect(
+      sha256('lib/auth/kora-session.ts'),
+      `authentication logic changed since ${BASELINE} — this package may not touch it`,
+    ).toBe(BASELINE_KORA_SESSION_SHA256);
   });
 });
 
@@ -205,10 +314,7 @@ describe('KORA-WP-125 — authenticated account chrome appears exactly once', ()
 describe('KORA-WP-125 — public routes stay outside the authenticated shell', () => {
   it('the public bypass list is unchanged from the baseline', () => {
     const cur = /PUBLIC_ROUTE_PREFIXES = \[([^\]]+)\]/.exec(appshell)?.[1];
-    const base = execFileSync('git', ['show', `${BASELINE}:components/layout/AppShell.tsx`], {
-      cwd: ROOT, encoding: 'utf-8',
-    });
-    expect(cur).toBe(/PUBLIC_ROUTE_PREFIXES = \[([^\]]+)\]/.exec(base)?.[1]);
+    expect(cur).toBe(BASELINE_PUBLIC_ROUTE_PREFIXES);
   });
 
   it('a public route returns before any Product Experience chrome is applied', () => {
@@ -419,12 +525,9 @@ describe('KORA-WP-125 — Checkpoint 1 correction pass', () => {
 
   it('the demo/environment warning keeps its meaning after restyling', () => {
     const banner = read('components/demo/SyntheticDataBanner.tsx');
-    const base = execFileSync('git', ['show', `${BASELINE}:components/demo/SyntheticDataBanner.tsx`], {
-      cwd: ROOT, encoding: 'utf-8',
-    });
     // Wording is byte-identical: only presentation changed.
     const words = (src: string) => (src.match(/main:\s+'[^']+'|secondary:\s+'[^']+'/g) ?? []);
-    expect(words(banner)).toEqual(words(base));
+    expect(words(banner)).toEqual([...BASELINE_BANNER_WORDING]);
     // Still a banner, still environment-labelled, still not dismissible.
     expect(banner).toMatch(/role="banner"/);
     expect(banner).toMatch(/aria-label=\{`Ambiente corrente/);

@@ -12,7 +12,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync, readdirSync } from 'fs';
-import { execSync } from 'child_process';
+import { createHash } from 'node:crypto';
 import { join, resolve } from 'path';
 import {
   sanitizeMappingPayload,
@@ -37,6 +37,36 @@ function codeLines(src: string): string {
     .filter((l) => !l.trim().startsWith('//') && !l.trim().startsWith('--'))
     .join('\n');
 }
+
+/**
+ * BYTE-IDENTITY TO THE WP-125 BASELINE, WITHOUT GIT HISTORY.
+ *
+ * These guards previously ran `git diff --stat <baseline SHA> -- <file>` and
+ * required empty output. That is unrunnable under `actions/checkout@v4`, which
+ * clones at depth 1: the baseline commit is simply absent, git exits
+ * `fatal: bad object`, and the suite fails for a reason unrelated to the
+ * invariant. The first genuine GitHub run (35763067234) surfaced exactly that.
+ *
+ * The guarantee is unchanged and expressed directly: the file's content must
+ * still hash to the baseline blob's digest. An empty `git diff` and a matching
+ * content digest prove the same fact — byte-identity — and the digest form is
+ * marginally STRONGER, because it is exact rather than dependent on how
+ * `--stat` chooses to summarise, and it states the baseline explicitly in the
+ * test instead of leaving it implicit in a commit the runner cannot see.
+ *
+ * Digests were computed from the real baseline blobs at
+ * 0bc14f6e484110ce65be8aa0c185a68208057359. If a later WP legitimately changes
+ * one of these files, this guard fails — which is precisely its purpose, and it
+ * failed the same way before.
+ */
+const WP125_BASELINE_SHA = '0bc14f6e484110ce65be8aa0c185a68208057359';
+const BASELINE_BLOB_SHA256: Record<string, string> = {
+  'lib/mapping-governance/manual-remap-service.ts':
+    '819bb9d016f70bc865df0af413036111c297b7039377159c119aa9dd7708380d',
+  'lib/data-intake/column-mapping.ts':
+    '2e395a9588c4d5c440bee06ce87497424746eac3caeba172208162f61da97a94',
+};
+const sha256 = (rel: string) => createHash('sha256').update(readFileSync(join(ROOT, rel))).digest('hex');
 
 const MIGRATION = 'supabase/migrations/090_saved_column_mapping_tenant_scoped.sql';
 const SERVICE   = 'lib/saved-mappings/saved-mapping-service.ts';
@@ -355,11 +385,11 @@ describe('KORA-WP-066 (G) — WP-029 manual-remap governance is unchanged and un
     // KORA-WP-066 in the clause reserving Saved Mappings to it. Git is the
     // honest instrument — the file must be untouched, not merely free of a
     // keyword.
-    const diff = execSync(
-      'git diff --stat 0bc14f6e484110ce65be8aa0c185a68208057359 -- lib/mapping-governance/manual-remap-service.ts',
-      { cwd: ROOT, encoding: 'utf8' },
-    ).trim();
-    expect(diff, `WP-029 service changed:\n${diff}`).toBe('');
+    const rel = 'lib/mapping-governance/manual-remap-service.ts';
+    expect(
+      sha256(rel),
+      `WP-029 service changed since ${WP125_BASELINE_SHA} — this WP may not modify it`,
+    ).toBe(BASELINE_BLOB_SHA256[rel]);
     // And its reservation clause still stands, unedited.
     expect(read('lib/mapping-governance/manual-remap-service.ts')).toMatch(/Out of Scope[\s\S]{0,200}Saved Mappings/);
   });
@@ -537,11 +567,11 @@ describe('KORA-WP-066 — the confidence emphasis threshold changes nothing but 
       expect(src, `0.9 threshold leaked into ${f}`).not.toMatch(/confidence\s*<\s*0\.9/);
     }
     // And the suggester itself is untouched by this WP.
-    const diff = execSync(
-      'git diff --stat 0bc14f6e484110ce65be8aa0c185a68208057359 -- lib/data-intake/column-mapping.ts',
-      { cwd: ROOT, encoding: 'utf8' },
-    ).trim();
-    expect(diff, `the classifier changed:\n${diff}`).toBe('');
+    const rel = 'lib/data-intake/column-mapping.ts';
+    expect(
+      sha256(rel),
+      `the classifier changed since ${WP125_BASELINE_SHA} — this WP may not modify it`,
+    ).toBe(BASELINE_BLOB_SHA256[rel]);
   });
 });
 
