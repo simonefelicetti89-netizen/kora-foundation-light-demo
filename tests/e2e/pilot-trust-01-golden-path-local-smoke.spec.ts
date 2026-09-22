@@ -76,16 +76,36 @@ test.describe('PILOT-TRUST-01 — golden path smoke (local only)', () => {
     await page.goto('/worker/workspace');
     await expect(page).toHaveURL(/\/worker\/workspace/, { timeout: 15_000 });
     await expect(page.getByTestId('workspace-page')).toBeVisible();
-    await expect(page.getByTestId('session-bar')).toBeVisible();
-    await expect(page.getByText(workerCreds!.email).first()).toBeVisible();
+
+    // KORA-WP-125 retired SessionBar and consolidated the authenticated account
+    // surface into AccountMenu in the shared header. AccountMenu renders ONLY
+    // once a real session's kora_role has resolved, so its presence — carrying
+    // this worker's own identity — is the session proof SessionBar used to be.
+    const workerAccount = page.getByRole('button', { name: 'Menu account' });
+    await expect(workerAccount).toBeVisible();
+    await expect(workerAccount).toContainText(workerCreds!.email);
 
     // Cross-role: a WORKER session must never reach the company workspace.
     await page.goto('/company/workspace');
     await expect(page).not.toHaveURL(/\/company\/workspace/, { timeout: 15_000 });
 
-    // Logout.
+    // Logout. WP-125 moved logout inside AccountMenu's dropdown, which is
+    // conditionally rendered — so the menu must be opened first, exactly as a
+    // real user must. The role-aware redirect then lands on /worker/login,
+    // itself a wrapper that redirects to the unified /login?role_hint=worker.
     await page.goto('/worker/workspace');
-    await page.getByRole('button', { name: 'Esci' }).click();
+    const workerTrigger = page.getByRole('button', { name: 'Menu account' });
+    await workerTrigger.click();
+    await expect(workerTrigger).toHaveAttribute('aria-expanded', 'true');
+
+    const workerMenu = page.getByTestId('account-menu-dropdown');
+    await expect(workerMenu).toBeVisible();
+    await expect(workerMenu).toContainText(workerCreds!.email);
+    await expect(workerMenu.getByTestId('account-menu-role-badge')).toHaveText('Worker');
+
+    const workerLogout = workerMenu.getByRole('button', { name: "Esci dall'account" });
+    await expect(workerLogout).toBeVisible();
+    await workerLogout.click();
     await page.waitForURL((url) => url.pathname.startsWith('/login') || url.pathname === '/', { timeout: 15_000 });
 
     await context.close();
@@ -103,7 +123,11 @@ test.describe('PILOT-TRUST-01 — golden path smoke (local only)', () => {
     await page.goto('/company/workspace');
     await expect(page).toHaveURL(/\/company\/workspace/, { timeout: 15_000 });
     await expect(page.getByTestId('company-workspace-page')).toBeVisible();
-    await expect(page.getByTestId('session-bar')).toBeVisible();
+
+    // Same WP-125 account surface as the worker path above.
+    const companyAccount = page.getByRole('button', { name: 'Menu account' });
+    await expect(companyAccount).toBeVisible();
+    await expect(companyAccount).toContainText(companyCreds!.email);
 
     if (companyCreds!.tenantCode) {
       await expect(page.getByTestId('company-tenant-code')).toHaveText(companyCreds!.tenantCode, { timeout: 15_000 });
@@ -113,9 +137,21 @@ test.describe('PILOT-TRUST-01 — golden path smoke (local only)', () => {
     await page.goto('/worker/workspace');
     await expect(page).not.toHaveURL(/\/worker\/workspace/, { timeout: 15_000 });
 
-    // Logout.
+    // Logout — same WP-125 account-menu interaction as the worker path; the
+    // role-aware redirect lands on /company/login → /login?role_hint=company.
     await page.goto('/company/workspace');
-    await page.getByRole('button', { name: 'Esci' }).click();
+    const companyTrigger = page.getByRole('button', { name: 'Menu account' });
+    await companyTrigger.click();
+    await expect(companyTrigger).toHaveAttribute('aria-expanded', 'true');
+
+    const companyMenu = page.getByTestId('account-menu-dropdown');
+    await expect(companyMenu).toBeVisible();
+    await expect(companyMenu).toContainText(companyCreds!.email);
+    await expect(companyMenu.getByTestId('account-menu-role-badge')).toHaveText('Company Admin');
+
+    const companyLogout = companyMenu.getByRole('button', { name: "Esci dall'account" });
+    await expect(companyLogout).toBeVisible();
+    await companyLogout.click();
     await page.waitForURL((url) => url.pathname.startsWith('/login') || url.pathname === '/', { timeout: 15_000 });
 
     await context.close();
