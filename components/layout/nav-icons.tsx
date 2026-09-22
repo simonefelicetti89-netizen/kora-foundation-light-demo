@@ -65,6 +65,12 @@ const ICON_BY_HREF: ReadonlyArray<readonly [string, LucideIcon]> = [
   ['/admin/advisor-governance', ShieldCheck],
   ['/admin/cases', ClipboardCheck],
   ['/admin/commons', Users],
+  // KORA-WP-012: the baseline validation surface is a distribution readout,
+  // not a third company registry. Without its own glyph the rail would show
+  // three identical Building2 marks in one group, which is the exact failure
+  // this map exists to prevent. Longest-prefix wins, so it must precede
+  // '/admin/companies' only by specificity, not by order.
+  ['/admin/companies/workforce-baseline', BarChart3],
   ['/admin/companies', Building2],
   ['/admin/data-intake', UploadCloud],
   ['/admin/data-lifecycle', Database],

@@ -18,6 +18,10 @@ import {
 
 const COMPANY_TAB_NAV_PATH = 'app/admin/companies/[companyId]/_components/CompanyTabNav.tsx';
 
+/** KORA-WP-012: the live Admin baseline validation surface — not the
+ *  B169-retired per-company Workforce Management drill-in this file guards. */
+const WORKFORCE_BASELINE_HREF = '/admin/companies/workforce-baseline';
+
 // ── Task 1: Sidebar — Workforce navigation post-B169 ─────────────────────────
 // B169 FASE 2: Workforce Management moved from sidebar to CompanyTabNav.
 // Path: sidebar Companies group → /admin/companies → company drill-in → Workforce tab.
@@ -60,7 +64,16 @@ describe('B95-C Task 1 — Sidebar: Workforce nav post-B169 (CompanyTabNav)', ()
   it('buildNavGroups with companyId does NOT add workforce link to sidebar (B169 — moved to tab nav)', () => {
     const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
     const allItems = groups.flatMap((g) => g.items);
-    expect(allItems.filter((i) => i.href.includes('/workforce')).length).toBe(0);
+    // KORA-WP-012 (Founder ruling READING A — SURFACE, 2026-09-21): this
+    // assertion guards the B169 FASE 2 decision — the per-company "Workforce
+    // Management" drill-in must not be a sidebar destination. Its mechanism,
+    // a bare `includes('/workforce')`, also matches
+    // /admin/companies/workforce-baseline, a different and live capability
+    // that B169 never governed (its link was dropped by B9.2/acb3a73 as a side
+    // effect and is restored by WP-012). The baseline surface is excluded by
+    // exact href, so every other /workforce destination stays banned and the
+    // invariant is unchanged.
+    expect(allItems.filter((i) => i.href.includes('/workforce') && i.href !== WORKFORCE_BASELINE_HREF).length).toBe(0);
   });
 
   it('Pilot Lifecycle group appears before Operations group in admin sidebar', () => {
@@ -179,7 +192,22 @@ describe('B95-C Task 5 — Workforce route reachability from admin navigation', 
   it('admin sidebar has no /workforce items (moved to CompanyTabNav — B169 FASE 2)', () => {
     const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
     const allItems = groups.flatMap((g) => g.items);
-    expect(allItems.filter((i) => i.href.includes('/workforce')).length).toBe(0);
+    // KORA-WP-012 (Founder ruling READING A — SURFACE, 2026-09-21): this
+    // assertion guards the B169 FASE 2 decision — the per-company "Workforce
+    // Management" drill-in must not be a sidebar destination. Its mechanism,
+    // a bare `includes('/workforce')`, also matches
+    // /admin/companies/workforce-baseline, a different and live capability
+    // that B169 never governed (its link was dropped by B9.2/acb3a73 as a side
+    // effect and is restored by WP-012). The baseline surface is excluded by
+    // exact href, so every other /workforce destination stays banned and the
+    // invariant is unchanged.
+    expect(allItems.filter((i) => i.href.includes('/workforce') && i.href !== WORKFORCE_BASELINE_HREF).length).toBe(0);
+  });
+
+  it('the B169-retired Workforce Management destination is still absent (invariant unchanged)', () => {
+    const allItems = buildNavGroups('KORA_ADMIN', 'meridiana-group').flatMap((g) => g.items);
+    expect(allItems.find((i) => i.label === 'Workforce Management')).toBeUndefined();
+    expect(allItems.find((i) => /\/workforce$|\/workforce\//.test(i.href))).toBeUndefined();
   });
 
   it('quickstart step pointing to /admin/companies is labeled to suggest workforce action', () => {
