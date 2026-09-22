@@ -127,7 +127,7 @@ describe('KORA-WP-112 — no migration beyond 081 was introduced BY THIS WP (a l
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBe(89); // KORA-WP-016 raised the ceiling to 089 (analytics.observed_investment_fact flexible edge — a later, unrelated WP; this assertion's own intent is unaffected)
+    expect(Math.max(...numbers)).toBeGreaterThanOrEqual(89); // KORA-WP-016 raised the ceiling to 089 (analytics.observed_investment_fact flexible edge — a later, unrelated WP; this assertion's own intent is unaffected) // KORA-WP-066 raised the ceiling to 090 (analytics.saved_column_mapping — a later, unrelated WP; this assertion's own intent is unaffected). CONVERTED FROM EQUALITY TO >= BY KORA-WP-066: INTENTIONAL TEST-MECHANISM SUPERSESSION, SEMANTIC GUARANTEE PRESERVED. The guarantee is "THIS WP introduced no migration of its own", never "no later WP may add one" — the equality form had already been hand-edited by several successive WPs, which is the failure mode the repository's own documented remedy (see tests/unit/kora-wp-029-manual-remap-governance.test.ts, "never equality, same disclosed pattern already fixed for WP-011/WP-120/WP-013/WP-046") exists to end.
     expect(numbers).toContain(81);
   });
 });

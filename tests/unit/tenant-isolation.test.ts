@@ -214,6 +214,20 @@ describe('Tenant Isolation — admin routes: tenantId da query validato prima de
     'app/api/admin/data-intake/preview/route.ts',
   ]);
 
+  // KORA-WP-066 — INTENTIONAL TEST-MECHANISM SUPERSESSION, SEMANTIC GUARANTEE
+  // PRESERVED / MADE MORE PRECISE.
+  //
+  // Same shape as FETCH_PDF_DELEGATE above: the route does not run the tenant
+  // lookup inline, it delegates to a service that does. Rather than register
+  // the delegate on trust, this entry ALSO asserts that the delegate module
+  // itself performs the analytics.tenant lookup — so the guarantee ("a tenant
+  // from the query string is validated against the database before use") is
+  // checked end-to-end here, which the name-only whitelist above does not do.
+  const SAVED_MAPPING_DELEGATE = new Map([
+    ['app/api/admin/data-intake/saved-mappings/route.ts',
+     { fn: 'listSavedMappingsForTenant', module: 'lib/saved-mappings/saved-mapping-service.ts' }],
+  ]);
+
   it('esistono admin routes con tenantId/tenantCode da query (sanity check)', () => {
     expect(ADMIN_ROUTES_WITH_TENANT_PARAM.length).toBeGreaterThan(0);
   });
@@ -221,6 +235,16 @@ describe('Tenant Isolation — admin routes: tenantId da query validato prima de
   for (const route of ADMIN_ROUTES_WITH_TENANT_PARAM) {
     it(`${label(route)}: tiene validato il tenant (DB lookup o service delegate)`, () => {
       const code = stripComments(src(route));
+
+      const savedMappingDelegate = SAVED_MAPPING_DELEGATE.get(route);
+      if (savedMappingDelegate) {
+        expect(code).toContain(savedMappingDelegate.fn);
+        // The delegate must really do the lookup — not merely be named here.
+        const delegateSrc = stripComments(src(savedMappingDelegate.module));
+        expect(delegateSrc).toContain("from('tenant')");
+        expect(delegateSrc).toContain("eq('tenant_code'");
+        return;
+      }
 
       if (FETCH_PDF_DELEGATE.has(route)) {
         // Whitelist: delega a fetchPdfData() che fa DB lookup su analytics.tenant
