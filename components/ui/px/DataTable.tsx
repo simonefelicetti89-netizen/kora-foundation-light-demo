@@ -31,6 +31,10 @@ export interface PxColumn<T> {
   truncate?: boolean;
   /** Right-aligned numerics are tabular by default. */
   numeric?: boolean;
+  /** Omit from the record rendering — for the column the record TITLE already
+   *  states, so a narrow container does not repeat the same value twice.
+   *  Additive and optional: a column without it behaves exactly as before. */
+  hideInRecords?: boolean;
   render: (row: T) => ReactNode;
 }
 
@@ -99,7 +103,7 @@ export function PxDataTable<T>({
               >
                 <div style={{ fontSize: 13.5, fontWeight: 700, overflowWrap: 'anywhere' }}>{recordTitle(row)}</div>
                 <dl style={{ display: 'grid', gridTemplateColumns: 'minmax(0,auto) minmax(0,1fr)', gap: '4px 12px', margin: 0, fontSize: 12 }}>
-                  {columns.map((c) => (
+                  {columns.filter((c) => !c.hideInRecords).map((c) => (
                     <div key={c.key} style={{ display: 'contents' }}>
                       <dt style={{ color: PX.ink3, fontWeight: 600 }}>{c.header}</dt>
                       <dd style={{ margin: 0, fontWeight: 650, minWidth: 0, overflowWrap: 'anywhere' }}>{c.render(row)}</dd>
