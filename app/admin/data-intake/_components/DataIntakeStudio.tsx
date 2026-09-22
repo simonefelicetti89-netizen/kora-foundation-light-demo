@@ -10,6 +10,7 @@
 // No file upload. No CSV/XLSX input. No scoring recalculation. No PII exposed.
 
 import { useEffect, useState, useCallback } from 'react';
+import { PX } from '@/lib/design/kora-design-tokens';
 import { useSearchParams } from 'next/navigation';
 import { PilotOnboardingChecklist } from '@/components/admin/PilotOnboardingChecklist';
 import { MatchReviewPanel, type MatchReviewDecision, type MatchReviewSection } from './MatchReviewPanel';
@@ -83,6 +84,10 @@ interface AcceptResult {
   fileType?: 'csv' | 'xlsx';
   selectedSheetName?: string;
   mappingApplied?: boolean;
+  // KORA-WP-066: present only when the Operator asked to save this mapping.
+  savedMapping?: { id: string; mappingName: string; fieldCount: number };
+  savedMappingError?: string;
+  savedMappingName?: string;
   manualCompletionApplied?: string[];
   rowCount?: number;
   eligibilitySummary?: { eligible: number; limited: number; blocked: number; reviewRequired: number; total: number };
@@ -221,6 +226,20 @@ interface Props { userEmail: string; userRole: string; }
 // B9: tenant option shape for selector
 interface TenantOption { id: string; tenantCode: string; companyName: string; }
 
+// KORA-WP-066 — a Saved Mapping as the Admin workflow sees it.
+interface SavedMappingOption {
+  id: string;
+  mappingName: string;
+  mapping: Record<string, string>;
+  updatedAt: string;
+}
+// What applying one did to the CURRENT session — reported, never enforced.
+interface SavedMappingApplied {
+  mappingName: string;
+  appliedCount: number;
+  missingHeaders: string[];
+}
+
 export function DataIntakeStudio({ userEmail, userRole }: Props) {
   // B9.2: read query params for pre-selection (e.g. from /admin/tenants CTA)
   const searchParams = useSearchParams();
@@ -261,6 +280,14 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
   // B27: column mapping state
   const [userMapping, setUserMapping]   = useState<Record<string, string>>({});
+
+  // KORA-WP-066 — Saved Mappings (tenant-scoped session reuse).
+  // A saved mapping belongs to ONE Company and is only ever listed for the
+  // Company currently selected above. There is no cross-Company catalogue.
+  const [savedMappings, setSavedMappings]             = useState<SavedMappingOption[]>([]);
+  const [savedMappingChoice, setSavedMappingChoice]   = useState('');
+  const [savedMappingApplied, setSavedMappingApplied] = useState<SavedMappingApplied | null>(null);
+  const [saveMappingName, setSaveMappingName]         = useState('');
   const [manualSource, setManualSource]      = useState('');
   const [manualEvidLevel, setManualEvidLevel] = useState('');
   const [manualBudgetClass, setManualBudgetClass] = useState('');
@@ -397,6 +424,12 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       fd.append('pseudonymizationConfirmation', 'true');
       // B27: send column mapping + manual defaults to accept (server re-applies)
       appendB27Fields(fd);
+      // KORA-WP-066: save this Company's mapping only when the Operator named
+      // one. Sent on accept ONLY — never on preview — so a mapping is persisted
+      // exactly when it was actually used to accept a real batch.
+      if (saveMappingName.trim()) {
+        fd.append('saveMappingName', saveMappingName.trim());
+      }
       // B33: send match review decisions for multi-file batches
       if (additionalFiles.length > 0 && Object.keys(matchDecisions).length > 0) {
         const overrides = Object.entries(matchDecisions).map(([matchId, decision]) => ({ matchId, decision }));
@@ -408,6 +441,12 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       const data = await res.json() as AcceptResult;
       setAcceptResult(data);
       setAcceptStatus(data.ok ? 'created' : 'rejected');
+      // KORA-WP-066: a mapping saved during this accept becomes available for
+      // the NEXT session of this same Company.
+      if (data.ok && data.savedMapping) {
+        setSaveMappingName('');
+        void loadSavedMappings(TENANT);
+      }
     } catch (e) {
       setAcceptResult({ ok: false, error: e instanceof Error ? e.message : String(e) });
       setAcceptStatus('error');
@@ -467,6 +506,67 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       setMultiFileResult({ ok: false, error: e instanceof Error ? e.message : String(e) });
       setMultiFileStatus('error');
     }
+  }
+
+  // ── KORA-WP-066: Saved Mappings ────────────────────────────────────────────
+  //
+  // Loaded per Company. Changing the selected Company discards the previous
+  // Company's list and selection, so one Company's mapping can never be shown
+  // — let alone applied — while another Company is selected. The server
+  // enforces the same boundary (RLS, migration 090); this is not the guard.
+  const loadSavedMappings = useCallback(async (tenantCode: string) => {
+    // The reset lives here, inside the async callback, rather than in the
+    // effect body: a selection belonging to the previously selected Company
+    // must never survive into the next one.
+    setSavedMappingChoice('');
+    setSavedMappingApplied(null);
+    if (!tenantCode) { setSavedMappings([]); return; }
+    try {
+      const res  = await fetch(
+        `/api/admin/data-intake/saved-mappings?tenantCode=${encodeURIComponent(tenantCode)}`,
+        { credentials: 'include' },
+      );
+      const data = await res.json() as { ok?: boolean; savedMappings?: SavedMappingOption[] };
+      setSavedMappings(data.ok && data.savedMappings ? data.savedMappings : []);
+    } catch {
+      // Saved Mappings are an accelerator: a failed load must never interfere
+      // with the normal mapping workflow.
+      setSavedMappings([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadSavedMappings(TENANT);
+  }, [TENANT, loadSavedMappings]);
+
+  // COPY-ON-USE. Applying prefills the CURRENT session's mapping with a copy;
+  // the persisted mapping is never referenced afterwards and never mutated by
+  // later edits. Only headers actually present in this file are prefilled —
+  // there is no schema fingerprint and no compatibility judgement. Headers the
+  // saved mapping does not cover stay exactly as they were, available for
+  // normal manual mapping, and a partial match is never an error.
+  function handleApplySavedMapping(id: string) {
+    setSavedMappingChoice(id);
+    const chosen = savedMappings.find((m) => m.id === id);
+    if (!chosen) { setSavedMappingApplied(null); return; }
+
+    const currentHeaders = (csvResult?.ok ? csvResult.mappingSuggestions ?? [] : [])
+      .map((sg) => sg.sourceHeader);
+    const present = new Set(currentHeaders);
+
+    const applied: Record<string, string> = {};
+    const missingHeaders: string[] = [];
+    for (const [header, field] of Object.entries(chosen.mapping)) {
+      if (present.has(header)) applied[header] = field;
+      else missingHeaders.push(header);
+    }
+
+    setUserMapping((prev) => ({ ...prev, ...applied }));
+    setSavedMappingApplied({
+      mappingName:  chosen.mappingName,
+      appliedCount: Object.keys(applied).length,
+      missingHeaders,
+    });
   }
 
   // B27: build mapping + manual completion form data fields
@@ -593,8 +693,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
     return 'upcoming';
   }
 
+  // KORA-WP-066: this page's own canvas widened from max-w-4xl (896px) to
+  // max-w-6xl (1152px). The mapping table is the widest real content on the
+  // page and was being compressed into a strip at 1440 while low-value regions
+  // kept the same width. Local to this route only — no global container,
+  // layout or navigation change (KORA-WP-070 keeps its scope).
   return (
-    <div className="max-w-4xl mx-auto py-6 px-3 space-y-5" data-testid="admin-data-intake-page">
+    <div className="max-w-6xl mx-auto py-6 px-3 space-y-5" data-testid="admin-data-intake-page">
 
       {/* ── A. HEADER ── */}
       <div className="rounded-xl bg-kora-ink px-6 py-5 flex items-start justify-between">
@@ -948,102 +1053,370 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           </div>
         )}
 
-        {/* B27 — Column Mapping Assistant */}
+        {/* ══ MAPPING WORKSPACE ═══════════════════════════════════════════
+            KORA-WP-066. The mapping step is the Operator's actual work, so it
+            is composed as one dominant workspace with a real hierarchy —
+            context, Saved Mapping state + primary action, the mapping table,
+            then diagnostics — instead of a stack of equal-weight cards.
+            Local to this step: the surrounding legacy Studio (KORA-WP-070's
+            own scope) is not redesigned here. Uses the shared PX token
+            register, never page-local type or colour tokens. */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' &&
-          csvResult.mappingSuggestions && csvResult.mappingSuggestions.length > 0 && (
-          <div className="rounded-lg border border-kora-accent/20 bg-kora-paper px-4 py-4 space-y-3">
-            <div>
-              <p className="text-[10px] font-bold text-kora-accent uppercase tracking-wide">Column Mapping Assistant</p>
-              <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">
-                KORA ha suggerito un mapping per le colonne del file. Verifica e modifica se necessario.
-                Colonne non mappate vengono mantenute con il nome originale.
+          csvResult.mappingSuggestions && csvResult.mappingSuggestions.length > 0 && (() => {
+          const suggestions   = csvResult.mappingSuggestions ?? [];
+          const companyName   = tenantList.find(t => t.tenantCode === TENANT)?.companyName ?? '';
+          const coverage      = assessMappingCoverage(suggestions);
+          const valueFor      = (h: string, fallback: string | null) => userMapping[h] ?? fallback ?? 'keep_original';
+          /* A row needs the Operator when it is unmapped/ignored OR when the
+             suggester was not confident. 0.9 is not a new threshold: it is the
+             host's own pre-existing "green" boundary for this column, reused
+             rather than invented, so a 65% guess at an unrecognised column
+             reads as an exception instead of hiding among exact matches. */
+          const isException   = (v: string, confidence: number) =>
+            v === 'keep_original' || v === 'ignore' || confidence < 0.9;
+          const exceptionCount = suggestions.filter(sg => isException(valueFor(sg.sourceHeader, sg.suggestedField), sg.confidence)).length;
+          const mappedCount    = suggestions.length - exceptionCount;
+          /* Duplicate names are a conflict, never an overwrite — so the
+             Operator is told while typing, not after accepting the batch. */
+          const nameAlreadyUsed = saveMappingName.trim() !== ''
+            && savedMappings.some(m => m.mappingName === saveMappingName.trim());
+
+          return (
+          <section style={{
+            background: PX.l1, border: `1px solid ${PX.line}`, borderRadius: PX.rPanel,
+            boxShadow: PX.sh2, fontFamily: PX.sans, overflow: 'hidden',
+          }}>
+            {/* ── LEVEL 1 — operational context ───────────────────────── */}
+            <header style={{ padding: '18px 22px 16px', borderBottom: `1px solid ${PX.line}` }}>
+              <p style={{
+                margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '0.10em',
+                textTransform: 'uppercase', color: PX.violet,
+              }}>
+                Mapping workspace
               </p>
-            </div>
-            {(() => {
-              const coverage = assessMappingCoverage(csvResult.mappingSuggestions ?? []);
-              if (!coverage.looksOutdatedTemplate) return null;
-              return (
-                <div className="rounded-lg border border-[rgba(217,154,43,0.30)] bg-[rgba(217,154,43,0.08)] px-3 py-2.5 space-y-1">
-                  <p className="text-[10px] font-bold text-kora-warning-text uppercase tracking-wide">
-                    ⚠ {coverage.unmatchedCount}/{coverage.total} colonne non riconosciute con sicurezza
+              <h2 style={{
+                margin: '6px 0 0', fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em',
+                lineHeight: 1.18, color: PX.ink,
+              }}>
+                {companyName || TENANT || 'Azienda non selezionata'}
+              </h2>
+              <p style={{ margin: '6px 0 0', fontSize: 13, lineHeight: 1.5, color: PX.ink3 }}>
+                {[
+                  TENANT ? `Tenant ${TENANT}` : null,
+                  csvFile?.name,
+                  `${suggestions.length} colonne`,
+                  PERIOD,
+                ].filter(Boolean).join(' · ')}
+              </p>
+            </header>
+
+            {/* ── LEVEL 2 — Saved Mapping state + primary action ───────── */}
+            <div style={{ padding: '16px 22px', borderBottom: `1px solid ${PX.line}` }}>
+              {savedMappingApplied ? (
+                /* APPLIED — the strongest state: what happened, and that the
+                   session is an editable copy. */
+                <div style={{
+                  background: PX.okTint, border: `1px solid rgba(47,125,85,0.28)`,
+                  borderRadius: PX.rInner, padding: '14px 16px',
+                }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 10 }}>
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                      color: PX.ok,
+                    }}>
+                      Mappatura salvata applicata
+                    </span>
+                    <span style={{ fontSize: 15, fontWeight: 600, color: PX.ink }}>
+                      {savedMappingApplied.mappingName}
+                    </span>
+                  </div>
+                  <p style={{ margin: '8px 0 0', fontSize: 13, lineHeight: 1.55, color: PX.ink2 }}>
+                    {savedMappingApplied.appliedCount} colonne precompilate. La mappatura qui sotto resta
+                    modificabile: è una copia nella sessione corrente e le modifiche non cambiano la
+                    mappatura salvata.
                   </p>
-                  <p className="text-[10px] text-kora-warning-text leading-relaxed">
-                    Questo file potrebbe usare un template più vecchio o semplificato rispetto allo schema canonico attuale.
-                    Continua solo dopo aver rivisto il mapping riga per riga qui sotto — non accettare il batch finché
-                    dry-run, mapping e controlli privacy non sono puliti. Questo sprint non modifica il template stesso:
-                    la decisione su quale template diventi definitivo resta aperta (vedi <span className="font-mono">docs/PILOT_DATA_INTAKE_READINESS.md</span> §6).
+                  {savedMappingApplied.missingHeaders.length > 0 && (
+                    <div style={{
+                      marginTop: 12, paddingTop: 12, borderTop: `1px solid rgba(47,125,85,0.20)`,
+                      display: 'grid', gap: 10,
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    }}>
+                      <div>
+                        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: PX.ink3 }}>
+                          Colonne riconosciute
+                        </p>
+                        <p style={{ margin: '3px 0 0', fontSize: 18, fontWeight: 700, color: PX.ink }}>
+                          {savedMappingApplied.appliedCount}
+                        </p>
+                      </div>
+                      <div>
+                        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: PX.ink3 }}>
+                          Non presenti in questo file
+                        </p>
+                        <p style={{ margin: '3px 0 0', fontSize: 13, lineHeight: 1.5, color: PX.ink2 }}>
+                          <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
+                            {savedMappingApplied.missingHeaders.join(', ')}
+                          </span>
+                          {' '}— ignorate, nessun blocco.
+                        </p>
+                      </div>
+                      <div>
+                        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: PX.ink3 }}>
+                          Colonne nuove
+                        </p>
+                        <p style={{ margin: '3px 0 0', fontSize: 13, lineHeight: 1.5, color: PX.ink2 }}>
+                          Si mappano normalmente nella tabella qui sotto.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : savedMappings.length > 0 ? (
+                /* AVAILABLE — name, Company ownership, one clear primary action. */
+                <div style={{
+                  background: PX.violetTint, border: `1px solid ${PX.violetEdge}`,
+                  borderRadius: PX.rInner, padding: '14px 16px',
+                  display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 14,
+                }}>
+                  <div style={{ flex: '1 1 260px', minWidth: 0 }}>
+                    <p style={{
+                      margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
+                      textTransform: 'uppercase', color: PX.violet700,
+                    }}>
+                      Mappatura salvata disponibile
+                    </p>
+                    <p style={{ margin: '5px 0 0', fontSize: 13, lineHeight: 1.5, color: PX.ink2 }}>
+                      Salvata per {companyName || TENANT}. Le mappature non sono condivise tra Company.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: '0 1 auto' }}>
+                    <label htmlFor="saved-mapping-choice" style={{ fontSize: 13, color: PX.ink2 }}>
+                      Riusa
+                    </label>
+                    <select
+                      id="saved-mapping-choice"
+                      aria-label="Riusa una mappatura salvata di questa Company"
+                      value={savedMappingChoice}
+                      onChange={(e) => handleApplySavedMapping(e.target.value)}
+                      style={{
+                        fontFamily: PX.sans, fontSize: 13, color: PX.ink, background: PX.l1,
+                        border: `1px solid ${PX.line2}`, borderRadius: PX.rCtl, padding: '7px 10px',
+                        minWidth: 220,
+                      }}
+                    >
+                      <option value="">— seleziona una mappatura —</option>
+                      {savedMappings.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.mappingName} · {Object.keys(m.mapping).length} colonne
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ) : (
+                /* NONE — calm, explains what saving buys. No false urgency. */
+                <div style={{
+                  background: PX.l2, border: `1px solid ${PX.l2Edge}`,
+                  borderRadius: PX.rInner, padding: '14px 16px',
+                }}>
+                  <p style={{
+                    margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
+                    textTransform: 'uppercase', color: PX.ink3,
+                  }}>
+                    Nessuna mappatura salvata
+                  </p>
+                  <p style={{ margin: '5px 0 0', fontSize: 13, lineHeight: 1.55, color: PX.ink2 }}>
+                    {companyName || TENANT} non ha ancora una mappatura salvata. Dandone una un nome qui
+                    sotto, al prossimo file di questa Company le colonne già note verranno precompilate.
                   </p>
                 </div>
-              );
-            })()}
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-[rgba(6,3,43,0.08)]">
-                    {['Colonna file', 'Campo canonico KORA', 'Conf.', 'Pillar hint'].map(h => (
-                      <th scope="col" key={h} className="text-left py-1.5 px-2 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {csvResult.mappingSuggestions.map((s, i) => {
-                    const currentVal = userMapping[s.sourceHeader] ?? s.suggestedField ?? 'keep_original';
-                    const confColor = s.confidence >= 0.9 ? 'text-green-700' : s.confidence >= 0.7 ? 'text-kora-warning-text' : 'text-[rgba(6,3,43,0.40)]';
-                    const PILLAR_COLORS: Record<string, string> = {
-                      LIFE: 'bg-blue-50 text-blue-700 border-blue-200',
-                      GROWTH: 'bg-green-50 text-green-700 border-green-200',
-                      CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
-                      IMPACT: 'bg-[rgba(217,154,43,0.08)] text-kora-warning-text border-[rgba(217,154,43,0.28)]',
-                      LEGACY: 'bg-[rgba(199,111,61,0.08)] text-kora-accent border-[rgba(199,111,61,0.28)]',
-                    };
-                    return (
-                      <tr key={i} className="border-b border-[rgba(6,3,43,0.05)] hover:bg-[rgba(6,3,43,0.03)]">
-                        <td className="py-1.5 px-2 font-mono text-[rgba(6,3,43,0.78)]">{s.sourceHeader}</td>
-                        <td className="py-1.5 px-2">
-                          <select
-                            value={currentVal}
-                            onChange={e => setUserMapping(m => ({ ...m, [s.sourceHeader]: e.target.value }))}
-                            className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-kora-accent min-w-[160px]"
-                          >
-                            <option value="keep_original">— Mantieni originale —</option>
-                            <option value="ignore">✕ Ignora colonna</option>
-                            {['initiative_name','description','category','type','amount','participants',
-                              'source','evidence_level','pillar','reporting_period','provider',
-                              'budget_class','cost_center','hours','coverage','uptake','policy_evidence'
-                            ].map(f => (
-                              <option key={f} value={f}>{f}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className={`py-1.5 px-2 text-[10px] font-mono ${confColor}`}>
-                          {s.confidence > 0 ? `${Math.round(s.confidence * 100)}%` : '—'}
-                        </td>
-                        <td className="py-1.5 px-2">
-                          {s.pillarHint
-                            ? <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${PILLAR_COLORS[s.pillarHint.pillar] ?? ''}`}>
-                                {s.pillarHint.pillar}{s.pillarHint.requiresReview ? ' ?' : ''}
-                              </span>
-                            : <span className="text-[9px] text-[rgba(6,3,43,0.28)]">—</span>
-                          }
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <button
-              onClick={fileType === 'xlsx' ? handlePreviewXlsxSheet : handleValidateCsv}
-              className="rounded-lg bg-kora-accent text-white px-3 py-1.5 text-[10px] font-semibold hover:bg-kora-accent-hover transition-colors"
-            >
-              ↻ Applica mapping e ri-preview
-            </button>
-            <p className="text-[10px] text-[rgba(6,3,43,0.40)]">
-              La colonna selezionata come &quot;Ignora&quot; viene comunque scansionata per PII prima di essere scartata.
-            </p>
-          </div>
-        )}
+              )}
 
+              {/* Save — always available, always explicitly named by the Operator. */}
+              <div style={{
+                marginTop: 14, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10,
+              }}>
+                <label htmlFor="save-mapping-name" style={{ fontSize: 13, fontWeight: 600, color: PX.ink2 }}>
+                  Salva questa mappatura per {companyName || TENANT}
+                </label>
+                <input
+                  id="save-mapping-name"
+                  aria-label="Nome con cui salvare la mappatura per questa Company"
+                  value={saveMappingName}
+                  onChange={(e) => setSaveMappingName(e.target.value)}
+                  placeholder="es. Export welfare mensile"
+                  maxLength={120}
+                  style={{
+                    fontFamily: PX.sans, fontSize: 13, color: PX.ink, background: PX.l1,
+                    border: `1px solid ${nameAlreadyUsed ? 'rgba(217,154,43,0.55)' : saveMappingName.trim() ? PX.violetEdge : PX.line2}`,
+                    borderRadius: PX.rCtl, padding: '7px 10px', minWidth: 230, flex: '0 1 280px',
+                  }}
+                />
+                <span style={{
+                  fontSize: 12,
+                  color: nameAlreadyUsed ? PX.warnText : PX.inkMute,
+                  fontWeight: nameAlreadyUsed ? 600 : 400,
+                }}>
+                  {nameAlreadyUsed
+                    ? 'Esiste già una mappatura con questo nome per questa Company. Scegli un altro nome: quella esistente non verrà sovrascritta.'
+                    : saveMappingName.trim()
+                      ? 'Verrà salvata quando accetti il batch.'
+                      : 'Facoltativo.'}
+                </span>
+              </div>
+            </div>
+
+            {/* ── LEVEL 3 — the mapping table ──────────────────────────── */}
+            <div style={{ padding: '16px 22px 6px' }}>
+              <div style={{
+                display: 'flex', flexWrap: 'wrap', alignItems: 'baseline',
+                justifyContent: 'space-between', gap: 10, marginBottom: 10,
+              }}>
+                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em', color: PX.ink }}>
+                  Colonne del file
+                </h3>
+                <p style={{ margin: 0, fontSize: 13, color: PX.ink3 }}>
+                  {mappedCount} sicure
+                  {exceptionCount > 0 && <> · <span style={{ color: PX.warnText, fontWeight: 600 }}>{exceptionCount} da rivedere</span></>}
+                </p>
+              </div>
+
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: PX.sans }}>
+                  <thead>
+                    <tr>
+                      {['Colonna file', 'Campo canonico KORA', 'Conf.', 'Pillar'].map(h => (
+                        <th scope="col" key={h} style={{
+                          textAlign: 'left', padding: '0 10px 8px 0', fontSize: 11, fontWeight: 700,
+                          letterSpacing: '0.07em', textTransform: 'uppercase', color: PX.ink3,
+                          borderBottom: `1px solid ${PX.line2}`, whiteSpace: 'nowrap',
+                        }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {suggestions.map((s, i) => {
+                      const currentVal = valueFor(s.sourceHeader, s.suggestedField);
+                      const exception  = isException(currentVal, s.confidence);
+                      return (
+                        /* Successful rows are deliberately quiet: no per-row
+                           border, no colour. Only an unmapped/ignored column —
+                           the row that actually needs the Operator — is marked. */
+                        <tr key={i} style={exception ? { background: PX.warnTint } : undefined}>
+                          <td style={{
+                            padding: '9px 10px 9px 0', fontSize: 13,
+                            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                            color: exception ? PX.ink : PX.ink2, whiteSpace: 'nowrap',
+                            borderBottom: `1px solid ${PX.inkWash}`,
+                            ...(exception ? { paddingLeft: 10, boxShadow: `inset 3px 0 0 ${PX.warn}` } : null),
+                          }}>{s.sourceHeader}</td>
+                          <td style={{ padding: '9px 10px 9px 0', borderBottom: `1px solid ${PX.inkWash}` }}>
+                            <select
+                              aria-label={`Campo canonico per la colonna ${s.sourceHeader}`}
+                              value={currentVal}
+                              onChange={e => setUserMapping(m => ({ ...m, [s.sourceHeader]: e.target.value }))}
+                              style={{
+                                fontFamily: PX.sans, fontSize: 13, color: PX.ink, background: PX.l1,
+                                border: `1px solid ${exception ? 'rgba(217,154,43,0.45)' : PX.line}`,
+                                borderRadius: PX.rCtl, padding: '6px 9px', minWidth: 190,
+                              }}
+                            >
+                              <option value="keep_original">— Mantieni originale —</option>
+                              <option value="ignore">✕ Ignora colonna</option>
+                              {['initiative_name','description','category','type','amount','participants',
+                                'source','evidence_level','pillar','reporting_period','provider',
+                                'budget_class','cost_center','hours','coverage','uptake','policy_evidence'
+                              ].map(f => (
+                                <option key={f} value={f}>{f}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td style={{
+                            padding: '9px 10px 9px 0', fontSize: 13,
+                            color: exception ? PX.warnText : PX.ink3,
+                            fontWeight: exception ? 600 : 400,
+                            fontVariantNumeric: 'tabular-nums', borderBottom: `1px solid ${PX.inkWash}`,
+                          }}>
+                            {s.confidence > 0 ? `${Math.round(s.confidence * 100)}%` : '—'}
+                          </td>
+                          <td style={{
+                            padding: '9px 10px 9px 0', fontSize: 12, color: PX.ink3,
+                            borderBottom: `1px solid ${PX.inkWash}`, whiteSpace: 'nowrap',
+                          }}>
+                            {s.pillarHint
+                              ? <>{s.pillarHint.pillar}{s.pillarHint.requiresReview ? ' ?' : ''}</>
+                              : <span style={{ color: PX.inkMute }}>—</span>}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* ── LEVEL 4 — diagnostics, subordinate to the work above ─── */}
+            {coverage.looksOutdatedTemplate && (
+              <div style={{
+                margin: '4px 22px 0', background: PX.warnTint,
+                border: `1px solid rgba(217,154,43,0.28)`, borderRadius: PX.rInner,
+                padding: '12px 14px',
+              }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: PX.warnText }}>
+                  {coverage.unmatchedCount}/{coverage.total} colonne non riconosciute con sicurezza
+                </p>
+                <p style={{ margin: '5px 0 0', fontSize: 13, lineHeight: 1.55, color: PX.warnText }}>
+                  Questo file potrebbe usare un template più vecchio o semplificato rispetto allo schema
+                  canonico attuale. Continua solo dopo aver rivisto il mapping riga per riga — non accettare
+                  il batch finché dry-run, mapping e controlli privacy non sono puliti. Questo sprint non
+                  modifica il template stesso: la decisione su quale template diventi definitivo resta
+                  aperta (vedi <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>docs/PILOT_DATA_INTAKE_READINESS.md</span> §6).
+                </p>
+              </div>
+            )}
+
+            {/* ── LEVEL 5 — secondary controls ─────────────────────────── */}
+            <div style={{
+              display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 14,
+              padding: '14px 22px 18px',
+            }}>
+              <button
+                onClick={fileType === 'xlsx' ? handlePreviewXlsxSheet : handleValidateCsv}
+                style={{
+                  fontFamily: PX.sans, fontSize: 13, fontWeight: 600, color: PX.ink2,
+                  background: PX.l1, border: `1px solid ${PX.line2}`, borderRadius: PX.rCtl,
+                  padding: '8px 14px', cursor: 'pointer',
+                }}
+              >
+                ↻ Applica mapping e ri-preview
+              </button>
+              <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: PX.inkMute, flex: '1 1 260px' }}>
+                La colonna selezionata come &quot;Ignora&quot; viene comunque scansionata per PII prima di
+                essere scartata.
+              </p>
+            </div>
+          </section>
+          );
+        })()}
+
+        {/* KORA-WP-066 — progressive disclosure for the three OPTIONAL operator
+            inputs below (missing-field diagnostics, manual completion defaults,
+            financial metadata). They stay fully present, keep every field and
+            every semantic, and remain one click away — they simply no longer
+            compete with the mapping work above. The mandatory pseudonymization
+            declarations and the batch-creation gate that follow are deliberately
+            NOT collapsed: nothing operationally or legally required is hidden. */}
+        <details style={{
+          background: PX.l1, border: `1px solid ${PX.line}`, borderRadius: PX.rPanel,
+          boxShadow: PX.sh1, fontFamily: PX.sans, padding: '0',
+        }}>
+          <summary style={{
+            cursor: 'pointer', listStyle: 'revert', padding: '13px 18px',
+            fontSize: 13, fontWeight: 600, color: PX.ink2,
+          }}>
+            Diagnostica campi mancanti <span style={{ color: PX.inkMute, fontWeight: 400 }}>— dettaglio per campo</span>
+          </summary>
+          <div style={{ padding: '0 18px 16px' }}>
         {/* B27 — Missing Fields Summary */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' &&
           csvResult.missingFieldSummary && csvResult.missingFieldSummary.totalRows > 0 && (
@@ -1084,6 +1457,20 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             )}
           </div>
         )}
+
+        <details style={{
+          background: PX.l1, border: `1px solid ${PX.line}`, borderRadius: PX.rPanel,
+          boxShadow: PX.sh1, fontFamily: PX.sans, padding: '0',
+        }}>
+          <summary style={{
+            cursor: 'pointer', listStyle: 'revert', padding: '13px 18px',
+            fontSize: 13, fontWeight: 600, color: PX.ink2,
+          }}>
+            Completamento manuale — default di batch <span style={{ color: PX.inkMute, fontWeight: 400 }}>— facoltativo</span>
+          </summary>
+          <div style={{ padding: '0 18px 16px' }}>
+          </div>
+        </details>
 
         {/* B27 — Manual Completion Light (batch-level defaults) */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
@@ -1138,6 +1525,20 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             </div>
           </div>
         )}
+
+        <details style={{
+          background: PX.l1, border: `1px solid ${PX.line}`, borderRadius: PX.rPanel,
+          boxShadow: PX.sh1, fontFamily: PX.sans, padding: '0',
+        }}>
+          <summary style={{
+            cursor: 'pointer', listStyle: 'revert', padding: '13px 18px',
+            fontSize: 13, fontWeight: 600, color: PX.ink2,
+          }}>
+            Metadati finanziari del batch <span style={{ color: PX.inkMute, fontWeight: 400 }}>— facoltativi</span>
+          </summary>
+          <div style={{ padding: '0 18px 16px' }}>
+          </div>
+        </details>
 
         {/* B11.3 — Financial metadata panel (shown after dry-run passed, before accept) */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
@@ -1247,6 +1648,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           </div>
         )}
 
+          </div>
+        </details>
+
         {/* B13 FASE 3 — Pseudonymization confirmation gate (shown after dry-run passed) */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
           <div className="rounded-lg border border-[rgba(6,3,43,0.14)] bg-kora-paper px-4 py-4 space-y-3">
@@ -1335,6 +1739,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               {acceptResult.mappingApplied && (
                 <span className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-2 py-0.5 text-[10px] text-[rgba(6,3,43,0.52)]">mapping applicato</span>
               )}
+              {/* KORA-WP-066: the batch is created either way — saving a
+                  mapping never gates ingestion. */}
+              {acceptResult.savedMapping && (
+                <span className="rounded border border-[rgba(47,125,85,0.22)] bg-kora-paper px-2 py-0.5 text-[10px] font-semibold text-green-700">
+                  mappatura salvata: {acceptResult.savedMapping.mappingName}
+                </span>
+              )}
               {acceptResult.manualCompletionApplied && acceptResult.manualCompletionApplied.length > 0 && (
                 <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] text-kora-warning-text">manual: {acceptResult.manualCompletionApplied.join(', ')}</span>
               )}
@@ -1342,6 +1753,25 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-[10px] text-green-700">match review applicato</span>
               )}
             </div>
+            {/* KORA-WP-066 — duplicate Saved Mapping name: an explicit
+                conflict, never a silent overwrite. The batch was still
+                created; only the save was refused, and the existing mapping
+                is untouched. */}
+            {acceptResult.savedMappingError === 'duplicate_name' && (
+              <div style={{
+                background: PX.warnTint, border: '1px solid rgba(217,154,43,0.30)',
+                borderRadius: PX.rInner, padding: '10px 12px', fontFamily: PX.sans,
+              }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: PX.warnText }}>
+                  Mappatura non salvata — nome già in uso
+                </p>
+                <p style={{ margin: '4px 0 0', fontSize: 13, lineHeight: 1.5, color: PX.warnText }}>
+                  Esiste già una mappatura chiamata «{acceptResult.savedMappingName}» per questa Company.
+                  Quella esistente non è stata modificata. Il batch è stato creato normalmente: puoi
+                  salvare la mappatura con un altro nome al prossimo caricamento.
+                </p>
+              </div>
+            )}
             {acceptResult.eligibilitySummary && (
               <div className="flex flex-wrap gap-2 text-[10px]">
                 <span className="rounded border border-[rgba(47,125,85,0.22)] bg-kora-paper px-2 py-0.5 text-green-700 font-medium">Eligible: {acceptResult.eligibilitySummary.eligible}</span>

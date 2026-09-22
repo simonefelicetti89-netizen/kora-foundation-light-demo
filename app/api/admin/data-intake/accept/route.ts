@@ -37,6 +37,8 @@ import {
   validateMapping, type CanonicalIntakeField,
 } from '@/lib/data-intake/column-mapping';
 import { analyzeMissingFields } from '@/lib/data-intake/missing-field-analysis';
+// KORA-WP-066 — Saved Mappings (tenant-scoped session reuse).
+import { saveMappingForTenant } from '@/lib/saved-mappings/saved-mapping-service';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
 import type {
   BatchFinancialContext, FinancialSourceType, BudgetScope, EvidenceLevel,
@@ -352,6 +354,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'columnMapping must be valid JSON.' }, { status: 400 });
     }
   }
+
+  // KORA-WP-066: optional Operator-chosen name under which to save this
+  // Company's mapping for reuse in later sessions. Absent = do not save.
+  const saveMappingName = String(formData.get('saveMappingName') ?? '').trim();
 
   let manualDefaults: Partial<Record<CanonicalIntakeField, string>> | null = null;
   const manualCompletionRaw = formData.get('manualCompletion');
@@ -967,6 +973,49 @@ export async function POST(request: NextRequest) {
     },
   }));
 
+  // ── 12b. KORA-WP-066: optionally save this mapping for THIS Company ─────────
+  //
+  // Saving is explicit and OPTIONAL — nothing happens unless the Operator named
+  // a mapping in the intake form. What is persisted is `effectiveMapping`, the
+  // mapping this route reconstructed and applied ITSELF (section 10), never the
+  // raw client value: a mapping is only ever saved after it has actually been
+  // used to accept a real batch.
+  //
+  // Tenant scope is the server-resolved `tenantCode` for this batch, so a saved
+  // mapping can only ever belong to the Company whose data was just accepted.
+  // A failure here never affects the batch: Saved Mappings are an accelerator,
+  // never part of the ingestion contract (WP-066 non-blocking invariant).
+  let savedMapping: { id: string; mappingName: string; fieldCount: number } | null = null;
+  let savedMappingError: string | null = null;
+  if (saveMappingName) {
+    const saveResult = await saveMappingForTenant({
+      tenantCode,
+      mappingName: saveMappingName,
+      mapping:     effectiveMapping,
+      actorId:     authResult.id,
+    });
+    if (saveResult.ok) {
+      savedMapping = { id: saveResult.id, mappingName: saveResult.mappingName, fieldCount: saveResult.fieldCount };
+      auditRows.push(makeAudit({
+        tenantId, actorId: authResult.id,
+        action: 'saved_column_mapping_saved',
+        resourceType: 'analytics.saved_column_mapping', resourceId: saveResult.id,
+        metadata: {
+          mapping_name: saveResult.mappingName,
+          field_count:  saveResult.fieldCount,
+          source_batch_id: batchId,
+          // canonical target field names only — no source values, no row data
+        },
+      }));
+    } else {
+      // A duplicate name is Product meaning, not a silent no-op: the Operator
+      // is told, and the existing saved mapping is left untouched. The batch
+      // itself is never affected either way (non-blocking invariant).
+      savedMappingError = saveResult.reason;
+      console.error('[data-intake/accept] saved mapping not stored:', saveResult.reason);
+    }
+  }
+
   // ── 13. Flush audit log ───────────────────────────────────────────────────────
   const { error: auditErr } = await db.schema('audit').from('audit_log').insert(auditRows);
   if (auditErr) console.error('[data-intake/accept] audit_log flush:', auditErr.message);
@@ -985,6 +1034,9 @@ export async function POST(request: NextRequest) {
     eligibilitySummary: eligCounts,
     batchStatus:      'pending',
     mappingApplied:   Object.keys(effectiveMapping).length > 0,
+    // KORA-WP-066: present only when the Operator asked to save this mapping.
+    ...(savedMapping ? { savedMapping } : {}),
+    ...(savedMappingError ? { savedMappingError, savedMappingName: saveMappingName } : {}),
     manualCompletionApplied: manualApplied,
     provenanceSummary,
     missingFieldSummary: {

@@ -256,6 +256,8 @@ jobs:
           RLS26_ALLOW_RUN: 'true'
           RLS27_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           RLS27_ALLOW_RUN: 'true'
+          RLS28_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS28_ALLOW_RUN: 'true'
         run: |
           npx vitest run \
             tests/integration/rls-two-tenant-negative.test.ts \
@@ -282,6 +284,7 @@ jobs:
             tests/integration/rls-25-living-koral-company-read-cross-tenant.test.ts \
             tests/integration/rls-26-living-koral-company-source-initiative.test.ts \
             tests/integration/rls-27-living-koral-edition.test.ts \
+            tests/integration/rls-28-saved-column-mapping-cross-tenant.test.ts \
             --reporter=json --outputFile=rls-integration-report.json
 
       # F-04: machine-readable assertion — fails the job if any RLS test

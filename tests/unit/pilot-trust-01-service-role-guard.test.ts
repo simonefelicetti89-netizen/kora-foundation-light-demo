@@ -273,6 +273,18 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // Company session any other way.
   { path: 'lib/living-koral-mark/edition-lineage-service.ts', reason: 'documented server-only service — Edition-bounded ledger/material-change lineage replay (Level A continuity), KORA-WP-117' },
 
+  // KORA-WP-066 — Saved Mappings. Server-only module, reached exclusively from
+  // requireKoraAdmin-guarded Admin Data Intake paths. It needs the service
+  // client for the same structural reason the admin entries above do: the
+  // Operator persona resolves a tenant_code to its id and reads/writes a
+  // specific Company's mapping while not itself acting AS that tenant, so
+  // RLS under the `authenticated` role cannot express the operation. Tenant
+  // isolation is not weakened by this: the table's own RLS has no
+  // cross-tenant read policy (migration 090) and is proven live by RLS-28,
+  // and every query here is filtered by a tenant id resolved server-side
+  // that no client can supply.
+  { path: 'lib/saved-mappings/saved-mapping-service.ts', reason: 'documented server-only service — tenant-scoped Saved Mapping list/save for the KORA_ADMIN Data Intake workflow; tenant id always resolved server-side from tenant_code, never client-supplied, KORA-WP-066' },
+
   // ── Documented pre-existing exceptions (NOT part of this sprint's 6-page
   // scope) — real, tracked, not silently endorsed ─────────────────────────
   {
