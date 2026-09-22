@@ -23,6 +23,7 @@ import {
 import { guardE2ETarget } from './helpers/e2e-safety';
 import { ROLE_HOME } from './helpers/roles';
 import { loginViaUI, assertReachedWorkspace, getTenantIdentity } from './helpers/auth';
+import { applyProtectionBypass } from './helpers/vercel-bypass';
 
 test.describe('KORA — Authenticated Smoke (Golden Path Fixtures)', () => {
 
@@ -33,6 +34,7 @@ test.describe('KORA — Authenticated Smoke (Golden Path Fixtures)', () => {
     const creds = getAdminCredentials();
     test.skip(!creds, 'E2E_KORA_ADMIN_EMAIL / E2E_KORA_ADMIN_PASSWORD non impostate — test saltato.');
 
+    await applyProtectionBypass(page);
     await loginViaUI(page, creds!);
     await assertReachedWorkspace(page, ROLE_HOME.ADMIN);
     await expect(page.getByText('KORA Admin', { exact: false }).first()).toBeVisible();
@@ -45,6 +47,7 @@ test.describe('KORA — Authenticated Smoke (Golden Path Fixtures)', () => {
     const creds = getCompanyACredentials();
     test.skip(!creds, 'E2E_COMPANY_A_EMAIL / E2E_COMPANY_A_PASSWORD non impostate — test saltato.');
 
+    await applyProtectionBypass(page);
     await loginViaUI(page, creds!);
     await assertReachedWorkspace(page, ROLE_HOME.COMPANY);
     await expect(page.getByText('Company Workspace', { exact: false }).first()).toBeVisible();
@@ -57,6 +60,7 @@ test.describe('KORA — Authenticated Smoke (Golden Path Fixtures)', () => {
     const creds = getCompanyBCredentials();
     test.skip(!creds, 'E2E_COMPANY_B_EMAIL / E2E_COMPANY_B_PASSWORD non impostate — test saltato.');
 
+    await applyProtectionBypass(page);
     await loginViaUI(page, creds!);
     await assertReachedWorkspace(page, ROLE_HOME.COMPANY);
     await expect(page.getByText('Company Workspace', { exact: false }).first()).toBeVisible();
@@ -84,10 +88,12 @@ test.describe('KORA — Authenticated Smoke (Golden Path Fixtures)', () => {
       const pageA = await contextA.newPage();
       const pageB = await contextB.newPage();
 
+      await applyProtectionBypass(pageA);
       await loginViaUI(pageA, credsA!);
       await assertReachedWorkspace(pageA, ROLE_HOME.COMPANY);
       const identityA = await getTenantIdentity(pageA);
 
+      await applyProtectionBypass(pageB);
       await loginViaUI(pageB, credsB!);
       await assertReachedWorkspace(pageB, ROLE_HOME.COMPANY);
       const identityB = await getTenantIdentity(pageB);

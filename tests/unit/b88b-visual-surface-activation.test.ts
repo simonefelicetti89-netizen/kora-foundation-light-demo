@@ -171,11 +171,23 @@ describe('ADMIN_QUICKSTART_STEPS — Live workflow quick-start', () => {
     expect(uefStep).toBeDefined();
   });
 
-  it('a step goes to company live preview or workspace', () => {
-    const step = ADMIN_QUICKSTART_STEPS.find(s =>
-      s.href.match(/live-preview|decision-pack|company-workspace/)
-    );
-    expect(step).toBeDefined();
+  it('a step reaches company live preview, and a step reaches company workspace', () => {
+    // Intent unchanged: the Quick Start must still offer BOTH capabilities.
+    // Only the route shape changed — R0-C dead-route remediation replaced the
+    // flat /admin/company-live-preview and /admin/company-workspace 404s with
+    // the canonical company selector, which carries the section in ?from=.
+    // Asserted exactly, not by a loosened regex.
+    const preview = ADMIN_QUICKSTART_STEPS.find((s) => s.href === '/admin/companies?from=preview');
+    const workspace = ADMIN_QUICKSTART_STEPS.find((s) => s.href === '/admin/companies?from=workspace');
+    expect(preview, 'Quick Start must reach the Decision Pack / live preview capability').toBeDefined();
+    expect(preview?.label).toBe('Apri Decision Pack');
+    expect(workspace, 'Quick Start must reach the company workspace capability').toBeDefined();
+    expect(workspace?.label).toBe('Workspace Azienda');
+    // Anti-regression: neither dead flat route may return.
+    for (const s of ADMIN_QUICKSTART_STEPS) {
+      expect(s.href).not.toBe('/admin/company-live-preview');
+      expect(s.href).not.toBe('/admin/company-workspace');
+    }
   });
 
   it('last step goes to workspace', () => {

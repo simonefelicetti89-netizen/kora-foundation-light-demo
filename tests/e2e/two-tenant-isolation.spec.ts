@@ -31,6 +31,7 @@ import { guardE2ETarget } from './helpers/e2e-safety';
 import { ROLE_HOME } from './helpers/roles';
 import { loginViaUI, assertReachedWorkspace } from './helpers/auth';
 import { assertNoWorkerLevelIdentifiers, assertNoWorkerLevelIdentifiersInText } from './helpers/privacy';
+import { applyProtectionBypass } from './helpers/vercel-bypass';
 
 interface CompanyWorkspaceResponse {
   ok: boolean;
@@ -62,10 +63,12 @@ test.describe('KORA — Two-Tenant Isolation (PILOT-TWO-TENANT-ISOLATION-01)', (
 
       // Each session reaches its own company workspace, own browser context —
       // genuinely separate sessions, not the same page continuing.
+      await applyProtectionBypass(pageA);
       await loginViaUI(pageA, credsA!);
       await assertReachedWorkspace(pageA, ROLE_HOME.COMPANY);
       await assertNoWorkerLevelIdentifiers(pageA);
 
+      await applyProtectionBypass(pageB);
       await loginViaUI(pageB, credsB!);
       await assertReachedWorkspace(pageB, ROLE_HOME.COMPANY);
       await assertNoWorkerLevelIdentifiers(pageB);
@@ -130,6 +133,7 @@ test.describe('KORA — Two-Tenant Isolation (PILOT-TWO-TENANT-ISOLATION-01)', (
     // as a query parameter on a COMPANY_A session, on every plausible
     // parameter name, and confirm the response is unaffected — i.e. the
     // server never even looks at it, rather than rejecting it after looking.
+    await applyProtectionBypass(page);
     await loginViaUI(page, credsA!);
     await assertReachedWorkspace(page, ROLE_HOME.COMPANY);
 

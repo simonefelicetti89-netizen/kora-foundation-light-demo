@@ -644,11 +644,11 @@ export function CompanyEvidenceArchivePanel({ initialTenantCode }: Props = {}) {
 
         {/* ── Navigation links ── */}
         <div className="flex flex-wrap gap-2 pt-1">
-          <a href={`/admin/company-live-preview?tenantCode=${encodeURIComponent(TENANT)}&reportingPeriod=${encodeURIComponent(PERIOD)}`}
+          <a href={`/admin/companies/${encodeURIComponent(TENANT)}/preview`}
             className="rounded-lg border border-kora-accent text-kora-accent px-4 py-2 text-xs font-semibold hover:bg-kora-accent/8 transition-colors">
             ← Company Live Preview
           </a>
-          <a href={`/admin/company-workspace?tenantCode=${encodeURIComponent(TENANT)}&reportingPeriod=${encodeURIComponent(PERIOD)}`}
+          <a href={`/admin/companies/${encodeURIComponent(TENANT)}/workspace`}
             className="rounded-lg border border-[rgba(6,3,43,0.08)] text-[rgba(6,3,43,0.62)] px-4 py-2 text-xs font-semibold hover:bg-[rgba(6,3,43,0.03)] transition-colors">
             Spazio Azienda
           </a>

@@ -339,10 +339,6 @@ export function CompanyConsolePanel({ userEmail }: Props) {
                   className="rounded-lg border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.78)] px-4 py-2 text-xs font-semibold hover:bg-[rgba(6,3,43,0.03)] transition-colors">
                   Onboarding avanzato
                 </Link>
-                <Link href="/admin/company-users"
-                  className="rounded-lg border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.78)] px-4 py-2 text-xs font-semibold hover:bg-[rgba(6,3,43,0.03)] transition-colors">
-                  Gestisci utenti
-                </Link>
               </div>
             </div>
           )}

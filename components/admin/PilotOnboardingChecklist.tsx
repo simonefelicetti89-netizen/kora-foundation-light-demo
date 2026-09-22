@@ -8,7 +8,7 @@
 
 const STEPS = [
   { id: 1, label: 'Crea azienda',           hint: '/admin/companies/new',  route: '/admin/companies/new'  },
-  { id: 2, label: 'Crea utente company',    hint: '/admin/company-users',  route: '/admin/company-users'  },
+  { id: 2, label: 'Crea utente company',    hint: '/admin/company-users',  route: '/admin/companies?from=users'  },
   { id: 3, label: 'Carica dati',            hint: '/admin/data-intake',    route: '/admin/data-intake'    },
   { id: 4, label: 'Preview & PII guard',    hint: 'upload-preview API',    route: '/admin/data-intake'    },
   { id: 5, label: 'Accetta upload',         hint: 'accept API',            route: '/admin/data-intake'    },
@@ -16,7 +16,7 @@ const STEPS = [
   { id: 7, label: 'Approva UEF™',           hint: '/admin/uef-review',     route: '/admin/uef-review'     },
   { id: 8, label: 'Baseline workforce',     hint: 'workforce-baseline API', route: '/admin/tenants'       },
   { id: 9, label: 'Esegui scoring',         hint: '/admin/uef-review',     route: '/admin/uef-review'     },
-  { id: 10, label: 'Decision Pack & accesso', hint: '/company/workspace', route: '/admin/company-workspace' },
+  { id: 10, label: 'Decision Pack & accesso', hint: '/company/workspace', route: '/admin/companies?from=workspace' },
 ] as const;
 
 interface PilotOnboardingChecklistProps {

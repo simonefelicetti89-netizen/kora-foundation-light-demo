@@ -167,8 +167,16 @@ describe('B-TRUTH Gen 3 route identity activation — CompanyConsolePanel quickA
     expect(code).not.toContain('/admin/company-submissions?');
   });
 
-  it('manageUsers is left untouched — its canonical destination is still architecturally unresolved', () => {
-    expect(code).toContain("manageUsers:     `/admin/company-users?tenantId=");
+  it('manageUsers targets the LIVE company-users surface, keyed by the tenantId UUID already in scope', () => {
+    // R0-C dead-route remediation (Founder decision): /admin/company-users is
+    // a 404 and always was. The live surface is keyed by tenantId (a UUID),
+    // which this route handler already holds — so no resolver was needed.
+    expect(code).toContain("manageUsers:     `/admin/company-users-live?tenantId=${encodeURIComponent(tenantId)}`");
+    // Anti-regression: the dead flat route must never come back.
+    expect(code).not.toContain('/admin/company-users?tenantId=');
+    // And it must stay resolver-free: the UUID is reused, never derived from
+    // tenant_code. Introducing such a resolver is explicitly out of scope.
+    expect(code).not.toMatch(/resolveTenantIdByCode|tenantCodeToTenantId|lookupTenantIdByCode/);
   });
 
   it('dataIntake and uefReview are left untouched — the target pages do not support tenant-code scoping', () => {

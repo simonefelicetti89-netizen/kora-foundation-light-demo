@@ -89,7 +89,13 @@ export async function GET(request: NextRequest) {
       // Quick action URLs
       quickActions: {
         review: `/admin/company-submissions`,
-        workspace: `/admin/company-workspace?tenantCode=${encodeURIComponent(tenantCodeMap[row.tenant_id] ?? '')}&reportingPeriod=${encodeURIComponent(row.reporting_period ?? '2026-Q1')}`,
+        // R0-C dead-route remediation: /admin/company-workspace is a 404. The
+        // canonical workspace is keyed by tenant_code. When the code is missing
+        // the row cannot name a company, so fall back to the canonical selector
+        // rather than emitting /admin/companies//workspace.
+        workspace: tenantCodeMap[row.tenant_id]
+          ? `/admin/companies/${encodeURIComponent(tenantCodeMap[row.tenant_id]!)}/workspace`
+          : `/admin/companies?from=workspace`,
         dataIntake: `/admin/data-intake?tenantCode=${encodeURIComponent(tenantCodeMap[row.tenant_id] ?? '')}&reportingPeriod=${encodeURIComponent(row.reporting_period ?? '2026-Q1')}`,
       },
     };

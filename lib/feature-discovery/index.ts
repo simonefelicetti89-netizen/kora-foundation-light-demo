@@ -67,11 +67,11 @@ export const DISCOVERY_STRIP_ITEMS: DiscoveryItem[] = [
 // Step 3 added in B95-C: Importa Workforce → /admin/companies (selection + per-company CTA).
 export const ADMIN_QUICKSTART_STEPS: QuickStartStep[] = [
   { step: 1, label: 'Crea Azienda Live',    href: '/admin/companies/new' },
-  { step: 2, label: 'Aggiungi Utente',      href: '/admin/company-users' },
+  { step: 2, label: 'Aggiungi Utente',      href: '/admin/companies?from=users' },
   { step: 3, label: 'Importa Workforce',    href: '/admin/companies' },
   { step: 4, label: 'Carica Dati',          href: '/admin/data-intake' },
   { step: 5, label: 'Rivedi UEF',           href: '/admin/uef-review' },
   { step: 6, label: 'Avvia Scoring',        href: '/admin/uef-review' },
-  { step: 7, label: 'Apri Decision Pack',   href: '/admin/company-live-preview' },
-  { step: 8, label: 'Workspace Azienda',    href: '/admin/company-workspace' },
+  { step: 7, label: 'Apri Decision Pack',   href: '/admin/companies?from=preview' },
+  { step: 8, label: 'Workspace Azienda',    href: '/admin/companies?from=workspace' },
 ];

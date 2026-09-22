@@ -147,6 +147,16 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
   const [loading,    setLoading]    = useState(false);
   const [error,      setError]      = useState<string | null>(null);
   const showSelector                = !initialTenantCode;
+  // R0-C dead-route remediation: /admin/company-workspace is a 404. In drill-in
+  // context this panel already knows which company it is showing —
+  // /admin/companies/[companyId]/preview passes initialTenantCode={companyId},
+  // and [companyId] IS the canonical tenant_code — so the back link goes
+  // straight to that same company's workspace. No resolver, query or lookup:
+  // the code is already in hand. Without it (standalone selector mode) there is
+  // no company to go back to, so fall back to the canonical selector.
+  const adminWorkspaceHref = initialTenantCode
+    ? `/admin/companies/${encodeURIComponent(initialTenantCode)}/workspace`
+    : '/admin/companies?from=workspace';
 
   // Fetch tenant list
   useEffect(() => {
@@ -209,7 +219,7 @@ export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
               Read-only · Live Preview
             </span>
             <Link
-              href="/admin/company-workspace"
+              href={adminWorkspaceHref}
               className="rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-3 py-1.5 text-[12px] font-medium text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.78)] transition-colors"
             >
               ← KORA Admin Workspace

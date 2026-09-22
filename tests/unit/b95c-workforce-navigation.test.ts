@@ -171,9 +171,16 @@ describe('B95-C Task 4 — Admin quickstart: Step 3 imports workforce', () => {
     expect(step1?.href).toBe('/admin/companies/new');
   });
 
-  it('Step 2 still adds a user', () => {
+  it('Step 2 still adds a user, via the canonical company selector', () => {
     const step2 = ADMIN_QUICKSTART_STEPS.find((s) => s.step === 2);
-    expect(step2?.href).toBe('/admin/company-users');
+    // Label is part of the contract and is unchanged.
+    expect(step2?.label).toBe('Aggiungi Utente');
+    // R0-C dead-route remediation: /admin/company-users is a 404. User
+    // management is tenant-scoped, so the Quick Start routes through the
+    // company selector, which renders FROM_LABELS.users.
+    expect(step2?.href).toBe('/admin/companies?from=users');
+    // Anti-regression: the dead flat route must never come back.
+    expect(step2?.href).not.toBe('/admin/company-users');
   });
 });
 

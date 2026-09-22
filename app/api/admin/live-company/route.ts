@@ -325,7 +325,7 @@ export async function POST(request: NextRequest) {
           recovery:              `Il tenant ${tenantCode} è attivo. Usare /admin/company-users per aggiungere manualmente l'utente.`,
           links: {
             companyConsole: `/admin/companies`,
-            manageUsers:    `/admin/company-users?tenantId=${encodeURIComponent(tenantId)}`,
+            manageUsers:    `/admin/company-users-live?tenantId=${encodeURIComponent(tenantId)}`,
           },
           warnings,
         }, { status: 207 }); // 207 Multi-Status: partial success
@@ -392,7 +392,6 @@ export async function POST(request: NextRequest) {
 
   // ── Build response ─────────────────────────────────────────────────────────
   const tcEnc = encodeURIComponent(tenantCode);
-  const rpEnc = encodeURIComponent(assessmentPeriod);
 
   return NextResponse.json({
     ok:                 true,
@@ -414,9 +413,9 @@ export async function POST(request: NextRequest) {
     warnings,
     links: {
       companyConsole:    `/admin/companies`,
-      companyWorkspace:  `/admin/company-workspace?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
-      manageUsers:       `/admin/company-users?tenantId=${encodeURIComponent(tenantId)}`,
-      livePreview:       `/admin/company-live-preview?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
+      companyWorkspace:  `/admin/companies/${tcEnc}/workspace`,
+      manageUsers:       `/admin/company-users-live?tenantId=${encodeURIComponent(tenantId)}`,
+      livePreview:       `/admin/companies/${tcEnc}/preview`,
     },
   });
 }

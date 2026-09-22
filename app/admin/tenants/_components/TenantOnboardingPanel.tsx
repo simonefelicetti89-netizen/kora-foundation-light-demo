@@ -289,13 +289,13 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
                     UEF Review
                   </a>
                   <a
-                    href={`/admin/company-workspace?tenantCode=${encodeURIComponent(t.tenantCode)}`}
+                    href={`/admin/companies/${encodeURIComponent(t.tenantCode)}/workspace`}
                     className="text-[11px] text-[rgba(6,3,43,0.55)] underline hover:no-underline"
                   >
                     Workspace Admin
                   </a>
                   <a
-                    href={`/admin/company-live-preview?tenantCode=${encodeURIComponent(t.tenantCode)}`}
+                    href={`/admin/companies/${encodeURIComponent(t.tenantCode)}/preview`}
                     className="text-[11px] text-[rgba(6,3,43,0.55)] underline hover:no-underline"
                   >
                     Live Preview

@@ -265,8 +265,17 @@ describe('B82-B Task 10 — Structural LIVE / DEMO separation on admin landing',
   });
 
   it('admin landing links to Anteprima Live Cockpit', () => {
-    expect(landing).toContain('/admin/company-live-preview');
+    // R0-C dead-route remediation: /admin/company-live-preview is a 404. The
+    // capability is unchanged and still reachable from the landing — the live
+    // preview is tenant-scoped, so the landing routes through the canonical
+    // company selector, which renders FROM_LABELS.preview.
+    expect(landing).toContain('/admin/companies?from=preview');
+    // The label is part of the contract and is unchanged.
     expect(landing).toContain('Anteprima Live Cockpit · LIVE');
+  });
+
+  it('the admin landing never links back to the dead flat live-preview route', () => {
+    expect(landing).not.toContain('/admin/company-live-preview');
   });
 });
 

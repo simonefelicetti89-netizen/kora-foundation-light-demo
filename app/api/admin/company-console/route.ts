@@ -293,15 +293,18 @@ export async function GET(request: NextRequest) {
     // company-users) — a confirmed, long-standing broken-link regression.
     // Their B171 consolidation target is app/admin/companies/[companyId]/*
     // (Gen 3, now DB-backed by tenant_code — see workspace/page.tsx). Fixed
-    // here since the canonical destination is unambiguous. manageUsers,
-    // dataIntake, and uefReview are left untouched: manageUsers' canonical
-    // destination is still architecturally unresolved (see the B-TRUTH Admin
-    // Route Convergence audit), and dataIntake/uefReview point at real pages
-    // that do not yet support tenant-code scoping at all.
+    // here since the canonical destination is unambiguous. manageUsers now
+    // points at /admin/company-users-live, which is keyed by tenantId — the
+    // UUID this scope already holds. No tenant_code -> UUID resolver was
+    // introduced: the previously "architecturally unresolved" part was
+    // bridging tenant_code to a UUID from a surface that only had the code
+    // (CompanyTabNav), which is not this surface. dataIntake and uefReview
+    // are left untouched: they point at real pages that do not yet support
+    // tenant-code scoping at all.
     const tcPath = encodeURIComponent(tenantCode);
     const quickActions = {
       viewWorkspace:   `/admin/companies/${tcPath}/workspace`,
-      manageUsers:     `/admin/company-users?tenantId=${encodeURIComponent(tenantId)}`,
+      manageUsers:     `/admin/company-users-live?tenantId=${encodeURIComponent(tenantId)}`,
       evidenceArchive: `/admin/companies/${tcPath}/evidence`,
       livePreview:     `/admin/companies/${tcPath}/preview`,
       dataIntake:      !ki ? `/admin/data-intake?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}` : null,

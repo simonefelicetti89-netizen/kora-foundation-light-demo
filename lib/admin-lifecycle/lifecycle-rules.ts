@@ -48,7 +48,7 @@ export const LIFECYCLE_STEPS: ReadonlyArray<LifecycleStep> = [
     title:       'Crea Utente Aziendale',
     ownerRole:   'KORA_ADMIN',
     ownerLabel:  'KORA Admin',
-    route:       '/admin/company-users',
+    route:       '/admin/companies?from=users',
     description: 'KORA Admin crea l\'account Company Admin e le credenziali di accesso al workspace KORA. L\'utente riceve un invito con accesso al workspace aziendale.',
     nextAction:  'Crea il primo utente Company Admin e verifica le credenziali di accesso.',
   },

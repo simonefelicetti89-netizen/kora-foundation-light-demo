@@ -300,7 +300,7 @@ export default async function KoraControlTower() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
           {([
             { href: '/admin/companies',               label: 'Company Console · LIVE' },
-            { href: '/admin/company-live-preview',    label: 'Anteprima Live Cockpit · LIVE' },
+            { href: '/admin/companies?from=preview',  label: 'Anteprima Live Cockpit · LIVE' },
             { href: '/admin/data-intake',             label: 'Data Intake · LIVE' },
             { href: '/admin/uef-review',              label: 'UEF™ Review · LIVE' },
             { href: '/admin/company-submissions',     label: 'Submission Queue · LIVE' },
