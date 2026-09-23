@@ -7,8 +7,6 @@ import {
   getOrCreateCorrelationId, logInfo, logError, captureError,
 } from '@/lib/observability/observability';
 
-const ROUTE_PATH = 'app/api/company/data-ingest/route.ts';
-const SERVICE_PATH = 'lib/ingestion-hardening/company-ingest-service.ts';
 const OBS_PATH = 'lib/observability/observability.ts';
 
 function read(path: string): string { return readFileSync(path, 'utf8'); }
@@ -133,45 +131,7 @@ describe('KORA-WP-046 — privacy / secret safety', () => {
     expect(fieldLines.some((l) => /actorRole/.test(l))).toBe(true);
   });
 
-  it('the route never logs the raw file buffer or PII scan content', () => {
-    const lines = tsCodeLines(read(ROUTE_PATH));
-    expect(lines.some((l) => /logInfo\([^)]*fileBuffer|logError\([^)]*fileBuffer/.test(l))).toBe(false);
-  });
 
-  it('the ingest service never passes actorId/email into captureError\'s context', () => {
-    const src = read(SERVICE_PATH);
-    const captureBlock = src.match(/captureError\([\s\S]*?\}\s*,\s*'[^']*'\s*\)/);
-    expect(captureBlock).toBeTruthy();
-    expect(captureBlock![0]).not.toMatch(/actorId|email/);
-  });
-});
-
-describe('KORA-WP-046 — route wiring (WP-028 coverage)', () => {
-  it('the route generates/reuses a correlation id at entry, before auth', () => {
-    const src = read(ROUTE_PATH);
-    const correlationIdx = src.indexOf('getOrCreateCorrelationId');
-    const authIdx = src.indexOf('requireCompanyUser(request)');
-    expect(correlationIdx).toBeGreaterThan(0);
-    expect(authIdx).toBeGreaterThan(0);
-    expect(correlationIdx).toBeLessThan(authIdx);
-  });
-
-  it('every JSON response includes correlationId (success and every error branch)', () => {
-    const src = read(ROUTE_PATH);
-    const jsonCalls = src.match(/NextResponse\.json\(\{[\s\S]*?\}, \{ status: \d+ \}\)/g) ?? [];
-    expect(jsonCalls.length).toBeGreaterThan(5);
-    for (const call of jsonCalls) {
-      expect(call).toMatch(/correlationId/);
-    }
-  });
-
-  it('unexpected errors are sent through captureError, domain validation rejections are not', () => {
-    const src = read(ROUTE_PATH);
-    expect(src).toMatch(/captureError\(e, obsCtx, 'ingest failed unexpectedly'\)/);
-    const validationBranch = src.match(/if \(e instanceof CompanyIngestValidationError\) \{[\s\S]*?\n\s*\}/);
-    expect(validationBranch).toBeTruthy();
-    expect(validationBranch![0]).not.toMatch(/captureError/);
-  });
 });
 
 describe('KORA-WP-046 — no DB migration (registry: Data/Migration Impact = NONE)', () => {

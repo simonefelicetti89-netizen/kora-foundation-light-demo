@@ -19,7 +19,7 @@
  *       RLS-NN integration test already uses for tenant fixtures)
  *   2.  Company Admin invited/activated            — company_memberships
  *       fixture row (same convention as RLS-03)
- *   4.  Data preparation & ingestion                — ingestCompanyDataFile()
+ *   4.  Data preparation & ingestion                — operator-mediated (KORA-WP-132)
  *       (KORA-WP-028, the real route-called function)
  *   6.  Baseline construction (Investment Map from Observed Facts)
  *                                                    — createObservedInvestmentFact()
@@ -204,6 +204,7 @@ const ADVISOR_AUTH_UID = `00000000-0000-4000-8000-${RUN_SUFFIX_HEX}`;
 const COMPANY_ADMIN_AUTH_UID = `00000000-0000-4000-8001-${RUN_SUFFIX_HEX}`;
 const ACTOR_COMPANY_ADMIN = 'company-admin@wp045-fixture.kora';
 const ACTOR_ADVISOR = 'advisor@wp045-fixture.kora';
+const ACTOR_OPERATOR = 'kora-admin@wp045-fixture.kora'; // KORA-WP-132 — canonical intake is operator-mediated
 
 describe.skipIf(!ready)('KORA-WP-045 — First-Pilot Journey, one deterministic end-to-end scenario', () => {
   let pgClient: InstanceType<typeof Client>;
@@ -286,25 +287,30 @@ describe.skipIf(!ready)('KORA-WP-045 — First-Pilot Journey, one deterministic 
     expect(result.rows[0].status).toBe('active');
   });
 
-  it('STEP 4 — Data preparation & ingestion (real KORA-WP-028 sync path)', async () => {
-    const { ingestCompanyDataFile } = await import('@/lib/ingestion-hardening/company-ingest-service');
-    const csv = 'worker_id,event_type,event_date\nW001,training_completed,2026-09-01\n';
-    const outcome = await ingestCompanyDataFile({
-      tenantId: tenantAId,
-      actorId: ACTOR_COMPANY_ADMIN,
-      fileName: 'wp045-fixture.csv',
-      fileExtension: 'csv',
-      fileBuffer: Buffer.from(csv, 'utf-8'),
-      idempotencyKey: 'wp045-fixture-batch-1',
+  it('STEP 4 — Data preparation & ingestion (operator-mediated, KORA-WP-132 actor model)', async () => {
+      // KORA-WP-132 retired the Company self-service ingestion path this step
+      // used to call (ingestCompanyDataFile). Canonical intake is now
+      // operator-mediated and its batch creation lives inline in
+      // app/api/admin/data-intake/accept/route.ts; extracting it into a
+      // callable service would be KORA-WP-133 scope, not this scenario's.
+      //
+      // The batch is therefore seeded here as an OPERATOR-created row, which
+      // is what the journey depends on downstream (STEP 6 consumes
+      // state.sourceBatchId). The actor model itself — that a Company actor
+      // cannot create this state — is proven structurally by
+      // tests/unit/kora-wp-132-canonical-intake-actor-model.test.ts.
+      const seeded = await pgClient.query(
+        `INSERT INTO analytics.source_batch
+           (tenant_id, source_type, source_name, reporting_period, row_count, batch_status, created_by)
+         VALUES ($1, 'csv_upload', '[Operator] wp045-fixture.csv', $2, 1, 'pending', $3)
+         RETURNING id, tenant_id`,
+        [tenantAId, new Date().toISOString().slice(0, 7), ACTOR_OPERATOR],
+      );
+      expect(seeded.rows).toHaveLength(1);
+      expect(seeded.rows[0].tenant_id).toBe(tenantAId);
+      state.sourceBatchId = seeded.rows[0].id;
+      expect(state.sourceBatchId).toBeTruthy();
     });
-    expect(outcome.kind === 'executed' || outcome.kind === 'replayed').toBe(true);
-    expect(outcome.batchId).toBeTruthy();
-    state.sourceBatchId = outcome.batchId;
-
-    const row = await pgClient.query(`SELECT tenant_id FROM analytics.source_batch WHERE id = $1`, [outcome.batchId]);
-    expect(row.rows).toHaveLength(1);
-    expect(row.rows[0].tenant_id).toBe(tenantAId);
-  });
 
   it('STEP 6 — Baseline construction: Investment Map from Observed Facts', async () => {
     const { createObservedInvestmentFact } = await import('@/lib/investment-map/observed-investment-fact-service');

@@ -209,7 +209,6 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   { path: 'lib/async-contract/postgres-idempotency-store.ts', reason: 'documented server-only service — Postgres-backed IdempotencyStore implementation of the KORA-WP-011 contract, KORA-WP-028' },
   // KORA-WP-028: Company-scoped ingestion write (requireCompanyUser-gated at
   // the route layer, tenant taken from the verified session only).
-  { path: 'lib/ingestion-hardening/company-ingest-service.ts', reason: 'documented server-only service — Company-scoped synchronous ingestion write, idempotent per KORA-WP-011, KORA-WP-028' },
 
   // KORA-WP-026: Program skeleton (Definition + Participation), degenerate
   // two-level case. Writes are COMPANY_ADMIN-only (own tenant), matching

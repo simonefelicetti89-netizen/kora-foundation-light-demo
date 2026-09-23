@@ -58,12 +58,11 @@ const PROTECTED_ROUTES: Array<{ path: string; category: RateLimitCategory; guard
   { path: 'app/api/company/advisor/route.ts',                                                     category: 'single_provisioning',    guard: 'requireCompanyUser' },
   { path: 'app/api/company/advisor/appointments/route.ts',                                        category: 'single_provisioning',    guard: 'requireCompanyUser' },
   { path: 'app/api/company/advisor/appointments/[appointmentId]/route.ts',                        category: 'single_provisioning',    guard: 'requireCompanyUser' },
-  { path: 'app/api/company/data-ingest/route.ts',                                                  category: 'heavy_provisioning',     guard: 'requireCompanyUser' },
 ];
 
-describe('KORA-WP-044 — inventario: tutte le 14 nuove route mutanti sono coperte da rate limiting', () => {
-  it('14 route attese, tutte con categoria valida ed ESISTENTE nel policy set (nessuna nuova categoria introdotta)', () => {
-    expect(PROTECTED_ROUTES.length).toBe(14);
+describe('KORA-WP-044 — inventario: tutte le 13 nuove route mutanti sono coperte da rate limiting', () => {
+  it('13 route attese, tutte con categoria valida ed ESISTENTE nel policy set (nessuna nuova categoria introdotta)', () => {
+    expect(PROTECTED_ROUTES.length).toBe(13); // KORA-WP-132 ha ritirato /api/company/data-ingest
     const preExistingCategories: RateLimitCategory[] = [
       'invite', 'single_provisioning', 'bulk_provisioning', 'heavy_provisioning',
       'costly_admin_operation', 'destructive_admin_operation', 'token_creation',

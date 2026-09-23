@@ -195,10 +195,16 @@ describe('KORA-WP-049 (G) — /company/data/upload is neither made canonical nor
     expect(src).not.toContain('UploadValidationIssue');
   });
 
-  it('the upload page itself was not modified by this package', () => {
-    // Its 3,309-line legacy body and its own parse-issue list are untouched.
+  it('the upload page was not modified by this package', () => {
+    // KORA-WP-049 did not touch it: at WP-049's closure it still carried its
+    // 3,309-line legacy body and its own parse-issue list. KORA-WP-132 later
+    // retired the route entirely, so the assertion is now that WP-049's own
+    // artefacts never reached it — not that the legacy body survives.
     expect(exists(UPLOAD_PAGE)).toBe(true);
-    expect(read(UPLOAD_PAGE)).toContain('{issue.message}');
+    const src = read(UPLOAD_PAGE);
+    expect(src).toContain("redirect('/company/data')");
+    expect(src).not.toContain('UploadValidationIssue');
+    expect(src).not.toContain('explainQualityError');
   });
 });
 

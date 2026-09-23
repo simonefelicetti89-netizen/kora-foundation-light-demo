@@ -350,13 +350,15 @@ describe('Tenant Isolation — copertura routes', () => {
     // P1 sprint added: /api/company/data-submissions/history, /api/company/initiatives/explainability
     // CC-018/B-TRUTH added: /api/company/pillar-adoption (seed group #1)
     // KORA-WP-018 added: /api/company/needs
-    // KORA-WP-028 added: /api/company/data-ingest (Ingestion Hardening — new, additive Company-scoped route)
+    // KORA-WP-028 added /api/company/data-ingest; KORA-WP-132 RETIRED it — a
+    // Company actor no longer has any canonical-ingestion route, so the count
+    // drops by one. Canonical intake is operator-mediated (/api/admin/data-intake).
     // KORA-WP-027 added: /api/company/readiness (KORA Ready automated evaluation)
     // KORA-WP-115 added: /api/company/living-koral/editions (KORAL Edition
     // archive/create) — already scanned and passing every dynamic
     // tenant-isolation check above (tenantId derived from
     // requireCompanyUser() only, never searchParams or request body).
-    expect(COMPANY_ROUTES.length).toBe(26);
+    expect(COMPANY_ROUTES.length).toBe(25);
   });
 
   it('copre tutte le admin routes (baseline: ≥45)', () => {

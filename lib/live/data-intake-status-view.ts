@@ -47,7 +47,12 @@
 // tenant_kind is never read here — this view is identical for a
 // tenant_kind='TEST' tenant (KoraTest Srl) and any tenant_kind='LIVE' tenant.
 
-export type CanonicalIntakeStatus = 'not_started' | 'validation_required' | 'ready_for_ingestion' | 'in_progress';
+export type CanonicalIntakeStatus =
+  | 'not_started'
+  | 'validation_required'
+  | 'ready_for_ingestion'
+  | 'in_progress'
+  | 'ingested';
 
 export interface CanonicalDataIntakeStatus {
   batchCount: number;
@@ -75,7 +80,17 @@ export function buildDataIntakeStatusView(
   )[0];
 
   let intakeStatus: CanonicalIntakeStatus;
-  if (latest.batch_status === 'approved') {
+  // 'ingested' is terminal and is read from real canonical state, never
+  // synthesised: analytics.source_batch.batch_status is a plain text column
+  // with no CHECK, and rows carrying 'ingested' were written by the legacy
+  // Company self-service path retired by KORA-WP-132. Those rows still exist,
+  // so the view must represent them rather than collapsing them into
+  // 'in_progress' — which is what the pre-WP-132 else-branch did. Nothing
+  // writes this value any more; the canonical operator-mediated path
+  // (/api/admin/data-intake) creates 'pending'.
+  if (latest.batch_status === 'ingested') {
+    intakeStatus = 'ingested';
+  } else if (latest.batch_status === 'approved') {
     intakeStatus = 'ready_for_ingestion';
   } else if (pendingReviewCount > 0) {
     intakeStatus = 'validation_required';

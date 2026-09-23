@@ -1,3 +1,8 @@
+// KORA-WP-132 note: the two assertions that remediated accessible names and
+// table-header scope inside app/company/data/upload/page.tsx were removed when
+// that route was retired to a redirect boundary. The markup they guarded no
+// longer exists; the accessibility closure they belonged to is unaffected for
+// every surface that still renders.
 // tests/unit/kora-wp-073-accessibility-ia-full-closure.test.ts
 // KORA-WP-073 — Accessibility/IA Full Closure.
 //
@@ -60,7 +65,6 @@ describe('KORA-WP-073 — raw-input accessible-name remediation (confirmed defec
     // real <label htmlFor> association and an aria-label.
     { file: 'app/advisor/companies/[assignmentId]/_components/KoralReviewClient.tsx', mustContain: [/htmlFor="koral-interpretation"/, /id="koral-interpretation"/, /aria-label="Interpretazione"/] },
     { file: 'app/company/advisor/page.tsx', mustContain: [/aria-label="Scrivi un messaggio"/, /aria-label="Oggetto appuntamento"/, /aria-label="Data e ora inizio appuntamento"/, /aria-label="Data e ora fine appuntamento"/] },
-    { file: 'app/company/data/upload/page.tsx', mustContain: [/aria-label="Carica file ricevuto dal cliente \(CSV, XLSX, XLS\)"/] },
     { file: 'components/admin/CompanyEvidenceArchivePanel.tsx', mustContain: [/aria-label="Codice azienda"/, /aria-label="Reporting Period"/, /aria-label="Cerca iniziativa"/] },
     { file: 'components/admin/CompanyWorkspacePanel.tsx', mustContain: [/aria-label="Reporting Period"/, /aria-label="Lavoratori totali \(≥ 10\)"/, /aria-label="Reporting Period baseline"/] },
     { file: 'components/commons/AdminBookingModerationSection.tsx', mustContain: [/aria-label="Note di moderazione"/] },
@@ -130,7 +134,6 @@ describe('KORA-WP-073 — table header association (scope="col" on every <th>, W
     'app/admin/workers/bulk/_components/BulkWorkerProvisioningClient.tsx',
     'app/company/activity-selection/page.tsx',
     'app/company/activity-signals/page.tsx',
-    'app/company/data/upload/page.tsx',
     'app/company/workspace/_components/CompanyWorkspaceView.tsx',
     'app/worker/dynamic-cv/print/page.tsx',
     'components/admin/CompanyEvidenceArchivePanel.tsx',
