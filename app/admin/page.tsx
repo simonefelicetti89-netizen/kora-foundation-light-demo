@@ -303,7 +303,7 @@ export default async function KoraControlTower() {
             { href: '/admin/companies?from=preview',  label: 'Anteprima Live Cockpit · LIVE' },
             { href: '/admin/data-intake',             label: 'Data Intake · LIVE' },
             { href: '/admin/uef-review',              label: 'UEF™ Review · LIVE' },
-            { href: '/admin/company-submissions',     label: 'Submission Queue · LIVE' },
+            { href: '/admin/companies?from=submissions', label: 'Submission Queue · LIVE' },
             { href: '/admin/live-spine-diagnostics',  label: 'Live Spine Diagnostics · LIVE' },
             { href: '/admin/workers',                 label: 'Worker Provisioning · LIVE' },
             { href: '/admin/worker-diagnostics',      label: 'Worker Diagnostics · LIVE' },

@@ -78,7 +78,7 @@ export const LIFECYCLE_STEPS: ReadonlyArray<LifecycleStep> = [
     title:       'KORA Review',
     ownerRole:   'KORA_ADMIN',
     ownerLabel:  'KORA Admin',
-    route:       '/admin/company-submissions',
+    route:       '/admin/companies?from=submissions',
     description: 'KORA Admin revisiona la submission: verifica la qualità dei dati, classifica le attività nel BCM taxonomy e determina l\'Eligibility Gate per ogni record (Idoneo, Limitato, Escluso).',
     nextAction:  'Apri la Submission Queue e revisiona i file inviati dall\'azienda.',
   },

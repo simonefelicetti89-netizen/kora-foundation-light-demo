@@ -336,7 +336,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
         </div>
 
         <Link
-          href="/admin/company-submissions"
+          href="/admin/companies?from=submissions"
           className="inline-block text-[10px] text-kora-accent hover:underline"
         >
           Apri Admin Submission Queue reale →

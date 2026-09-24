@@ -348,7 +348,7 @@ export function PilotLifecycleClient({ tenant, dataIntake, decisionPack, account
               UUID, which DEMO_COMPANY_ID does not have. */}
           {[
             { label: 'Worker Provisioning (live)',                href: '/admin/workers' },
-            { label: 'Submission Queue',        href: '/admin/company-submissions' },
+            { label: 'Submission Queue',        href: '/admin/companies?from=submissions' },
             { label: 'UEF Review & Scoring',    href: '/admin/uef-review' },
           ].map(({ label, href }) => (
             <Link key={href} href={href}

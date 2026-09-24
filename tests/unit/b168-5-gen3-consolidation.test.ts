@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 
 const root = resolve(process.cwd());
@@ -193,6 +193,53 @@ describe('B168.5 Phase 2.3 — Sidebar links restructured (B169 FASE 3+4)', () =
     expect(sidebar).not.toContain("href: '/admin/company-live-preview'");
     expect(sidebar).not.toContain("href: '/admin/company-submissions'");
     expect(sidebar).not.toContain("href: '/admin/company-evidence-archive'");
+  });
+});
+
+// ── Gen1 → Gen3 navigation residue closed ────────────────────────────────────
+//
+// B168.5 turned /admin/company-submissions into a redirect shim whose
+// no-tenant branch went to /admin/companies?from=submissions; B171 then
+// deleted the shim. Three Product entry points kept pointing at the deleted
+// route (two missed by B171, one added afterwards), and a fourth was found in
+// the Acme demo hub — so each 404'd. They now use the canonical entry the shim
+// itself used. This closes the migration; it does not reinstate the flat page,
+// and the aggregate capability (the API and AdminSubmissionQueue's no-filter
+// mode) is untouched either way.
+
+describe('B171 residue — no active Product navigation targets the retired flat route', () => {
+  const CANONICAL = '/admin/companies?from=submissions';
+  const RETIRED = '/admin/company-submissions';
+
+  const ENTRY_POINTS: Array<[string, string]> = [
+    ['app/admin/page.tsx', 'Admin console quick grid'],
+    ['app/admin/pipeline/_components/PilotLifecycleClient.tsx', 'Pilot Lifecycle'],
+    ['lib/admin-lifecycle/lifecycle-rules.ts', 'admin lifecycle rules'],
+    ['app/admin/demo/acme-001/_components/AcmeDemoHub.tsx', 'Acme demo hub'],
+  ];
+
+  for (const [file, label] of ENTRY_POINTS) {
+    it(`${label} uses the canonical Gen-3 entry`, () => {
+      const src = read(file);
+      expect(src, `${file} still targets the retired flat route`).toContain(CANONICAL);
+      // The retired route must not survive as a navigation target. A quoted
+      // occurrence is a link; the bare string may still appear in prose.
+      for (const quoted of [`'${RETIRED}'`, `"${RETIRED}"`]) {
+        expect(src, `${file} still links to ${RETIRED}`).not.toContain(quoted);
+      }
+    });
+  }
+
+  it('the retired page stays absent — B171 is not reversed', () => {
+    expect(existsSync(resolve(root, 'app/admin/company-submissions'))).toBe(false);
+  });
+
+  it('the canonical company-scoped drill-in still exists', () => {
+    expect(existsSync(resolve(root, 'app/admin/companies/[companyId]/submissions/page.tsx'))).toBe(true);
+  });
+
+  it('the companies page still recognises from=submissions', () => {
+    expect(read('app/admin/companies/page.tsx')).toContain('submissions:');
   });
 });
 
