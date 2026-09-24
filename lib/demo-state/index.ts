@@ -2,12 +2,18 @@
 
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { KoraRole, ScenarioId, WorkerPersona, Environment } from '@/lib/types';
+import { resolveEffectiveEnvironment } from './demo-controls-guard';
 
 interface DemoState {
   activeRole: KoraRole;
   activeScenario: ScenarioId;
   activePersona: WorkerPersona | null;
   activeEnvironment: Environment;
+  /**
+   * KORA-WP-138: the REAL session role, server-derived, as supplied to the
+   * provider. Distinct from `activeRole`, which an operator may switch.
+   */
+  realRole: KoraRole | null | undefined;
   setRole: (role: KoraRole) => void;
   setScenario: (scenario: ScenarioId) => void;
   setPersona: (persona: WorkerPersona | null) => void;
@@ -66,6 +72,7 @@ export function DemoStateProvider({
     activeScenario,
     activePersona,
     activeEnvironment,
+    realRole: initialRole,
     setRole,
     setScenario: setActiveScenario,
     setPersona: setActivePersona,
@@ -94,6 +101,17 @@ export function useScenario() {
 export function usePersona() {
   const { activePersona, setPersona } = useDemoState();
   return { activePersona, setPersona };
+}
+
+/**
+ * KORA-WP-138 — the environment runtime code must use.
+ *
+ * `useEnvironment()` still exposes the raw operator preference and the setter,
+ * because the switcher legitimately needs both. Runtime consumers use THIS.
+ */
+export function useEffectiveEnvironment(): Environment {
+  const { activeEnvironment, realRole } = useDemoState();
+  return resolveEffectiveEnvironment(realRole, activeEnvironment as 'demo' | 'live' | 'future');
 }
 
 export function useEnvironment() {

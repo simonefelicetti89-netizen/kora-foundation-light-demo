@@ -62,6 +62,55 @@ export function resolveBannerEnvironment(
   activeEnvironment: BannerEnvironment,
 ): BannerEnvironment | null {
   if (realRole === undefined) return null;
+  return resolveEffectiveEnvironment(realRole, activeEnvironment);
+}
+
+/**
+ * KORA-WP-138 — THE canonical runtime environment rule.
+ *
+ * `activeEnvironment` is the OPERATOR'S PREVIEW PREFERENCE. It is not, and has
+ * never been, a statement about which runtime a real user is in. This function
+ * derives the environment the runtime must actually use, and every
+ * environment-sensitive consumer resolves through it — scoring and chrome
+ * alike — so the two can no longer disagree.
+ *
+ * WHY THIS EXISTS (OBS-02): `lib/demo-state` initialises `activeEnvironment` to
+ * 'demo', and `shouldShowDemoControls()` grants the switcher only to an
+ * unauthenticated visitor or KORA_ADMIN. A real COMPANY_ADMIN therefore had no
+ * path to 'live', so `useScoringResult` took the demo branch and returned
+ * `insufficient_data` synchronously WITHOUT EVER QUERYING THE DATABASE — while
+ * the banner, which already applied this rule, displayed LIVE. Four canonical
+ * Company surfaces rendered an empty state irrespective of real data.
+ *
+ * This mirrors `reconcileActiveRole` (ROLE-SWITCHER-02), which fixed the same
+ * class of defect for `activeRole`: a truth that only becomes known after login
+ * never reached client state. Role is RECONCILED (mutated, with a manual
+ * override). Environment is DERIVED and never mutated, deliberately — mutating
+ * it would let reconciliation silently overwrite a KORA_ADMIN's switcher choice
+ * and would make hydration order load-bearing.
+ *
+ * Rules, in the vocabulary `shouldShowDemoControls` already establishes:
+ *   undefined  — session still resolving → 'live'. FAIL-SAFE TOWARD LIVE: the
+ *                transient window must never yield demo scoring, because the
+ *                demo branch resolves SYNCHRONOUSLY and would render an empty
+ *                state before the real role arrives. Every Company route is
+ *                already server-guarded by requireCompanyUser, so an
+ *                unauthenticated visitor never observes this window there.
+ *                The banner keeps its own stricter `undefined -> render
+ *                nothing` check, applied before it delegates here.
+ *   null       — no session → the demo preference is authoritative
+ *   KORA_ADMIN — operator → the demo preference is authoritative
+ *   any other  — a REAL authenticated user (COMPANY_ADMIN, WORKER, PARTNER,
+ *                ADVISOR, AUTHENTICATED) → ALWAYS 'live'
+ *
+ * This is environment SELECTION, never authorization: it chooses between two
+ * already-authorized read paths for a session the server guards have already
+ * admitted. It must never become an auth boundary.
+ */
+export function resolveEffectiveEnvironment(
+  realRole: string | null | undefined,
+  activeEnvironment: BannerEnvironment,
+): BannerEnvironment {
   if (shouldShowDemoControls(realRole)) return activeEnvironment;
   return 'live';
 }

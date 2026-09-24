@@ -118,10 +118,16 @@ export default function KoraIndexDetail() {
 
   const COMPANY_ID = liveId ?? '';
 
+  // KORA-WP-138: the page-specific `forceEnvironment: 'live'` override is
+  // removed. It was the ONLY reason this surface escaped OBS-02, which means
+  // retaining it would mask a regression of the canonical invariant rather than
+  // exercise it. An authenticated COMPANY_ADMIN now resolves to live through
+  // `useEffectiveEnvironment`, exactly as the other four Company surfaces do.
+  // The `forceEnvironment` API itself is KEPT — it remains legitimate for
+  // KORA_ADMIN preview and test contexts.
   const { data: scoring, loading } = useScoringResult({
-    tenantId:         COMPANY_ID,
-    scenarioId:       'S1',
-    forceEnvironment: 'live',
+    tenantId:   COMPANY_ID,
+    scenarioId: 'S1',
   });
 
   const [liveCtx, setLiveCtx] = useState<LiveEligibilityContext | null>(null);

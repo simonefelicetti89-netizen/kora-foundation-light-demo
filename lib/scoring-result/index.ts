@@ -28,7 +28,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useEnvironment } from '@/lib/demo-state';
+import { useEffectiveEnvironment } from '@/lib/demo-state';
 import type { ConfidenceRecord } from '@/lib/types';
 import { mapDbRow, type LiveRow } from '@/lib/live/scoring-mapper';
 import type {
@@ -175,8 +175,13 @@ export function useScoringResult({
   scenarioId: ScenarioId;
   forceEnvironment?: Environment;
 }): UseScoringResultReturn {
-  const { activeEnvironment: globalEnvironment } = useEnvironment();
-  const environment: Environment = forceEnvironment ?? globalEnvironment;
+  // KORA-WP-138: resolve through the canonical rule, never raw demo-state.
+  // An authenticated COMPANY_ADMIN can no longer reach the demo branch, which
+  // is what OBS-02 was: `activeEnvironment` defaults to 'demo' and a real
+  // Company user has no switcher, so scoring returned `insufficient_data`
+  // synchronously without ever querying the database.
+  const canonicalEnvironment = useEffectiveEnvironment();
+  const environment: Environment = forceEnvironment ?? canonicalEnvironment;
 
   // Async state for live mode. useState/useEffect called unconditionally (React rules).
   const [liveState, setLiveState] = useState<UseScoringResultReturn>({

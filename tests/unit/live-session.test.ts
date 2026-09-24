@@ -68,6 +68,20 @@ describe('Live session — demo/live path separation', () => {
     // B147 P1: BoundaryBanner, BoundaryBadge mode="LIVE", and forceEnvironment: 'live'
     // were dual-path-era signals removed in P1. Server layout requireCompanyUser is the guard.
     // kora-index still uses forceEnvironment (fetch gate) — not included in this cleanup check.
+    //
+    // SUPERSEDED BY KORA-WP-138 (2026-09-24) — kept, not deleted, and no longer
+    // load-bearing on its own. B147 was RIGHT that these pages should carry no
+    // dual-path-era signal, and it correctly recognised forceEnvironment as a
+    // fetch gate on kora-index. Its stated justification was wrong:
+    // `requireCompanyUser` is a SERVER auth guard and never touches client
+    // demo-state, so removing the override from these four pages did not make
+    // them live — it silently pinned them to demo (OBS-02). This assertion is a
+    // PROXY for cleanliness; the architectural invariant it was meant to express
+    // is asserted directly in
+    // tests/unit/kora-wp-138-authenticated-runtime-environment.test.ts, which
+    // proves an authenticated COMPANY_ADMIN cannot reach the demo scoring
+    // runtime at all. Absence of the string is now a CONSEQUENCE of the central
+    // fix, not a substitute for it.
     const liveOnlyPages = [
       '../../app/company/activation/page.tsx',
       '../../app/company/pillars/page.tsx',
@@ -81,6 +95,18 @@ describe('Live session — demo/live path separation', () => {
       expect(content, `${page} should not have BoundaryBanner residue`).not.toContain('BoundaryBanner');
       expect(content, `${page} should not have forceEnvironment`).not.toContain("forceEnvironment: 'live'");
     }
+  });
+
+  it('KORA-WP-138: an authenticated COMPANY_ADMIN cannot enter the demo scoring runtime', async () => {
+    // The invariant B147's proxy assertion was standing in for. This is what
+    // actually protects the four pages above.
+    const { resolveEffectiveEnvironment } = await import('@/lib/demo-state/demo-controls-guard');
+    for (const raw of ['demo', 'live', 'future'] as const) {
+      expect(resolveEffectiveEnvironment('COMPANY_ADMIN', raw)).toBe('live');
+    }
+    // And the authorized demo contexts B147 never intended to break:
+    expect(resolveEffectiveEnvironment(null, 'demo')).toBe('demo');
+    expect(resolveEffectiveEnvironment('KORA_ADMIN', 'demo')).toBe('demo');
   });
 
   it('live kora-index page is live-only — no dual-path, no Meridiana fallback', async () => {
