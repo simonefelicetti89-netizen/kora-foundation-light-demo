@@ -55,7 +55,12 @@ const sha = (s: string) => createHash('sha256').update(s).digest('hex');
  */
 const BASELINE = 'ac91cfa31e0bcad85071d467c9a5611a4668c29b';
 const BASELINE_DIGEST: Record<string, string> = {
-  'components/privacy/PrivacyBoundaryNotice.tsx': '834aa787910abeb2f0fd1607078b147f0a52dc081c20af44e38f9e4c4faed48c',
+  // RE-PINNED by KORA-WP-139 (2026-09-25): that package raised this file's one
+  // 10px line to the 11px floor. A deliberate, reviewed digest change — which is
+  // exactly the mechanism this pin exists to force. WP-140's actual guarantee is
+  // unchanged and still asserted below: the boundary is reused, not rebuilt, and
+  // still announces itself with role="status" rather than as a fault.
+  'components/privacy/PrivacyBoundaryNotice.tsx': '9aa48195850869d663b7784dc800a7e60f4b53f61d9ac75351d17f1e47ff2ec1',
   'components/ui/EmptyState.tsx':                 '8a3597612a31eb6de9e86afa17c404fe5d8a4966ed32f1041c78d95f6de429b0',
   'components/privacy/AccessDeniedState.tsx':     'd1161aceee89d0eb2c4d610d82b224ce33f3f885805f4f0ddeec83a779030143',
   'lib/design/kora-design-tokens.ts':             '6d8bcc750a0daa96155ec49ff1031022c6a16c955b214511f1554744caab9430',
@@ -441,16 +446,32 @@ describe('KORA-WP-140 — the /company/reports demonstrator consumes the grammar
 // ── Scope discipline ────────────────────────────────────────────────────────
 
 describe('KORA-WP-140 — stays inside its scope', () => {
-  it('does not touch the shared token file — the WP-139 collision surface stays clear', () => {
-    expectUnchangedSinceBaseline('lib/design/kora-design-tokens.ts');
+  // SUPERSEDED by KORA-WP-139 (2026-09-25). The original assertion was whole-file
+  // byte identity, which proved WP-140 had left the shared token file alone so
+  // WP-139 could add the type scale without a merge. WP-139 has now done exactly
+  // that, so whole-file identity is no longer the right question — it would fail
+  // on the very handoff it was protecting. What still matters is that WP-140's
+  // own layer, the PX colour block, was never touched by either package.
+  it('never touched the PX colour block in the shared token file', () => {
+    const block = /export const PX = \{[\s\S]*?\n\} as const;/.exec(read('lib/design/kora-design-tokens.ts'))?.[0];
+    expect(block, 'PX block not found').toBeDefined();
+    expect(sha(block!), 'the PX colour block changed').toBe('5aed62ad86606823e8adcc057ae5fd3a7c91c71dcd6dea4084687a6560e53a46');
   });
 
-  it('does not migrate typography: the demonstrator keeps its baseline type values', () => {
-    // KORA-WP-139 owns the scale and migrates this surface after this adoption
-    // lands. WP-140 must not pre-empt it.
+  // SUPERSEDED by KORA-WP-139 (2026-09-25). This asserted that WP-140 had NOT
+  // pre-empted the typography migration — a scope guard for a handoff that has
+  // now happened. Kept as its inverse, which is the durable property: WP-139
+  // migrated the type and left every WP-140 structure standing.
+  it('the WP-139 typography migration left the WP-140 structure intact', () => {
     const s = read(REPORTS);
-    expect(s).toContain("fontSize: '2.5rem'");
-    expect(s).toContain("fontSize: '13px'");
+    for (const role of ['HeroJudgment', 'PrimaryMetric', 'SupportingMetric', 'WarningSafeguard', 'ActionGroup', 'Disclosure', 'EvidencePanel']) {
+      expect(s, `${role} was lost in the typography migration`).toMatch(new RegExp(`<${role}\\b`));
+    }
+    expect(s).toContain('<NotYetAvailable');
+    expect(s).toContain('<Loading ');
+    // and the type now comes from the scale, not from hand-written sizes
+    expect(s).toContain("typeStyle('display'");
+    expect(s).not.toMatch(/fontSize: '\d/);
   });
 
   it('declares no colour literal of its own', () => {

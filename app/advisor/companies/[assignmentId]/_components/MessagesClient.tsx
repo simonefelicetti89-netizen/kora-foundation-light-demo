@@ -86,7 +86,7 @@ export function MessagesClient({ assignmentId }: { assignmentId: string }) {
                     {newDay && (
                       <span style={{
                         justifySelf: 'center', margin: '10px 0 6px', padding: '2px 9px', borderRadius: PX.rPill,
-                        background: PX.inkWash, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em',
+                        background: PX.inkWash, fontSize: 11, fontWeight: 700, letterSpacing: '0.07em',
                         textTransform: 'uppercase', color: PX.ink3, fontFamily: PX.sans,
                       }}>
                         {dayOf(m.createdAt)}
@@ -104,12 +104,12 @@ export function MessagesClient({ assignmentId }: { assignmentId: string }) {
                       fontFamily: PX.sans,
                     }}>
                       {!sameAuthor && (
-                        <span style={{ fontSize: 10.5, fontWeight: 750, letterSpacing: '0.05em', textTransform: 'uppercase', color: mine ? PX.violet700 : PX.ink3 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: mine ? PX.violet700 : PX.ink3 }}>
                           {mine ? 'Tu · Advisor' : 'Company'}
                         </span>
                       )}
                       <span style={{ fontSize: 12.5, lineHeight: 1.55, color: PX.ink, overflowWrap: 'anywhere' }}>{m.body}</span>
-                      <span style={{ justifySelf: 'end', fontSize: 10.5, fontWeight: 650, color: PX.ink3, fontVariantNumeric: 'tabular-nums' }}>
+                      <span style={{ justifySelf: 'end', fontSize: 12, fontWeight: 600, color: PX.ink3, fontVariantNumeric: 'tabular-nums' }}>
                         {timeOf(m.createdAt)}
                       </span>
                     </div>

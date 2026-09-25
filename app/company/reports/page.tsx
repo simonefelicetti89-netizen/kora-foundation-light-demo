@@ -11,8 +11,10 @@
 //     absence of data and not a fault — the period simply has not been scored;
 //   - KORA Contribution is NOT YET AVAILABLE, not the empty grey box that read
 //     as "nothing here".
-// Typography is deliberately untouched — KORA-WP-139 owns the scale and migrates
-// this surface after this adoption lands (overlay O3).
+// KORA-WP-140 structure is FINAL here and must not be altered.
+// KORA-WP-139 migrated the typography onto the canonical nine-role scale on top
+// of that structure: every size now comes from a named role, no text sits below
+// the 11px floor, and 11px is used only where the role is `meta`.
 
 import { useCompanySession } from '../_providers/CompanySessionProvider';
 import { useScoringResult }  from '@/lib/scoring-result';
@@ -31,7 +33,7 @@ import {
   ActionGroup, Disclosure, Loading, NotYetAvailable,
 } from '@/components/ui/px';
 import type { Assessment } from '@/lib/design/surface-state-grammar';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, typeStyle } from '@/lib/design/kora-design-tokens';
 
 function safeguardLabel(status: string): string {
   if (status === 'CLEAR')   return 'Clear';
@@ -106,7 +108,7 @@ export default function Reports() {
 
       {/* ── Lettura direzionale — DISCLOSURE, non un avviso ─────────────────── */}
       <Disclosure label="Lettura direzionale — non certificativa">
-        <p style={{ fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.7 }}>
+        <p style={{ ...typeStyle('body'), color: TOKENS.inkSecondary }}>
           KORA converte dati aggregati, KORA Index, Confidence Score, Safeguard e raccomandazioni in output direzionali.
           Il Decision Pack è un supporto informativo per il confronto interno — non una certificazione ESG, non un report regolatorio automatico,
           non un&apos;attestazione pubblica.
@@ -117,20 +119,20 @@ export default function Reports() {
       <HeroJudgment
         eyebrow="KORA Decision Pack · La tua organizzazione"
         actions={
-          <span style={{ fontSize: '10px', fontWeight: 600, background: 'rgba(47,125,85,0.10)', color: TOKENS.success, borderRadius: 4, padding: '2px 8px', border: '1px solid rgba(47,125,85,0.22)' }}>
+          <span style={{ ...typeStyle('meta'), background: 'rgba(47,125,85,0.10)', color: TOKENS.success, borderRadius: 4, padding: '3px 8px', border: '1px solid rgba(47,125,85,0.22)' }}>
             LIVE
           </span>
         }
         verdict={
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <PrimaryMetric label="KORA Index™" footnote={<span style={{ fontSize: '11px', color: TOKENS.inkHint }}>/100</span>}>
-              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.ink, lineHeight: 1 }}>
+            <PrimaryMetric label="KORA Index™" footnote={<span style={{ ...typeStyle('caption'), color: TOKENS.inkHint }}>/100</span>}>
+              <p style={{ ...typeStyle('display', { tabular: true }), color: TOKENS.ink }}>
                 {output.kora_index_value}
               </p>
             </PrimaryMetric>
 
-            <SupportingMetric label="Confidence Score" footnote={<span style={{ fontSize: '10px', color: TOKENS.inkHint }}>indicatore esterno · peso 0</span>}>
-              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.accent, lineHeight: 1 }}>
+            <SupportingMetric label="Confidence Score" footnote={<span style={{ ...typeStyle('caption'), color: TOKENS.inkHint }}>indicatore esterno · peso 0</span>}>
+              <p style={{ ...typeStyle('display', { tabular: true }), color: TOKENS.accent }}>
                 {(output.confidence_score * 100).toFixed(0)}%
               </p>
             </SupportingMetric>
@@ -141,18 +143,18 @@ export default function Reports() {
       >
         <Disclosure label="Calibrazione e metodologia">
           <div className="flex flex-wrap gap-3">
-            <span style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.safeguard.watch.text }}>pre_empirical_calibration</span>
-            <span style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.safeguard.cap.text }}>production_ready: false</span>
-            <span style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkHint }}>{aggregate.methodology_version_id}</span>
+            <span style={{ ...typeStyle('caption'), fontFamily: 'ui-monospace, monospace', color: TOKENS.safeguard.watch.text }}>pre_empirical_calibration</span>
+            <span style={{ ...typeStyle('caption'), fontFamily: 'ui-monospace, monospace', color: TOKENS.safeguard.cap.text }}>production_ready: false</span>
+            <span style={{ ...typeStyle('caption'), fontFamily: 'ui-monospace, monospace', color: TOKENS.inkHint }}>{aggregate.methodology_version_id}</span>
             {aggregate.reporting_period && (
-              <span style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkHint }}>{aggregate.reporting_period}</span>
+              <span style={{ ...typeStyle('caption'), fontFamily: 'ui-monospace, monospace', color: TOKENS.inkHint }}>{aggregate.reporting_period}</span>
             )}
           </div>
         </Disclosure>
 
         <ActionGroup
           note={
-            <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>
+            <span style={{ ...typeStyle('caption'), color: TOKENS.inkHint }}>
               Usa Stampa / Salva come PDF dal browser (Cmd+P)
             </span>
           }
@@ -160,7 +162,7 @@ export default function Reports() {
           <a
             href="/api/company/decision-pack"
             target="_blank" rel="noopener noreferrer"
-            style={{ borderRadius: 6, background: TOKENS.ink, padding: '8px 16px', fontSize: '13px', fontWeight: 600, color: '#FFFFFF', textDecoration: 'none' }}
+            style={{ ...typeStyle('label', { weight: 700 }), borderRadius: 6, background: TOKENS.ink, padding: '9px 16px', color: '#FFFFFF', textDecoration: 'none' }}
           >
             Apri Board Pack →
           </a>
@@ -184,7 +186,7 @@ export default function Reports() {
       <ActionGroup
         label="Export & distribuzione"
         note={
-          <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>
+          <p style={{ ...typeStyle('caption'), color: TOKENS.inkHint }}>
             Il Board Pack Preview è disponibile come documento stampabile PDF-ready.
             Export PDF automatico non attivo in Foundation Light — usare il browser per Salva come PDF.
             Report Excel, API export e distribuzione automatica sono disponibili in fase pilot.
@@ -194,10 +196,10 @@ export default function Reports() {
         <a
           href="/api/company/decision-pack"
           target="_blank" rel="noopener noreferrer"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 6, background: TOKENS.ink, padding: '8px 16px', fontSize: '12px', fontWeight: 600, color: '#FFFFFF', textDecoration: 'none' }}
+          style={{ ...typeStyle('label', { weight: 700 }), display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 6, background: TOKENS.ink, padding: '9px 16px', color: '#FFFFFF', textDecoration: 'none' }}
         >
           Apri Board Pack →
-          <span style={{ fontWeight: 400, fontSize: '10px', color: 'rgba(244,241,233,0.60)' }}>
+          <span style={{ ...typeStyle('caption'), fontWeight: 400, color: 'rgba(244,241,233,0.60)' }}>
             Stampa / Salva PDF dal browser (Cmd+P)
           </span>
         </a>
@@ -207,14 +209,14 @@ export default function Reports() {
       <EvidencePanel label="KORA Contribution™ — indicatore companion, separato dal KORA Index™">
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
-            <span style={{ fontSize: '10px', fontWeight: 700, background: `${TOKENS.accent}14`, color: TOKENS.accent, borderRadius: 4, padding: '2px 7px' }}>
+            <span style={{ ...typeStyle('meta'), background: `${TOKENS.accent}14`, color: TOKENS.accent, borderRadius: 4, padding: '3px 7px' }}>
               Indicatore Companion
             </span>
-            <span style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkHint }}>
+            <span style={{ ...typeStyle('caption'), fontFamily: 'ui-monospace, monospace', color: TOKENS.inkHint }}>
               not_kora_index_component: true
             </span>
           </div>
-          <p style={{ fontSize: '12.5px', color: TOKENS.inkSecondary, lineHeight: 1.65 }}>
+          <p style={{ ...typeStyle('body'), color: TOKENS.inkSecondary }}>
             KORA Contribution™ misura il contributo collettivo e territoriale dell&apos;organizzazione oltre il perimetro interno.{' '}
             <strong style={{ color: TOKENS.ink }}>Non modifica e non influenza il KORA Index™.</strong>
           </p>
@@ -229,7 +231,7 @@ export default function Reports() {
 
       {/* ── Confini metodologici — DISCLOSURE ───────────────────────────────── */}
       <Disclosure label="Confini metodologici e perimetro informativo">
-        <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.ink, marginBottom: 12 }}>
+        <p style={{ ...typeStyle('subsection'), color: TOKENS.ink, marginBottom: 12 }}>
           Decision Pack misura l&apos;organizzazione, non gli individui.
         </p>
         <ul style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -239,7 +241,7 @@ export default function Reports() {
             'Correlazione ≠ causalità — tutti i segnali KORA sono associativi, non predittivi.',
             'KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.',
           ].map((note) => (
-            <li key={note} style={{ display: 'flex', gap: 8, fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65 }}>
+            <li key={note} style={{ ...typeStyle('secondary'), display: 'flex', gap: 8, color: TOKENS.inkSecondary }}>
               <span style={{ flexShrink: 0, color: TOKENS.inkHint, marginTop: 2 }}>·</span>
               {note}
             </li>

@@ -61,7 +61,7 @@ export function PrivacyBoundaryNotice({ reason, dataType, groupSize, className }
         <p style={{
           fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           fontWeight: 600,
-          fontSize:   '11.5px',
+          fontSize: '12px',
           color:      TOKENS.ink,
           marginBottom: 4,
         }}>
@@ -69,7 +69,7 @@ export function PrivacyBoundaryNotice({ reason, dataType, groupSize, className }
         </p>
         <p style={{
           fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontSize:   '11.5px',
+          fontSize: '12px',
           color:      TOKENS.inkSecondary,
           lineHeight: 1.5,
         }}>
@@ -78,7 +78,7 @@ export function PrivacyBoundaryNotice({ reason, dataType, groupSize, className }
         {dataType && (
           <p style={{
             fontFamily:  'ui-monospace, monospace',
-            fontSize:    '10px',
+            fontSize: '12px',
             color:       TOKENS.inkHint,
             marginTop:   6,
             letterSpacing: '0.02em',

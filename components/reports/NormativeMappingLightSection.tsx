@@ -63,19 +63,19 @@ export function NormativeMappingLightSection({ mapping }: Props) {
           }}>
             Normative Mapping Light
           </p>
-          <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>
+          <p style={{ fontSize: '12px', color: TOKENS.inkHint }}>
             Indicative, non-certificative alignment · Foundation Light
           </p>
         </div>
         <div className="flex flex-wrap gap-2 items-center">
           <span style={{
-            fontFamily: 'monospace', fontSize: '10px', fontWeight: 700,
+            fontFamily: 'monospace', fontSize: '12px', fontWeight: 700,
             background: TOKENS.accentSoft, color: TOKENS.violet, borderRadius: 4, padding: '2px 7px',
           }}>
             pre_empirical_calibration
           </span>
           <span style={{
-            fontSize: '10px', background: BADGE_TOKENS.eligible.bg, color: BADGE_TOKENS.eligible.text,
+            fontSize: '12px', background: BADGE_TOKENS.eligible.bg, color: BADGE_TOKENS.eligible.text,
             borderRadius: 4, padding: '2px 7px', fontWeight: 600,
           }}>
             non-certificativa
@@ -102,7 +102,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
               {['Framework', 'Aree', 'Pillar principali', 'Forza prevalente', 'Uso indicativo'].map(h => (
                 <th scope="col" key={h} style={{
                   padding: '6px 10px', textAlign: 'left',
-                  fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '10px',
+                  fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px',
                   letterSpacing: '0.06em', textTransform: 'uppercase',
                   color: TOKENS.violet, background: TOKENS.accentSoft,
                 }}>
@@ -131,7 +131,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
                     <div className="flex flex-wrap gap-1">
                       {allPillars.map(p => (
                         <span key={p} style={{
-                          fontSize: '10px', fontWeight: 700,
+                          fontSize: '12px', fontWeight: 700,
                           background: TOKENS.accentSoft, color: TOKENS.violet,
                           borderRadius: 3, padding: '1px 5px',
                         }}>
@@ -143,14 +143,14 @@ export function NormativeMappingLightSection({ mapping }: Props) {
                   <td style={{ padding: '7px 10px' }}>
                     <span style={{
                       ...strengthTk,
-                      fontSize: '10px', fontWeight: 700,
+                      fontSize: '12px', fontWeight: 700,
                       borderRadius: 4, padding: '2px 6px',
                       display: 'inline-block',
                     }}>
                       {STRENGTH_LABELS[prevStrength] ?? prevStrength}
                     </span>
                   </td>
-                  <td style={{ padding: '7px 10px', fontSize: '11px', color: TOKENS.inkSecondary }}>{usoIndicativo}</td>
+                  <td style={{ padding: '7px 10px', fontSize: '12px', color: TOKENS.inkSecondary }}>{usoIndicativo}</td>
                 </tr>
               );
             })}
@@ -159,7 +159,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
       </div>
 
       {/* Footer metadata */}
-      <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: '0.75rem', textAlign: 'right' }}>
+      <p style={{ fontSize: '12px', color: TOKENS.inkHint, marginTop: '0.75rem', textAlign: 'right' }}>
         v{mapping.version} · {mapping.areas.length} aree totali · {byFramework.size} framework
       </p>
     </div>

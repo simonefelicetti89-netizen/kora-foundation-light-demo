@@ -32,7 +32,7 @@ export function MethodologyBadge({
           background:    TOKENS.safeguard.watch.bg,
           color:         TOKENS.safeguard.watch.text,
           border:        `1px solid ${TOKENS.safeguard.watch.dot}40`,
-          fontSize:      '10px',
+          fontSize: '12px',
           fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           fontWeight:    600,
           letterSpacing: '0.02em',
@@ -63,7 +63,7 @@ export function MethodologyBadge({
             padding:       '2px 8px',
             background:    TOKENS.safeguard.watch.bg,
             color:         TOKENS.safeguard.watch.text,
-            fontSize:      '9px',
+            fontSize: '11px',
             fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             fontWeight:    700,
             letterSpacing: '0.08em',
@@ -72,7 +72,7 @@ export function MethodologyBadge({
         >
           {calibrationStatus.replace(/_/g, ' ')}
         </span>
-        <span style={{ fontSize: '11px', color: TOKENS.safeguard.watch.text, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+        <span style={{ fontSize: '12px', color: TOKENS.safeguard.watch.text, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
           {versionId}{period ? ` · ${period}` : ''} · Soglia privacy {privacyThreshold}
           {showSynthetic ? ' · Dati sintetici demo' : ''}
         </span>
@@ -100,7 +100,7 @@ export function MethodologyBadge({
           background:    TOKENS.safeguard.watch.bg,
           color:         TOKENS.safeguard.watch.text,
           border:        `1px solid ${TOKENS.safeguard.watch.dot}40`,
-          fontSize:      '9.5px',
+          fontSize: '12px',
           fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           fontWeight:    600,
         }}
@@ -109,7 +109,7 @@ export function MethodologyBadge({
       </span>
       <span style={{
         fontFamily:  'ui-monospace, monospace',
-        fontSize:    '10px',
+        fontSize: '12px',
         color:       TOKENS.inkHint,
         letterSpacing: '0.03em',
       }}>

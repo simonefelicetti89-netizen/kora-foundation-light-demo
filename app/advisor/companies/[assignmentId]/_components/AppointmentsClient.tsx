@@ -384,7 +384,7 @@ export function AppointmentsClient({ assignmentId }: { assignmentId: string }) {
             <div style={{ display: 'grid', gap: 4, minWidth: 0 }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0,1fr))', gap: 4 }}>
                 {['lun', 'mar', 'mer', 'gio', 'ven', 'sab', 'dom'].map((d) => (
-                  <span key={d} style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: PX.ink3, padding: '0 2px' }}>{d}</span>
+                  <span key={d} style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: PX.ink3, padding: '0 2px' }}>{d}</span>
                 ))}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0,1fr))', gap: 4 }}>

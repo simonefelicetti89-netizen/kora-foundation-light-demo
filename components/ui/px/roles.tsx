@@ -21,7 +21,7 @@
 // so a danger treatment on a healthy value has no entry point.
 
 import type { CSSProperties, ReactNode } from 'react';
-import { PX } from '@/lib/design/kora-design-tokens';
+import { PX, typeStyle } from '@/lib/design/kora-design-tokens';
 import {
   assessmentTreatment,
   ROLE_CONTRACT,
@@ -37,8 +37,10 @@ const L1: CSSProperties = {
 function Eyebrow({ children, color = PX.ink3 }: { children: ReactNode; color?: string }) {
   return (
     <span style={{
-      fontSize: 11, fontWeight: 700, letterSpacing: '0.075em', textTransform: 'uppercase',
-      color, overflowWrap: 'anywhere',
+      // KORA-WP-139: the eyebrow IS the canonical `meta` role — the one role
+      // allowed at the 11px floor. It was already these values by hand; it now
+      // reads them from the scale, so a recalibration reaches it.
+      ...typeStyle('meta'), color, overflowWrap: 'anywhere',
     }}>
       {children}
     </span>
@@ -185,14 +187,14 @@ export function WarningSafeguard({
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <Eyebrow color={t.text}>{label}</Eyebrow>
         <span style={{
-          marginLeft: 'auto', fontSize: 11.5, fontWeight: 700, color: t.text,
+          ...typeStyle('label', { weight: 700 }), marginLeft: 'auto', color: t.text,
           overflowWrap: 'anywhere', minWidth: 0,
         }}>
           {assessment.label}
         </span>
       </div>
       {reason && (
-        <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: t.text, maxWidth: '72ch' }}>{reason}</p>
+        <p style={{ ...typeStyle('secondary'), margin: 0, color: t.text, maxWidth: '72ch' }}>{reason}</p>
       )}
       {children}
     </section>

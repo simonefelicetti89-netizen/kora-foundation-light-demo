@@ -13,13 +13,14 @@
 // implementation, so reusing it is the only way "preserved, never regressed"
 // can be proven rather than asserted.
 //
-// Typography here is deliberately unchanged from the values already used by the
-// KORA-WP-125 primitives (StateBlock 14.5/12.5, Status 11.5). KORA-WP-139 owns
-// the type scale; this package introduces no typographic decision of its own.
+// KORA-WP-139 migrated these onto the canonical scale: the state headline is
+// the `subsection` role and its body the `secondary` role. Structure, semantics
+// and ARIA are untouched — the ownership split from overlay O2 holds in both
+// directions.
 
 import type { ReactNode } from 'react';
 import { CircleAlert, CircleSlash, Clock, Hourglass, LoaderCircle, Minus } from 'lucide-react';
-import { PX } from '@/lib/design/kora-design-tokens';
+import { PX, typeStyle } from '@/lib/design/kora-design-tokens';
 import { PrivacyBoundaryNotice } from '@/components/privacy/PrivacyBoundaryNotice';
 import type { PrivacySuppressReason } from '@/lib/types';
 import {
@@ -67,8 +68,8 @@ function StateFrame({
       >
         {icon}
       </span>
-      <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 700, letterSpacing: '-0.008em', color: PX.ink }}>{title}</h4>
-      <p style={{ margin: 0, maxWidth: '62ch', fontSize: 12.5, lineHeight: 1.6, color: PX.ink3 }}>{body}</p>
+      <h4 style={{ ...typeStyle('subsection'), margin: 0, color: PX.ink }}>{title}</h4>
+      <p style={{ ...typeStyle('secondary'), margin: 0, maxWidth: '62ch', color: PX.ink3 }}>{body}</p>
       {action && <div style={{ marginTop: 6 }}>{action}</div>}
     </div>
   );

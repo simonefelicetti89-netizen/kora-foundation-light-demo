@@ -46,7 +46,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
         <p
           style={{
             fontFamily:    'var(--font-jakarta)',
-            fontSize:      '10px',
+            fontSize: '11px',
             fontWeight:    500,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
@@ -84,7 +84,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
                     <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {code}
                     </p>
-                    <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '10px', color: TOKENS.inkHint, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '12px', color: TOKENS.inkHint, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {COMPONENT_LABELS[code]}
                     </p>
                   </div>
@@ -103,7 +103,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
                       {value !== null ? formatPercentage(value) : '—'}
                     </p>
                     {weight !== null && weight > 0 && (
-                      <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '8.5px', color: TOKENS.inkHint, marginTop: '3px', whiteSpace: 'nowrap' }}>
+                      <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '12px', color: TOKENS.inkHint, marginTop: '3px', whiteSpace: 'nowrap' }}>
                         {formatPercentage(weight)}
                       </p>
                     )}
@@ -128,14 +128,14 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
                       border:        `1px solid ${mbStyle.border}`,
                       background:    mbStyle.bg,
                       padding:       '1px 6px',
-                      fontSize:      '9px',
+                      fontSize: '12px',
                       fontWeight:    600,
                       color:         mbStyle.text,
                     }}
                   >
                     → {macroblockLabel}
                   </span>
-                  <p style={{ fontSize: '9px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
+                  <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
                     {COMPONENT_SHORT_DEFS[code]}
                   </p>
                 </div>
@@ -157,7 +157,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
         <p
           style={{
             fontFamily:    'var(--font-jakarta)',
-            fontSize:      '10px',
+            fontSize: '11px',
             fontWeight:    500,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
@@ -177,7 +177,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
                 border:        `1px solid ${TOKENS.accent}33`,
                 background:    TOKENS.surface,
                 padding:       '1px 6px',
-                fontSize:      '8px',
+                fontSize: '11px',
                 fontWeight:    600,
                 letterSpacing: '0.06em',
                 textTransform: 'uppercase',
@@ -187,7 +187,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
               Indicatore esterno
             </span>
             <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, marginTop: '4px' }}>CS</p>
-            <p style={{ fontSize: '10px', color: TOKENS.inkSecondary, marginTop: '1px' }}>{COMPONENT_LABELS['CS']}</p>
+            <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, marginTop: '1px' }}>{COMPONENT_LABELS['CS']}</p>
           </div>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -208,7 +208,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
                   border:       `1px solid ${TOKENS.accent}33`,
                   background:   TOKENS.surface,
                   padding:      '1px 6px',
-                  fontSize:     '9px',
+                  fontSize: '12px',
                   fontWeight:   700,
                   color:        TOKENS.accent,
                 }}
@@ -221,14 +221,14 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
                   border:       `1px solid ${TOKENS.accent}33`,
                   background:   TOKENS.surface,
                   padding:      '1px 6px',
-                  fontSize:     '9px',
+                  fontSize: '12px',
                   color:        TOKENS.accent,
                 }}
               >
                 Non entra nel KORA Index
               </span>
             </div>
-            <p style={{ fontSize: '9px', color: TOKENS.accent, lineHeight: 1.55 }}>
+            <p style={{ fontSize: '12px', color: TOKENS.accent, lineHeight: 1.55 }}>
               CS è esterno al KORA Index: misura affidabilità/qualità dei dati, non impatto. Peso = 0.
               Un Confidence Score basso riduce la fiducia interpretativa nell&apos;output — non ne modifica il valore numerico.
             </p>

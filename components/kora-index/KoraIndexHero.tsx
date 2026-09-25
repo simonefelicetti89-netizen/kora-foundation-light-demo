@@ -57,7 +57,7 @@ export function KoraIndexHero({ output, className, variant = 'light' }: KoraInde
 
       {/* Methodology version — non-suppressible */}
       <div className={cn('mt-4 border-t pt-3', dark ? 'border-[rgba(6,3,43,0.35)]' : 'border-[rgba(6,3,43,0.05)]')}>
-        <p className={cn('text-[10px] font-mono', dark ? 'text-[rgba(6,3,43,0.52)]' : 'text-[rgba(6,3,43,0.40)]')}>
+        <p className={cn('text-[12px] font-mono', dark ? 'text-[rgba(6,3,43,0.52)]' : 'text-[rgba(6,3,43,0.40)]')}>
           {methodologyVersionId}&nbsp;·&nbsp;{calibrationStatus}
         </p>
       </div>
