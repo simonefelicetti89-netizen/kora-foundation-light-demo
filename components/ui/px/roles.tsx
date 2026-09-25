@@ -134,15 +134,19 @@ export function SupportingMetric({
 export function EvidencePanel({
   label, children, provenance,
 }: {
-  label: string;
+  /** Omit when the content already carries its own visible heading — one
+   *  heading per conceptual block. The role stays identifiable structurally. */
+  label?: string;
   children: ReactNode;
   provenance?: ReactNode;
 }) {
   return (
     <section data-px-role="EVIDENCE_PANEL" style={{ ...L1, minWidth: 0, fontFamily: PX.sans }}>
-      <div style={{ padding: '12px 18px', borderBottom: `1px solid ${PX.line}` }}>
-        <Eyebrow>{label}</Eyebrow>
-      </div>
+      {label && (
+        <div style={{ padding: '12px 18px', borderBottom: `1px solid ${PX.line}` }}>
+          <Eyebrow>{label}</Eyebrow>
+        </div>
+      )}
       <div style={{ padding: '16px 18px', minWidth: 0 }}>{children}</div>
       {provenance && (
         <div style={{ padding: '10px 18px', borderTop: `1px solid ${PX.line}`, background: PX.l2, color: PX.ink3, minWidth: 0 }}>
@@ -230,7 +234,8 @@ export function ActionGroup({
 export function Disclosure({
   label, children,
 }: {
-  label: string;
+  /** Omit when the content already carries its own visible heading. */
+  label?: string;
   children: ReactNode;
 }) {
   return (
@@ -242,7 +247,7 @@ export function Disclosure({
         border: `1px solid ${PX.line}`, borderRadius: PX.rInner,
       }}
     >
-      <Eyebrow>{label}</Eyebrow>
+      {label && <Eyebrow>{label}</Eyebrow>}
       <div style={{ minWidth: 0, color: PX.ink3 }}>{children}</div>
     </section>
   );

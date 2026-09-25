@@ -17,13 +17,23 @@
  *
  * The preservation blocks are the important ones. "Privacy Boundary preserved,
  * never regressed" and "WP-047 access-denied unchanged" are proven by comparing
- * the current files against the WP-140 baseline commit itself, so preservation
- * is demonstrated rather than asserted.
+ * the current files against PINNED SHA-256 DIGESTS of the WP-140 baseline
+ * commit, so preservation is demonstrated rather than asserted.
+ *
+ * WHY DIGESTS AND NOT `git show <baseline>:<path>`: CI #329 proved that reading
+ * git history here is not portable. `actions/checkout@v4` clones at depth 1, so
+ * the baseline commit object does not exist in the runner's object store and
+ * every such assertion errored — green locally, broken in CI. The digests below
+ * were computed from that commit's real content and are pinned as literals, the
+ * same pinned-baseline idiom the WP-125 suite already uses for its IA baseline.
+ * The protection is unchanged in strength: any edit to a protected file changes
+ * its digest and fails the assertion. If a protected file must ever legitimately
+ * change, its digest must be updated here deliberately, which is visible in
+ * review — which is the point.
  */
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import {
@@ -38,10 +48,25 @@ const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf-8');
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 
-/** The commit this package branched from — the preservation baseline. */
+/**
+ * The commit this package branched from — the preservation baseline — and the
+ * SHA-256 of each protected file AT that commit. Pinned literals, never read
+ * from git history: see the header note on CI #329.
+ */
 const BASELINE = 'ac91cfa31e0bcad85071d467c9a5611a4668c29b';
-const atBaseline = (rel: string) =>
-  execFileSync('git', ['show', `${BASELINE}:${rel}`], { cwd: ROOT, encoding: 'utf-8', maxBuffer: 8 << 20 });
+const BASELINE_DIGEST: Record<string, string> = {
+  'components/privacy/PrivacyBoundaryNotice.tsx': '834aa787910abeb2f0fd1607078b147f0a52dc081c20af44e38f9e4c4faed48c',
+  'components/ui/EmptyState.tsx':                 '8a3597612a31eb6de9e86afa17c404fe5d8a4966ed32f1041c78d95f6de429b0',
+  'components/privacy/AccessDeniedState.tsx':     'd1161aceee89d0eb2c4d610d82b224ce33f3f885805f4f0ddeec83a779030143',
+  'lib/design/kora-design-tokens.ts':             '6d8bcc750a0daa96155ec49ff1031022c6a16c955b214511f1554744caab9430',
+};
+
+/** Asserts a file is byte-identical to its state at BASELINE. */
+function expectUnchangedSinceBaseline(rel: string): void {
+  const expected = BASELINE_DIGEST[rel];
+  expect(expected, `no pinned baseline digest for ${rel}`).toBeDefined();
+  expect(sha(read(rel)), `${rel} changed since ${BASELINE.slice(0, 7)}`).toBe(expected);
+}
 
 const GRAMMAR = 'lib/design/surface-state-grammar.ts';
 const ROLES   = 'components/ui/px/roles.tsx';
@@ -274,7 +299,7 @@ describe('KORA-WP-140 — the Privacy Boundary is preserved, not rebuilt', () =>
   const PBN = 'components/privacy/PrivacyBoundaryNotice.tsx';
 
   it('the reference implementation is byte-identical to the baseline', () => {
-    expect(sha(read(PBN))).toBe(sha(atBaseline(PBN)));
+    expectUnchangedSinceBaseline(PBN);
   });
 
   it('the canonical SUPPRESSED state delegates to it rather than re-implementing it', () => {
@@ -308,7 +333,7 @@ describe('KORA-WP-140 — the WP-047 accessibility lock is honoured, not superse
   const EMPTY = 'components/ui/EmptyState.tsx';
 
   it('EmptyState is byte-identical to the baseline', () => {
-    expect(sha(read(EMPTY)), 'EmptyState was modified — the WP-047 lock forbids it').toBe(sha(atBaseline(EMPTY)));
+    expectUnchangedSinceBaseline(EMPTY);
   });
 
   it('the exact asserted access-denied behaviour is still present', () => {
@@ -316,8 +341,7 @@ describe('KORA-WP-140 — the WP-047 accessibility lock is honoured, not superse
   });
 
   it('AccessDeniedState is untouched — access denial is legitimately an alert', () => {
-    const AD = 'components/privacy/AccessDeniedState.tsx';
-    expect(sha(read(AD))).toBe(sha(atBaseline(AD)));
+    expectUnchangedSinceBaseline('components/privacy/AccessDeniedState.tsx');
   });
 
   it('no WP-140 component routes suppression through the access-denied path', () => {
@@ -361,6 +385,28 @@ describe('KORA-WP-140 — the /company/reports demonstrator consumes the grammar
     expect(src()).toContain('<NotYetAvailable expected="KORA Contribution live');
   });
 
+  // CI #329 / populated visual evidence: the first adoption left a pre-existing
+  // SectionLabel sitting directly above a role surface that carried its own
+  // visible label, so six blocks announced themselves twice. One visible
+  // heading per conceptual block — the role identity is structural, and a role
+  // never has to print its own name to prove it exists.
+  it('no conceptual block carries two visible headings', () => {
+    expect(src(), 'a SectionLabel above a self-labelling role duplicates the heading')
+      .not.toContain('<SectionLabel');
+  });
+
+  it('a role may omit its visible label when its content already has a heading', () => {
+    const roles = read(ROLES);
+    for (const r of ['EvidencePanel', 'Disclosure']) {
+      const block = roles.slice(roles.indexOf(`export function ${r}(`));
+      expect(block.slice(0, 400), `${r} must allow an unlabelled use`).toMatch(/label\?: string/);
+    }
+    // and the demonstrator actually uses that affordance where the child self-titles
+    expect(src()).toMatch(/<EvidencePanel>\s*\n\s*<ActivationSafeguardPanel/);
+    expect(src()).toMatch(/<EvidencePanel>\s*\n\s*<NormativeMappingLightSection/);
+    expect(src()).toMatch(/<Disclosure>\s*\n\s*<PrivacyBoundaryNote/);
+  });
+
   it('the safeguard states a semantic claim; a CLEAR safeguard cannot be a danger', () => {
     expect(src()).toContain('assessment={safeguardAssessment(output.safeguard_status)}');
     const fn = src().slice(src().indexOf('function safeguardAssessment'), src().indexOf('// C-09: Decision Pack live'));
@@ -396,8 +442,7 @@ describe('KORA-WP-140 — the /company/reports demonstrator consumes the grammar
 
 describe('KORA-WP-140 — stays inside its scope', () => {
   it('does not touch the shared token file — the WP-139 collision surface stays clear', () => {
-    const TOK = 'lib/design/kora-design-tokens.ts';
-    expect(sha(read(TOK)), 'WP-140 must not edit the shared token file').toBe(sha(atBaseline(TOK)));
+    expectUnchangedSinceBaseline('lib/design/kora-design-tokens.ts');
   });
 
   it('does not migrate typography: the demonstrator keeps its baseline type values', () => {

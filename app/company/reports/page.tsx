@@ -25,7 +25,6 @@ import { NormativeMappingLightSection } from '@/components/reports/NormativeMapp
 import { getNormativeMappingLight }     from '@/lib/normative-mapping/normative-mapping-light';
 import { PageMasthead }            from '@/components/ui/PageMasthead';
 import { DecisionContext }         from '@/components/ui/DecisionContext';
-import { SectionLabel }            from '@/components/ui/SectionLabel';
 import { ProvenanceFooter }        from '@/components/company/cockpit/ProvenanceFooter';
 import {
   HeroJudgment, PrimaryMetric, SupportingMetric, EvidencePanel, WarningSafeguard,
@@ -169,8 +168,7 @@ export default function Reports() {
       </HeroJudgment>
 
       {/* ── Scomposizione — EVIDENCE, non un secondo hero ───────────────────── */}
-      <SectionLabel>KORA Index™ — Scomposizione 10 componenti</SectionLabel>
-      <EvidencePanel label="Scomposizione dei 10 componenti">
+      <EvidencePanel label="KORA Index™ — Scomposizione 10 componenti">
         <div className="space-y-6">
           <KoraIndexHero output={output} />
           <ComponentBreakdown components={output.components} />
@@ -178,13 +176,11 @@ export default function Reports() {
       </EvidencePanel>
 
       {/* ── Activation Safeguard — il dettaglio SPIEGA, non allarma due volte ─ */}
-      <SectionLabel>Activation Safeguard</SectionLabel>
-      <EvidencePanel label="Activation Safeguard — come è stato determinato">
+      <EvidencePanel>
         <ActivationSafeguardPanel result={safeguard} explanation={undefined} />
       </EvidencePanel>
 
       {/* ── Export & distribuzione — ACTION ─────────────────────────────────── */}
-      <SectionLabel>Export & distribuzione</SectionLabel>
       <ActionGroup
         label="Export & distribuzione"
         note={
@@ -208,7 +204,6 @@ export default function Reports() {
       </ActionGroup>
 
       {/* ── KORA Contribution™ — NOT YET AVAILABLE, non un vuoto ────────────── */}
-      <SectionLabel>KORA Contribution™ — Indicatore Companion</SectionLabel>
       <EvidencePanel label="KORA Contribution™ — indicatore companion, separato dal KORA Index™">
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -228,13 +223,11 @@ export default function Reports() {
       </EvidencePanel>
 
       {/* ── Normative Mapping Light — EVIDENCE ──────────────────────────────── */}
-      <SectionLabel>Normative Mapping Light</SectionLabel>
-      <EvidencePanel label="Normative Mapping Light">
+      <EvidencePanel>
         <NormativeMappingLightSection mapping={getNormativeMappingLight()} />
       </EvidencePanel>
 
       {/* ── Confini metodologici — DISCLOSURE ───────────────────────────────── */}
-      <SectionLabel>Confini metodologici e perimetro informativo</SectionLabel>
       <Disclosure label="Confini metodologici e perimetro informativo">
         <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.ink, marginBottom: 12 }}>
           Decision Pack misura l&apos;organizzazione, non gli individui.
@@ -254,7 +247,7 @@ export default function Reports() {
         </ul>
       </Disclosure>
 
-      <Disclosure label="Perimetro privacy e metodologia">
+      <Disclosure>
         <PrivacyBoundaryNote />
       </Disclosure>
 
