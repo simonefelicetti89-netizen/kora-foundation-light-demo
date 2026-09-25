@@ -17,3 +17,5 @@ export {
   Zero, NoData, InsufficientData, Suppressed, NotYetAvailable, Loading, ErrorState,
   SurfaceStateView,
 } from './states';
+// KORA-WP-139 — canonical typographic roles.
+export { Display, Title, Section, Subsection, Body, Secondary, Label, Caption, Meta } from './Text';

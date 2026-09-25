@@ -142,16 +142,15 @@
   --color-env-text:   var(--env-text);
 
   /* ── Typography ─────────────────────────────────────────────────── */
-  /* Plus Jakarta Sans — unico font UI. Jakarta everywhere. */
+  /* KORA-WP-139: Plus Jakarta Sans is the ONE Product UI family. The Fase-0
+     aliases --font-kora-serif and --font-kora-editorial are gone: they existed
+     only to keep unmigrated components compiling while Instrument Serif and
+     Playfair Display were still loaded, and both of those families had zero
+     real consumers when this package measured them. No editorial family
+     survives Wave 1 — none of the nine Benchmark V2 roles asks for a serif. If
+     one is ever defined, it is introduced then, not resurrected from a dead
+     load. */
   --font-kora-sans:     'Plus Jakarta Sans', var(--font-jakarta), system-ui, sans-serif;
-  /* DEPRECATED — Fase 0 flip: --font-kora-serif → alias di --font-kora-sans.
-     Il serif NON è più visibile globalmente. La rimozione esplicita delle classi
-     .font-editorial / .font-kora-serif avviene pagina per pagina nelle Fasi 1–5.
-     Instrument Serif e Playfair Display restano caricati per retrocompatibilità
-     dei componenti non ancora migrati, ma non devono apparire nell'UI. */
-  --font-kora-serif:    var(--font-jakarta), 'Plus Jakarta Sans', system-ui, sans-serif;
-  /* Canonical aliases */
-  --font-kora-editorial: var(--font-kora-sans);
   --font-sans:  'Plus Jakarta Sans', var(--font-jakarta), system-ui, sans-serif;
   --font-mono:  ui-monospace, 'Geist Mono', monospace;
 
@@ -199,16 +198,9 @@ body {
   color: #06032B;
 }
 
-/* ── Ex-serif utility — ora Jakarta display (Fase 0 flip completato) ── */
-.font-editorial {
-  font-family: var(--font-jakarta), 'Plus Jakarta Sans', system-ui, sans-serif;
-}
-/* Titoli ex-serif: Jakarta bold display, non thin 400 */
-.font-kora-serif,
-.font-editorial {
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
+/* KORA-WP-139: the ex-serif utilities `.font-editorial` and `.font-kora-serif`
+   are removed. Both were Fase-0 compatibility shims pointing at Jakarta, and
+   neither had a single consumer left in app/ or components/. */
 
 /* ── Trademark superscript utility ──────────────────────────────────── */
 .tm-mark {
@@ -549,4 +541,35 @@ input[type='date']::-webkit-calendar-picker-indicator { opacity: 0; cursor: poin
 @media (max-width: 900px) {
   .px-col-3, .px-col-4, .px-col-5, .px-col-6,
   .px-col-7, .px-col-8, .px-col-9 { grid-column: span 12; }
+}
+
+/* ── KORA-WP-139 — canonical type scale ──────────────────────────────────────
+   Nine semantic roles. The NUMBERS here are not an independent decision: they
+   are the same values as TYPE in lib/design/kora-design-tokens.ts, and a test
+   parses this block and asserts they match, so the two cannot drift.
+
+   These classes exist for one reason an inline style cannot serve: `display`,
+   `title` and `section` need a mobile variant, and a media query cannot live in
+   a style object. The other six roles are single-value and are here only so a
+   caller can reach every role the same way.
+
+   `body` deliberately has NO mobile variant. Shrinking sustained reading text
+   on the smaller screen is the opposite of the point. */
+.kt-display    { font-family: var(--font-kora-sans); font-size: 60px; line-height: 0.95; font-weight: 800; letter-spacing: -0.045em; }
+.kt-title      { font-family: var(--font-kora-sans); font-size: 32px; line-height: 1.10; font-weight: 700; letter-spacing: -0.030em; }
+.kt-section    { font-family: var(--font-kora-sans); font-size: 20px; line-height: 1.25; font-weight: 700; letter-spacing: -0.022em; }
+.kt-subsection { font-family: var(--font-kora-sans); font-size: 16px; line-height: 1.30; font-weight: 700; letter-spacing: -0.018em; }
+.kt-body       { font-family: var(--font-kora-sans); font-size: 15px; line-height: 1.60; font-weight: 400; letter-spacing: -0.005em; }
+.kt-secondary  { font-family: var(--font-kora-sans); font-size: 14px; line-height: 1.50; font-weight: 400; letter-spacing: 0; }
+.kt-label      { font-family: var(--font-kora-sans); font-size: 13px; line-height: 1.40; font-weight: 600; letter-spacing: 0.005em; }
+.kt-caption    { font-family: var(--font-kora-sans); font-size: 12px; line-height: 1.45; font-weight: 500; letter-spacing: 0.010em; }
+.kt-meta       { font-family: var(--font-kora-sans); font-size: 11px; line-height: 1.35; font-weight: 700; letter-spacing: 0.070em; text-transform: uppercase; }
+
+/* Tabular numerals, for any figure a reader compares down a column. */
+.kt-num { font-variant-numeric: tabular-nums; }
+
+@media (max-width: 767px) {
+  .kt-display { font-size: 42px; }
+  .kt-title   { font-size: 26px; }
+  .kt-section { font-size: 18px; }
 }

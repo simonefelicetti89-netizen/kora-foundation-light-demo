@@ -20,7 +20,7 @@ export function DiagnosticsTabNav() {
     <div className="border-b border-[rgba(6,3,43,0.08)] bg-kora-paper">
       <div className="flex items-center gap-2 px-6 pt-3 pb-1">
         <span className="text-[11px] font-semibold text-[rgba(6,3,43,0.60)]"
-          style={{ fontFamily: 'var(--font-hanken, sans-serif)' }}>
+         >
           Diagnostics
         </span>
         <span className="text-[10px] font-mono text-[rgba(6,3,43,0.30)] bg-[rgba(6,3,43,0.05)] px-1.5 py-0.5 rounded">
@@ -28,7 +28,7 @@ export function DiagnosticsTabNav() {
         </span>
       </div>
 
-      <div className="flex overflow-x-auto gap-0 px-6" style={{ fontFamily: 'var(--font-hanken, sans-serif)' }}>
+      <div className="flex overflow-x-auto gap-0 px-6">
         {TABS.map(({ label, slug }) => {
           const href     = `${BASE}/${slug}`;
           const isActive = pathname === href || pathname.startsWith(href + '/');

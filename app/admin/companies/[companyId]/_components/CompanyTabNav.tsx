@@ -48,14 +48,14 @@ export function CompanyTabNav({ companyId, companyName }: Props) {
         </Link>
         <span className="text-[rgba(6,3,43,0.20)]">/</span>
         <span className="text-[11px] font-semibold text-[rgba(6,3,43,0.78)]"
-          style={{ fontFamily: 'var(--font-hanken, sans-serif)' }}>
+         >
           {companyName}
         </span>
         <span className="font-mono text-[10px] text-[rgba(6,3,43,0.35)] ml-1">{companyId}</span>
       </div>
 
       {/* Tab row */}
-      <div className="flex overflow-x-auto gap-0 px-6" style={{ fontFamily: 'var(--font-hanken, sans-serif)' }}>
+      <div className="flex overflow-x-auto gap-0 px-6">
         {TABS.map(({ label, slug }) => {
           const href    = `/admin/companies/${companyId}/${slug}`;
           const isActive = pathname === href || pathname.startsWith(href + '/');

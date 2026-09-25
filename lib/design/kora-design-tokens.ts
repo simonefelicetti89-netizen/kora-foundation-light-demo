@@ -467,3 +467,84 @@ export const PX_TONE = {
 } as const;
 
 export type PxTone = keyof typeof PX_TONE;
+
+// ── KORA-WP-139 — the canonical type scale ───────────────────────────────────
+//
+// Nine semantic roles, nine steps, no tenth. The values are transcribed from
+// docs/BENCHMARK_V2_CANONICAL_GRAMMAR.md §5, the Founder-ratified artifact — not
+// from the WP-124 prototype, whose lower register sat 1–3px below the Benchmark
+// V2 bar and is superseded for type (it remains normative for COLOUR, which is
+// why the PX block above is untouched).
+//
+// THIS IS THE ONLY NUMERIC AUTHORITY. The `.kt-*` classes in app/globals.css
+// exist so the three roles that need a mobile variant can have one — inline
+// styles cannot carry a media query — and a test asserts those classes match
+// these numbers exactly, so the two cannot drift.
+//
+// WHY A ROLE AND NOT A SIZE: a caller that asks for "13px" has made a visual
+// decision with no meaning attached, which is how 2,601 inline decisions
+// accumulated. A caller that asks for `label` has stated what the text IS, and
+// the size follows.
+
+/** Absolute floor. No canonical Product text renders below this. */
+export const TYPE_FLOOR_PX = 11;
+/** Floor for anything read in sequence. 11px is for `meta` alone. */
+export const TYPE_READING_FLOOR_PX = 12;
+
+export const TYPE_ROLES = [
+  'display', 'title', 'section', 'subsection',
+  'body', 'secondary', 'label', 'caption', 'meta',
+] as const;
+
+export type TypeRole = (typeof TYPE_ROLES)[number];
+
+export interface TypeStep {
+  /** Desktop size in px. */
+  readonly size: number;
+  /** Mobile size, only where a role genuinely overflows a 375px viewport. */
+  readonly mobile?: number;
+  readonly lineHeight: number;
+  /** Default weight. The range the role may use is documented in `weights`. */
+  readonly weight: number;
+  readonly weights: readonly number[];
+  readonly tracking: string;
+  readonly uppercase?: true;
+  /** What the role is for — the reason a caller picks it. */
+  readonly use: string;
+}
+
+export const TYPE: Record<TypeRole, TypeStep> = {
+  display:    { size: 60, mobile: 42, lineHeight: 0.95, weight: 800, weights: [800],           tracking: '-0.045em', use: 'one analytical statement per surface — never a heading' },
+  title:      { size: 32, mobile: 26, lineHeight: 1.10, weight: 700, weights: [700],           tracking: '-0.030em', use: 'the page or surface title' },
+  section:    { size: 20, mobile: 18, lineHeight: 1.25, weight: 700, weights: [700],           tracking: '-0.022em', use: 'a major division of a surface' },
+  subsection: { size: 16,             lineHeight: 1.30, weight: 700, weights: [700],           tracking: '-0.018em', use: 'a division inside a section' },
+  body:       { size: 15,             lineHeight: 1.60, weight: 400, weights: [400, 500],      tracking: '-0.005em', use: 'sustained reading — never shrinks on mobile' },
+  secondary:  { size: 14,             lineHeight: 1.50, weight: 400, weights: [400, 500, 600], tracking: '0',        use: 'supporting prose that qualifies body text' },
+  label:      { size: 13,             lineHeight: 1.40, weight: 600, weights: [600, 700],      tracking: '0.005em',  use: 'a control or field label' },
+  caption:    { size: 12,             lineHeight: 1.45, weight: 500, weights: [500, 600],      tracking: '0.010em',  use: 'the reading floor — footnotes, hints, table text' },
+  meta:       { size: 11,             lineHeight: 1.35, weight: 700, weights: [700],           tracking: '0.070em',  uppercase: true, use: 'eyebrows, provenance stamps, micro-labels — the ONLY role at the floor' },
+};
+
+/** The one Product UI family. No editorial family survives Wave 1. */
+export const TYPE_FAMILY = "'Plus Jakarta Sans', var(--font-jakarta), system-ui, sans-serif";
+
+/**
+ * Inline style for a role. Use the `.kt-*` class instead when the role has a
+ * mobile variant (`display`, `title`, `section`) — this returns the desktop
+ * value only, because an inline style cannot express a breakpoint.
+ */
+export function typeStyle(
+  role: TypeRole,
+  opts: { weight?: number; tabular?: boolean } = {},
+): React.CSSProperties {
+  const t = TYPE[role];
+  return {
+    fontFamily:    TYPE_FAMILY,
+    fontSize:      t.size,
+    lineHeight:    t.lineHeight,
+    fontWeight:    opts.weight ?? t.weight,
+    letterSpacing: t.tracking,
+    ...(t.uppercase ? { textTransform: 'uppercase' as const } : null),
+    ...(opts.tabular ? { fontVariantNumeric: 'tabular-nums' as const } : null),
+  };
+}

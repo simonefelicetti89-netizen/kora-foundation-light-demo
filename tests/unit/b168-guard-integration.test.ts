@@ -213,8 +213,16 @@ describe('B168 — PrivilegedAccessBanner', () => {
     expect(banner).toContain('z-50');
   });
 
-  it('usa font Hanken Grotesk via CSS variable', () => {
-    expect(banner).toContain('--font-hanken');
+  // SUPERSEDED by KORA-WP-139 (2026-09-25). Hanken Grotesk was removed: it was
+  // the last consumer of a second UI family, and the Benchmark V2 family plan
+  // ratifies exactly one Product UI family. The assertion's real intent was that
+  // this banner stays TYPOGRAPHICALLY DISTINCT so privileged access reads as
+  // privileged. That intent is preserved and is now structural: the label
+  // carries the canonical `meta` role — uppercase, tracked, weight 700 — which
+  // is what the bespoke family was standing in for.
+  it('il label mantiene una distinzione tipografica strutturale (ruolo meta)', () => {
+    expect(banner).not.toContain('--font-hanken');
+    expect(banner).toContain('kt-meta');
   });
 
   it('copre tutte e tre le varianti amber/navy/blueprint', () => {

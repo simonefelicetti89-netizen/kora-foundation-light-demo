@@ -2,7 +2,16 @@
 
 // components/auth/PrivilegedAccessBanner.tsx
 // B168 Phase 5 — Banner persistente per accesso privilegiato KORA service team.
-// Sticky top, non dismissibile. Font: Hanken Grotesk 14px weight 500.
+// Sticky top, non dismissibile.
+//
+// KORA-WP-139: Hanken Grotesk is gone — it was the last consumer of a second UI
+// family. It was partly a SIGNALLING device here, so the signal was moved onto
+// structure rather than dropped: the label now carries the canonical `meta`
+// role (uppercase, tracked, weight 700 — the eyebrow role), and the subtext the
+// `caption` role. Prominence is unchanged or stronger, and every non-typographic
+// signal this banner already had is untouched: role="alert", aria-live, sticky
+// placement, the pulsing dot, and the per-variant colour. Colour was never the
+// only signal here and still is not.
 //
 // Varianti:
 //   amber     → Foundation Light demo (dati sintetici)
@@ -59,7 +68,6 @@ export function PrivilegedAccessBanner({ variant }: Props) {
       role="alert"
       aria-live="polite"
       className={`sticky top-0 z-50 w-full border-b px-4 py-2 ${cfg.bg} ${cfg.border} ${cfg.text}`}
-      style={{ fontFamily: 'var(--font-hanken, sans-serif)' }}
     >
       <div className="mx-auto flex max-w-7xl items-center gap-2.5">
         {/* Pulsing dot */}
@@ -68,14 +76,14 @@ export function PrivilegedAccessBanner({ variant }: Props) {
           <span className={`relative inline-flex h-2 w-2 rounded-full ${cfg.dot}`} />
         </span>
 
-        <span className="text-[14px] font-[500] leading-none tracking-wide">
+        <span className="kt-meta">
           {cfg.label}
         </span>
 
         {cfg.subtext && (
           <>
             <span className="opacity-40">·</span>
-            <span className="text-[13px] font-[400] opacity-70">
+            <span className="kt-caption opacity-70">
               {cfg.subtext}
             </span>
           </>

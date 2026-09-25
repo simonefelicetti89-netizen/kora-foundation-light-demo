@@ -1,43 +1,30 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans, Instrument_Serif, Playfair_Display, Hanken_Grotesk } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { AppShell } from '@/components/layout/AppShell';
 import { getCurrentKoraUser } from '@/lib/auth/kora-session';
 import type { KoraRole } from '@/lib/types';
 
-// Plus Jakarta Sans — primary UI font (closest to General Sans available via Google Fonts)
+// KORA-WP-139 — Plus Jakarta Sans is the ONE Product UI family.
+//
+// Three families were removed here. Instrument Serif and Playfair Display were
+// LOADED AND NEVER USED — their CSS variables appeared in this file and nowhere
+// else in the Product, so every visitor paid for two font downloads that
+// rendered no text. Hanken Grotesk had three real consumers, all migrated.
+//
+// '800' is new: the canonical `display` role is weight 800, and the previous
+// load stopped at 700. It costs nothing on a variable Google source, and 750 —
+// which the WP-124 prototype used — is deliberately NOT requested, because it
+// is not a statically loadable instance.
 const jakartaSans = Plus_Jakarta_Sans({
   variable: '--font-jakarta',
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700', '800'],
   display: 'swap',
 });
 
-// Playfair Display — editorial serif fallback for wide display sizes
-const playfairDisplay = Playfair_Display({
-  variable: '--font-playfair',
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
-  display: 'swap',
-});
 
-// Hanken Grotesk — banner privilegiato KORA service team (PrivilegedAccessBanner)
-const hankenGrotesk = Hanken_Grotesk({
-  variable: '--font-hanken',
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  display: 'swap',
-});
 
-// Instrument Serif — editorial voice for page mastheads and section titles
-const instrumentSerif = Instrument_Serif({
-  variable: '--font-instrument-serif',
-  subsets: ['latin'],
-  weight: '400',
-  style: ['normal', 'italic'],
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   title: 'KORA Foundation Light — Demo',
@@ -56,7 +43,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html
       lang="it"
-      className={`${jakartaSans.variable} ${instrumentSerif.variable} ${playfairDisplay.variable} ${hankenGrotesk.variable} h-full antialiased`}
+      className={`${jakartaSans.variable} h-full antialiased`}
     >
       <body className="h-full">
         <AppShell initialRole={initialRole}>{children}</AppShell>
