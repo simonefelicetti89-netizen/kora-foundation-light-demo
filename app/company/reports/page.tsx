@@ -131,8 +131,10 @@ export default function Reports() {
               </p>
             </PrimaryMetric>
 
+            {/* `title`, not `display`: a Supporting Metric qualifies the primary and
+                must never compete with it. Both at 60px read as two headlines. */}
             <SupportingMetric label="Confidence Score" footnote={<span style={{ ...typeStyle('caption'), color: TOKENS.inkHint }}>indicatore esterno · peso 0</span>}>
-              <p style={{ ...typeStyle('display', { tabular: true }), color: TOKENS.accent }}>
+              <p style={{ ...typeStyle('title', { tabular: true }), color: TOKENS.accent }}>
                 {(output.confidence_score * 100).toFixed(0)}%
               </p>
             </SupportingMetric>
