@@ -517,7 +517,7 @@ export function Sidebar() {
                   aria-expanded={isExpanded}
                 >
                   <p
-                    className="px-nav-group-label text-[10px] font-extrabold uppercase tracking-[0.12em] flex-1"
+                    className="px-nav-group-label text-[12px] font-extrabold uppercase tracking-[0.12em] flex-1"
                     style={{ color: 'var(--px-nav-group-label)', fontFamily: PX.sans }}
                   >
                     {group.heading}
@@ -528,7 +528,7 @@ export function Sidebar() {
                       style={{
                         borderRadius: 4,
                         padding:      '1px 5px',
-                        fontSize:     '7.5px',
+                        fontSize: '11px',
                         fontWeight:   700,
                         letterSpacing: '0.08em',
                         textTransform: 'uppercase',
@@ -539,14 +539,14 @@ export function Sidebar() {
                       {group.groupBadge}
                     </span>
                   )}
-                  <span className="px-nav-caret" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '8px', marginLeft: 2 }}>
+                  <span className="px-nav-caret" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '12px', marginLeft: 2 }}>
                     {isExpanded ? '▾' : '▸'}
                   </span>
                 </button>
               ) : (
                 <div className="flex items-center gap-1.5 px-3 pb-1.5">
                   <p
-                    className="px-nav-group-label text-[10px] font-extrabold uppercase tracking-[0.12em]"
+                    className="px-nav-group-label text-[12px] font-extrabold uppercase tracking-[0.12em]"
                     style={{ color: 'var(--px-nav-group-label)', fontFamily: PX.sans }}
                   >
                     {group.heading}
@@ -557,7 +557,7 @@ export function Sidebar() {
                       style={{
                         borderRadius: 4,
                         padding:      '1px 5px',
-                        fontSize:     '7.5px',
+                        fontSize: '11px',
                         fontWeight:   700,
                         letterSpacing: '0.08em',
                         textTransform: 'uppercase',
@@ -637,7 +637,7 @@ export function Sidebar() {
                         {item.label}
                       </span>
                       {item.description && (
-                        <span className="px-nav-desc" style={{ display: 'block', fontSize: '10px', color: 'rgba(255,255,255,0.52)', fontWeight: 500, marginTop: 1, whiteSpace: 'normal', lineHeight: 1.25, fontFamily: PX.sans }}>
+                        <span className="px-nav-desc" style={{ display: 'block', fontSize: '12px', color: 'rgba(255,255,255,0.52)', fontWeight: 500, marginTop: 1, whiteSpace: 'normal', lineHeight: 1.25, fontFamily: PX.sans }}>
                           {item.description}
                         </span>
                       )}
@@ -648,7 +648,7 @@ export function Sidebar() {
                           style={{
                             borderRadius: 4,
                             padding:      '1px 5px',
-                            fontSize:     '8px',
+                            fontSize: '12px',
                             fontWeight:   700,
                             fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
                             background:   'rgba(199,111,61,0.22)',
@@ -664,7 +664,7 @@ export function Sidebar() {
                           style={{
                             borderRadius: 4,
                             padding:      '1px 5px',
-                            fontSize:     '8px',
+                            fontSize: '12px',
                             fontWeight:   600,
                             fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
                             background:   'rgba(255,255,255,0.07)',
@@ -679,7 +679,7 @@ export function Sidebar() {
                           style={{
                             borderRadius: 4,
                             padding:      '1px 5px',
-                            fontSize:     '8px',
+                            fontSize: '12px',
                             fontWeight:   600,
                             fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
                             background:   'rgba(199,111,61,0.14)',
@@ -762,7 +762,7 @@ export function Sidebar() {
           >
             {/* Avatar initials */}
             <div
-              className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold"
+              className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold"
               aria-hidden="true"
               style={{
                 background:  'rgba(199,111,61,0.20)',
@@ -775,7 +775,7 @@ export function Sidebar() {
             </div>
             <div className="px-nav-label flex-1 min-w-0">
               <p
-                className="text-[10.5px] font-semibold leading-tight truncate"
+                className="text-[12px] font-semibold leading-tight truncate"
                 style={{ color: 'rgba(255,255,255,0.88)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
               >
                 {roleLabel}

@@ -121,7 +121,7 @@ export function AccountMenu() {
             borderRadius:   999,
             background:     badge.bg,
             border:         `1px solid ${badge.border}`,
-            fontSize:       9,
+            fontSize: 11,
             fontWeight:     800,
             color:          badge.color,
             letterSpacing:  '0.05em',
@@ -181,7 +181,7 @@ export function AccountMenu() {
             <span
               data-testid="account-menu-role-badge"
               style={{
-                fontSize:      9,
+                fontSize: 11,
                 fontWeight:    700,
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',

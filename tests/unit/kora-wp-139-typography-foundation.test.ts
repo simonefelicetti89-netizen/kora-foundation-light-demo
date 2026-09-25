@@ -310,6 +310,28 @@ describe('KORA-WP-139 — no canonical text below the floor on the migrated surf
   });
 });
 
+describe('KORA-WP-139 — the shared authenticated chrome is above the floor too', () => {
+  // FOUND BY THE ADVISOR VISUAL EVIDENCE, not by the closure walk above, and the
+  // gap is worth stating: AppShell, Sidebar, Header and AccountMenu render on
+  // BOTH demonstrators but are mounted by the LAYOUT, so they appear in neither
+  // page's import closure. A static closure measure therefore reported zero
+  // while the browser was rendering 22 sub-floor nodes on /company/reports and
+  // 6 on the Advisor surface — navigation descriptions at 10px, group labels at
+  // 10px, `preview` badges at 8px, avatar initials at 9px.
+  //
+  // The floor is a property of the RENDERED surface, so the chrome is in scope.
+  const CHROME = [
+    'components/layout/Sidebar.tsx',
+    'components/layout/Header.tsx',
+    'components/layout/AppShell.tsx',
+    'components/auth/AccountMenu.tsx',
+  ];
+
+  it('no shared chrome component renders text below the floor', () => {
+    expect(subFloor(CHROME.filter((f) => existsSync(join(ROOT, f))))).toEqual([]);
+  });
+});
+
 describe('KORA-WP-139 — the demonstrator migration is real', () => {
   it('/company/reports states roles, not sizes', () => {
     const s = read(REPORTS);
