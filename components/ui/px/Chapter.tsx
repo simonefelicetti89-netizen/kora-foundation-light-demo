@@ -22,7 +22,7 @@ import { PX } from '@/lib/design/kora-design-tokens';
 import type { Tier } from '@/lib/design/page-archetypes';
 
 export function Chapter({
-  id, label, tier, aside, mobileOrder, collapsible, children,
+  id, label, tier, aside, mobileOrder, index, band, collapsible, children,
 }: {
   /** Anchor target. A chapter without an id cannot be linked to or tested. */
   id: string;
@@ -34,17 +34,39 @@ export function Chapter({
   /** Position in the MOBILE reading order. Inert above 767px. */
   mobileOrder?: number;
   /**
-   * Progressive disclosure. Only legitimate for T4 operational detail: it uses
-   * a real <details>, so the content stays in the DOM, stays findable and stays
-   * reachable by assistive technology. It is NOT a way to shorten a page by
-   * hiding required evidence — a mandatory disclosure must never be collapsed.
+   * Chapter number. A reader should be able to tell WHERE THEY ARE without
+   * counting rules — the number plus a section-scale title is what makes a
+   * chapter change perceptible rather than merely present.
+   */
+  index?: number;
+  /**
+   * Tonal band. Alternating chapters sit on a different ground, so the change
+   * is felt in composition rather than read from a label. This is rhythm, not
+   * decoration: it uses the existing KORA ground tokens and invents no new
+   * visual language.
+   */
+  band?: boolean;
+  /**
+   * Progressive disclosure, legitimate for T3-T5. It uses a real <details>, so
+   * the content stays in the DOM, stays findable and stays reachable by
+   * assistive technology — nothing disappears permanently.
+   *
+   * THE INVARIANT IS NOT THE TIER, IT IS THE LABEL: the mandatory KORA Index
+   * disclosures — the index value, Confidence Score, Activation Safeguard,
+   * calibration_status and methodology_version_id — live in the always-open
+   * judgment and the provenance footer, never behind a toggle. T1 and T2 are
+   * never collapsible, because a judgment the reader has to open is not a
+   * judgment.
    */
   collapsible?: boolean;
   children: ReactNode;
 }) {
   const head = (
     <>
-      <h2 id={`${id}-label`} className="kt-meta" style={{ margin: 0, flex: '1 1 auto', color: PX.ink3 }}>
+      {index !== undefined && (
+        <span aria-hidden="true" className="kora-chapter-num kt-meta">{String(index).padStart(2, '0')}</span>
+      )}
+      <h2 id={`${id}-label`} className="kt-section" style={{ margin: 0, flex: '1 1 auto', color: PX.ink }}>
         {label}
       </h2>
       {aside && <div style={{ flex: '0 0 auto', minWidth: 0 }}>{aside}</div>}
@@ -54,7 +76,13 @@ export function Chapter({
     id,
     'data-kora-chapter': id,
     'data-tier': tier,
-    className: 'kora-chapter',
+    // Every chapter is a band. That is what actually groups its contents into
+    // ONE surface instead of leaking each child out as another top-level
+    // rectangle — which is the card monoculture this package exists to end.
+    // Rhythm comes from alternating the GROUND, not from some chapters having
+    // one and others not.
+    className: 'kora-chapter kora-chapter-band',
+    'data-band': band ?? ((index ?? 0) % 2 === 0) ? 'b' : 'a',
     ...(mobileOrder === undefined ? null : {
       'data-mobile-order': mobileOrder,
       style: { ['--kora-mobile-order' as string]: String(mobileOrder) } as React.CSSProperties,

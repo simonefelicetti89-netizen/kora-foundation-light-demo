@@ -224,7 +224,9 @@ describe('KORA-WP-141 — /company/kora-index is recomposed', () => {
       if (!tag.includes('collapsible')) continue;
       const tier = /tier="(T[1-5])"/.exec(tag)?.[1];
       const id = /id="([a-z-]+)"/.exec(tag)?.[1];
-      expect(tier, `${id} is collapsed but is not T4`).toBe('T4');
+      // T3-T5 may be progressively disclosed; T1 and T2 never — a judgment the
+      // reader has to open is not a judgment.
+      expect(['T3', 'T4', 'T5'], `${id} is collapsed but is ${tier}`).toContain(tier);
     }
     // the mandatory KORA Index disclosures stay outside any collapsed chapter
     for (const mandatory of ['<ComponentBreakdown ', '<ConfidenceBreakdown ', '<ActivationSafeguardPanel ', '<ProvenanceFooter']) {

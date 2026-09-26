@@ -31,6 +31,7 @@ import { Explainer }       from '@/components/ui/Explainer';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { TM }              from '@/components/ui/TM';
 import { Chapter }         from '@/components/ui/px';
+import { ScoreDrivers }    from '@/components/kora-index/ScoreDrivers';
 
 import { MacroblockCard }           from '@/components/kora-index/MacroblockCard';
 import { KoraIndexBuildCard }       from '@/components/kora-index/KoraIndexBuildCard';
@@ -163,6 +164,19 @@ export default function KoraIndexDetail() {
   );
 
   const macroblocks: MacroblockScore[] = output.macroblocks ?? [];
+
+  // KORA-WP-141 — T2 KEY DRIVERS. Not every component deserves first-level
+  // visibility: the three weakest scored components are what leadership can act
+  // on, and ScoreDrivers already translates them into business language. This
+  // SELECTS and ORDERS existing values; it computes nothing and encodes nothing.
+  const weakComponents = [...output.components]
+    .filter((c) => !c.external && typeof c.value === 'number')
+    .sort((a, b) => a.value - b.value)
+    .slice(0, 3)
+    .map((c) => ({ code: c.code as string, label: c.label }));
+  const macroblockScores: Record<string, number> = Object.fromEntries(
+    macroblocks.map((mb) => [mb.code as string, mb.score]),
+  );
 
   // B143: COMPANY_VIEWER rimosso. Se koraRole è null la sessione è in errore — non assumere alcun ruolo.
   if (!koraRole) {
@@ -312,34 +326,19 @@ export default function KoraIndexDetail() {
   return (
     <div className="kora-priority-stack" style={{ maxWidth: 1120 }} data-testid="company-kora-index-page">
 
-      {/* ── Page header ── */}
-      <div style={{ marginBottom: 24 }}>
-        <p style={{
-          fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontWeight:    600,
-          fontSize:      '10px',
-          letterSpacing: '0.10em',
-          textTransform: 'uppercase',
-          color:         TOKENS.accent,
-          marginBottom:  8,
-        }}>
-          <TM>KORA Index</TM> v1.0 · Intelligence analitica
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <h1 style={{
-            fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontSize:      'clamp(1.75rem, 3vw, 2.25rem)',
-            fontWeight:    400,
-            color:         TOKENS.ink,
-            letterSpacing: '-0.02em',
-            lineHeight:    1.08,
-          }}>
-            {liveCompanyName ?? 'La tua organizzazione'}
-          </h1>
-          <BoundaryBadge mode="LIVE" variant="light" />
-        </div>
+      {/* KORA-WP-141 — the masthead is ONE line, not a three-line block. The
+          company name and the LIVE boundary sit beside the eyebrow instead of
+          below it: the judgment is what this surface is for, and every row above
+          it is a row of scrolling before the reader learns anything. */}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <span className="kt-meta" style={{ color: TOKENS.accent }}>
+          <TM>KORA Index</TM> v1.0
+        </span>
+        <h1 className="kt-title" style={{ margin: 0, color: TOKENS.ink, minWidth: 0 }}>
+          {liveCompanyName ?? 'La tua organizzazione'}
+        </h1>
+        <BoundaryBadge mode="LIVE" variant="light" />
       </div>
-
 
       {/* T1 — the judgment. It leads, because it is what the surface answers. */}
       <HeroDiagnosis
@@ -352,16 +351,46 @@ export default function KoraIndexDetail() {
         calibrationStatus={output.calibration_status}
       />
 
-      {/* T2 — the reading: why that judgment holds. */}
-      <ExecutiveIntelligencePanel
-        summary={executiveIntelligence}
-        companyName={liveCompanyName ?? null}
-        reportingPeriod={output.reporting_period}
-      />
-      {/* Board actions moved into the single Raccomandazioni chapter below. */}
+      {/* T2 — the reading and the drivers, side by side.
+          ASYMMETRIC, DELIBERATELY: the narrative is the wider column because it
+          is prose; the three drivers are the narrower one because they are a
+          list. Putting them beside each other rather than stacked is what lets
+          the first viewport carry judgment, safeguard, confidence, drivers AND
+          direction at once — which is the whole point of the contract. */}
+      <div className="kora-exec-split">
+        <div style={{ minWidth: 0 }}>
+          <ExecutiveIntelligencePanel
+            summary={executiveIntelligence}
+            companyName={liveCompanyName ?? null}
+            reportingPeriod={output.reporting_period}
+          />
+        </div>
+        {weakComponents.length > 0 && (
+          <aside style={{ minWidth: 0 }} aria-label="Driver principali">
+            <ScoreDrivers weakComponents={weakComponents} macroblockScores={macroblockScores} />
+          </aside>
+        )}
+      </div>
       {/* ══ SECTION 3: TECHNICAL BREAKDOWN ══════════════════════════════════ */}
 
-      <Chapter id="scomposizione" label="Scomposizione tecnica — macroblocchi, componenti ed equity" tier="T3" mobileOrder={3}>
+      <Chapter id="raccomandazioni" label="Direzione raccomandata" tier="T2" mobileOrder={2} index={1}>
+        {boardActions.length > 0 && <BoardActions actions={boardActions} />}
+        <RecommendationsPanel btiRecommendations={btiRecommendations} />
+      </Chapter>
+
+      <Chapter id="safeguard" label="Safeguard, confidence e affidabilità delle evidenze" tier="T3" mobileOrder={1} index={2}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+          <Explainer {...EXP.safeguard} compact />
+          <Explainer {...EXP.cs} compact />
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2 mt-4">
+          <ActivationSafeguardPanel result={safeguard} explanation={undefined} />
+          <ConfidenceBreakdown record={confidence} />
+        </div>
+
+      </Chapter>
+
+      <Chapter id="scomposizione" label="Scomposizione tecnica — macroblocchi, componenti ed equity" tier="T3" mobileOrder={3} index={3} collapsible>
 
       <SectionLabel>4 macroblocchi</SectionLabel>
       <div className="grid gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-4 mt-4">
@@ -380,7 +409,30 @@ export default function KoraIndexDetail() {
 
       </Chapter>
 
-      <Chapter id="intelligence-equity" label="Equity & Access Intelligence™" tier="T4" mobileOrder={12} collapsible>
+      <Chapter id="pipeline" label="Pipeline di costruzione" tier="T4" mobileOrder={4} collapsible index={4}>
+        <div className="mt-4">
+          <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
+        </div>
+      </Chapter>
+
+      <Chapter id="eligibility" label="Eligibility gate" tier="T4" mobileOrder={5} collapsible index={5}>
+        <div style={{ marginBottom: 8 }}>
+          <Explainer {...EXP.eligibility} compact />
+        </div>
+        <div className="mt-4">
+          <EligibilityGatePanel summary={eligibilityGate} />
+        </div>
+      </Chapter>
+
+      <Chapter id="compliance" label="Compliance & blocked" tier="T4" mobileOrder={6} collapsible index={6}>
+        <BlockedByDesignPanel blockedCount={eligibilityGate.blocked_count} blockedNote={eligibilityGate.blocked_note} />
+      </Chapter>
+
+      <Chapter id="explainability" label="Perché le iniziative hanno inciso" tier="T4" mobileOrder={7} collapsible index={7}>
+        <InitiativeExplainabilityPanel period={reportingPeriodForLive} />
+      </Chapter>
+
+      <Chapter id="intelligence-equity" label="Equity & Access Intelligence™" tier="T4" mobileOrder={8} collapsible index={8}>
       {/* Equity & Access Intelligence™ */}
       {equityAccess && (
         <div className="mt-6">
@@ -469,46 +521,7 @@ export default function KoraIndexDetail() {
 
       </Chapter>
 
-      <Chapter id="pipeline" label="Pipeline di costruzione" tier="T4" mobileOrder={5} collapsible>
-        <div className="mt-4">
-          <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
-        </div>
-      </Chapter>
-
-      {/* Eligibility gate */}
-      <Chapter id="eligibility" label="Eligibility gate" tier="T4" mobileOrder={6} collapsible>
-        <div style={{ marginBottom: 8 }}>
-          <Explainer {...EXP.eligibility} compact />
-        </div>
-        <div className="mt-4">
-          <EligibilityGatePanel summary={eligibilityGate} />
-        </div>
-      </Chapter>
-
-      {/* Blocked by design */}
-      <Chapter id="compliance" label="Compliance & blocked" tier="T4" mobileOrder={8} collapsible>
-        <BlockedByDesignPanel blockedCount={eligibilityGate.blocked_count} blockedNote={eligibilityGate.blocked_note} />
-      </Chapter>
-
-      {/* Initiative explainability — per-initiative eligibility and KORA Index contribution */}
-      <Chapter id="explainability" label="Perché le iniziative hanno inciso" tier="T4" mobileOrder={7} collapsible>
-        <InitiativeExplainabilityPanel period={reportingPeriodForLive} />
-      </Chapter>
-
-      {/* Safeguard + Confidence */}
-      <Chapter id="safeguard" label="Safeguard, confidence e affidabilità delle evidenze" tier="T3" mobileOrder={4}>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
-          <Explainer {...EXP.safeguard} compact />
-          <Explainer {...EXP.cs} compact />
-        </div>
-        <div className="grid gap-4 lg:grid-cols-2 mt-4">
-          <ActivationSafeguardPanel result={safeguard} explanation={undefined} />
-          <ConfidenceBreakdown record={confidence} />
-        </div>
-
-      </Chapter>
-
-      <Chapter id="intelligence-evidenza" label="Evidence Reliability Intelligence™" tier="T4" mobileOrder={10} collapsible>
+      <Chapter id="intelligence-evidenza" label="Evidence Reliability Intelligence™" tier="T4" mobileOrder={9} collapsible index={9}>
         {/* Evidence Reliability Intelligence™ */}
         {!evidenceReliability && !liveCtx && evidenceReliabilityIntelligenceService.canAccess(koraRole) && (
           <div
@@ -612,10 +625,7 @@ export default function KoraIndexDetail() {
         )}
       </Chapter>
 
-      {/* T4 — adjacent interpretation layers. Collapsible because none of these
-          is a mandatory KORA Index disclosure: they are interpretation, and each
-          states in its own footer that it does not modify the Index. */}
-      <Chapter id="intelligence-life" label="LIFE Diversity & Care Economy Intelligence™" tier="T4" mobileOrder={11} collapsible>
+      <Chapter id="intelligence-life" label="LIFE Diversity & Care Economy Intelligence™" tier="T4" mobileOrder={10} collapsible index={10}>
       {/* LIFE Diversity + Care Economy Intelligence™ */}
       {lifeSummary && (
         <div style={{ marginTop: 16 }}>
@@ -696,15 +706,7 @@ export default function KoraIndexDetail() {
           recommendations three times and could not tell which was authoritative. */}
       </Chapter>
 
-      <Chapter id="raccomandazioni" label="Raccomandazioni" tier="T2" mobileOrder={2}>
-        {boardActions.length > 0 && <BoardActions actions={boardActions} />}
-        <RecommendationsPanel btiRecommendations={btiRecommendations} />
-      </Chapter>
-
-      {/* T4, not T5: a glossary is reference detail. The actual T5 boundary on
-          this surface is the ProvenanceFooter below plus the calibration and
-          methodology labels carried by HeroDiagnosis — those stay open. */}
-      <Chapter id="metodologia" label="Glossario metodologico" tier="T4" mobileOrder={9} collapsible>
+      <Chapter id="metodologia" label="Glossario metodologico" tier="T4" mobileOrder={11} collapsible index={11}>
         <MethodologyGlossary />
       </Chapter>
 

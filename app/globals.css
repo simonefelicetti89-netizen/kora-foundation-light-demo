@@ -588,17 +588,42 @@ input[type='date']::-webkit-calendar-picker-indicator { opacity: 0; cursor: poin
 }
 
 /* A chapter is a named division of a surface with an anchor. It is deliberately
-   NOT a card: the rule and the label carry the boundary, so a page can be
-   divided without another bordered rectangle. */
+   NOT a card: the rule, the number and the title carry the boundary, so a page
+   can be divided without another bordered rectangle.
+
+   RHYTHM, NOT DECORATION: alternating chapters sit on a tonal band, so a reader
+   FEELS the change in composition instead of reading it from a small label. The
+   band uses the existing KORA grounds and introduces no new visual language. */
 .kora-chapter { display: block; min-width: 0; }
-.kora-chapter + .kora-chapter { margin-top: var(--kora-space-2xl); }
+.kora-chapter + .kora-chapter { margin-top: var(--kora-space-md); }
 .kora-chapter-head {
   display: flex; align-items: baseline; gap: var(--kora-space-md);
   padding-bottom: var(--kora-space-sm);
-  border-bottom: 1px solid rgba(6, 3, 43, 0.09);
-  margin-bottom: var(--kora-space-lg);
+  border-bottom: 1px solid rgba(6, 3, 43, 0.14);
+  margin-bottom: var(--kora-space-md);
 }
-.kora-chapter-body { display: grid; gap: var(--kora-space-lg); min-width: 0; }
+.kora-chapter-num {
+  flex: 0 0 auto; color: rgba(6, 3, 43, 0.28);
+  font-variant-numeric: tabular-nums;
+}
+.kora-chapter-band {
+  border-radius: 18px;
+  padding: var(--kora-space-lg);
+  margin-left: calc(var(--kora-space-lg) * -1);
+  margin-right: calc(var(--kora-space-lg) * -1);
+}
+.kora-chapter-band[data-band="a"] { background: #FFFFFF; }
+.kora-chapter-band[data-band="b"] { background: rgba(6, 3, 43, 0.035); }
+.kora-chapter-band > .kora-chapter-head,
+.kora-chapter-band > summary.kora-chapter-head { border-bottom-color: rgba(6, 3, 43, 0.10); }
+@media (max-width: 767px) {
+  .kora-chapter-band {
+    margin-left: calc(var(--kora-space-sm) * -1);
+    margin-right: calc(var(--kora-space-sm) * -1);
+    padding: var(--kora-space-lg) var(--kora-space-md);
+  }
+}
+.kora-chapter-body { display: grid; gap: var(--kora-space-md); min-width: 0; }
 
 /* MOBILE IS RE-PRIORITISATION, NOT REFLOW.
    A surface declares a mobile order per chapter; below the mobile breakpoint the
@@ -609,5 +634,24 @@ input[type='date']::-webkit-calendar-picker-indicator { opacity: 0; cursor: poin
 .kora-priority-stack > * { order: 0; }
 @media (max-width: 767px) {
   .kora-priority-stack > [data-mobile-order] { order: var(--kora-mobile-order, 0); }
-  .kora-chapter + .kora-chapter { margin-top: var(--kora-space-xl); }
+  .kora-chapter + .kora-chapter { margin-top: var(--kora-space-sm); }
 }
+
+/* KORA-WP-141 — the executive split. Asymmetric on purpose: prose gets the wide
+   column, the driver list the narrow one. Below the rail breakpoint it becomes
+   one column in DOM order, so the narrative still precedes the drivers. */
+.kora-exec-split { display: grid; gap: var(--kora-space-lg); grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 1100px) {
+  .kora-exec-split { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
+}
+
+/* A CLOSED chapter is a row, not an empty box. Keeping full band padding on a
+   collapsed <details> made disclosure look like a container with nothing in it,
+   which is the opposite of the rhythm the band is for. */
+details.kora-chapter-band:not([open]) { padding-top: var(--kora-space-md); padding-bottom: var(--kora-space-md); }
+details.kora-chapter-band:not([open]) > summary.kora-chapter-head { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
+summary.kora-chapter-head::-webkit-details-marker { display: none; }
+details.kora-chapter-band > summary.kora-chapter-head::after {
+  content: '+'; margin-left: auto; color: rgba(6, 3, 43, 0.34); font-weight: 700;
+}
+details.kora-chapter-band[open] > summary.kora-chapter-head::after { content: '−'; }
