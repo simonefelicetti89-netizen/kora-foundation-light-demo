@@ -8,23 +8,31 @@ interface ConfidenceBreakdownProps {
 }
 
 const COVERAGE_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  complete: { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text,  border: TOKENS.safeguard.pass.dot  },
-  partial:  { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text, border: TOKENS.safeguard.watch.dot },
+  complete: { bg: 'rgba(43,92,230,0.08)',    text: BADGE_TOKENS.info.text,      border: BADGE_TOKENS.info.border    },
+  partial:  { bg: TOKENS.inkBorder,          text: TOKENS.inkSecondary,         border: TOKENS.inkHint              },
   present:  { bg: 'rgba(43,92,230,0.08)',    text: BADGE_TOKENS.info.text,                   border: BADGE_TOKENS.info.border                   },
   absent:   { bg: TOKENS.inkBorder,          text: TOKENS.inkSecondary,         border: TOKENS.inkHint              },
 };
 
 function SubFactor({ label, value }: { label: string; value: number }) {
   const pct = Math.round(value * 100);
-  const barColor = pct >= 70 ? TOKENS.safeguard.pass.dot : pct >= 50 ? TOKENS.safeguard.watch.dot : TOKENS.safeguard.cap.dot;
+  // Confidence is RELIABILITY, not performance. These bars were painted from
+  // hardcoded 70/50 cutoffs in the palette every scored surface uses, which said
+  // "this organisation is doing badly" about how much of the picture KORA can
+  // see. Ink, no semantic state, no invented threshold.
   return (
     <div>
       <div className="flex justify-between text-xs mb-1">
         <span style={{ color: TOKENS.inkSecondary }}>{label}</span>
         <span className="font-mono font-semibold" style={{ color: TOKENS.ink }}>{pct}%</span>
       </div>
-      <div className="h-1.5 w-full rounded-full" style={{ background: TOKENS.inkTrack }}>
-        <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, background: barColor }} />
+      <div
+        role="meter"
+        aria-label={`${label}: ${pct}% di copertura`}
+        aria-valuenow={value} aria-valuemin={0} aria-valuemax={1}
+        className="h-1.5 w-full rounded-full" style={{ background: TOKENS.inkTrack }}
+      >
+        <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, background: TOKENS.inkSecondary }} />
       </div>
     </div>
   );
@@ -90,7 +98,7 @@ export function ConfidenceBreakdown({ record }: ConfidenceBreakdownProps) {
               <ul className="space-y-1">
                 {record.gaps_identified.map((gap, i) => (
                   <li key={i} className="flex gap-2 text-xs" style={{ color: TOKENS.inkSecondary }}>
-                    <span className="shrink-0" style={{ color: TOKENS.safeguard.watch.dot }}>▲</span>
+                    <span className="shrink-0" style={{ color: TOKENS.inkSecondary }}>▲</span>
                     <span>{gap}</span>
                   </li>
                 ))}

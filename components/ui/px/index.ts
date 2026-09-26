@@ -19,3 +19,9 @@ export {
 } from './states';
 // KORA-WP-139 — canonical typographic roles.
 export { Display, Title, Section, Subsection, Body, Secondary, Label, Caption, Meta } from './Text';
+// KORA-WP-142 — data visualisation grammar (approved-design subset).
+export {
+  ThresholdMeter, ScoreBandScale, SafeguardSignificance,
+  ContributionBars, DistributionStrip,
+  type ContributionItem, type DistributionSlice,
+} from './encoding';

@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, CartesianGrid,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid,
 } from 'recharts';
 import { TOKENS, CHART_COLORS } from '@/lib/design/kora-design-tokens';
 import { KORA_INDEX_COMPONENTS, COMPONENT_LABELS } from '@/lib/constants/kora';
@@ -14,7 +14,7 @@ interface ComponentBreakdownChartProps {
 
 interface TooltipProps {
   active?: boolean;
-  payload?: Array<{ payload: { name: string; fullLabel: string; value: number; weak: boolean } }>;
+  payload?: Array<{ payload: { name: string; fullLabel: string; value: number | null; weak: boolean } }>;
 }
 
 function CustomTooltip({ active, payload }: TooltipProps) {
@@ -33,7 +33,7 @@ function CustomTooltip({ active, payload }: TooltipProps) {
         {d.name}
       </p>
       <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '18px', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1 }}>
-        {d.value}%
+        {d.value === null ? 'Nessun dato' : `${d.value}%`}
       </p>
       <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', color: 'rgba(255,255,255,0.55)', marginTop: 4, lineHeight: 1.4 }}>
         {d.fullLabel}
@@ -53,7 +53,9 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
     return {
       name:      code,
       fullLabel: COMPONENT_LABELS[code],
-      value:     Math.round((comp?.value ?? 0) * 100),
+      // An ABSENT component is not a measured zero: `?? 0` drew the same bar for
+      // "no data" and "scored nothing".
+      value:     typeof comp?.value === 'number' ? Math.round(comp.value * 100) : null,
       weak:      weakCodes.includes(code),
     };
   });
@@ -92,7 +94,7 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
 
       <div
         role="img"
-        aria-label={`Grafico a barre: ${chartData.map((d) => `${d.fullLabel} ${d.value}%${d.weak ? ' (area di miglioramento)' : ''}`).join(', ')}`}
+        aria-label={`Grafico a barre: ${chartData.map((d) => `${d.fullLabel} ${d.value === null ? 'nessun dato' : `${d.value}%`}${d.weak ? ' (area di miglioramento)' : ''}`).join(', ')}`}
       >
       <ResponsiveContainer width="100%" height={320}>
         <BarChart
@@ -118,7 +120,6 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
             axisLine={false}
             tickLine={false}
           />
-          <ReferenceLine x={50} stroke={TOKENS.inkBorderStrong} strokeDasharray="4 3" />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: TOKENS.accentHover }} />
           <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={20}>
             {chartData.map((entry) => (

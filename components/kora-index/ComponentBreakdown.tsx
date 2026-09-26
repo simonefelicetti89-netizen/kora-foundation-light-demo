@@ -15,13 +15,13 @@ interface ComponentBreakdownProps {
 const COMPONENT_SHORT_DEFS: Record<string, string> = {
   AR:  'AR misura la quota di popolazione attivata almeno una volta nel periodo. Non coincide con l\'intero macroblocco Activation Reach.',
   MAR: 'Quota della forza lavoro con Impact Units sopra la soglia di materialità. MAR < AR per definizione — la differenza segnala la quota di partecipazione superficiale.',
-  NI:  'Media delle Impact Units per lavoratore attivo, normalizzata. Misura la profondità dell\'engagement. Un NI alto su base AR bassa segnala attivazione intensa su una minoranza.',
-  VR:  'Quota delle IU supportate da evidenze verificate o parzialmente verificate. Un VR basso si riflette nel Confidence Score.',
-  CO:  'CO misura la continuità delle attivazioni nel tempo. Non coincide con l\'intero macroblocco Activation Quality.',
-  WB:  'Uniformità della distribuzione delle IU tra i lavoratori attivi. WB basso segnala concentrazione strutturale.',
+  INT: 'Media delle Impact Units per lavoratore attivo, normalizzata. Misura la profondità dell\'engagement. Un NI alto su base AR bassa segnala attivazione intensa su una minoranza.',
+  EVQ: 'Quota delle IU supportate da evidenze verificate o parzialmente verificate. Un VR basso si riflette nel Confidence Score.',
+  CONT:'CO misura la continuità delle attivazioni nel tempo. Non coincide con l\'intero macroblocco Activation Quality.',
+  EQW: 'Uniformità della distribuzione delle IU tra i lavoratori attivi. WB basso segnala concentrazione strutturale.',
   PC:  'Numero di pillar con presenza significativa nel periodo, espresso su 5 pillar KORA totali.',
   PB:  'Uniformità della distribuzione delle IU tra i pillar attivi. Un pillar dominante abbassa PB anche se PC è moderato.',
-  EQ:  'Equità distributiva dell\'attivazione tra segmenti aggregati (dipartimenti, siti, seniority — solo gruppi ≥ 10 lavoratori).',
+  EQS: 'Equità distributiva dell\'attivazione tra segmenti aggregati (dipartimenti, siti, seniority — solo gruppi ≥ 10 lavoratori).',
 };
 
 // Macroblock → KORA token tints (ink-based, not rainbow)
@@ -32,7 +32,10 @@ const MACROBLOCK_STYLE: Record<string, { bg: string; text: string; border: strin
   BTI:     { bg: `${TOKENS.accent}0D`, text: TOKENS.accent,        border: `${TOKENS.accent}33`       },
 };
 
-const OPERATIONAL_CODES = ['AR', 'MAR', 'NI', 'VR', 'CO', 'WB', 'PC', 'PB', 'EQ'] as const;
+// The superseded codes (NI, VR, CO, WB, EQ) were still the keys here while the
+// engine emits the canonical ten, so five of the nine lookups missed and printed
+// an em dash over live values.
+const OPERATIONAL_CODES = ['AR', 'MAR', 'EVQ', 'INT', 'CONT', 'EQW', 'EQS', 'PC', 'PB'] as const;
 
 export function ComponentBreakdown({ components, className }: ComponentBreakdownProps) {
   const csComp  = components?.find((c) => c.code === 'CS');
