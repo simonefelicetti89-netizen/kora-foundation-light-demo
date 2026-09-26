@@ -698,3 +698,39 @@ details.kora-chapter-band[open] > summary.kora-chapter-head::after { content: '�
     margin-bottom: var(--kora-space-md);
   }
 }
+
+/* ══ Approved KORA Index design — signal row + disclosure layout ═══════════════
+   The desktop places the index first and wider; the phone gives it its own row
+   and sets the three signals side by side. Declared, not reflowed. */
+.kora-signals { display: grid; grid-template-columns: 1.15fr 1px 3fr; gap: 0 24px; align-items: start; }
+.kora-signal-trio { display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr; gap: 0 24px; align-items: start; }
+.kora-signal-vline { background: rgba(255, 255, 255, 0.12); align-self: stretch; }
+.kora-signal { min-width: 0; }
+.kora-lbl-short { display: none; }
+
+/* A disclosure row owns the icon grid. A DESCENDANT selector here also matches
+   the title+caption wrapper, which puts the caption in the 24px icon column —
+   the defect that inflated the design comp by ~800px. Direct child only. */
+.kora-disclosures > .kora-drow {
+  border-bottom: 1px solid rgba(6, 3, 43, 0.09);
+  padding: 20px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  align-items: start;
+  gap: 16px;
+}
+.kora-disclosures > .kora-drow:last-child { border-bottom: 0; }
+.kora-dhead { min-width: 0; }
+
+@media (max-width: 767px) {
+  .kora-signals { display: block; }
+  .kora-signals > .kora-signal-vline { display: none; }
+  .kora-signal-index { padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.12); margin-bottom: 16px; }
+  .kora-signal-trio { grid-template-columns: 1fr 1fr 1fr; gap: 0 12px; }
+  .kora-signal-trio > .kora-signal-vline { display: none; }
+  .kora-signal-trio .kora-signal-sub { display: none; }
+  .kora-lbl-full { display: none; }
+  .kora-lbl-short { display: inline; }
+  .kora-exec-surface { padding: 22px 20px; border-radius: 16px; }
+  .kora-disclosures > .kora-drow { padding: 16px 0; }
+}

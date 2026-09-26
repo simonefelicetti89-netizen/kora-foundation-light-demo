@@ -28,3 +28,5 @@ export {
   ContributionBars, DistributionStrip,
   type ContributionItem, type DistributionSlice,
 } from './encoding';
+// Approved KORA Index design primitives.
+export { ExecutiveSurface, ExecutiveRule, VerdictLine, SignalRow, Signal, IntelligenceGroup } from './design';
