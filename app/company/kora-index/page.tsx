@@ -305,8 +305,12 @@ export default function KoraIndexDetail() {
     economicReliefShare:      null,
   });
 
+  // COLUMN MODEL: the previous 900px cap left roughly a third of the available
+  // width empty and paid for it in height — the ten-component grid and the
+  // macroblock row both wrapped earlier than they needed to. The cap rises to
+  // the measure the shell actually offers. No content is removed.
   return (
-    <div className="kora-priority-stack" style={{ maxWidth: 900 }} data-testid="company-kora-index-page">
+    <div className="kora-priority-stack" style={{ maxWidth: 1120 }} data-testid="company-kora-index-page">
 
       {/* ── Page header ── */}
       <div style={{ marginBottom: 24 }}>
@@ -374,6 +378,9 @@ export default function KoraIndexDetail() {
         </div>
       </div>
 
+      </Chapter>
+
+      <Chapter id="intelligence-equity" label="Equity & Access Intelligence™" tier="T4" mobileOrder={12} collapsible>
       {/* Equity & Access Intelligence™ */}
       {equityAccess && (
         <div className="mt-6">
@@ -499,6 +506,9 @@ export default function KoraIndexDetail() {
           <ConfidenceBreakdown record={confidence} />
         </div>
 
+      </Chapter>
+
+      <Chapter id="intelligence-evidenza" label="Evidence Reliability Intelligence™" tier="T4" mobileOrder={10} collapsible>
         {/* Evidence Reliability Intelligence™ */}
         {!evidenceReliability && !liveCtx && evidenceReliabilityIntelligenceService.canAccess(koraRole) && (
           <div
@@ -602,6 +612,10 @@ export default function KoraIndexDetail() {
         )}
       </Chapter>
 
+      {/* T4 — adjacent interpretation layers. Collapsible because none of these
+          is a mandatory KORA Index disclosure: they are interpretation, and each
+          states in its own footer that it does not modify the Index. */}
+      <Chapter id="intelligence-life" label="LIFE Diversity & Care Economy Intelligence™" tier="T4" mobileOrder={11} collapsible>
       {/* LIFE Diversity + Care Economy Intelligence™ */}
       {lifeSummary && (
         <div style={{ marginTop: 16 }}>
@@ -680,12 +694,17 @@ export default function KoraIndexDetail() {
           three separate places: the executive panel above, a board-actions block
           under the hero, and this one at the foot of the page. A reader met
           recommendations three times and could not tell which was authoritative. */}
+      </Chapter>
+
       <Chapter id="raccomandazioni" label="Raccomandazioni" tier="T2" mobileOrder={2}>
         {boardActions.length > 0 && <BoardActions actions={boardActions} />}
         <RecommendationsPanel btiRecommendations={btiRecommendations} />
       </Chapter>
 
-      <Chapter id="metodologia" label="Metodologia e perimetro" tier="T5" mobileOrder={9}>
+      {/* T4, not T5: a glossary is reference detail. The actual T5 boundary on
+          this surface is the ProvenanceFooter below plus the calibration and
+          methodology labels carried by HeroDiagnosis — those stay open. */}
+      <Chapter id="metodologia" label="Glossario metodologico" tier="T4" mobileOrder={9} collapsible>
         <MethodologyGlossary />
       </Chapter>
 
