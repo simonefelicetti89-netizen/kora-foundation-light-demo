@@ -208,10 +208,28 @@ describe('KORA-WP-073 — non-color-only meaning', () => {
     expect(src).toMatch(/\{status\}/);
   });
 
-  it('ComponentBreakdownChart.tsx: the bar chart now carries an aria-label summarizing every data point as text, not relying on bar-fill color alone for screen-reader users', () => {
+  // SUPERSEDED IN PLACE by KORA-WP-142, intent preserved and strengthened.
+  // This assertion pinned the Recharts bar chart's single summarising
+  // aria-label. That chart is gone: it rendered an absent component as a
+  // measured zero and drew a 50% reference line that exists in no methodology
+  // config. The REQUIREMENT it encoded — no meaning carried by fill colour
+  // alone, every data point reachable as text — is unchanged, and is now met
+  // per data point rather than by one summary string.
+  it('ComponentBreakdownChart.tsx: no meaning is carried by fill color alone — every data point is reachable as text by a screen reader', () => {
     const src = readSource('components/charts/ComponentBreakdownChart.tsx');
-    expect(src).toMatch(/role="img"/);
-    expect(src).toMatch(/aria-label=\{`Grafico a barre:/);
+    // The panel delegates its encoding to the WP142 primitives ...
+    expect(src).toMatch(/ContributionBars/);
+    expect(src).toMatch(/DistributionStrip/);
+    // ... and each of those names its data points for assistive technology.
+    const bars  = readSource('components/ui/px/encoding/ContributionBars.tsx');
+    const strip = readSource('components/ui/px/encoding/DistributionStrip.tsx');
+    expect(bars).toMatch(/role="meter"/);
+    expect(bars).toMatch(/aria-label=\{`\$\{it\.label\}/);
+    expect(strip).toMatch(/role="img"/);
+    expect(strip).toMatch(/aria-label=\{`Distribuzione:/);
+    // Every item carries its label and its claim as real text, not only a fill.
+    expect(bars).toMatch(/\{it\.label\}/);
+    expect(bars).toMatch(/it\.assessment\.label/);
   });
 });
 

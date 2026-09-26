@@ -1,8 +1,8 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { SafeguardSignificance, ThresholdMeter } from '@/components/ui/px/encoding';
 import type { SafeguardStatus, ActivationSafeguardResult } from '@/lib/types';
-import { SAFEGUARD_THRESHOLDS } from '@/lib/constants/kora';
 
 interface ActivationSafeguardPanelProps {
   result?: ActivationSafeguardResult | null;
@@ -16,70 +16,10 @@ const STATUS_STYLES: Record<SafeguardStatus, { bar: string; text: string; bg: st
   FLAGGED: { bar: 'bg-kora-critical',  text: 'text-kora-critical',  bg: 'bg-[rgba(158,59,47,0.06)] border-[rgba(158,59,47,0.22)]' },
 };
 
-function ThresholdGauge({
-  label,
-  value,
-  flaggedMax,
-  warnMax,
-  clearMin,
-}: {
-  label: string;
-  value: number;
-  flaggedMax: number;
-  warnMax: number;
-  clearMin: number;
-}) {
-  const pct = Math.min(value * 100, 100);
-  const flaggedPct = flaggedMax * 100;
-  const warnPct = warnMax * 100;
-
-  return (
-    <div>
-      <div className="flex justify-between text-xs text-[rgba(6,3,43,0.52)] mb-1">
-        <span className="font-mono font-semibold text-[rgba(6,3,43,0.78)]">{label}</span>
-        <span className="font-semibold">{(value * 100).toFixed(0)}%</span>
-      </div>
-      <div className="relative h-3 w-full rounded-full overflow-hidden bg-[rgba(6,3,43,0.05)]">
-        {/* Zone backgrounds */}
-        <div
-          className="absolute h-full bg-[rgba(158,59,47,0.10)]"
-          style={{ left: 0, width: `${flaggedPct}%` }}
-        />
-        <div
-          className="absolute h-full bg-[rgba(217,154,43,0.12)]"
-          style={{ left: `${flaggedPct}%`, width: `${warnPct - flaggedPct}%` }}
-        />
-        <div
-          className="absolute h-full bg-[rgba(47,125,85,0.10)]"
-          style={{ left: `${warnPct}%`, right: 0 }}
-        />
-        {/* Value bar */}
-        <div
-          className={cn(
-            'absolute h-full rounded-full transition-all',
-            value < flaggedMax ? 'bg-kora-critical' :
-            value < clearMin  ? 'bg-kora-warning' : 'bg-kora-success',
-          )}
-          style={{ width: `${pct}%` }}
-        />
-        {/* Threshold tick marks */}
-        <div
-          className="absolute top-0 h-full w-px bg-[rgba(6,3,43,0.35)] opacity-50"
-          style={{ left: `${flaggedPct}%` }}
-        />
-        <div
-          className="absolute top-0 h-full w-px bg-[rgba(6,3,43,0.35)] opacity-50"
-          style={{ left: `${warnPct}%` }}
-        />
-      </div>
-      <div className="flex text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
-        <span style={{ width: `${flaggedPct}%` }} className="text-left">FLAGGED</span>
-        <span style={{ width: `${warnPct - flaggedPct}%` }} className="text-center">WARN</span>
-        <span className="flex-1 text-right">CLEAR ≥{clearMin * 100}%</span>
-      </div>
-    </div>
-  );
-}
+// KORA-WP-142: the local `ThresholdGauge` is gone. It drew AR and MAR against
+// its own copy of the zone boundaries, so the panel could have disagreed with the
+// verdict computed elsewhere without either side being detectably wrong. AR and
+// MAR are now drawn by the canonical ThresholdMeter, from config.
 
 export function ActivationSafeguardPanel({
   result,
@@ -106,20 +46,13 @@ export function ActivationSafeguardPanel({
 
       {result ? (
         <div className="space-y-4">
-          <ThresholdGauge
-            label="AR — Activation Rate"
-            value={result.ar_value}
-            flaggedMax={SAFEGUARD_THRESHOLDS.FLAGGED.AR_max}
-            warnMax={SAFEGUARD_THRESHOLDS.WARNING.AR_max}
-            clearMin={SAFEGUARD_THRESHOLDS.CLEAR.AR}
+          <SafeguardSignificance
+            status={status}
+            ar={typeof result.ar_value === 'number' ? result.ar_value : null}
+            mar={typeof result.mar_value === 'number' ? result.mar_value : null}
           />
-          <ThresholdGauge
-            label="MAR — Meaningful Activation Rate"
-            value={result.mar_value}
-            flaggedMax={SAFEGUARD_THRESHOLDS.FLAGGED.MAR_max}
-            warnMax={SAFEGUARD_THRESHOLDS.WARNING.MAR_max}
-            clearMin={SAFEGUARD_THRESHOLDS.CLEAR.MAR}
-          />
+          <ThresholdMeter metric="AR"  value={typeof result.ar_value  === 'number' ? result.ar_value  : null} label="AR — Activation Rate" />
+          <ThresholdMeter metric="MAR" value={typeof result.mar_value === 'number' ? result.mar_value : null} label="MAR — Meaningful Activation Rate" />
         </div>
       ) : (
         <p className="text-sm text-[rgba(6,3,43,0.40)]">Risultato Activation Safeguard non disponibile per questo scenario.</p>
@@ -131,8 +64,10 @@ export function ActivationSafeguardPanel({
         </p>
       )}
 
+      {/* The CLEAR rule is stated by SafeguardSignificance from config; repeating
+          it as literal prose here was a fourth copy of the same two numbers. */}
       <p className="text-xs text-[rgba(6,3,43,0.40)]">
-        CLEAR richiede AR ≥ 40% E MAR ≥ 30%. Logica OR — se uno dei due metrici è nella fascia di attenzione, lo stato viene attivato.
+        Logica OR — se uno dei due metrici è nella fascia di attenzione, lo stato viene attivato.
       </p>
     </div>
   );

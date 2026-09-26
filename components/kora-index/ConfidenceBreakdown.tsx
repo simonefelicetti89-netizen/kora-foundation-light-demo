@@ -1,30 +1,44 @@
 'use client';
 
 import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
+import { ConfidenceGauge } from '@/components/ui/px/encoding';
 import type { ConfidenceRecord } from '@/lib/types';
 
 interface ConfidenceBreakdownProps {
   record?: ConfidenceRecord | null;
 }
 
+// KORA-WP-142: `complete` was green and `partial` amber — the pass/watch palette
+// every SCORED surface uses. Applied to a coverage level that reads as "this
+// organisation is doing badly", when it says only how much of the picture KORA
+// can see. Coverage is drawn in the informational register instead.
 const COVERAGE_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  complete: { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text,  border: TOKENS.safeguard.pass.dot  },
-  partial:  { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text, border: TOKENS.safeguard.watch.dot },
+  complete: { bg: 'rgba(43,92,230,0.08)',    text: BADGE_TOKENS.info.text,      border: BADGE_TOKENS.info.border    },
+  partial:  { bg: TOKENS.inkBorder,          text: TOKENS.inkSecondary,         border: TOKENS.inkHint              },
   present:  { bg: 'rgba(43,92,230,0.08)',    text: BADGE_TOKENS.info.text,                   border: BADGE_TOKENS.info.border                   },
   absent:   { bg: TOKENS.inkBorder,          text: TOKENS.inkSecondary,         border: TOKENS.inkHint              },
 };
 
+// KORA-WP-142: this bar was painted pass / watch / cap from hardcoded 70 and 50
+// cutoffs, which said "this sub-factor is performing badly" about a RELIABILITY
+// input. Confidence is not performance; its sub-factors are drawn in ink, with no
+// semantic state colour and no invented threshold.
 function SubFactor({ label, value }: { label: string; value: number }) {
   const pct = Math.round(value * 100);
-  const barColor = pct >= 70 ? TOKENS.safeguard.pass.dot : pct >= 50 ? TOKENS.safeguard.watch.dot : TOKENS.safeguard.cap.dot;
   return (
     <div>
       <div className="flex justify-between text-xs mb-1">
         <span style={{ color: TOKENS.inkSecondary }}>{label}</span>
         <span className="font-mono font-semibold" style={{ color: TOKENS.ink }}>{pct}%</span>
       </div>
-      <div className="h-1.5 w-full rounded-full" style={{ background: TOKENS.inkTrack }}>
-        <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, background: barColor }} />
+      <div
+        role="meter"
+        aria-label={`${label}: ${pct}% di copertura`}
+        aria-valuenow={value} aria-valuemin={0} aria-valuemax={1}
+        className="h-1.5 w-full rounded-full"
+        style={{ background: TOKENS.inkTrack }}
+      >
+        <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, background: TOKENS.inkSecondary }} />
       </div>
     </div>
   );
@@ -36,19 +50,13 @@ export function ConfidenceBreakdown({ record }: ConfidenceBreakdownProps) {
       className="p-4 space-y-4"
       style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}
     >
-      <div className="flex items-center justify-between">
-        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
-          Confidence Score — Dettaglio
-        </p>
-        {record && (
-          <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '18px', color: TOKENS.accent }}>
-            {Math.round(record.confidence_score * 100)}%
-            <span className="ml-1 text-xs font-normal capitalize" style={{ color: TOKENS.inkHint }}>
-              ({record.confidence_level})
-            </span>
-          </span>
-        )}
-      </div>
+      <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
+        Confidence Score — Dettaglio
+      </p>
+
+      {/* KORA-WP-142 — the reliability register: segmented, in ink, with no band,
+          no threshold and no verdict. It must not read as an eleventh component. */}
+      <ConfidenceGauge value={record ? record.confidence_score : null} />
 
       {record ? (
         <>
@@ -90,7 +98,7 @@ export function ConfidenceBreakdown({ record }: ConfidenceBreakdownProps) {
               <ul className="space-y-1">
                 {record.gaps_identified.map((gap, i) => (
                   <li key={i} className="flex gap-2 text-xs" style={{ color: TOKENS.inkSecondary }}>
-                    <span className="shrink-0" style={{ color: TOKENS.safeguard.watch.dot }}>▲</span>
+                    <span className="shrink-0" style={{ color: TOKENS.inkSecondary }}>▲</span>
                     <span>{gap}</span>
                   </li>
                 ))}

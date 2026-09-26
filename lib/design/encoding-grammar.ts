@@ -17,6 +17,7 @@ import {
   SCORE_BANDS,
   getScoreBand,
 } from '@/lib/methodology-config/v0.1';
+import type { MacroblockCode } from '@/lib/types';
 import type { Assessment } from './surface-state-grammar';
 
 /** The six metrics the Product currently renders bare. */
@@ -42,7 +43,8 @@ export interface ThresholdStop {
 }
 
 export interface ThresholdScale {
-  readonly metric: MetricCode;
+  /** The metric or macroblock this scale belongs to. */
+  readonly metric: string;
   readonly unit: MetricUnit;
   readonly min: number;
   readonly max: number;
@@ -139,6 +141,23 @@ export function thresholdScaleFor(metric: MetricCode): ThresholdScale {
     case 'BTI':
       return { metric, unit: 'score100', min: 0, max: 100, stops: statusStops('score100'), sourceLabel: STATUS_SCALE_LABEL };
   }
+}
+
+/**
+ * The four macroblocks share ONE 0-100 status scale, because the config declares
+ * exactly one and inventing a per-macroblock scale would be inventing thresholds.
+ * BTI is one of the six required metrics and also a macroblock; both entry points
+ * resolve to the same stops, so they cannot drift apart.
+ */
+export function macroblockScale(code: MacroblockCode | string): ThresholdScale {
+  return { metric: code, unit: 'score100', min: 0, max: 100, stops: statusStops('score100'), sourceLabel: STATUS_SCALE_LABEL };
+}
+
+/** The claim a value holds on any scale — the same rule the six metrics use. */
+export function assessmentForScale(scale: ThresholdScale, value: number): Assessment {
+  let held = scale.stops[0]!;
+  for (const s of scale.stops) if (value >= s.at) held = s;
+  return held.assessment;
 }
 
 /**

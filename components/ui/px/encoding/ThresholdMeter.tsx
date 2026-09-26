@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import { PX } from '@/lib/design/kora-design-tokens';
 import { assessmentTreatment } from '@/lib/design/surface-state-grammar';
 import {
-  thresholdScaleFor, assessmentFor, trackPosition, distanceToNextStop,
-  type MetricCode,
+  thresholdScaleFor, assessmentFor, assessmentForScale, trackPosition,
+  type MetricCode, type ThresholdScale,
 } from '@/lib/design/encoding-grammar';
 import { NoData, InsufficientData, Suppressed } from '../states';
 
@@ -24,9 +24,12 @@ import { NoData, InsufficientData, Suppressed } from '../states';
  * painted as healthy.
  */
 export function ThresholdMeter({
-  metric, value, label, unitSuffix, note, compact,
+  metric, scale: scaleProp, value, label, unitSuffix, note, compact, showSource,
 }: {
-  metric: MetricCode;
+  /** One of the six threshold-bearing metrics. Omit only when passing `scale`. */
+  metric?: MetricCode;
+  /** An explicit config-derived scale, for a macroblock rather than a metric. */
+  scale?: ThresholdScale;
   /**
    * The value on the METRIC'S OWN scale, or a non-numeric state. `null` is NOT
    * zero: a metric with no value renders NO DATA, never a bar at the floor.
@@ -36,6 +39,12 @@ export function ThresholdMeter({
   unitSuffix?: string;
   note?: ReactNode;
   compact?: boolean;
+  /**
+   * Provenance is mandatory on the SURFACE, not on every meter: ten meters each
+   * repeating the same config path is noise that buries the one line a reader
+   * needs. A panel states it once and its meters stay quiet.
+   */
+  showSource?: boolean;
 }) {
   if (value !== null && typeof value === 'object' && 'suppressed' in value) {
     return <Suppressed reason="group_too_small" groupSize={value.suppressed.groupSize} dataType={label} />;
@@ -47,18 +56,22 @@ export function ThresholdMeter({
     return <NoData missing={label} />;
   }
 
-  const scale = thresholdScaleFor(metric);
-  const claim = assessmentFor(metric, value);
+  // Exactly one of the two entry points, and both end at the same config stops.
+  const scale = scaleProp ?? thresholdScaleFor(metric!);
+  const claim = scaleProp ? assessmentForScale(scaleProp, value) : assessmentFor(metric!, value);
   const treat = assessmentTreatment(claim);
   const pos   = trackPosition(scale, value);
-  const next  = distanceToNextStop(metric, value);
+  const next  = (() => {
+    const n = scale.stops.find((st) => value < st.at);
+    return n ? { stop: n, gap: n.at - value } : null;
+  })();
 
   const asPercent = scale.unit === 'ratio';
   const shown = asPercent ? `${Math.round(value * 100)}%` : `${Math.round(value)}`;
   const stopText = (n: number) => (asPercent ? `${Math.round(n * 100)}%` : `${Math.round(n)}`);
 
   return (
-    <div data-kora-encoding="threshold-meter" data-metric={metric}>
+    <div data-kora-encoding="threshold-meter" data-metric={metric ?? scale.metric}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
         <p className="kt-label" style={{ color: PX.ink, minWidth: 0 }}>{label}</p>
         <p className="kt-subsection kt-num" style={{ color: treat.text, flexShrink: 0 }}>
@@ -113,10 +126,13 @@ export function ThresholdMeter({
       )}
       {note && <div style={{ marginTop: 4 }}>{note}</div>}
 
-      {/* Provenance: a tick the reader cannot trace is a tick they cannot trust. */}
-      <p className="kt-caption" style={{ color: PX.inkMute, marginTop: 4 }}>
-        Soglie: {scale.sourceLabel}
-      </p>
+      {/* Provenance: a tick the reader cannot trace is a tick they cannot trust.
+          Stated here only when this meter stands alone. */}
+      {showSource && (
+        <p className="kt-caption" style={{ color: PX.inkMute, marginTop: 4 }}>
+          Soglie: {scale.sourceLabel}
+        </p>
+      )}
     </div>
   );
 }

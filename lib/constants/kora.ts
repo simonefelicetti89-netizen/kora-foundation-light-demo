@@ -1,3 +1,5 @@
+import rawSafeguardConfig from '@/data/methodology/methodology-config.json';
+
 export const PILLAR_CODES = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 
 // Sprint 1 — IU-centric: NI→EVQ, VR→INT, CO→CONT, WB→EQW, EQ→EQS
@@ -51,11 +53,24 @@ export const KORA_ROLES = [
 // different concepts into one just because their membership now coincides.
 export const ACTIVE_PRODUCT_KORA_ROLES = [...ACTIVE_KORA_ROLES, ...FUTURE_KORA_ROLES] as const;
 
-export const SAFEGUARD_THRESHOLDS = {
+const _SAFEGUARD_FALLBACK = {
   CLEAR: { AR: 0.40, MAR: 0.30 },
   WARNING: { AR_min: 0.20, AR_max: 0.40, MAR_min: 0.15, MAR_max: 0.30 },
   FLAGGED: { AR_max: 0.20, MAR_max: 0.15 },
 } as const;
+
+// KORA-WP-142: this was a hand-written SECOND copy of `safeguard_thresholds`,
+// which is exactly the divergence a visual layer must not be able to introduce —
+// a tick drawn from one copy and a verdict computed from the other would
+// disagree silently, and neither would be wrong on its own terms. The values are
+// now read from the versioned config; the literals above survive only as the
+// shape fallback.
+const _rawSafeguard = (
+  rawSafeguardConfig as unknown as { safeguard_thresholds?: typeof _SAFEGUARD_FALLBACK }
+).safeguard_thresholds;
+
+export const SAFEGUARD_THRESHOLDS: typeof _SAFEGUARD_FALLBACK =
+  _rawSafeguard ?? _SAFEGUARD_FALLBACK;
 
 export const SAFE_AGGREGATION_THRESHOLD = 10;
 

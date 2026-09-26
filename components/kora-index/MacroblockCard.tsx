@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { macroblockScale } from '@/lib/design/encoding-grammar';
+import { ThresholdMeter, TrendIndicator } from '@/components/ui/px/encoding';
 import type { MacroblockScore, MacroblockCode } from '@/lib/types';
 import { MACROBLOCK_COMPONENTS, COMPONENT_LABELS } from '@/lib/constants/kora';
 import { TM } from '@/components/ui/TM';
@@ -24,16 +26,13 @@ const MACROBLOCK_EXPLANATIONS: Record<string, string> = {
 // This card uses grid-row: span 6 + grid-template-rows: subgrid so all 4 cards
 // share the same 6 parent row tracks → sections align at identical baseline.
 // Fallback (no subgrid support): sections stack naturally, still readable.
-function scoreColor(s: number) {
-  if (s >= 70) return TOKENS.success;
-  if (s >= 50) return TOKENS.warning;
-  return TOKENS.critical;
-}
+// KORA-WP-142: `scoreColor` hardcoded 70 and 50 — a third copy of
+// `macroblock_status_thresholds`. Colour is now derived from the config-backed
+// claim inside ThresholdMeter, and this card no longer decides significance.
 
 export function MacroblockCard({ macroblock, previousScore, className }: MacroblockCardProps) {
   const [hovered, setHovered]  = useState(false);
   const explanation    = MACROBLOCK_EXPLANATIONS[macroblock.code] ?? '';
-  const delta          = previousScore !== undefined ? macroblock.score - previousScore : null;
   const componentCodes = MACROBLOCK_COMPONENTS[macroblock.code as MacroblockCode] ?? [];
   const isBTI          = macroblock.code === 'BTI';
 
@@ -56,10 +55,9 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
       onMouseLeave={() => setHovered(false)}
     >
 
-      {/* Row 1 — Header: code eyebrow + label + score */}
+      {/* Row 1 — Header: code eyebrow + label */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          {/* §3 — eyebrow: Inter non mono; §5 — resta viola (macroblock code) */}
           <p
             className="uppercase font-semibold"
             style={{ fontFamily: 'var(--font-jakarta)', fontSize: '11px', letterSpacing: '0.08em', color: TOKENS.accent }}
@@ -70,30 +68,31 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
             {macroblock.code === 'BTI' ? <TM>{macroblock.label}</TM> : macroblock.label}
           </p>
         </div>
-        <div className="text-right shrink-0">
-          <span
-            style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '22px', color: scoreColor(macroblock.score), letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}
-          >
-            {Math.round(macroblock.score)}
-          </span>
-          <span className="text-xs ml-0.5" style={{ color: TOKENS.inkHint }}>/100</span>
-          {delta !== null && (
-            <p
-              className="text-xs font-semibold mt-0.5"
-              style={{ color: delta >= 0 ? TOKENS.safeguard.pass.text : TOKENS.safeguard.cap.text }}
-            >
-              {delta >= 0 ? '+' : ''}{Math.round(delta)}
-            </p>
-          )}
-        </div>
       </div>
 
-      {/* Row 2 — Bar */}
-      <div className="h-1.5 w-full rounded-full" style={{ background: TOKENS.inkTrack }}>
-        <div
-          className="h-1.5 rounded-full"
-          style={{ width: `${Math.min(macroblock.score, 100)}%`, background: scoreColor(macroblock.score) }}
+      {/* Row 2 — KORA-WP-142: score AND its position against the configured
+          status scale. A bare `33/100` beside a bare `81/100` reads as two
+          numbers; against their stops it reads as two different situations. */}
+      <div>
+        <ThresholdMeter
+          scale={macroblockScale(macroblock.code)}
+          value={macroblock.score}
+          label={`${macroblock.code} — punteggio macroblocco`}
+          unitSuffix="/100"
+          compact
         />
+        {/* A delta is rendered ONLY when a prior period was actually supplied.
+            `previousScore === undefined` is not a delta of zero — and the
+            no-prior-period state belongs once per surface, on the judgment, not
+            four times across one row of cards. */}
+        {previousScore !== undefined && (
+          <div style={{ marginTop: 8 }}>
+            <TrendIndicator
+              metricLabel={macroblock.label}
+              trend={{ kind: 'compared', current: macroblock.score, prior: previousScore, priorPeriodLabel: 'periodo precedente', unit: 'score100' }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Row 3 — Description */}

@@ -4,6 +4,7 @@ import type { SafeguardStatus } from '@/lib/types';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { formatConfidenceScore } from '@/lib/formatters';
 import { TM } from '@/components/ui/TM';
+import { ScoreBandScale, TrendIndicator } from '@/components/ui/px/encoding';
 
 interface HeroDiagnosisProps {
   value:             number;
@@ -57,15 +58,7 @@ export function HeroDiagnosis({
       {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 28, flexWrap: 'wrap' }}>
         <div>
-          <p style={{
-            fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontWeight:    600,
-            fontSize:      '10px',
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            color:         TOKENS.accent,
-            marginBottom:  6,
-          }}>
+          <p className="kt-meta" style={{ color: TOKENS.accent, marginBottom: 6 }}>
             <TM>KORA Index</TM> v3 · {reportingPeriod}
           </p>
           {/* Diagnosis sentence — the most important line on the page */}
@@ -98,6 +91,27 @@ export function HeroDiagnosis({
           <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '12px', color: 'rgba(255,255,255,0.30)', marginTop: 4 }}>
             /100
           </p>
+        </div>
+      </div>
+
+      {/* KORA-WP-142 — the index against its OWN configured bands. A number out
+          of a hundred is not a reading; a position in a calibrated vocabulary is.
+          The dark ground is the one place on the page where the band scale is
+          inverted, so the encoding carries its own light palette. */}
+      <div style={{
+        marginBottom: 20, padding: '14px 16px',
+        background: 'rgba(255,255,255,0.05)', borderRadius: 10,
+      }}>
+        <ScoreBandScale value={value} onDark />
+        {/* The no-prior-period state is WP140's, rendered unmodified. It sits on
+            a light inset rather than being restyled for the dark ground, because
+            a canonical state that changes appearance per surface stops being
+            recognisable as that state. */}
+        <div style={{ marginTop: 12, background: '#FFFFFF', borderRadius: 8, padding: 2 }}>
+          <TrendIndicator
+            metricLabel="KORA Index™"
+            trend={{ kind: 'no_prior_period', expected: 'Il confronto di periodo sarà disponibile dalla seconda rilevazione.' }}
+          />
         </div>
       </div>
 
@@ -136,12 +150,7 @@ export function HeroDiagnosis({
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: safeg.dot }} />
             {safeg.label}
           </span>
-          <p style={{
-            fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)',
-            fontSize:   '10px',
-            color:      'rgba(255,255,255,0.30)',
-            marginTop:  5,
-          }}>
+          <p className="kt-caption" style={{ color: 'rgba(255,255,255,0.55)', marginTop: 5 }}>
             {safeg.severity}
           </p>
         </div>
@@ -172,13 +181,7 @@ export function HeroDiagnosis({
           }}>
             {formatConfidenceScore(confidenceScore)}
           </p>
-          <p style={{
-            fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)',
-            fontSize:   '10px',
-            color:      'rgba(255,255,255,0.30)',
-            marginTop:  5,
-            lineHeight: 1.35,
-          }}>
+          <p className="kt-caption" style={{ color: 'rgba(255,255,255,0.55)', marginTop: 5 }}>
             Esterno al <TM>KORA Index</TM> · peso = 0
           </p>
         </div>
@@ -197,14 +200,15 @@ export function HeroDiagnosis({
                 background:   TOKENS.safeguard.watch.bg,
                 color:        TOKENS.safeguard.watch.text,
                 border:       `1px solid rgba(217,154,43,0.30)`,
-                fontSize:     '10px',
-                fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                fontWeight:   600,
-              }}>
+              }} className="kt-meta">
                 {calibrationStatus.replace(/_/g, ' ')}
               </span>
+              {/* KORA-WP-142 found the stamp below at 9px — under the WP139 11px
+                  floor. WP139's floor was measured on its own two demonstrators,
+                  so a sub-floor stamp survived here. Raised to the floor and to a
+                  contrast that can actually be read on the dark ground. */}
               {methodologyVersion && (
-                <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '9px', color: 'rgba(255,255,255,0.22)', marginTop: 6 }}>
+                <p className="kt-meta" style={{ fontFamily: 'ui-monospace, monospace', color: 'rgba(255,255,255,0.45)', marginTop: 6 }}>
                   {methodologyVersion}
                 </p>
               )}
@@ -214,14 +218,15 @@ export function HeroDiagnosis({
       </div>
 
       {/* B79-P0-5: Benchmark guidance — no sector benchmark in KORA Foundation Light */}
-      <div style={{
-        marginTop:    16,
-        paddingTop:   12,
-        borderTop:    '1px solid rgba(255,255,255,0.07)',
-        fontSize:     '9px',
-        color:        'rgba(255,255,255,0.25)',
-        lineHeight:   1.5,
-        fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+      {/* KORA-WP-142: this interpretation note ran at 9px on a dark ground at
+          25% opacity — sustained reading text, two steps under the WP139 floor
+          and below any usable contrast. It is the disclosure that qualifies the
+          whole score, so it is raised to the canonical caption role. */}
+      <div className="kt-caption" style={{
+        marginTop:  16,
+        paddingTop: 12,
+        borderTop:  '1px solid rgba(255,255,255,0.07)',
+        color:      'rgba(255,255,255,0.55)',
       }}>
         <strong style={{ color: 'rgba(255,255,255,0.40)', fontWeight: 600 }}>Interpretazione score:</strong>{' '}
         KORA Index v1.0 è in calibrazione pre-empirica. Non esistono ancora benchmark di settore validati —

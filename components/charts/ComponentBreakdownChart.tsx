@@ -1,136 +1,92 @@
 'use client';
 
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, CartesianGrid,
-} from 'recharts';
-import { TOKENS, CHART_COLORS } from '@/lib/design/kora-design-tokens';
-import { KORA_INDEX_COMPONENTS, COMPONENT_LABELS } from '@/lib/constants/kora';
+import { PX } from '@/lib/design/kora-design-tokens';
+import { KORA_INDEX_COMPONENTS, COMPONENT_LABELS, COMPONENT_MACROBLOCK } from '@/lib/constants/kora';
+import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
 import type { KoraIndexComponent } from '@/lib/types';
+import type { Assessment } from '@/lib/design/surface-state-grammar';
+import { ContributionBars, DistributionStrip, type ContributionItem, type DistributionSlice } from '@/components/ui/px/encoding';
 
 interface ComponentBreakdownChartProps {
   components?: KoraIndexComponent[];
   weakCodes?: string[];
 }
 
-interface TooltipProps {
-  active?: boolean;
-  payload?: Array<{ payload: { name: string; fullLabel: string; value: number; weak: boolean } }>;
-}
-
-function CustomTooltip({ active, payload }: TooltipProps) {
-  if (!active || !payload?.length) return null;
-  const d = payload[0].payload;
-  return (
-    <div style={{
-      background:   CHART_COLORS.tooltipBg,
-      border:       `1px solid ${CHART_COLORS.tooltipBorder}`,
-      borderRadius: 10,
-      padding:      '10px 14px',
-      boxShadow:    '0 12px 32px rgba(6,3,43,0.22)',
-      minWidth:     160,
-    }}>
-      <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', fontWeight: 600, color: TOKENS.accent, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
-        {d.name}
-      </p>
-      <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '18px', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1 }}>
-        {d.value}%
-      </p>
-      <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', color: 'rgba(255,255,255,0.55)', marginTop: 4, lineHeight: 1.4 }}>
-        {d.fullLabel}
-      </p>
-      {d.weak && (
-        <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '9px', color: TOKENS.accent, marginTop: 4, fontWeight: 600 }}>
-          ↑ Area di miglioramento
-        </p>
-      )}
-    </div>
-  );
-}
-
+/**
+ * KORA-WP-142 — replaced a ten-bar chart with the question it could not answer.
+ *
+ * WHAT WAS WRONG, beyond taste:
+ *  · `value: Math.round((comp?.value ?? 0) * 100)` rendered an ABSENT component
+ *    as a measured zero. A component with no data and a component that scored
+ *    nothing drew the same bar.
+ *  · `<ReferenceLine x={50} />` drew a threshold at 50% for all ten components.
+ *    No such threshold exists in the methodology configuration for any of them —
+ *    it was invented in the visual layer and read as methodology.
+ *  · Ten percentages on one shared 0–100 axis invited exactly the comparison the
+ *    methodology forbids: the components do not share a scale and do not carry
+ *    equal weight, so "AR is taller than EVQ" meant nothing.
+ *
+ * The panel now encodes CONTRIBUTION — value × effective weight — which is the
+ * question a reader deciding where to act actually has, and which no surface in
+ * the Product answered. Absent stays absent.
+ */
 export function ComponentBreakdownChart({ components, weakCodes = [] }: ComponentBreakdownChartProps) {
-  const chartData = KORA_INDEX_COMPONENTS.map((code) => {
-    const comp = components?.find((c) => c.code === code);
-    return {
-      name:      code,
-      fullLabel: COMPONENT_LABELS[code],
-      value:     Math.round((comp?.value ?? 0) * 100),
-      weak:      weakCodes.includes(code),
-    };
-  });
+  const byCode = new Map((components ?? []).map((c) => [c.code as string, c]));
+
+  const items: ContributionItem[] = KORA_INDEX_COMPONENTS
+    .filter((code) => !byCode.get(code)?.external && code !== 'CS')
+    .map((code) => {
+      const comp  = byCode.get(code);
+      const value = typeof comp?.value === 'number' ? comp.value : null;
+      const weak  = weakCodes.includes(code);
+      return {
+        key:    code,
+        label:  `${code} — ${COMPONENT_LABELS[code] ?? code}`,
+        weight: comp?.weight ?? 0,
+        value,
+        assessment: (weak
+          ? { kind: 'watch', label: 'Area di miglioramento', reason: 'Fra i componenti più deboli del periodo.' }
+          : { kind: 'neutral', label: 'Contributo osservato' }) as Assessment,
+        absent: (value === null ? 'no_data' : undefined) as ContributionItem['absent'],
+      };
+    })
+    .sort((a, b) => (b.value ?? -1) * b.weight - (a.value ?? -1) * a.weight);
+
+  // Macroblock weights ARE a genuine distribution: four shares of one whole,
+  // read from config. This is the only comparison on the panel that is real.
+  const mbWeights = getMacroblockWeights();
+  const slices: DistributionSlice[] = Object.entries(mbWeights).map(([code, w]) => ({
+    key: code, label: code, share: w,
+  }));
+
+  const counted = items.filter((i) => i.value !== null).length;
 
   return (
-    <div data-wp142-block="breakdown-chart"
+    <div
+      data-wp142-block="breakdown-chart"
       style={{
         padding:      '1.5rem',
-        background:   TOKENS.surface,
-        border:       TOKENS.cardBorder,
-        borderRadius: TOKENS.cardRadius,
-        boxShadow:    TOKENS.cardShadow,
+        background:   PX.l1,
+        border:       `1px solid ${PX.line}`,
+        borderRadius: 16,
       }}
     >
-      {/* Header */}
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-        <div>
-          <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '1.05rem', color: TOKENS.ink, letterSpacing: '-0.01em', lineHeight: 1.25 }}>
-            10-Component Breakdown
-          </p>
-          <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 3 }}>
-            Punteggi percentuali per componente analitico
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexShrink: 0 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '10px', color: TOKENS.inkSecondary, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)' }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(6,3,43,0.65)', display: 'inline-block' }} />
-            Componente
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '10px', color: TOKENS.inkSecondary, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)' }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: CHART_COLORS.primary, display: 'inline-block' }} />
-            Area priorità
-          </span>
-        </div>
-      </div>
+      <p className="kt-subsection" style={{ color: PX.ink }}>Contributo dei componenti</p>
+      <p className="kt-caption" style={{ color: PX.ink3, marginTop: 3, marginBottom: 14 }}>
+        Quanto ciascun componente porta effettivamente al KORA Index™ — valore × peso efficace.
+        Non è un confronto fra punteggi: i componenti non condividono la stessa scala.
+      </p>
 
-      <div
-        role="img"
-        aria-label={`Grafico a barre: ${chartData.map((d) => `${d.fullLabel} ${d.value}%${d.weak ? ' (area di miglioramento)' : ''}`).join(', ')}`}
-      >
-      <ResponsiveContainer width="100%" height={320}>
-        <BarChart
-          data={chartData}
-          layout="vertical"
-          margin={{ top: 0, right: 40, bottom: 0, left: 36 }}
-          barCategoryGap="30%"
-        >
-          <CartesianGrid horizontal={false} stroke={CHART_COLORS.grid} strokeDasharray="3 3" />
-          <XAxis
-            type="number"
-            domain={[0, 100]}
-            tick={{ fontSize: 10, fill: CHART_COLORS.axis, fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}
-            tickFormatter={(v) => `${v}%`}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis
-            type="category"
-            dataKey="name"
-            width={32}
-            tick={{ fontSize: 11, fontFamily: 'ui-monospace, monospace', fill: CHART_COLORS.axis }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <ReferenceLine x={50} stroke={TOKENS.inkBorderStrong} strokeDasharray="4 3" />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: TOKENS.accentHover }} />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={20}>
-            {chartData.map((entry) => (
-              <Cell
-                key={entry.name}
-                fill={entry.weak ? CHART_COLORS.primary : 'rgba(6,3,43,0.62)'}
-                fillOpacity={1}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <ContributionBars items={items} />
+
+      <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${PX.line}` }}>
+        <p className="kt-caption" style={{ color: PX.ink3, marginBottom: 6 }}>
+          Ripartizione del peso fra macroblocchi (configurazione metodologica)
+        </p>
+        <DistributionStrip
+          slices={slices}
+          caption={`Pesi da methodology-config · ${counted}/${items.length} componenti con valore nel periodo.`}
+        />
       </div>
     </div>
   );
