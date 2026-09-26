@@ -1,6 +1,7 @@
 'use client';
 
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { RankedGroup, RankedItem, RankedLine } from '@/components/ui/px';
+import { TM } from '@/components/ui/TM';
 
 interface WeakComponent {
   code:  string;
@@ -9,10 +10,15 @@ interface WeakComponent {
 
 interface ScoreDriversProps {
   weakComponents: WeakComponent[];
-  macroblockScores?: Record<string, number>;
 }
 
 // Business-language driver descriptions for each component code
+// KORA-WP-141 DEFECT FOUND WHILE RECOMPOSING THIS BLOCK: this library was keyed
+// on the SUPERSEDED component codes (NI, VR, CO, WB, EQ). The engine emits the
+// canonical ten (AR, MAR, EVQ, INT, CONT, EQW, EQS, PC, PB, BTI), so every lookup
+// missed and all three drivers fell through to the same generic sentence — the
+// block said nothing three times. Canonical codes are now the keys; the
+// superseded codes are kept as aliases so no older payload regresses.
 const DRIVER_LIBRARY: Record<string, {
   title:   string;
   impact:  string;
@@ -31,28 +37,34 @@ const DRIVER_LIBRARY: Record<string, {
     action: 'Intensificare i programmi ad attivazione profonda e verificata.',
     macro:  'REACH',
   },
-  NI:  {
-    title:  'Intensità bassa',
-    impact: 'La media degli Impact Units per lavoratore attivo è sotto il benchmark target.',
-    action: 'Prioritizzare programmi con alta additionality e continuità strutturata.',
-    macro:  'QUALITY',
-  },
-  VR:  {
+  EVQ: {
     title:  'Evidenze incomplete',
     impact: 'Una parte degli Impact Units non è supportata da evidenza verificata — il Confidence Score™ ne risente.',
     action: 'Completare il data intake con fonti strutturate e protocolli advisor.',
     macro:  'QUALITY',
   },
-  CO:  {
+  INT: {
+    title:  'Intensità bassa',
+    impact: 'La media degli Impact Units per lavoratore attivo è sotto il target di configurazione.',
+    action: 'Prioritizzare programmi con alta additionality e continuità strutturata.',
+    macro:  'QUALITY',
+  },
+  CONT: {
     title:  'Continuità assente',
-    impact: 'L\'attivazione avviene a burst senza ricorrenza — segnale CO debole.',
+    impact: 'L\'attivazione avviene a burst senza ricorrenza tra periodi.',
     action: 'Introdurre programmi ricorrenti e misurare la partecipazione nel tempo.',
     macro:  'QUALITY',
   },
-  WB:  {
-    title:  'Distribuzione squilibrata',
-    impact: 'Gli Impact Units sono concentrati su pochi lavoratori — il bottom 50% è escluso.',
-    action: 'Ribilanciare l\'accesso alle iniziative verso i segmenti meno attivi.',
+  EQW: {
+    title:  'Distribuzione squilibrata tra lavoratori',
+    impact: 'Gli Impact Units sono concentrati su pochi lavoratori attivi.',
+    action: 'Ribilanciare l\'accesso alle iniziative verso i lavoratori meno attivi.',
+    macro:  'EQUITY',
+  },
+  EQS: {
+    title:  'Equità tra reparti bassa',
+    impact: 'Il tasso di attivazione è molto diverso tra dipartimenti e sedi.',
+    action: 'Programmi ad accesso allargato nei reparti con bassa partecipazione storica.',
     macro:  'EQUITY',
   },
   PC:  {
@@ -67,11 +79,11 @@ const DRIVER_LIBRARY: Record<string, {
     action: 'Diversificare il mix di iniziative verso i pilastri sottorappresentati.',
     macro:  'EQUITY',
   },
-  EQ:  {
-    title:  'Equità distributiva bassa',
-    impact: 'L\'attivazione è concentrata sui segmenti già ad alta partecipazione.',
-    action: 'Programmi ad accesso allargato per i segmenti con bassa partecipazione storica.',
-    macro:  'EQUITY',
+  BTI: {
+    title:  'Budget non si converte in attivazione',
+    impact: 'La quota di budget che genera attivazione profonda è inferiore al target.',
+    action: 'Ridurre economic relief e riallocare verso iniziative con Impact Units verificabili.',
+    macro:  'BTI',
   },
   CS:  {
     title:  'Confidence Score™ basso',
@@ -79,21 +91,21 @@ const DRIVER_LIBRARY: Record<string, {
     action: 'Completare data intake e aumentare la copertura delle fonti strutturate.',
     macro:  'QUALITY',
   },
-  BTI: {
-    title:  'Budget non si converte in attivazione',
-    impact: 'La quota di budget che genera attivazione profonda è inferiore al target.',
-    action: 'Ridurre economic relief e riallocare verso iniziative con Impact Units verificabili.',
-    macro:  'BTI',
-  },
 };
 
-const STATUS_COLORS = [TOKENS.critical, TOKENS.warning, 'rgba(6,3,43,0.40)'];
+// Superseded component codes, retained as aliases only.
+const SUPERSEDED_ALIASES: Record<string, string> = {
+  NI: 'INT', VR: 'EVQ', CO: 'CONT', WB: 'EQW', EQ: 'EQS',
+};
 
-// ScoreDrivers — shows 3 business-language score drivers BEFORE any technical detail.
-// Translates component codes into decisions executives can act on.
-export function ScoreDrivers({ weakComponents, macroblockScores }: ScoreDriversProps) {
+// ScoreDrivers — ONE ranked driver group, not three cards.
+// KORA-WP-141: the three drivers used to be three separate cards, each with its
+// own 3px coloured top border, its own filled rank disc (red, gold, grey) and its
+// own drop shadow. They now share the canonical RankedGroup grammar with the
+// board actions and the BTI recommendations.
+export function ScoreDrivers({ weakComponents }: ScoreDriversProps) {
   const drivers = weakComponents.slice(0, 3).map((wc) => ({
-    ...DRIVER_LIBRARY[wc.code] ?? {
+    ...DRIVER_LIBRARY[wc.code] ?? DRIVER_LIBRARY[SUPERSEDED_ALIASES[wc.code] ?? ''] ?? {
       title:  wc.label,
       impact: 'Questo componente sta limitando il KORA Index™.',
       action: 'Analizzare le iniziative correlate e verificare la qualità delle evidenze.',
@@ -105,117 +117,19 @@ export function ScoreDrivers({ weakComponents, macroblockScores }: ScoreDriversP
   if (drivers.length === 0) return null;
 
   return (
-    <div>
-      {/* Section header */}
-      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'baseline', gap: 10 }}>
-        <p style={{
-          fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontSize:      '20px',
-          color:         TOKENS.ink,
-          letterSpacing: '-0.01em',
-          lineHeight:    1.2,
-        }}>
-          Cosa limita il punteggio
-        </p>
-        <p style={{
-          fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontSize:   '11px',
-          color:      TOKENS.inkHint,
-        }}>
-          — {drivers.length} vincoli identificati
-        </p>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
-        {drivers.map((driver, i) => (
-          <div
-            key={driver.code}
-            style={{
-              background:   TOKENS.surface,
-              border:       TOKENS.cardBorder,
-              borderTop:    `3px solid ${STATUS_COLORS[i] ?? TOKENS.inkBorder}`,
-              borderRadius: TOKENS.cardRadius,
-              padding:      '20px 22px',
-              display:      'flex',
-              flexDirection: 'column',
-              gap:          10,
-              boxShadow:    TOKENS.cardShadow,
-            }}
-          >
-            {/* Rank + macro label */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{
-                width:      20,
-                height:     20,
-                borderRadius: '50%',
-                background: STATUS_COLORS[i] ?? TOKENS.inkBorder,
-                color:      '#FFF',
-                fontSize:   '11px',
-                fontWeight: 700,
-                display:    'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}>
-                {i + 1}
-              </span>
-              <p style={{
-                fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                fontSize:      '11px',
-                fontWeight:    600,
-                letterSpacing: '0.07em',
-                textTransform: 'uppercase',
-                color:         TOKENS.inkHint,
-              }}>
-                {driver.macro} · {driver.code}
-              </p>
-            </div>
-
-            {/* Driver title */}
-            <p style={{
-              fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-              fontWeight:  700,
-              fontSize:    '14px',
-              color:       TOKENS.ink,
-              lineHeight:  1.25,
-              letterSpacing: '-0.005em',
-            }}>
-              {driver.title}
-            </p>
-
-            {/* Impact — what is happening */}
-            <p style={{
-              fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-              fontSize:   '12px',
-              color:      TOKENS.inkSecondary,
-              lineHeight: 1.55,
-              flex:       1,
-            }}>
-              {driver.impact}
-            </p>
-
-            {/* Action — what to do */}
-            <div style={{
-              paddingTop:  10,
-              borderTop:   TOKENS.cardBorder,
-              display:     'flex',
-              alignItems:  'flex-start',
-              gap:         8,
-            }}>
-              <span style={{ color: TOKENS.accent, fontSize: '12px', fontWeight: 700, flexShrink: 0, marginTop: 1 }}>→</span>
-              <p style={{
-                fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                fontSize:   '12px',
-                color:      TOKENS.accent,
-                lineHeight: 1.45,
-                fontWeight: 500,
-              }}>
-                {driver.action}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+    <RankedGroup title="Cosa limita il punteggio" note={<>In ordine di impatto sul <TM>KORA Index</TM></>}>
+      {drivers.map((driver, i) => (
+        <RankedItem
+          key={driver.code}
+          rank={i + 1}
+          title={driver.title}
+          meta={driver.code}
+          last={i === drivers.length - 1}
+        >
+          <RankedLine>{driver.impact}</RankedLine>
+          <RankedLine tone="tertiary">{'→ '}{driver.action}</RankedLine>
+        </RankedItem>
+      ))}
+    </RankedGroup>
   );
 }

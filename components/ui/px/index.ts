@@ -21,3 +21,4 @@ export {
 export { Display, Title, Section, Subsection, Body, Secondary, Label, Caption, Meta } from './Text';
 // KORA-WP-141 — composition: chapters, anchors, mobile priority.
 export { Chapter, PriorityStack, Priority } from './Chapter';
+export { RankedGroup, RankedItem, RankedLine } from './RankedGroup';

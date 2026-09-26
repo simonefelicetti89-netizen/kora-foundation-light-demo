@@ -21,9 +21,33 @@ const SAFEGUARD_CONFIG: Record<SafeguardStatus, { bg: string; text: string; dot:
   FLAGGED: { ...TOKENS.safeguard.cap,   label: 'Flagged', severity: 'Attivazione a rischio strutturale' },
 };
 
-// HeroDiagnosis — the first thing a user sees on the KORA Index page.
-// Score + diagnosis sentence + Safeguard™ + Confidence Score™.
-// Narrative before numbers. Verdict before components.
+const HAIRLINE = 'rgba(255,255,255,0.08)';
+const QUIET    = 'rgba(255,255,255,0.32)';
+
+// One governance cell. All three read identically — label, value, sub-line — so
+// the strip is one grammar instead of a pill, a number and a stamp.
+function GovCell({ label, value, valueColor, sub, dot }: {
+  label: string; value: React.ReactNode; valueColor?: string; sub: React.ReactNode; dot?: string;
+}) {
+  return (
+    <div style={{ flex: 1, minWidth: 150 }}>
+      <p className="kt-meta" style={{ color: QUIET, marginBottom: 8, fontWeight: 600 }}>{label}</p>
+      <p className="kt-subsection" style={{ color: valueColor ?? '#FFFFFF', display: 'flex', alignItems: 'center', gap: 8 }}>
+        {dot && <span style={{ width: 7, height: 7, borderRadius: '50%', background: dot, flexShrink: 0 }} />}
+        {value}
+      </p>
+      <p className="kt-caption" style={{ color: QUIET, marginTop: 6 }}>{sub}</p>
+    </div>
+  );
+}
+
+// HeroDiagnosis — the single T1 of the KORA Index surface.
+// KORA-WP-141 simplification: the terracotta ring watermark, the Safeguard pill
+// and the calibration pill are gone. They were three separate colour families
+// and three separate surface treatments competing with the score inside one
+// viewport. The judgment now carries exactly one saturated colour — the score —
+// and the Safeguard status survives as a 7px semantic dot, which is the smallest
+// mark that still discharges the non-suppressible disclosure.
 export function HeroDiagnosis({
   value, safeguardStatus, confidenceScore, diagnosisSentence,
   reportingPeriod, methodologyVersion, calibrationStatus,
@@ -37,196 +61,62 @@ export function HeroDiagnosis({
         background:   TOKENS.ink,
         borderRadius: TOKENS.cardRadius,
         padding:      '40px 44px',
-        position:     'relative',
-        overflow:     'hidden',
       }}
     >
-      {/* Subtle terracotta ring watermark */}
-      <div style={{
-        position:     'absolute',
-        right:        -40,
-        top:          -40,
-        width:        200,
-        height:       200,
-        borderRadius: '50%',
-        border:       '40px solid rgba(199,111,61,0.07)',
-        pointerEvents: 'none',
-      }} />
-
       {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 28, flexWrap: 'wrap' }}>
-        <div>
-          <p style={{
-            fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontWeight:    600,
-            fontSize:      '11px',
-            letterSpacing: '0.07em',
-            textTransform: 'uppercase',
-            color:         TOKENS.accent,
-            marginBottom:  6,
-          }}>
-            <TM>KORA Index</TM> v3 · {reportingPeriod}
+        <div style={{ minWidth: 0 }}>
+          {/* KORA-WP-141: the eyebrow carried a SECOND version label — and the
+              wrong one: it printed the INTERNAL architecture generation, which
+              B100 bans as a client-facing label. The masthead already carries the
+              canonical public version. Reporting period only. */}
+          <p className="kt-meta" style={{ color: TOKENS.accent, marginBottom: 10, fontWeight: 600 }}>
+            {reportingPeriod}
           </p>
           {/* Diagnosis sentence — the most important line on the page */}
-          <p style={{
-            fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontSize:    '20px',
-            fontWeight:  400,
-            color:       '#FFFFFF',
-            letterSpacing: '-0.01em',
-            lineHeight:  1.3,
-            maxWidth:    560,
-          }}>
+          <p className="kt-section" style={{ fontWeight: 400, color: '#FFFFFF', maxWidth: 560 }}>
             {diagnosisSentence}
           </p>
         </div>
 
-        {/* Score — large but NOT the first thing */}
+        {/* Score — the one saturated colour above the fold */}
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <p style={{
-            fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontWeight:  700,
-            fontSize:    '60px',
-            color:       scoreColor,
-            letterSpacing: '-0.04em',
-            lineHeight:  0.9,
-            fontVariantNumeric: 'tabular-nums',
-          }}>
+          <p className="kt-display kt-num" style={{ color: scoreColor }}>
             {Math.round(value)}
           </p>
-          <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '12px', color: 'rgba(255,255,255,0.30)', marginTop: 4 }}>
-            /100
-          </p>
+          <p className="kt-caption" style={{ color: QUIET, marginTop: 6 }}>/100</p>
         </div>
       </div>
 
-      {/* Divider */}
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', marginBottom: 20 }} />
+      <div style={{ height: 1, background: HAIRLINE, marginBottom: 20 }} />
 
-      {/* Governance strip — Safeguard + CS */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'flex-start' }}>
-
-        {/* Activation Safeguard™ */}
-        <div style={{ flex: 1, minWidth: 160 }}>
-          <p style={{
-            fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontWeight:    600,
-            fontSize:      '11px',
-            letterSpacing: '0.07em',
-            textTransform: 'uppercase',
-            color:         'rgba(255,255,255,0.30)',
-            marginBottom:  8,
-          }}>
-            Activation Safeguard™
-          </p>
-          <span style={{
-            display:      'inline-flex',
-            alignItems:   'center',
-            gap:          8,
-            borderRadius: 999,
-            padding:      '6px 14px',
-            background:   safeg.bg,
-            color:        safeg.text,
-            border:       `1px solid ${safeg.dot}50`,
-            fontSize:     '13px',
-            fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontWeight:   700,
-          }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: safeg.dot }} />
-            {safeg.label}
-          </span>
-          <p style={{
-            fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)',
-            fontSize:   '11px',
-            color:      'rgba(255,255,255,0.30)',
-            marginTop:  5,
-          }}>
-            {safeg.severity}
-          </p>
-        </div>
-
-        {/* Vertical divider */}
-        <div style={{ width: 1, background: 'rgba(255,255,255,0.08)', alignSelf: 'stretch' }} />
-
-        {/* Confidence Score™ */}
-        <div style={{ flex: 1, minWidth: 140 }}>
-          <p style={{
-            fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontWeight:    600,
-            fontSize:      '11px',
-            letterSpacing: '0.07em',
-            textTransform: 'uppercase',
-            color:         'rgba(255,255,255,0.30)',
-            marginBottom:  8,
-          }}>
-            Confidence Score™
-          </p>
-          <p style={{
-            fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontWeight:  700,
-            fontSize:    '20px',
-            color:       '#FFFFFF',
-            letterSpacing: '-0.02em',
-            lineHeight:  1,
-          }}>
-            {formatConfidenceScore(confidenceScore)}
-          </p>
-          <p style={{
-            fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)',
-            fontSize:   '11px',
-            color:      'rgba(255,255,255,0.30)',
-            marginTop:  5,
-            lineHeight: 1.35,
-          }}>
-            Esterno al <TM>KORA Index</TM> · peso = 0
-          </p>
-        </div>
-
-        {/* Calibration stamp */}
+      {/* Governance strip — Safeguard, Confidence Score, calibration */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
+        <GovCell
+          label="Activation Safeguard™"
+          value={safeg.label}
+          dot={safeg.dot}
+          sub={safeg.severity}
+        />
+        <GovCell
+          label="Confidence Score™"
+          value={<span className="kt-num">{formatConfidenceScore(confidenceScore)}</span>}
+          sub={<>Esterno al <TM>KORA Index</TM> · peso = 0</>}
+        />
         {calibrationStatus && (
-          <>
-            <div style={{ width: 1, background: 'rgba(255,255,255,0.08)', alignSelf: 'stretch' }} />
-            <div style={{ flex: 1, minWidth: 140 }}>
-              <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontWeight: 700, fontSize: '11px', letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.30)', marginBottom: 8 }}>
-                Calibrazione
-              </p>
-              <span style={{
-                borderRadius: 999,
-                padding:      '4px 10px',
-                background:   TOKENS.safeguard.watch.bg,
-                color:        TOKENS.safeguard.watch.text,
-                border:       `1px solid rgba(217,154,43,0.30)`,
-                fontSize:     '11px',
-                fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                fontWeight:   600,
-              }}>
-                {calibrationStatus.replace(/_/g, ' ')}
-              </span>
-              {methodologyVersion && (
-                <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '11px', color: 'rgba(255,255,255,0.22)', marginTop: 6 }}>
-                  {methodologyVersion}
-                </p>
-              )}
-            </div>
-          </>
+          <GovCell
+            label="Calibrazione"
+            value="Pre-empirica"
+            sub={<>{calibrationStatus}{methodologyVersion ? ` · ${methodologyVersion}` : ''}</>}
+          />
         )}
       </div>
 
       {/* B79-P0-5: Benchmark guidance — no sector benchmark in KORA Foundation Light */}
-      <div style={{
-        marginTop:    16,
-        paddingTop:   12,
-        borderTop:    '1px solid rgba(255,255,255,0.07)',
-        fontSize:     '11px',
-        color:        'rgba(255,255,255,0.25)',
-        lineHeight:   1.5,
-        fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-      }}>
-        <strong style={{ color: 'rgba(255,255,255,0.40)', fontWeight: 600 }}>Interpretazione score:</strong>{' '}
+      <p className="kt-caption" style={{ marginTop: 20, paddingTop: 14, borderTop: `1px solid ${HAIRLINE}`, color: QUIET, maxWidth: 720 }}>
         KORA Index v1.0 è in calibrazione pre-empirica. Non esistono ancora benchmark di settore validati —
         i valori sono diagnostici e interni. Confronto settoriale disponibile post-pilot (Delphi Study).
-        &nbsp;·&nbsp; Calibrazione: <span style={{ fontFamily: 'ui-monospace, monospace' }}>pre_empirical_calibration</span>
-      </div>
+      </p>
     </div>
   );
 }

@@ -174,9 +174,6 @@ export default function KoraIndexDetail() {
     .sort((a, b) => a.value - b.value)
     .slice(0, 3)
     .map((c) => ({ code: c.code as string, label: c.label }));
-  const macroblockScores: Record<string, number> = Object.fromEntries(
-    macroblocks.map((mb) => [mb.code as string, mb.score]),
-  );
 
   // B143: COMPANY_VIEWER rimosso. Se koraRole è null la sessione è in errore — non assumere alcun ruolo.
   if (!koraRole) {
@@ -359,15 +356,11 @@ export default function KoraIndexDetail() {
           direction at once — which is the whole point of the contract. */}
       <div className="kora-exec-split">
         <div style={{ minWidth: 0 }}>
-          <ExecutiveIntelligencePanel
-            summary={executiveIntelligence}
-            companyName={liveCompanyName ?? null}
-            reportingPeriod={output.reporting_period}
-          />
+          <ExecutiveIntelligencePanel summary={executiveIntelligence} />
         </div>
         {weakComponents.length > 0 && (
           <aside style={{ minWidth: 0 }} aria-label="Driver principali">
-            <ScoreDrivers weakComponents={weakComponents} macroblockScores={macroblockScores} />
+            <ScoreDrivers weakComponents={weakComponents} />
           </aside>
         )}
       </div>
@@ -461,7 +454,7 @@ export default function KoraIndexDetail() {
                   Rischio equità: {equityAccess.accessRiskLevel}
                 </span>
               )}
-              <span style={{ fontSize: '11px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 500, background: 'rgba(6,3,43,0.03)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
                 {eqCode} = {Math.round(equityAccess.eqValue * 100)}%
               </span>
             </div>
@@ -478,7 +471,7 @@ export default function KoraIndexDetail() {
                     <div key={label} style={{ marginBottom: '0.875rem' }}>
                       <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 4 }}>{label}</p>
                       {items.map((seg) => (
-                        <div key={seg.segmentId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 5, marginBottom: 3, background: 'rgba(6,3,43,0.02)', border: `1px solid rgba(6,3,43,0.06)` }}>
+                        <div key={seg.segmentId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 4, marginBottom: 3, background: 'rgba(6,3,43,0.03)', border: TOKENS.cardBorder }}>
                           <p style={{ flex: 1, fontSize: '12px', color: TOKENS.ink, fontWeight: 500 }}>{seg.segmentLabel}</p>
                           <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
                             {Math.round(seg.activationRate * 100)}%
@@ -501,7 +494,7 @@ export default function KoraIndexDetail() {
                   {equityAccess.recommendations.length > 0 && (
                     <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
                       {equityAccess.recommendations.map((rec, i) => (
-                        <div key={i} style={{ display: 'flex', gap: 4, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}>
+                        <div key={i} style={{ display: 'flex', gap: 4, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 4, border: TOKENS.cardBorder }}>
                           <span style={{ color: TOKENS.inkHint, fontSize: '12px', flexShrink: 0, marginTop: 1 }}>›</span>
                           <p style={{ fontSize: '11px', color: TOKENS.ink, lineHeight: 1.55 }}>{rec}</p>
                         </div>
@@ -565,7 +558,7 @@ export default function KoraIndexDetail() {
               }}>
                 Rischio evidenza: {evidenceReliability.evidenceRiskLevel}
               </span>
-              <span style={{ fontSize: '11px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 500, background: 'rgba(6,3,43,0.03)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
                 {evidenceReliability.evidenceLevelDistribution.primaryTier}
               </span>
             </div>
@@ -602,7 +595,7 @@ export default function KoraIndexDetail() {
                     Opportunità di miglioramento evidenza
                   </p>
                   {evidenceReliability.upgradeOpportunities.map((opp, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 8, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}>
+                    <div key={i} style={{ display: 'flex', gap: 8, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 4, border: TOKENS.cardBorder }}>
                       <span style={{ fontSize: '11px', fontWeight: 600, borderRadius: 4, padding: '1px 6px', whiteSpace: 'nowrap' as const, alignSelf: 'flex-start', marginTop: 1,
                         background: opp.priority === 'alta' ? TOKENS.safeguard.cap.bg : TOKENS.safeguard.watch.bg,
                         color:      opp.priority === 'alta' ? TOKENS.safeguard.cap.text : TOKENS.safeguard.watch.text,
@@ -672,7 +665,7 @@ export default function KoraIndexDetail() {
                   {lifeSummary.dominantSubcategory && ` · Dominante: ${lifeSummary.dominantSubcategory.replace(/_/g, ' ')}`}
                 </p>
                 {lifeSummary.recommendations.slice(0, 1).map((rec) => (
-                  <div key={rec.id} style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5, padding: '6px 8px', background: 'rgba(6,3,43,0.03)', borderRadius: 5, border: `1px solid rgba(6,3,43,0.07)` }}>
+                  <div key={rec.id} style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5, padding: '6px 8px', background: 'rgba(6,3,43,0.03)', borderRadius: 4, border: TOKENS.cardBorder }}>
                     › {rec.text}
                   </div>
                 ))}
@@ -684,7 +677,7 @@ export default function KoraIndexDetail() {
                     {careSummary.narrative}
                   </p>
                   {careSummary.recommendations.slice(0, 1).map((rec) => (
-                    <div key={rec.id} style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5, padding: '6px 8px', background: 'rgba(6,3,43,0.03)', borderRadius: 5, border: `1px solid rgba(6,3,43,0.07)` }}>
+                    <div key={rec.id} style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5, padding: '6px 8px', background: 'rgba(6,3,43,0.03)', borderRadius: 4, border: TOKENS.cardBorder }}>
                       › {rec.text}
                     </div>
                   ))}
