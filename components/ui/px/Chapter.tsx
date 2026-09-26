@@ -73,10 +73,15 @@ export function Chapter({
       {index !== undefined && (
         <span aria-hidden="true" className="kora-chapter-num kt-meta">{String(index).padStart(2, '0')}</span>
       )}
-      <h2 id={`${id}-label`} className="kt-section" style={{ margin: 0, flex: '1 1 auto', color: PX.ink }}>
-        {label}
-      </h2>
-      {aside && <div style={{ flex: '0 0 auto', minWidth: 0 }}>{aside}</div>}
+      {/* APPROVED DISCLOSURE CONTRACT: the caption sits BENEATH the title at
+          full measure, never squeezed into a side column beside it. A reader
+          must know what is inside without opening it. */}
+      <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+        <h2 id={`${id}-label`} className="kt-section" style={{ margin: 0, color: PX.ink }}>
+          {label}
+        </h2>
+        {aside && <div style={{ marginTop: 4, minWidth: 0 }}>{aside}</div>}
+      </div>
     </>
   );
   const attrs = {

@@ -1,207 +1,49 @@
 'use client';
 
 // components/executive-intelligence/ExecutiveIntelligencePanel.tsx
-// B77-B — Executive Intelligence Layer™ above-the-fold panel.
+// Executive Intelligence Layer™ — "La lettura del periodo".
 //
-// Answers four questions before any chart, number, or technical breakdown:
-//   COME STIAMO · PERCHÉ · OPPORTUNITÀ PRINCIPALE · AZIONE PRIORITARIA
+// ITS ONE JOB, per Founder ruling: name what ORGANISATIONAL PATTERN the combined
+// signals imply. It is the only block on the page that can say something no
+// single component produces — characteristically that budget is flowing to
+// activity which leaves no verifiable trace.
 //
-// This is a synthesis display — it does NOT compute scores.
-// It renders already-computed ExecutiveIntelligenceSummary from the service.
+// WHAT IT IS NOT, and the invariant that keeps it distinct:
+//   · it is NOT ScoreDrivers — it names no component and no code. Drivers
+//     localise WHERE the constraint is carried; this says WHAT KIND it is.
+//   · it is NOT BoardActions — it issues NO imperative. Its former
+//     "AZIONE PRIORITARIA" row is removed, because BoardActions is the sole
+//     canonical source of actions and three versions of one recommendation is
+//     what made the old page read as an accumulation.
+//   · it does NOT restate the organisational state. Score bands own that
+//     vocabulary; this panel leads with the insight instead.
+//
 // notKoraIndexComponent: true — display only, no methodology impact.
 
-import { BADGE_TOKENS, KORA_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
-import type { ExecutiveIntelligenceSummary, OrganizationStatusLabel } from '@/services/executive-intelligence/ExecutiveIntelligenceService';
+import { PX } from '@/lib/design/kora-design-tokens';
+import type { ExecutiveIntelligenceSummary } from '@/services/executive-intelligence/ExecutiveIntelligenceService';
 
-// ── Status color mapping ──────────────────────────────────────────────────────
+export function ExecutiveIntelligencePanel({ summary }: { summary: ExecutiveIntelligenceSummary }) {
+  // The two cross-cutting readings, in prose. No label column, no chips, no
+  // surface — the disclosure-free canvas is the boundary.
+  const reading = [summary.primaryConstraint, summary.wasteSignal].filter(Boolean);
 
-function statusColors(status: OrganizationStatusLabel): { bg: string; border: string; text: string; dot: string } {
-  if (status === 'Attivazione fragile')              return { bg: 'rgba(158,59,47,0.07)', border: 'rgba(158,59,47,0.22)', text: KORA_COLORS.CRITICAL, dot: KORA_COLORS.CRITICAL };
-  if (status === 'Attivazione concentrata')          return { bg: 'rgba(217,154,43,0.07)', border: 'rgba(217,154,43,0.25)', text: TOKENS.safeguard.watch.text, dot: KORA_COLORS.WARNING };
-  if (status === 'Attivazione in sviluppo')          return { bg: 'rgba(217,154,43,0.05)', border: 'rgba(217,154,43,0.18)', text: TOKENS.safeguard.watch.text, dot: KORA_COLORS.WARNING };
-  if (status === 'Attivazione moderata')             return { bg: 'rgba(199,111,61,0.06)', border: 'rgba(199,111,61,0.18)', text: BADGE_TOKENS.limited.text, dot: KORA_COLORS.TERRACOTTA };
-  if (status === 'Attivazione solida')               return { bg: 'rgba(47,125,85,0.06)', border: 'rgba(47,125,85,0.20)', text: KORA_COLORS.SUCCESS, dot: KORA_COLORS.SUCCESS };
-  if (status === 'Attivazione diffusa e sostenibile') return { bg: 'rgba(47,125,85,0.09)', border: 'rgba(47,125,85,0.28)', text: KORA_COLORS.SUCCESS, dot: KORA_COLORS.SUCCESS };
-  return { bg: TOKENS.surface, border: TOKENS.inkBorder, text: TOKENS.inkSecondary, dot: TOKENS.inkTertiary };
-}
-
-// ── Row component ─────────────────────────────────────────────────────────────
-
-function Row({ label, content, accent }: { label: string; content: string; accent?: boolean }) {
   return (
-    <div style={{
-      display:       'grid',
-      gridTemplateColumns: '168px 1fr',
-      gap:           '0 20px',
-      padding:       '14px 0',
-      borderBottom:  `1px solid ${TOKENS.inkBorder}`,
-    }}>
-      <div>
-        <p style={{
-          fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontWeight:    700,
-          fontSize:      '9px',
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          color:         accent ? KORA_COLORS.TERRACOTTA : TOKENS.inkHint,
-          marginTop:     2,
-        }}>
-          {label}
+    <section data-kora-region="reading" style={{ minWidth: 0 }}>
+      <p className="kt-meta" style={{ color: PX.inkMute, marginBottom: 12 }}>La lettura del periodo</p>
+
+      {reading.map((line, i) => (
+        <p key={i} className="kt-body" style={{ color: PX.ink2, maxWidth: '74ch', marginTop: i === 0 ? 0 : 10 }}>
+          {line}
         </p>
-      </div>
-      <p style={{
-        fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-        fontSize:    '13px',
-        fontWeight:  accent ? 600 : 400,
-        lineHeight:  1.55,
-        color:       accent ? TOKENS.ink : TOKENS.inkSecondary,
-      }}>
-        {content}
+      ))}
+
+      <p className="kt-caption" style={{ color: PX.ink3, marginTop: 14, maxWidth: '74ch' }}>
+        {summary.confidenceNote}
       </p>
-    </div>
-  );
-}
-
-// ── Main component ────────────────────────────────────────────────────────────
-
-interface Props {
-  summary: ExecutiveIntelligenceSummary;
-  companyName?: string | null;
-  reportingPeriod?: string;
-}
-
-export function ExecutiveIntelligencePanel({ summary, companyName, reportingPeriod }: Props) {
-  const sc = statusColors(summary.organizationStatus);
-
-  return (
-    <div style={{
-      background:   TOKENS.surface,
-      border:       `1px solid ${sc.border}`,
-      borderRadius: '10px',
-      overflow:     'hidden',
-      marginBottom: 28,
-    }}>
-
-      {/* ── Status header ── */}
-      <div style={{
-        background:    sc.bg,
-        borderBottom:  `1px solid ${sc.border}`,
-        padding:       '16px 24px',
-        display:       'flex',
-        alignItems:    'center',
-        justifyContent:'space-between',
-        gap:           16,
-        flexWrap:      'wrap',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width:        8,
-            height:       8,
-            borderRadius: '50%',
-            background:   sc.dot,
-            flexShrink:   0,
-          }} />
-          <div>
-            <p style={{
-              fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-              fontWeight:    700,
-              fontSize:      '9px',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              color:         TOKENS.inkHint,
-              marginBottom:  3,
-            }}>
-              COME STIAMO{companyName ? ` · ${companyName}` : ''}
-            </p>
-            <p style={{
-              fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-              fontWeight: 700,
-              fontSize:   '17px',
-              color:      sc.text,
-              lineHeight: 1.2,
-            }}>
-              {summary.organizationStatus}
-            </p>
-          </div>
-        </div>
-        {reportingPeriod && (
-          <span style={{
-            fontFamily:    'ui-monospace, SFMono-Regular, monospace',
-            fontSize:      '10px',
-            color:         TOKENS.inkHint,
-            background:    'rgba(6,3,43,0.04)',
-            border:        `1px solid ${TOKENS.inkBorder}`,
-            borderRadius:  4,
-            padding:       '2px 8px',
-          }}>
-            {reportingPeriod}
-          </span>
-        )}
-      </div>
-
-      {/* ── Content rows ── */}
-      <div style={{ padding: '0 24px' }}>
-        <Row
-          label="PERCHÉ"
-          content={summary.primaryConstraint}
-        />
-        <Row
-          label="OPPORTUNITÀ PRINCIPALE"
-          content={summary.wasteSignal}
-        />
-        <Row
-          label="AZIONE PRIORITARIA"
-          content={summary.primaryAction}
-          accent
-        />
-      </div>
-
-      {/* ── Methodology footer ── */}
-      <div style={{
-        padding:     '10px 24px',
-        borderTop:   `1px solid ${TOKENS.inkBorder}`,
-        display:     'flex',
-        alignItems:  'center',
-        justifyContent: 'space-between',
-        gap:         12,
-        flexWrap:    'wrap',
-      }}>
-        <p style={{
-          fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontSize:   '11px',
-          color:      TOKENS.inkTertiary,
-          lineHeight: 1.4,
-          maxWidth:   560,
-        }}>
-          {summary.confidenceNote}
-        </p>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
-          <span style={{
-            fontFamily:    'ui-monospace, SFMono-Regular, monospace',
-            fontSize:      '9px',
-            color:         TOKENS.inkMeta,
-            background:    'rgba(6,3,43,0.03)',
-            border:        `1px solid ${TOKENS.inkBorder}`,
-            borderRadius:  3,
-            padding:       '2px 6px',
-            letterSpacing: '0.03em',
-          }}>
-            pre_empirical_calibration
-          </span>
-          <span style={{
-            fontFamily:    'ui-monospace, SFMono-Regular, monospace',
-            fontSize:      '9px',
-            color:         TOKENS.inkMeta,
-            background:    'rgba(6,3,43,0.03)',
-            border:        `1px solid ${TOKENS.inkBorder}`,
-            borderRadius:  3,
-            padding:       '2px 6px',
-          }}>
-            not_kora_index_component
-          </span>
-        </div>
-      </div>
-
-    </div>
+      <p className="kt-caption" style={{ color: PX.inkMute, marginTop: 4 }}>
+        pre_empirical_calibration · not_kora_index_component
+      </p>
+    </section>
   );
 }

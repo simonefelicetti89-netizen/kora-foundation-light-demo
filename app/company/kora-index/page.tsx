@@ -15,14 +15,15 @@ import { lifeDiversityService }                   from '@/services/life-diversit
 import { careEconomyIntelligenceService }         from '@/services/care-economy/CareEconomyIntelligenceService';
 import { generateLiveRecommendations }            from '@/lib/live/live-recommendations';
 import { generateLiveBoardActions }               from '@/lib/live/live-board-actions';
+import { getMacroblockStatusThresholds }          from '@/lib/methodology-config/v0.1';
 import { computeExecutiveIntelligence }           from '@/services/executive-intelligence/ExecutiveIntelligenceService';
 import { ExecutiveIntelligencePanel }             from '@/components/executive-intelligence/ExecutiveIntelligencePanel';
 import type { UEFReviewSummary, ImpactUnitComputationSummary } from '@/lib/types';
 import type { LiveEligibilityContext }            from '@/app/api/company/live-eligibility/route';
-import { BADGE_TOKENS, TOKENS }                                 from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS, PX }                             from '@/lib/design/kora-design-tokens';
 import type { MacroblockScore }                   from '@/lib/types';
 
-import { HeroDiagnosis, generateDiagnosisSentence } from '@/components/kora-index/HeroDiagnosis';
+import { ScoreDrivers }    from '@/components/kora-index/ScoreDrivers';
 import { BoardActions }    from '@/components/kora-index/BoardActions';
 
 import { PageMasthead }    from '@/components/ui/PageMasthead';
@@ -30,6 +31,13 @@ import { SectionLabel }    from '@/components/ui/SectionLabel';
 import { Explainer }       from '@/components/ui/Explainer';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { TM }              from '@/components/ui/TM';
+import {
+  Chapter, Priority,
+  ExecutiveSurface, ExecutiveRule, VerdictLine, SignalRow, Signal,
+  ScoreBandScale, ThresholdMeter,
+} from '@/components/ui/px';
+import { macroblockScale } from '@/lib/design/encoding-grammar';
+import { resolveVerdict, buildPrecisionLine } from '@/lib/verdict/resolve';
 
 import { MacroblockCard }           from '@/components/kora-index/MacroblockCard';
 import { KoraIndexBuildCard }       from '@/components/kora-index/KoraIndexBuildCard';
@@ -43,6 +51,27 @@ import { RecommendationsPanel }     from '@/components/kora-index/Recommendation
 import { MethodologyGlossary }      from '@/components/kora-index/MethodologyGlossary';
 import { BoundaryBadge }                    from '@/components/ui/BoundaryBadge';
 import { InitiativeExplainabilityPanel }    from '@/components/company/InitiativeExplainabilityPanel';
+
+// Safeguard presentation — a closed record, so no prop can change the semantic
+// state. The mark is a 7px dot; semantic colour never becomes a surface.
+const SAFEGUARD_WORD: Record<string, string> = { CLEAR: 'Clear', WARNING: 'Warning', FLAGGED: 'Flagged' };
+const SAFEGUARD_SUB:  Record<string, string> = {
+  CLEAR:   'Soglie minime rispettate',
+  WARNING: 'Sotto le soglie di qualità',
+  FLAGGED: 'Attivazione a rischio strutturale',
+};
+const SAFEGUARD_MARK: Record<string, string> = { CLEAR: PX.ok, WARNING: PX.warn, FLAGGED: PX.risk };
+
+// BTI status cutoffs read from the methodology config — never hardcoded here.
+const BTI_STATUS = getMacroblockStatusThresholds();
+const BTI_GOOD = BTI_STATUS.buono.min;
+const BTI_DEV  = BTI_STATUS.sviluppo.min;
+
+const MOBILE_ORDER = {
+  drivers: 1, actions: 2, reading: 3, bti: 4,
+  d1: 5, d2: 6, d3: 7, d4: 8,
+  reference: 9,
+} as const;
 
 // ── Explainer definitions ─────────────────────────────────────────────────────
 const EXP = {
@@ -264,12 +293,12 @@ export default function KoraIndexDetail() {
       }
     : { eligible_row_count: 0, limited_count: 0, blocked_count: 0, total_row_count: 0, blocked_note: 'Caricamento…', limited_note: 'Caricamento…' };
 
-  const diagnosisSentence = generateDiagnosisSentence(
-    output.kora_index_value,
-    output.safeguard_status,
-    aggregate?.activation_rate ?? 0,
-    undefined,
-  );
+  // `generateDiagnosisSentence` is SUPERSEDED by the deterministic verdict
+  // library: it emitted templated strings from thresholds, and at display scale
+  // a formulaic sentence is the most conspicuous weakness on the page. The
+  // function is left in HeroDiagnosis for its other callers; this surface no
+  // longer uses it.
+
 
   // ── Board Actions ─────────────────────────────────────────────────────────
   const boardActions = generateLiveBoardActions({
@@ -320,405 +349,510 @@ export default function KoraIndexDetail() {
     economicReliefShare:      null,
   });
 
+  // ── Approved design V2 — the declared 375px reading order ──────────────────
+  //   judgment -> index -> Safeguard/Confidence/BTI -> action -> drivers ->
+  //   actions -> reading -> BTI detail -> disclosures -> reference.
+  // Inert above 767px.
+
+  // Not every component deserves first-level visibility: the three weakest
+  // SELECT and ORDER existing values; nothing is computed or encoded here.
+  const weakComponents = [...output.components]
+    .filter((c) => !c.external && typeof c.value === 'number')
+    .sort((a, b) => a.value - b.value)
+    .slice(0, 3)
+    .map((c) => ({ code: c.code as string, label: c.label }));
+
+  const safeguardStatus = safeguard?.status ?? 'WARNING';
+  const btiMacroblock   = macroblocks.find((m) => m.code === 'BTI');
+  const btiScore        = typeof btiMacroblock?.score === 'number' ? btiMacroblock.score : null;
+  const btiMark         = btiScore === null ? undefined
+    : btiScore >= BTI_GOOD ? PX.ok : btiScore >= BTI_DEV ? PX.warn : PX.risk;
+  const btiSub          = btiScore === null ? 'Dato non disponibile'
+    : btiScore >= BTI_GOOD ? `Sopra il target di ${BTI_GOOD}` : `Sotto il target di ${BTI_GOOD}`;
+
+  // The verdict is AUTHORED (lib/verdict) and resolved deterministically; the
+  // precision line is generated from the actual figures. Neither is composed here.
+  const verdict = resolveVerdict({
+    koraIndexValue:  output.kora_index_value,
+    safeguardStatus,
+    components:      output.components,
+    macroblocks,
+  });
+  const precisionLine = buildPrecisionLine({
+    koraIndexValue:  output.kora_index_value,
+    safeguardStatus,
+    components:      output.components,
+    macroblocks,
+    activationRate:  safeguard?.ar_value ?? null,
+    meaningfulActivationRate: safeguard?.mar_value ?? null,
+  });
+
+  // BoardActions is the SOLE source of imperatives; the T2 line is a promotion
+  // of its first item, never a second recommendation.
+  const primaryAction = boardActions[0]?.action ?? null;
+
   return (
-    <div style={{ maxWidth: 900 }} data-testid="company-kora-index-page">
+    <div className="kora-priority-stack" style={{ maxWidth: 1120 }} data-testid="company-kora-index-page">
 
-      {/* ── Page header ── */}
-      <div style={{ marginBottom: 28 }}>
-        <p style={{
-          fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontWeight:    600,
-          fontSize:      '10px',
-          letterSpacing: '0.10em',
-          textTransform: 'uppercase',
-          color:         TOKENS.accent,
-          marginBottom:  8,
-        }}>
-          <TM>KORA Index</TM> v1.0 · Intelligence analitica
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <h1 style={{
-            fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontSize:      'clamp(1.75rem, 3vw, 2.25rem)',
-            fontWeight:    400,
-            color:         TOKENS.ink,
-            letterSpacing: '-0.02em',
-            lineHeight:    1.08,
-          }}>
-            {liveCompanyName ?? 'La tua organizzazione'}
-          </h1>
-          <BoundaryBadge mode="LIVE" variant="light" />
-        </div>
+      {/* ── CHROME — one line ─────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, flexWrap: 'wrap', marginBottom: 24 }}>
+        <span className="kt-meta" style={{ color: PX.inkMute }}><TM>KORA Index</TM> v1.0</span>
+        <h1 className="kt-title" style={{ margin: 0, color: PX.ink, minWidth: 0 }}>
+          {liveCompanyName ?? 'La tua organizzazione'}
+        </h1>
+        <BoundaryBadge mode="LIVE" variant="light" />
       </div>
 
+      {/* ── T1 + T2 — the ONE filled surface ──────────────────────────────── */}
+      <ExecutiveSurface>
+        <VerdictLine period={output.reporting_period} verdict={verdict.text} precision={precisionLine} />
 
-      {/* ══ EXECUTIVE INTELLIGENCE LAYER™ ═══════════════════════════════════ */}
+        <ExecutiveRule />
 
-      <ExecutiveIntelligencePanel
-        summary={executiveIntelligence}
-        companyName={liveCompanyName ?? null}
-        reportingPeriod={output.reporting_period}
-      />
-
-      {/* ══ SECTION 1: HERO DIAGNOSIS ════════════════════════════════════════ */}
-
-      <HeroDiagnosis
-        value={output.kora_index_value}
-        safeguardStatus={output.safeguard_status}
-        confidenceScore={output.confidence_score}
-        diagnosisSentence={diagnosisSentence}
-        reportingPeriod={output.reporting_period}
-        methodologyVersion={output.methodology_version_id}
-        calibrationStatus={output.calibration_status}
-      />
-
-      {/* ══ SECTION 2: BOARD ACTIONS ═════════════════════════════════════════ */}
-
-      {boardActions.length > 0 && (
-        <div style={{ marginTop: 28 }}>
-          <BoardActions actions={boardActions} />
-        </div>
-      )}
-
-      {/* ══ SECTION 3: TECHNICAL BREAKDOWN ══════════════════════════════════ */}
-
-      <Divider label="Scomposizione tecnica — macroblocchi e componenti" />
-
-      <SectionLabel>4 macroblocchi</SectionLabel>
-      <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4 mt-4">
-        {macroblocks.map((mb) => (
-          <MacroblockCard key={mb.code} macroblock={mb} />
-        ))}
-      </div>
-
-      <div className="mt-6" id="componenti">
-        <SectionLabel>10 componenti analitici</SectionLabel>
-        <div className="grid gap-4 lg:grid-cols-2 mt-4">
-          <ComponentBreakdownChart components={output.components} weakCodes={[]} />
-          <ComponentBreakdown components={output.components} />
-        </div>
-      </div>
-
-      {/* Equity & Access Intelligence™ */}
-      {equityAccess && (
-        <div className="mt-6">
-          <SectionLabel>Equity & Access Intelligence™</SectionLabel>
-          <div style={{
-            background:   TOKENS.surface,
-            border:       TOKENS.cardBorder,
-            borderRadius: TOKENS.cardRadius,
-            overflow:     'hidden',
-            marginTop:    16,
-          }}>
-            <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
-                Distribuzione attivazione per segmento
+        <SignalRow
+          index={
+            <>
+              <p className="kt-meta" style={{ color: 'rgba(255,255,255,0.50)', marginBottom: 8 }}>
+                <TM>KORA Index</TM>
               </p>
-              {equityAccess.accessRiskLevel !== 'insufficient_data' && (
-                <span style={{
-                  fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
-                  background: equityAccess.accessRiskLevel === 'alta' ? TOKENS.safeguard.cap.bg
-                    : equityAccess.accessRiskLevel === 'media' ? TOKENS.safeguard.watch.bg
-                    : TOKENS.safeguard.pass.bg,
-                  color: equityAccess.accessRiskLevel === 'alta' ? TOKENS.safeguard.cap.text
-                    : equityAccess.accessRiskLevel === 'media' ? TOKENS.safeguard.watch.text
-                    : TOKENS.safeguard.pass.text,
-                }}>
-                  Rischio equità: {equityAccess.accessRiskLevel}
-                </span>
-              )}
-              <span style={{ fontSize: '10px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
-                {eqCode} = {Math.round(equityAccess.eqValue * 100)}%
-              </span>
-            </div>
-            <div style={{ padding: '1rem 1.25rem' }}>
-              {equityAccess.accessRiskLevel === 'insufficient_data' ? (
-                <p style={{ fontSize: '12px', color: TOKENS.inkHint, fontStyle: 'italic' }}>{equityAccess.narrative}</p>
-              ) : (
-                <>
-                  {[
-                    { label: 'Segmenti sotto-attivati', items: equityAccess.underActivatedSegments, tone: TOKENS.safeguard.cap },
-                    { label: 'Segmenti in parità', items: equityAccess.nearParitySegments, tone: null },
-                    { label: 'Segmenti sovra-attivati', items: equityAccess.overActivatedSegments, tone: TOKENS.safeguard.pass },
-                  ].filter(({ items }) => items.length > 0).map(({ label, items, tone }) => (
-                    <div key={label} style={{ marginBottom: '0.875rem' }}>
-                      <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 6 }}>{label}</p>
-                      {items.map((seg) => (
-                        <div key={seg.segmentId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 5, marginBottom: 3, background: 'rgba(6,3,43,0.02)', border: `1px solid rgba(6,3,43,0.06)` }}>
-                          <p style={{ flex: 1, fontSize: '12px', color: TOKENS.ink, fontWeight: 500 }}>{seg.segmentLabel}</p>
-                          <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
-                            {Math.round(seg.activationRate * 100)}%
-                          </p>
-                          <span style={{ fontSize: '10px', fontWeight: 600, color: tone?.text ?? TOKENS.inkSecondary, background: tone?.bg ?? 'rgba(6,3,43,0.05)', borderRadius: 4, padding: '1px 6px' }}>
-                            {seg.gapVsAverage >= 0 ? '+' : ''}{Math.round(seg.gapVsAverage * 100)}pp
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                  {equityAccess.suppressedSegmentCount > 0 && (
-                    <p style={{ fontSize: '11px', color: TOKENS.inkHint, fontStyle: 'italic', marginBottom: 8 }}>
-                      {equityAccess.suppressedSegmentCount} {equityAccess.suppressedSegmentCount === 1 ? 'segmento' : 'segmenti'} non visibili (N &lt; 10, soglia privacy).
-                    </p>
-                  )}
-                  <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65, marginTop: 8 }}>
-                    {equityAccess.narrative}
-                  </p>
-                  {equityAccess.recommendations.length > 0 && (
-                    <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column' as const, gap: 5 }}>
-                      {equityAccess.recommendations.map((rec, i) => (
-                        <div key={i} style={{ display: 'flex', gap: 6, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}>
-                          <span style={{ color: TOKENS.inkHint, fontSize: '12px', flexShrink: 0, marginTop: 1 }}>›</span>
-                          <p style={{ fontSize: '11px', color: TOKENS.ink, lineHeight: 1.55 }}>{rec}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-            <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
-              Equity & Access Intelligence™ · pre_empirical_calibration · non modifica EQS né KORA Index™ · not_kora_index_component
-            </p>
-          </div>
+              <p style={{ color: '#FFFFFF', display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                <span className="kt-title kt-num">{Math.round(output.kora_index_value)}</span>
+                <span className="kt-secondary kt-num" style={{ color: 'rgba(255,255,255,0.34)', fontWeight: 600 }}>/100</span>
+              </p>
+              <div style={{ marginTop: 10 }}>
+                <ScoreBandScale value={output.kora_index_value} onDark />
+              </div>
+            </>
+          }
+          signals={[
+            <Signal
+              key="safeguard"
+              label="Activation Safeguard™"
+              shortLabel="Safeguard"
+              mark={SAFEGUARD_MARK[safeguardStatus]}
+              value={<span className="kt-subsection">{SAFEGUARD_WORD[safeguardStatus]}</span>}
+              sub={SAFEGUARD_SUB[safeguardStatus]}
+            />,
+            <Signal
+              key="confidence"
+              label="Confidence Score™"
+              shortLabel="Confidence"
+              value={<span className="kt-subsection kt-num">{Math.round(output.confidence_score * 100)}%</span>}
+              sub={'Affidabilità dell’interpretazione · peso = 0'}
+            />,
+            <Signal
+              key="bti"
+              label="Budget → impatto"
+              shortLabel="Budget"
+              mark={btiMark}
+              value={btiScore === null
+                ? <span className="kt-subsection">—</span>
+                : <><span className="kt-subsection kt-num">{Math.round(btiScore)}</span><span className="kt-secondary kt-num" style={{ color: 'rgba(255,255,255,0.34)', fontWeight: 600 }}>/100</span></>}
+              sub={btiSub}
+            />,
+          ]}
+        />
+
+        <ExecutiveRule />
+
+        {primaryAction && (
+          <p className="kt-section" style={{ fontWeight: 600, color: '#FFFFFF', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+            <span aria-hidden="true" style={{ color: 'rgba(255,255,255,0.50)', flex: '0 0 auto' }}>→</span>
+            <span>{primaryAction}</span>
+          </p>
+        )}
+      </ExecutiveSurface>
+
+      {/* ── T3 — localisation | imperatives ───────────────────────────────── */}
+      <div className="kora-two-col" style={{ marginTop: 40 }}>
+        <Priority order={MOBILE_ORDER.drivers}>
+          <ScoreDrivers weakComponents={weakComponents} />
+        </Priority>
+        <div className="kora-two-col-rule" aria-hidden="true" />
+        <Priority order={MOBILE_ORDER.actions}>
+          <BoardActions actions={boardActions} />
+        </Priority>
+      </div>
+
+      {/* ── T3 — the reading. Names no component, issues no imperative. ───── */}
+      <Priority order={MOBILE_ORDER.reading}>
+        <div style={{ marginTop: 40, paddingTop: 40, borderTop: `1px solid ${PX.line}` }}>
+          <ExecutiveIntelligencePanel summary={executiveIntelligence} />
         </div>
+      </Priority>
+
+      {/* ── T3 — BTI detail ───────────────────────────────────────────────── */}
+      {btiScore !== null && (
+        <Priority order={MOBILE_ORDER.bti}>
+          <div style={{ marginTop: 40, paddingTop: 40, borderTop: `1px solid ${PX.line}` }}>
+            <p className="kt-meta" style={{ color: PX.inkMute, marginBottom: 8 }}>Budget-to-Human-Impact™</p>
+            {/* Constrained measure: a threshold track spanning 1,120px reads as
+                an arbitrary progress bar rather than a position against a scale. */}
+            <div style={{ maxWidth: 520 }}>
+            <ThresholdMeter
+              scale={macroblockScale('BTI')}
+              value={btiScore}
+              label="Budget-to-Human-Impact™"
+              unitSuffix="/100"
+              showSource
+            />
+            </div>
+          </div>
+        </Priority>
       )}
 
-      {/* Pipeline build */}
-      <div className="mt-6">
-        <SectionLabel>Pipeline di costruzione</SectionLabel>
-        <div className="mt-4">
-          <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
-        </div>
-      </div>
+      {/* ── T4/T5 — exactly four disclosure groups ────────────────────────── */}
+      <div className="kora-disclosure-region" style={{ marginTop: 48 }}>
 
-      {/* Eligibility gate */}
-      <div className="mt-6">
-        <SectionLabel>Eligibility gate</SectionLabel>
-        <div style={{ marginBottom: 12 }}>
-          <Explainer {...EXP.eligibility} compact />
-        </div>
-        <div className="mt-4">
-          <EligibilityGatePanel summary={eligibilityGate} />
-        </div>
-      </div>
+        <Chapter id="costruzione" label="Come è costruito il punteggio" tier="T4" index={1} mobileOrder={MOBILE_ORDER.d1} collapsible
+          aside={<span className="kt-caption" style={{ color: PX.ink3 }}>4 macroblocchi · 10 componenti con valori e pesi · pipeline</span>}>
+          <SectionLabel>4 macroblocchi</SectionLabel>
+          <div className="grid gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-4 mt-4">
+            {macroblocks.map((mbk) => (
+              <MacroblockCard key={mbk.code} macroblock={mbk} />
+            ))}
+          </div>
+          <div className="mt-6" id="componenti">
+            <SectionLabel>10 componenti analitici</SectionLabel>
+            <div className="grid gap-4 lg:grid-cols-2 mt-4">
+              <ComponentBreakdownChart components={output.components} weakCodes={[]} />
+              <ComponentBreakdown components={output.components} />
+            </div>
+          </div>
+          <div className="mt-6">
+            <SectionLabel>Pipeline di costruzione</SectionLabel>
+            <div className="mt-4">
+              <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
+            </div>
+          </div>
+        </Chapter>
 
-      {/* Blocked by design */}
-      <div className="mt-6">
-        <SectionLabel>Compliance & blocked</SectionLabel>
-        <BlockedByDesignPanel blockedCount={eligibilityGate.blocked_count} blockedNote={eligibilityGate.blocked_note} />
-      </div>
-
-      {/* Initiative explainability — per-initiative eligibility and KORA Index contribution */}
-      <div className="mt-6">
-        <SectionLabel>Perché le iniziative hanno inciso</SectionLabel>
-        <InitiativeExplainabilityPanel period={reportingPeriodForLive} />
-      </div>
-
-      {/* Safeguard + Confidence */}
-      <div className="mt-6">
-        <SectionLabel>Safeguard & confidence</SectionLabel>
-        <div style={{ display: 'flex', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-          <Explainer {...EXP.safeguard} compact />
-          <Explainer {...EXP.cs} compact />
-        </div>
-        <div className="grid gap-4 lg:grid-cols-2 mt-4">
-          <ActivationSafeguardPanel result={safeguard} explanation={undefined} />
-          <ConfidenceBreakdown record={confidence} />
-        </div>
-
-        {/* Evidence Reliability Intelligence™ */}
-        {!evidenceReliability && !liveCtx && evidenceReliabilityIntelligenceService.canAccess(koraRole) && (
-          <div
-            data-testid="evidence-reliability-pending"
-            style={{
+        <Chapter id="affidabilita" label="Qualità e affidabilità delle evidenze" tier="T4" index={2} mobileOrder={MOBILE_ORDER.d2} collapsible
+          aside={<span className="kt-caption" style={{ color: PX.ink3 }}>Safeguard AR/MAR · Confidence in dettaglio · Evidence Reliability</span>}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+            <Explainer {...EXP.safeguard} compact />
+            <Explainer {...EXP.cs} compact />
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2 mt-4">
+            <ActivationSafeguardPanel result={safeguard} explanation={undefined} />
+            <ConfidenceBreakdown record={confidence} />
+          </div>
+          {/* Evidence Reliability Intelligence™ */}
+          {!evidenceReliability && !liveCtx && evidenceReliabilityIntelligenceService.canAccess(koraRole) && (
+            <div
+              data-testid="evidence-reliability-pending"
+              style={{
+                marginTop:    16,
+                background:   TOKENS.surface,
+                border:       TOKENS.cardBorder,
+                borderRadius: TOKENS.cardRadius,
+                padding:      '0.875rem 1.25rem',
+              }}
+            >
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, marginBottom: 4 }}>
+                Evidence Reliability Intelligence™
+              </p>
+              <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+                Dati evidenza non ancora disponibili per questo periodo. Nessun dato sintetico viene mostrato al posto dei dati live.
+              </p>
+            </div>
+          )}
+          {evidenceReliability && (
+            <div style={{
               marginTop:    16,
               background:   TOKENS.surface,
               border:       TOKENS.cardBorder,
               borderRadius: TOKENS.cardRadius,
-              padding:      '0.875rem 1.25rem',
-            }}
-          >
-            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, marginBottom: 4 }}>
-              Evidence Reliability Intelligence™
-            </p>
-            <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
-              Dati evidenza non ancora disponibili per questo periodo. Nessun dato sintetico viene mostrato al posto dei dati live.
-            </p>
-          </div>
-        )}
-        {evidenceReliability && (
-          <div style={{
-            marginTop:    16,
-            background:   TOKENS.surface,
-            border:       TOKENS.cardBorder,
-            borderRadius: TOKENS.cardRadius,
-            overflow:     'hidden',
-          }}>
-            <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
-                Evidence Reliability Intelligence™
-              </p>
-              <span style={{
-                fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
-                background: evidenceReliability.evidenceRiskLevel === 'alta' ? TOKENS.safeguard.cap.bg
-                  : evidenceReliability.evidenceRiskLevel === 'media' ? TOKENS.safeguard.watch.bg
-                  : TOKENS.safeguard.pass.bg,
-                color: evidenceReliability.evidenceRiskLevel === 'alta' ? TOKENS.safeguard.cap.text
-                  : evidenceReliability.evidenceRiskLevel === 'media' ? TOKENS.safeguard.watch.text
-                  : TOKENS.safeguard.pass.text,
-              }}>
-                Rischio evidenza: {evidenceReliability.evidenceRiskLevel}
-              </span>
-              <span style={{ fontSize: '10px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
-                {evidenceReliability.evidenceLevelDistribution.primaryTier}
-              </span>
-            </div>
-            <div style={{ padding: '1rem 1.25rem' }}>
-              <div style={{ marginBottom: '1rem' }}>
-                <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 6 }}>Distribuzione livello evidenza</p>
-                <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', gap: 2 }}>
-                  {evidenceReliability.evidenceLevelDistribution.strongShare > 0 && (
-                    <div style={{ flex: evidenceReliability.evidenceLevelDistribution.strongShare, background: TOKENS.safeguard.pass.text, opacity: 0.85 }} title={`Strong: ${Math.round(evidenceReliability.evidenceLevelDistribution.strongShare * 100)}%`} />
-                  )}
-                  {evidenceReliability.evidenceLevelDistribution.acceptableShare > 0 && (
-                    <div style={{ flex: evidenceReliability.evidenceLevelDistribution.acceptableShare, background: TOKENS.safeguard.watch.text, opacity: 0.70 }} title={`Acceptable: ${Math.round(evidenceReliability.evidenceLevelDistribution.acceptableShare * 100)}%`} />
-                  )}
-                  {evidenceReliability.evidenceLevelDistribution.weakShare > 0 && (
-                    <div style={{ flex: evidenceReliability.evidenceLevelDistribution.weakShare, background: TOKENS.safeguard.cap.text, opacity: 0.65 }} title={`Weak: ${Math.round(evidenceReliability.evidenceLevelDistribution.weakShare * 100)}%`} />
-                  )}
-                </div>
-                <div style={{ display: 'flex', gap: 12, marginTop: 5 }}>
-                  {[
-                    { label: `Strong (L3/L4): ${Math.round(evidenceReliability.evidenceLevelDistribution.strongShare * 100)}%`, color: TOKENS.safeguard.pass.text },
-                    { label: `Acceptable (L2): ${Math.round(evidenceReliability.evidenceLevelDistribution.acceptableShare * 100)}%`, color: TOKENS.safeguard.watch.text },
-                    { label: `Weak (L0/L1): ${Math.round(evidenceReliability.evidenceLevelDistribution.weakShare * 100)}%`, color: TOKENS.safeguard.cap.text },
-                  ].map(({ label, color }) => (
-                    <span key={label} style={{ fontSize: '10px', color, fontWeight: 500 }}>{label}</span>
-                  ))}
-                </div>
-              </div>
-              <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65, marginBottom: 10 }}>
-                {evidenceReliability.advisorNarrative}
-              </p>
-              {evidenceReliability.upgradeOpportunities.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 5 }}>
-                  <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 2 }}>
-                    Opportunità di miglioramento evidenza
-                  </p>
-                  {evidenceReliability.upgradeOpportunities.map((opp, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 8, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}>
-                      <span style={{ fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '1px 6px', whiteSpace: 'nowrap' as const, alignSelf: 'flex-start', marginTop: 1,
-                        background: opp.priority === 'alta' ? TOKENS.safeguard.cap.bg : TOKENS.safeguard.watch.bg,
-                        color:      opp.priority === 'alta' ? TOKENS.safeguard.cap.text : TOKENS.safeguard.watch.text,
-                      }}>
-                        {opp.priority === 'alta' ? 'Alta' : 'Media'}
-                      </span>
-                      <div>
-                        <p style={{ fontSize: '11px', color: TOKENS.ink, fontWeight: 500, lineHeight: 1.4 }}>{opp.area}</p>
-                        <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5, marginTop: 2 }}>{opp.upgradeAction}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
-              Evidence Reliability Intelligence™ · pre_empirical_calibration · non modifica CS, EVQ né KORA Index™ · not_kora_index_component
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* LIFE Diversity + Care Economy Intelligence™ */}
-      {lifeSummary && (
-        <div style={{ marginTop: 16 }}>
-          <div style={{
-            background:   TOKENS.surface,
-            border:       TOKENS.cardBorder,
-            borderRadius: TOKENS.cardRadius,
-            overflow:     'hidden',
-          }}>
-            <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
-                LIFE Diversity & Care Economy Intelligence™
-              </p>
-              <span style={{
-                fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
-                background: lifeSummary.concentrationStatus === 'diverse' ? TOKENS.safeguard.pass.bg
-                  : lifeSummary.concentrationStatus === 'no_life_data' ? TOKENS.inkBorder
-                  : TOKENS.safeguard.watch.bg,
-                color: lifeSummary.concentrationStatus === 'diverse' ? TOKENS.safeguard.pass.text
-                  : lifeSummary.concentrationStatus === 'no_life_data' ? TOKENS.inkSecondary
-                  : TOKENS.safeguard.watch.text,
-              }}>
-                {lifeSummary.concentrationStatus.replace(/_/g, ' ')}
-              </span>
-              {careSummary && (
+              overflow:     'hidden',
+            }}>
+              <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
+                  Evidence Reliability Intelligence™
+                </p>
                 <span style={{
                   fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
-                  background: careSummary.careEconomyStatus === 'broad' ? TOKENS.safeguard.pass.bg
-                    : careSummary.careEconomyStatus === 'absent' ? TOKENS.safeguard.cap.bg
+                  background: evidenceReliability.evidenceRiskLevel === 'alta' ? TOKENS.safeguard.cap.bg
+                    : evidenceReliability.evidenceRiskLevel === 'media' ? TOKENS.safeguard.watch.bg
+                    : TOKENS.safeguard.pass.bg,
+                  color: evidenceReliability.evidenceRiskLevel === 'alta' ? TOKENS.safeguard.cap.text
+                    : evidenceReliability.evidenceRiskLevel === 'media' ? TOKENS.safeguard.watch.text
+                    : TOKENS.safeguard.pass.text,
+                }}>
+                  Rischio evidenza: {evidenceReliability.evidenceRiskLevel}
+                </span>
+                <span style={{ fontSize: '10px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
+                  {evidenceReliability.evidenceLevelDistribution.primaryTier}
+                </span>
+              </div>
+              <div style={{ padding: '1rem 1.25rem' }}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 6 }}>Distribuzione livello evidenza</p>
+                  <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', gap: 2 }}>
+                    {evidenceReliability.evidenceLevelDistribution.strongShare > 0 && (
+                      <div style={{ flex: evidenceReliability.evidenceLevelDistribution.strongShare, background: TOKENS.safeguard.pass.text, opacity: 0.85 }} title={`Strong: ${Math.round(evidenceReliability.evidenceLevelDistribution.strongShare * 100)}%`} />
+                    )}
+                    {evidenceReliability.evidenceLevelDistribution.acceptableShare > 0 && (
+                      <div style={{ flex: evidenceReliability.evidenceLevelDistribution.acceptableShare, background: TOKENS.safeguard.watch.text, opacity: 0.70 }} title={`Acceptable: ${Math.round(evidenceReliability.evidenceLevelDistribution.acceptableShare * 100)}%`} />
+                    )}
+                    {evidenceReliability.evidenceLevelDistribution.weakShare > 0 && (
+                      <div style={{ flex: evidenceReliability.evidenceLevelDistribution.weakShare, background: TOKENS.safeguard.cap.text, opacity: 0.65 }} title={`Weak: ${Math.round(evidenceReliability.evidenceLevelDistribution.weakShare * 100)}%`} />
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 5 }}>
+                    {[
+                      { label: `Strong (L3/L4): ${Math.round(evidenceReliability.evidenceLevelDistribution.strongShare * 100)}%`, color: TOKENS.safeguard.pass.text },
+                      { label: `Acceptable (L2): ${Math.round(evidenceReliability.evidenceLevelDistribution.acceptableShare * 100)}%`, color: TOKENS.safeguard.watch.text },
+                      { label: `Weak (L0/L1): ${Math.round(evidenceReliability.evidenceLevelDistribution.weakShare * 100)}%`, color: TOKENS.safeguard.cap.text },
+                    ].map(({ label, color }) => (
+                      <span key={label} style={{ fontSize: '10px', color, fontWeight: 500 }}>{label}</span>
+                    ))}
+                  </div>
+                </div>
+                <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65, marginBottom: 10 }}>
+                  {evidenceReliability.advisorNarrative}
+                </p>
+                {evidenceReliability.upgradeOpportunities.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 5 }}>
+                    <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 2 }}>
+                      Opportunità di miglioramento evidenza
+                    </p>
+                    {evidenceReliability.upgradeOpportunities.map((opp, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 8, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}>
+                        <span style={{ fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '1px 6px', whiteSpace: 'nowrap' as const, alignSelf: 'flex-start', marginTop: 1,
+                          background: opp.priority === 'alta' ? TOKENS.safeguard.cap.bg : TOKENS.safeguard.watch.bg,
+                          color:      opp.priority === 'alta' ? TOKENS.safeguard.cap.text : TOKENS.safeguard.watch.text,
+                        }}>
+                          {opp.priority === 'alta' ? 'Alta' : 'Media'}
+                        </span>
+                        <div>
+                          <p style={{ fontSize: '11px', color: TOKENS.ink, fontWeight: 500, lineHeight: 1.4 }}>{opp.area}</p>
+                          <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5, marginTop: 2 }}>{opp.upgradeAction}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+                Evidence Reliability Intelligence™ · pre_empirical_calibration · non modifica CS, EVQ né KORA Index™ · not_kora_index_component
+              </p>
+            </div>
+          )}
+
+        {/* LIFE Diversity + Care Economy Intelligence™ */}
+        {lifeSummary && (
+          <div style={{ marginTop: 16 }}>
+            <div style={{
+              background:   TOKENS.surface,
+              border:       TOKENS.cardBorder,
+              borderRadius: TOKENS.cardRadius,
+              overflow:     'hidden',
+            }}>
+              <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
+                  LIFE Diversity & Care Economy Intelligence™
+                </p>
+                <span style={{
+                  fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                  background: lifeSummary.concentrationStatus === 'diverse' ? TOKENS.safeguard.pass.bg
+                    : lifeSummary.concentrationStatus === 'no_life_data' ? TOKENS.inkBorder
                     : TOKENS.safeguard.watch.bg,
-                  color: careSummary.careEconomyStatus === 'broad' ? TOKENS.safeguard.pass.text
-                    : careSummary.careEconomyStatus === 'absent' ? TOKENS.safeguard.cap.text
+                  color: lifeSummary.concentrationStatus === 'diverse' ? TOKENS.safeguard.pass.text
+                    : lifeSummary.concentrationStatus === 'no_life_data' ? TOKENS.inkSecondary
                     : TOKENS.safeguard.watch.text,
                 }}>
-                  Care Economy: {careSummary.careEconomyStatus}
+                  {lifeSummary.concentrationStatus.replace(/_/g, ' ')}
                 </span>
-              )}
-            </div>
-            <div style={{ padding: '1rem 1.25rem', display: 'grid', gap: 12, gridTemplateColumns: careSummary ? '1fr 1fr' : '1fr' }}>
-              <div>
-                <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>LIFE Diversity</p>
-                <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55, marginBottom: 8 }}>
-                  Subcategorie attive: <strong>{lifeSummary.activeSubcategories.length}/10</strong>
-                  {lifeSummary.dominantSubcategory && ` · Dominante: ${lifeSummary.dominantSubcategory.replace(/_/g, ' ')}`}
-                </p>
-                {lifeSummary.recommendations.slice(0, 1).map((rec) => (
-                  <div key={rec.id} style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5, padding: '6px 8px', background: 'rgba(6,3,43,0.03)', borderRadius: 5, border: `1px solid rgba(6,3,43,0.07)` }}>
-                    › {rec.text}
-                  </div>
-                ))}
+                {careSummary && (
+                  <span style={{
+                    fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                    background: careSummary.careEconomyStatus === 'broad' ? TOKENS.safeguard.pass.bg
+                      : careSummary.careEconomyStatus === 'absent' ? TOKENS.safeguard.cap.bg
+                      : TOKENS.safeguard.watch.bg,
+                    color: careSummary.careEconomyStatus === 'broad' ? TOKENS.safeguard.pass.text
+                      : careSummary.careEconomyStatus === 'absent' ? TOKENS.safeguard.cap.text
+                      : TOKENS.safeguard.watch.text,
+                  }}>
+                    Care Economy: {careSummary.careEconomyStatus}
+                  </span>
+                )}
               </div>
-              {careSummary && (
+              <div style={{ padding: '1rem 1.25rem', display: 'grid', gap: 12, gridTemplateColumns: careSummary ? '1fr 1fr' : '1fr' }}>
                 <div>
-                  <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>Care Economy</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>LIFE Diversity</p>
                   <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55, marginBottom: 8 }}>
-                    {careSummary.narrative}
+                    Subcategorie attive: <strong>{lifeSummary.activeSubcategories.length}/10</strong>
+                    {lifeSummary.dominantSubcategory && ` · Dominante: ${lifeSummary.dominantSubcategory.replace(/_/g, ' ')}`}
                   </p>
-                  {careSummary.recommendations.slice(0, 1).map((rec) => (
+                  {lifeSummary.recommendations.slice(0, 1).map((rec) => (
                     <div key={rec.id} style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5, padding: '6px 8px', background: 'rgba(6,3,43,0.03)', borderRadius: 5, border: `1px solid rgba(6,3,43,0.07)` }}>
                       › {rec.text}
                     </div>
                   ))}
                 </div>
-              )}
+                {careSummary && (
+                  <div>
+                    <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>Care Economy</p>
+                    <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55, marginBottom: 8 }}>
+                      {careSummary.narrative}
+                    </p>
+                    {careSummary.recommendations.slice(0, 1).map((rec) => (
+                      <div key={rec.id} style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5, padding: '6px 8px', background: 'rgba(6,3,43,0.03)', borderRadius: 5, border: `1px solid rgba(6,3,43,0.07)` }}>
+                        › {rec.text}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+                LIFE Diversity & Care Economy Intelligence™ · pre_empirical_calibration · non modifica KORA Index™ · not_kora_index_component
+              </p>
             </div>
-            <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
-              LIFE Diversity & Care Economy Intelligence™ · pre_empirical_calibration · non modifica KORA Index™ · not_kora_index_component
-            </p>
           </div>
+        )}
+        </Chapter>
+
+        <Chapter id="perimetro" label="Cosa è stato incluso ed escluso" tier="T4" index={3} mobileOrder={MOBILE_ORDER.d3} collapsible
+          aside={<span className="kt-caption" style={{ color: PX.ink3 }}>Eligibility gate · compliance · perché le iniziative hanno inciso</span>}>
+          <SectionLabel>Eligibility gate</SectionLabel>
+          <div style={{ display: 'flex', gap: 8, marginTop: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+            <Explainer {...EXP.eligibility} compact />
+          </div>
+          <div className="mt-4">
+            <EligibilityGatePanel summary={eligibilityGate} />
+          </div>
+          <div className="mt-6">
+            <SectionLabel>Compliance &amp; blocked</SectionLabel>
+            <div className="mt-4">
+              <BlockedByDesignPanel blockedCount={eligibilityGate.blocked_count} blockedNote={eligibilityGate.blocked_note} />
+            </div>
+          </div>
+          <div className="mt-6">
+            <SectionLabel>Perché le iniziative hanno inciso</SectionLabel>
+            <div className="mt-4">
+              <InitiativeExplainabilityPanel period={reportingPeriodForLive} />
+            </div>
+          </div>
+          <div className="mt-6">
+            <SectionLabel>Raccomandazioni BTI™</SectionLabel>
+            <div className="mt-4">
+              <RecommendationsPanel btiRecommendations={btiRecommendations} />
+            </div>
+          </div>
+        </Chapter>
+
+        <Chapter id="approfondimenti" label="Approfondimenti" tier="T4" index={4} mobileOrder={MOBILE_ORDER.d4} collapsible
+          aside={<span className="kt-caption" style={{ color: PX.ink3 }}>Equity &amp; Access · LIFE Diversity &amp; Care Economy · glossario</span>}>
+          {/* Equity & Access Intelligence™ */}
+          {equityAccess && (
+            <div className="mt-6">
+              <SectionLabel>Equity & Access Intelligence™</SectionLabel>
+              <div style={{
+                background:   TOKENS.surface,
+                border:       TOKENS.cardBorder,
+                borderRadius: TOKENS.cardRadius,
+                overflow:     'hidden',
+                marginTop:    16,
+              }}>
+                <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
+                    Distribuzione attivazione per segmento
+                  </p>
+                  {equityAccess.accessRiskLevel !== 'insufficient_data' && (
+                    <span style={{
+                      fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                      background: equityAccess.accessRiskLevel === 'alta' ? TOKENS.safeguard.cap.bg
+                        : equityAccess.accessRiskLevel === 'media' ? TOKENS.safeguard.watch.bg
+                        : TOKENS.safeguard.pass.bg,
+                      color: equityAccess.accessRiskLevel === 'alta' ? TOKENS.safeguard.cap.text
+                        : equityAccess.accessRiskLevel === 'media' ? TOKENS.safeguard.watch.text
+                        : TOKENS.safeguard.pass.text,
+                    }}>
+                      Rischio equità: {equityAccess.accessRiskLevel}
+                    </span>
+                  )}
+                  <span style={{ fontSize: '10px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
+                    {eqCode} = {Math.round(equityAccess.eqValue * 100)}%
+                  </span>
+                </div>
+                <div style={{ padding: '1rem 1.25rem' }}>
+                  {equityAccess.accessRiskLevel === 'insufficient_data' ? (
+                    <p style={{ fontSize: '12px', color: TOKENS.inkHint, fontStyle: 'italic' }}>{equityAccess.narrative}</p>
+                  ) : (
+                    <>
+                      {[
+                        { label: 'Segmenti sotto-attivati', items: equityAccess.underActivatedSegments, tone: TOKENS.safeguard.cap },
+                        { label: 'Segmenti in parità', items: equityAccess.nearParitySegments, tone: null },
+                        { label: 'Segmenti sovra-attivati', items: equityAccess.overActivatedSegments, tone: TOKENS.safeguard.pass },
+                      ].filter(({ items }) => items.length > 0).map(({ label, items, tone }) => (
+                        <div key={label} style={{ marginBottom: '0.875rem' }}>
+                          <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 6 }}>{label}</p>
+                          {items.map((seg) => (
+                            <div key={seg.segmentId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 5, marginBottom: 3, background: 'rgba(6,3,43,0.02)', border: `1px solid rgba(6,3,43,0.06)` }}>
+                              <p style={{ flex: 1, fontSize: '12px', color: TOKENS.ink, fontWeight: 500 }}>{seg.segmentLabel}</p>
+                              <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
+                                {Math.round(seg.activationRate * 100)}%
+                              </p>
+                              <span style={{ fontSize: '10px', fontWeight: 600, color: tone?.text ?? TOKENS.inkSecondary, background: tone?.bg ?? 'rgba(6,3,43,0.05)', borderRadius: 4, padding: '1px 6px' }}>
+                                {seg.gapVsAverage >= 0 ? '+' : ''}{Math.round(seg.gapVsAverage * 100)}pp
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                      {equityAccess.suppressedSegmentCount > 0 && (
+                        <p style={{ fontSize: '11px', color: TOKENS.inkHint, fontStyle: 'italic', marginBottom: 8 }}>
+                          {equityAccess.suppressedSegmentCount} {equityAccess.suppressedSegmentCount === 1 ? 'segmento' : 'segmenti'} non visibili (N &lt; 10, soglia privacy).
+                        </p>
+                      )}
+                      <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65, marginTop: 8 }}>
+                        {equityAccess.narrative}
+                      </p>
+                      {equityAccess.recommendations.length > 0 && (
+                        <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column' as const, gap: 5 }}>
+                          {equityAccess.recommendations.map((rec, i) => (
+                            <div key={i} style={{ display: 'flex', gap: 6, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}>
+                              <span style={{ color: TOKENS.inkHint, fontSize: '12px', flexShrink: 0, marginTop: 1 }}>›</span>
+                              <p style={{ fontSize: '11px', color: TOKENS.ink, lineHeight: 1.55 }}>{rec}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+                <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+                  Equity & Access Intelligence™ · pre_empirical_calibration · non modifica EQS né KORA Index™ · not_kora_index_component
+                </p>
+              </div>
+            </div>
+          )}
+          <div className="mt-6">
+            <SectionLabel>Glossario metodologico</SectionLabel>
+            <div className="mt-4">
+              <MethodologyGlossary />
+            </div>
+          </div>
+        </Chapter>
+
+      </div>
+
+      {/* ── Reference line — non-suppressible, last on every width ─────────── */}
+      <Priority order={MOBILE_ORDER.reference}>
+        <div style={{ marginTop: 48 }}>
+          <ProvenanceFooter
+            methodologyVersionId={output.methodology_version_id}
+            calibrationStatus={output.calibration_status}
+            reportingPeriod={output.reporting_period}
+          />
+          <p className="kt-caption" style={{ color: PX.inkMute, marginTop: 12, maxWidth: '88ch' }}>
+            Libreria verdetti {verdict.libraryVersion} · correlazione ≠ causalità ·
+            KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate,
+            verificate e spiegabili. Non garantisce conformità normativa e non sostituisce
+            consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
+          </p>
         </div>
-      )}
-
-      {/* ══ SECTION 4: EXPLAINABILITY + RECOMMENDATIONS + GLOSSARY ══════════ */}
-
-      <Divider label="Raccomandazioni e metodologia" />
-
-      <div className="mt-4">
-        <RecommendationsPanel btiRecommendations={btiRecommendations} />
-      </div>
-
-      <div className="mt-6">
-        <MethodologyGlossary />
-      </div>
-
-      <ProvenanceFooter
-        methodologyVersionId={output.methodology_version_id}
-        calibrationStatus={output.calibration_status}
-        reportingPeriod={output.reporting_period}
-      />
+      </Priority>
 
     </div>
   );

@@ -702,7 +702,7 @@ details.kora-chapter-band[open] > summary.kora-chapter-head::after { content: '�
 /* ══ Approved KORA Index design — signal row + disclosure layout ═══════════════
    The desktop places the index first and wider; the phone gives it its own row
    and sets the three signals side by side. Declared, not reflowed. */
-.kora-signals { display: grid; grid-template-columns: 1.15fr 1px 3fr; gap: 0 24px; align-items: start; }
+.kora-signals { display: grid; grid-template-columns: 1.45fr 1px 3fr; gap: 0 24px; align-items: start; }
 .kora-signal-trio { display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr; gap: 0 24px; align-items: start; }
 .kora-signal-vline { background: rgba(255, 255, 255, 0.12); align-self: stretch; }
 .kora-signal { min-width: 0; }
@@ -733,4 +733,13 @@ details.kora-chapter-band[open] > summary.kora-chapter-head::after { content: '�
   .kora-lbl-short { display: inline; }
   .kora-exec-surface { padding: 22px 20px; border-radius: 16px; }
   .kora-disclosures > .kora-drow { padding: 16px 0; }
+}
+
+/* The T3 region: two ranked columns separated by whitespace and one hairline —
+   no borders, no cards. On a phone it stacks and the rule disappears. */
+.kora-two-col { display: grid; grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr); gap: 0 48px; align-items: start; }
+.kora-two-col-rule { background: rgba(6, 3, 43, 0.09); align-self: stretch; }
+@media (max-width: 767px) {
+  .kora-two-col { grid-template-columns: minmax(0, 1fr); gap: 32px 0; }
+  .kora-two-col-rule { display: none; }
 }

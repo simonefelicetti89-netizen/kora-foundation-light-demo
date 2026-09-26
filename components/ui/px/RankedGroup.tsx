@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { PX } from '@/lib/design/kora-design-tokens';
 
 // KORA-WP-141 — ONE ranked-group grammar.
 //
@@ -25,14 +25,12 @@ export function RankedGroup({ title, note, tier = 'section', children }: {
   children: ReactNode;
 }) {
   return (
-    <div className="kora-flat-mobile" style={{
-      background:   TOKENS.surface,
-      border:       TOKENS.cardBorder,
-      borderRadius: TOKENS.cardRadius,
-      padding:      '24px 26px',
-    }}>
-      <p className={tier === 'section' ? 'kt-section' : 'kt-subsection'} style={{ color: TOKENS.ink, marginBottom: 4 }}>{title}</p>
-      {note && <p className="kt-caption" style={{ color: TOKENS.inkTertiary, marginBottom: 6 }}>{note}</p>}
+    // No surface. The approved design puts ranked groups on bare canvas: the
+    // whitespace and the single hairline between the columns are the boundary,
+    // and a filled card here would be the second filled surface on the page.
+    <div>
+      <p className={tier === 'section' ? 'kt-section' : 'kt-subsection'} style={{ color: PX.ink, marginBottom: 4 }}>{title}</p>
+      {note && <p className="kt-caption" style={{ color: PX.ink3, marginBottom: 6 }}>{note}</p>}
       <div>{children}</div>
     </div>
   );
@@ -51,15 +49,15 @@ export function RankedItem({ rank, title, meta, last, children }: {
       gridTemplateColumns: '28px 1fr',
       gap:                 '0 12px',
       padding:             '16px 0',
-      borderBottom:        last ? undefined : TOKENS.cardBorder,
+      borderBottom:        last ? undefined : `1px solid ${PX.line}`,
     }}>
-      <p className="kt-meta kt-num" style={{ color: TOKENS.inkTertiary, marginTop: 3 }}>
+      <p className="kt-meta kt-num" style={{ color: PX.ink3, marginTop: 3 }}>
         {String(rank).padStart(2, '0')}
       </p>
       <div style={{ minWidth: 0 }}>
-        <p className="kt-label" style={{ color: TOKENS.ink }}>
+        <p className="kt-label" style={{ color: PX.ink }}>
           {title}
-          {meta && <span className="kt-caption" style={{ color: TOKENS.inkTertiary }}>{' · '}{meta}</span>}
+          {meta && <span className="kt-caption" style={{ color: PX.ink3 }}>{' · '}{meta}</span>}
         </p>
         {children}
       </div>
@@ -73,7 +71,7 @@ export function RankedLine({ tone = 'secondary', children }: {
 }) {
   return (
     <p className="kt-caption" style={{
-      color:     tone === 'secondary' ? TOKENS.inkSecondary : TOKENS.inkTertiary,
+      color:     tone === 'secondary' ? PX.ink2 : PX.ink3,
       marginTop: 4,
     }}>
       {children}

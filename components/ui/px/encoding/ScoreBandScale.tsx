@@ -57,7 +57,10 @@ export function ScoreBandScale({ value, caption, onDark }: {
         {bands.map((b) => (
           <span key={b.source} aria-hidden="true" style={{
             flex: b.span, height: 10, borderRadius: 2,
-            background: b.label === active.label ? treat.fill : track,
+            // On the dark executive ground the active band is WHITE, not the
+            // semantic fill. The approved art direction allows semantic colour
+            // only as a numeral, a dot or a 2px rule — never as a filled bar.
+            background: b.label === active.label ? (onDark ? '#FFFFFF' : treat.fill) : track,
           }} />
         ))}
         {/* The value marker, placed on the true scale rather than on the band. */}
