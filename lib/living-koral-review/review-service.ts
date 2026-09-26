@@ -286,7 +286,14 @@ export interface ConfirmAmbiguousCandidateParams {
 export interface ConfirmAmbiguousCandidateResult {
   case: OperationalCase;
   materialChange: LivingKoralMaterialChangeRecord;
-  /** false when reverifyAgainstSource found the candidate no longer eligible at write-time — it correctly stays CANDIDATE (KORA-WP-112's own no-reject/no-expire contract), not an error. */
+  /**
+   * A statement about CANONICAL PERSISTED STATE, not about which caller did the work.
+   *
+   * false — and only — when the candidate genuinely still stands as CANDIDATE because it
+   * was no longer eligible at write-time (KORA-WP-112's own no-reject/no-expire contract),
+   * not an error. Concurrent callers that converge on an already-RECOGNIZED row all return
+   * true; exactly one of them performs the provenance/ledger side effects.
+   */
   recognized: boolean;
 }
 
@@ -338,6 +345,14 @@ export async function confirmAmbiguousCandidate(params: ConfirmAmbiguousCandidat
   // Founder Adjudication #7 forbids.
   let recognizedRecord: LivingKoralMaterialChangeRecord;
   let wonRace = true;
+  // Whether THIS caller's own reverify closure ran and observed a still-
+  // CANDIDATE row — i.e. whether this caller actually reached (and won) the
+  // compare-and-swap. 'not-run' means assessMaterialChangeCandidate()
+  // short-circuited on an already-RECOGNIZED row before ever calling back,
+  // which makes this caller a race loser even though nothing threw.
+  // Held in an object, not a bare `let`: it is assigned only inside the
+  // callback below, which TypeScript's control-flow analysis cannot see.
+  const reverify: { observed: 'not-run' | 'confirmable' | 'not-confirmable' } = { observed: 'not-run' };
   try {
     recognizedRecord = (await assessMaterialChangeCandidate({
       candidateId: change.id,
@@ -347,7 +362,9 @@ export async function confirmAmbiguousCandidate(params: ConfirmAmbiguousCandidat
       recognitionSource: 'advisor-confirmed',
       reverifyAgainstSource: async () => {
         const fresh = await getMaterialChangeCandidate(change.id, companyId);
-        return !!fresh && fresh.status === 'CANDIDATE' && isCurrentlyConfirmable(fresh.category);
+        const confirmable = !!fresh && fresh.status === 'CANDIDATE' && isCurrentlyConfirmable(fresh.category);
+        reverify.observed = confirmable ? 'confirmable' : 'not-confirmable';
+        return confirmable;
       },
     }))!;
   } catch (err) {
@@ -374,17 +391,40 @@ export async function confirmAmbiguousCandidate(params: ConfirmAmbiguousCandidat
   }
 
   if (recognizedRecord.status !== 'RECOGNIZED') {
-    // reverifyAgainstSource found it no longer eligible/confirmable
-    // between read and write — correctly stays CANDIDATE (no such state
-    // as rejected/expired exists, per KORA-WP-112's own Founder decision).
+    // reverifyAgainstSource returned false. That single boolean carries two
+    // genuinely different meanings, and they must not be conflated (report
+    // 192): the candidate is no longer eligible, OR a concurrent caller
+    // already promoted this very row. KORA-WP-112 cannot tell them apart —
+    // it correctly declines to transition either way and hands back the
+    // pre-write snapshot without throwing. Only canonical persisted state
+    // settles which happened, so re-read it here.
+    const canonical = await getMaterialChangeCandidate(change.id, companyId);
+    if (canonical && canonical.status === 'RECOGNIZED') {
+      // Concurrency loser that has converged on the successful final state.
+      // `recognized: false` would be a false statement about persisted
+      // state, which is exactly what this field contractually reports.
+      return { case: reviewCase, materialChange: canonical, recognized: true };
+    }
+    // Genuinely still CANDIDATE — no longer eligible/confirmable between
+    // read and write. Correctly stays CANDIDATE (no such state as
+    // rejected/expired exists, per KORA-WP-112's own Founder decision).
     return { case: reviewCase, materialChange: recognizedRecord, recognized: false };
   }
 
-  if (!wonRace) {
-    // This caller lost the concurrent race (see catch block above) — the
-    // actual winner's own call already recorded step 9's domain
-    // provenance event and performed step 10's chaining. Recording either
-    // again here would be a duplicate, not a second real confirmation.
+  if (!wonRace || reverify.observed !== 'confirmable') {
+    // This caller lost the concurrent race and must not duplicate the
+    // winner's side effects. Two distinct losing shapes reach here:
+    //   !wonRace                      — its own CAS matched zero rows and
+    //                                   assessMaterialChangeCandidate()
+    //                                   threw (see catch block above).
+    //   reverify.observed 'not-run'   — assessMaterialChangeCandidate()
+    //                                   short-circuited on a row the winner
+    //                                   had ALREADY promoted, so this caller
+    //                                   never attempted the CAS at all and
+    //                                   nothing threw (report 192, L1).
+    // Either way the ACTUAL winner's own call already recorded step 9's
+    // domain provenance event and performed step 10's chaining. Recording
+    // either again here would be a duplicate, not a second confirmation.
     return { case: reviewCase, materialChange: recognizedRecord, recognized: true };
   }
 

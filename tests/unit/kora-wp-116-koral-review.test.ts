@@ -23,7 +23,7 @@
 // KORA-WP-112/113's own established real-service-layer testing convention
 // exactly.
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'fs';
 import pg from 'pg';
 
@@ -380,6 +380,194 @@ describe.skipIf(!ready)('KORA-WP-116 — real service-layer proof (local Supabas
     const ledger = await pgClient.query(`SELECT operation FROM gov.living_koral_transformation_ledger WHERE material_change_id = $1`, [raceCandidateId]);
     expect(ledger.rows).toHaveLength(1); // exactly one — no duplicate transformation from the race
     expect(ledger.rows[0].operation).toBe('decrease_extent');
+  });
+
+  // ── DETERMINISTIC CONCURRENCY INTERLEAVING COVERAGE (report 192) ────────
+  //
+  // The CONCURRENCY test above asserts the right contract but cannot choose
+  // WHICH interleaving it exercises, so it passed or failed by scheduling
+  // luck (canonical CI #339 green, #340 red, on adjacent SHAs that never
+  // touched this code). Three genuinely different loser interleavings exist,
+  // keyed on where the winner's COMMIT lands relative to the loser's own
+  // reads, and the pre-remediation wrapper handled exactly ONE of them
+  // (L3) because its graceful-race handling lived only in a catch block:
+  //
+  //   L1  winner commits before assessMaterialChangeCandidate()'s own first
+  //       read -> it short-circuits on the already-RECOGNIZED row, never
+  //       calls back, and NOTHING THROWS. The loser used to fall through and
+  //       re-emit the winner's provenance event as if it had won.
+  //   L2  winner commits between that read and the loser's reverify ->
+  //       reverify observes a non-CANDIDATE row and returns false, WP-112
+  //       correctly declines to transition, and NOTHING THROWS. The loser
+  //       used to report recognized:false about a row that is RECOGNIZED.
+  //   L3  winner commits after the loser's reverify -> the loser's own
+  //       CAS matches zero rows and WP-112 throws. Already handled.
+  //
+  // Each case below injects a real, complete WINNING confirmation at one
+  // precise point inside the loser's own call, through the
+  // material-change-service module seam. This is deterministic orchestration
+  // of a real race — never repeated probabilistic execution, and never a
+  // retry-until-green loop. Production architecture is unchanged.
+
+  type ConfirmFn = typeof import('@/lib/living-koral-review/review-service')['confirmAmbiguousCandidate'];
+  type ConfirmResult = Awaited<ReturnType<ConfirmFn>>;
+  type McService = typeof import('@/lib/living-koral-material-change/material-change-service');
+
+  const MC_MODULE = '@/lib/living-koral-material-change/material-change-service';
+
+  async function confirmAs(candidateId: string): Promise<ConfirmResult> {
+    const { confirmAmbiguousCandidate } = await import('@/lib/living-koral-review/review-service');
+    return confirmAmbiguousCandidate({ assignmentId, callerAdvisorId: advisorIdentityId, materialChangeId: candidateId, actorId: ACTOR_ID });
+  }
+
+  async function countConfirmEvents(objectId: string): Promise<number> {
+    const r = await pgClient.query<{ n: number }>(
+      `SELECT count(*)::int AS n FROM audit.governance_event WHERE object_id = $1 AND event_type = 'koral_review.candidate_confirmed'`,
+      [objectId],
+    );
+    return r.rows[0].n;
+  }
+
+  /**
+   * Runs one loser call against one real winner, with the winner injected at
+   * `injectAt`. Returns both results so the caller can assert BOTH converged.
+   */
+  async function orchestrateInterleaving(
+    candidateId: string,
+    injectAt: 'before-assess' | 'at-reverify-before-read' | 'at-reverify-after-read',
+  ): Promise<{ loser: ConfirmResult; winner: ConfirmResult }> {
+    vi.resetModules();
+    let injected = false;
+    let candidateReads = 0;
+    let winner: ConfirmResult | null = null;
+
+    const runWinner = async () => { winner = await confirmAs(candidateId); };
+
+    vi.doMock(MC_MODULE, async (importOriginal) => {
+      const real = await importOriginal<McService>();
+      return {
+        ...real,
+        getMaterialChangeCandidate: async (id: string, tid: string) => {
+          if (id !== candidateId || injectAt === 'before-assess') return real.getMaterialChangeCandidate(id, tid);
+          candidateReads += 1;
+          // Read #1 is the wrapper's own step 3-4 read; read #2 is the
+          // reverify re-read (createOrGetKoralReviewCase never reads the
+          // candidate, so this ordering is stable).
+          const isReverifyRead = candidateReads === 2 && !injected;
+          if (isReverifyRead && injectAt === 'at-reverify-before-read') {
+            injected = true;
+            await runWinner();                                  // L2: reverify now observes RECOGNIZED
+            return real.getMaterialChangeCandidate(id, tid);
+          }
+          if (isReverifyRead && injectAt === 'at-reverify-after-read') {
+            injected = true;
+            const stillCandidate = await real.getMaterialChangeCandidate(id, tid);
+            await runWinner();                                  // L3: reverify passed, the CAS will now miss
+            return stillCandidate;
+          }
+          return real.getMaterialChangeCandidate(id, tid);
+        },
+        assessMaterialChangeCandidate: async (args: Parameters<McService['assessMaterialChangeCandidate']>[0]) => {
+          if (injectAt === 'before-assess' && !injected) {
+            injected = true;
+            await runWinner();                                  // L1: its own first read short-circuits
+          }
+          return real.assessMaterialChangeCandidate(args);
+        },
+      };
+    });
+
+    try {
+      const loser = await confirmAs(candidateId);
+      expect(injected).toBe(true);                              // the interleaving really occurred
+      return { loser, winner: winner! };
+    } finally {
+      vi.doUnmock(MC_MODULE);
+      vi.resetModules();
+    }
+  }
+
+  /** Every interleaving must leave exactly the same canonical footprint. */
+  async function expectExactlyOnceFootprint(candidateId: string, operation: string) {
+    const row = await pgClient.query<{ status: string; recognition_source: string }>(
+      `SELECT status, recognition_source FROM gov.living_koral_material_change WHERE id = $1`, [candidateId]);
+    expect(row.rows).toHaveLength(1);
+    expect(row.rows[0].status).toBe('RECOGNIZED');
+    expect(row.rows[0].recognition_source).toBe('advisor-confirmed');
+
+    const ledger = await pgClient.query<{ operation: string }>(
+      `SELECT operation FROM gov.living_koral_transformation_ledger WHERE material_change_id = $1`, [candidateId]);
+    expect(ledger.rows).toHaveLength(1);
+    expect(ledger.rows[0].operation).toBe(operation);
+
+    expect(await countConfirmEvents(candidateId)).toBe(1);
+  }
+
+  it('L1 (deterministic) — winner commits BEFORE the loser reaches assessMaterialChangeCandidate: nothing throws, both callers return recognized:true, and the loser emits NO duplicate candidate_confirmed provenance event', async () => {
+    const candidateId = await insertMaterialChange('Weakening', 'CANDIDATE');
+    const { loser, winner } = await orchestrateInterleaving(candidateId, 'before-assess');
+
+    expect(winner.recognized).toBe(true);
+    expect(loser.recognized).toBe(true);                        // converged, not a false negative
+    expect(loser.materialChange.status).toBe('RECOGNIZED');
+    await expectExactlyOnceFootprint(candidateId, 'decrease_extent');
+  });
+
+  it('L2 (deterministic) — winner commits between the loser’s first read and its reverify: reverify returns false, WP-112 correctly declines to transition and does NOT throw, and the loser must still report recognized:true (this is canonical CI #340’s exact failure)', async () => {
+    const candidateId = await insertMaterialChange('Weakening', 'CANDIDATE');
+    const { loser, winner } = await orchestrateInterleaving(candidateId, 'at-reverify-before-read');
+
+    expect(winner.recognized).toBe(true);
+    expect(loser.recognized).toBe(true);                        // pre-remediation this was false
+    expect(loser.materialChange.status).toBe('RECOGNIZED');     // never the stale CANDIDATE snapshot
+    await expectExactlyOnceFootprint(candidateId, 'decrease_extent');
+  });
+
+  it('L3 (deterministic) — winner commits AFTER the loser’s reverify, so the loser’s own CAS matches zero rows and WP-112 throws: the pre-existing graceful-race path still converges on recognized:true with no duplicate side effects', async () => {
+    const candidateId = await insertMaterialChange('Weakening', 'CANDIDATE');
+    const { loser, winner } = await orchestrateInterleaving(candidateId, 'at-reverify-after-read');
+
+    expect(winner.recognized).toBe(true);
+    expect(loser.recognized).toBe(true);
+    expect(loser.materialChange.status).toBe('RECOGNIZED');
+    await expectExactlyOnceFootprint(candidateId, 'decrease_extent');
+  });
+
+  it('NEGATIVE — the L2 correction must NOT swallow legitimate non-recognition: when the candidate genuinely becomes non-confirmable at write-time it still returns recognized:false, stays CANDIDATE, and writes no ledger row and no provenance event', async () => {
+    const candidateId = await insertMaterialChange('Weakening', 'CANDIDATE');
+    vi.resetModules();
+    let confirmabilityChecks = 0;
+    vi.doMock('@/lib/living-koral-review/types', async (importOriginal) => {
+      const real = await importOriginal<typeof import('@/lib/living-koral-review/types')>();
+      return {
+        ...real,
+        // True for step 7's own gate, false by the time the write-time
+        // re-verification runs — exactly the "no longer eligible between
+        // read and write" condition `recognized:false` exists to report.
+        isCurrentlyConfirmable: (category: Parameters<typeof real.isCurrentlyConfirmable>[0]) => {
+          confirmabilityChecks += 1;
+          return confirmabilityChecks === 1 ? real.isCurrentlyConfirmable(category) : false;
+        },
+      };
+    });
+
+    try {
+      const res = await confirmAs(candidateId);
+      expect(confirmabilityChecks).toBeGreaterThanOrEqual(2);   // the write-time check really ran
+      expect(res.recognized).toBe(false);
+      expect(res.materialChange.status).toBe('CANDIDATE');
+
+      const row = await pgClient.query<{ status: string }>(
+        `SELECT status FROM gov.living_koral_material_change WHERE id = $1`, [candidateId]);
+      expect(row.rows[0].status).toBe('CANDIDATE');             // canonical state untouched
+      const ledger = await pgClient.query(
+        `SELECT 1 FROM gov.living_koral_transformation_ledger WHERE material_change_id = $1`, [candidateId]);
+      expect(ledger.rows).toHaveLength(0);
+      expect(await countConfirmEvents(candidateId)).toBe(0);
+    } finally {
+      vi.doUnmock('@/lib/living-koral-review/types');
+      vi.resetModules();
+    }
   });
 
   // ── Corroborating proof (Disappearance is never Advisor-eligible, so
