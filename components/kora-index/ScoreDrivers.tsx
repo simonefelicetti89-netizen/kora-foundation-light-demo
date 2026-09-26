@@ -127,7 +127,6 @@ export function ScoreDrivers({ weakComponents }: ScoreDriversProps) {
           last={i === drivers.length - 1}
         >
           <RankedLine>{driver.impact}</RankedLine>
-          <RankedLine tone="tertiary">{'→ '}{driver.action}</RankedLine>
         </RankedItem>
       ))}
     </RankedGroup>

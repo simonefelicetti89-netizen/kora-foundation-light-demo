@@ -26,7 +26,10 @@ import type { ExecutiveIntelligenceSummary } from '@/services/executive-intellig
 export function ExecutiveIntelligencePanel({ summary }: { summary: ExecutiveIntelligenceSummary }) {
   // The two cross-cutting readings, in prose. No label column, no chips, no
   // surface — the disclosure-free canvas is the boundary.
-  const reading = [summary.primaryConstraint, summary.wasteSignal].filter(Boolean);
+  // ONE synthesis paragraph at default depth. The cross-signal insight is what
+  // this block is for; the per-signal reliability note is provenance and belongs
+  // in the reference layer, not in the reading.
+  const reading = [summary.wasteSignal].filter(Boolean);
 
   return (
     <section data-kora-region="reading" style={{ minWidth: 0 }}>
@@ -38,11 +41,8 @@ export function ExecutiveIntelligencePanel({ summary }: { summary: ExecutiveInte
         </p>
       ))}
 
-      <p className="kt-caption" style={{ color: PX.ink3, marginTop: 14, maxWidth: '74ch' }}>
-        {summary.confidenceNote}
-      </p>
-      <p className="kt-caption" style={{ color: PX.inkMute, marginTop: 4 }}>
-        pre_empirical_calibration · not_kora_index_component
+      <p className="kt-caption" style={{ color: PX.inkMute, marginTop: 10 }}>
+        not_kora_index_component
       </p>
     </section>
   );

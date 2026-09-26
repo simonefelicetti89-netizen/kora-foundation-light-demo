@@ -15,6 +15,13 @@ export interface LiveBoardAction {
   priority: number;
   action: string;
   detail: string;
+  /**
+   * The macroblock this action targets, when it targets one. Additive and
+   * purely declarative: the ranking is unchanged. The KORA Index surface needs
+   * it to state out loud when the highest-leverage action and the binding
+   * constraint point at different things.
+   */
+  macroblock?: string;
 }
 
 export interface LiveBoardActionInputs {
@@ -49,6 +56,7 @@ export function generateLiveBoardActions(inputs: LiveBoardActionInputs): LiveBoa
     const isLow    = weakest.score < 50;
     actions.push({
       priority: 1,
+      macroblock: weakest.code,
       action:   `Rafforzare ${name}`,
       detail: isLow
         ? `${name} è il macroblocco critico (${Math.round(weakest.score)}/100, peso ${Math.round(weakest.weight * 100)}%). Il margine di miglioramento è significativo — azioni mirate su questo macroblocco hanno il maggiore impatto diretto sul KORA Index. ${bestName} (${Math.round(strongest.score)}/100) è il punto di forza su cui costruire.`

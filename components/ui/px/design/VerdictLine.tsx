@@ -17,7 +17,12 @@ export function VerdictLine({ period, verdict, precision }: {
   return (
     <div data-kora-region="verdict">
       <p className="kt-meta" style={{ color: 'rgba(255,255,255,0.50)', marginBottom: 24 }}>{period}</p>
-      <h2 className="kt-display" style={{ color: '#FFFFFF', maxWidth: '15ch' }}>{verdict}</h2>
+      {/* `kora-verdict` is a NAMED treatment scoped to this component alone.
+          The approved page design specifies 34px on a phone; WP139's canonical
+          `display` mobile step is 42px. The later Founder-approved design wins
+          HERE and nowhere else — the global scale is untouched and no generic
+          typography exception is introduced. */}
+      <h2 className="kt-display kora-verdict" style={{ color: '#FFFFFF', maxWidth: '15ch' }}>{verdict}</h2>
       {precision && (
         <p className="kt-section" style={{ fontWeight: 400, color: 'rgba(255,255,255,0.72)', marginTop: 16, maxWidth: '64ch' }}>
           {precision}

@@ -29,7 +29,6 @@ import { BoardActions }    from '@/components/kora-index/BoardActions';
 import { PageMasthead }    from '@/components/ui/PageMasthead';
 import { SectionLabel }    from '@/components/ui/SectionLabel';
 import { Explainer }       from '@/components/ui/Explainer';
-import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { TM }              from '@/components/ui/TM';
 import {
   Chapter, Priority,
@@ -38,6 +37,7 @@ import {
 } from '@/components/ui/px';
 import { macroblockScale } from '@/lib/design/encoding-grammar';
 import { resolveVerdict, buildPrecisionLine } from '@/lib/verdict/resolve';
+import { actionDivergesFromConstraint } from '@/lib/verdict/binding-constraint';
 
 import { MacroblockCard }           from '@/components/kora-index/MacroblockCard';
 import { KoraIndexBuildCard }       from '@/components/kora-index/KoraIndexBuildCard';
@@ -394,6 +394,16 @@ export default function KoraIndexDetail() {
   // of its first item, never a second recommendation.
   const primaryAction = boardActions[0]?.action ?? null;
 
+  // BoardActions ranks by weighted macroblock leverage; the binding constraint is
+  // the weakest signal. They are different questions and may legitimately point
+  // elsewhere — but the surface must SAY SO rather than silently telling two
+  // stories, which is what it did.
+  const actionDiverges = actionDivergesFromConstraint(
+    verdict.binding,
+    boardActions[0]?.macroblock ?? null,
+    macroblocks,
+  );
+
   return (
     <div className="kora-priority-stack" style={{ maxWidth: 1120 }} data-testid="company-kora-index-page">
 
@@ -461,7 +471,14 @@ export default function KoraIndexDetail() {
         {primaryAction && (
           <p className="kt-section" style={{ fontWeight: 600, color: '#FFFFFF', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
             <span aria-hidden="true" style={{ color: 'rgba(255,255,255,0.50)', flex: '0 0 auto' }}>→</span>
-            <span>{primaryAction}</span>
+            <span>
+              {primaryAction}
+              {actionDiverges && (
+                <span className="kt-caption" style={{ display: 'block', fontWeight: 400, color: 'rgba(255,255,255,0.50)', marginTop: 6 }}>
+                  Azione a maggiore impatto ponderato: agisce su un macroblocco diverso dal vincolo primario.
+                </span>
+              )}
+            </span>
           </p>
         )}
       </ExecutiveSurface>
@@ -843,12 +860,14 @@ export default function KoraIndexDetail() {
       {/* ── Reference line — non-suppressible, last on every width ─────────── */}
       <Priority order={MOBILE_ORDER.reference}>
         <div style={{ marginTop: 48 }}>
-          <ProvenanceFooter
-            methodologyVersionId={output.methodology_version_id}
-            calibrationStatus={output.calibration_status}
-            reportingPeriod={output.reporting_period}
-          />
-          <p className="kt-caption" style={{ color: PX.inkMute, marginTop: 12, maxWidth: '88ch' }}>
+          {/* The reference layer is canvas, caption typography, no card and no
+              coloured pill. `MethodologyBadge` renders `calibration_status` as an
+              amber pill; it is shared with /company/reports, which is approved
+              and must not be reopened, so this surface states the same
+              non-suppressible values as quiet text rather than changing it. */}
+          <p className="kt-caption" style={{ color: PX.inkMute, maxWidth: '88ch' }}>
+            {output.methodology_version_id} · metodologia KORA v0.1 · {output.calibration_status} ·
+            periodo {output.reporting_period} · N≥10 ·
             Libreria verdetti {verdict.libraryVersion} · correlazione ≠ causalità ·
             KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate,
             verificate e spiegabili. Non garantisce conformità normativa e non sostituisce

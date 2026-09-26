@@ -351,10 +351,24 @@ describe('Architectural invariants — no formula changes, no DB, no scoring', (
     expect(src).not.toContain('upsert(');
   });
 
-  it('ExecutiveIntelligencePanel has notKoraIndexComponent badge in footer', () => {
-    const src = read('components/executive-intelligence/ExecutiveIntelligencePanel.tsx');
-    expect(src).toContain('not_kora_index_component');
-    expect(src).toContain('pre_empirical_calibration');
+  // SUPERSEDED IN PLACE by the approved KORA Index design, intent preserved.
+  // The panel still declares it is not a KORA Index component. The calibration
+  // status moved OUT of the panel and into the surface's reference layer,
+  // because the approved design makes this block a synthesis at default depth
+  // and puts methodology provenance in the reference grammar. The requirement —
+  // both disclosures present and non-suppressible on the surface — is unchanged,
+  // and is now asserted where each one actually lives.
+  it('the panel declares notKoraIndexComponent, and calibration status is disclosed on the surface', () => {
+    const panel = read('components/executive-intelligence/ExecutiveIntelligencePanel.tsx');
+    expect(panel).toContain('not_kora_index_component');
+    expect(panel).toContain('notKoraIndexComponent');
+
+    const page = read('app/company/kora-index/page.tsx');
+    expect(page).toContain('output.calibration_status');
+    // and it is not hidden behind a disclosure
+    const refIndex  = page.indexOf('output.calibration_status');
+    const discIndex = page.indexOf('kora-disclosure-region');
+    expect(refIndex).toBeGreaterThan(discIndex);
   });
 
   it('kora-index page renders ExecutiveIntelligencePanel above HeroDiagnosis', () => {

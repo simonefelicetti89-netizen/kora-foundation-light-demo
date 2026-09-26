@@ -749,10 +749,43 @@ details.kora-chapter-band[open] > summary.kora-chapter-head::after { content: 'â
 @media (max-width: 767px) {
   /* The band strip keeps its scale and its ACTIVE name; the five tiny labels
      truncate to nonsense at 295px, so the caption carries the name instead. */
-  [data-kora-encoding="score-band-scale"] > div:nth-of-type(2) { display: none; }
+  [data-kora-encoding="score-band-scale"] > div:nth-of-type(2) { display: none !important; }
 
   /* Masthead: the boundary sits beside the eyebrow, the company name below.
      Three stacked lines is chrome eating the first screen. */
   .kora-masthead { gap: 10px; }
   .kora-masthead h1 { flex: 1 1 100%; order: 2; }
 }
+
+/* The executive verdict's own mobile step â€” scoped to the KORA Index judgment,
+   never to `.kt-display` at large. See VerdictLine for why it exists. */
+@media (max-width: 767px) {
+  .kora-verdict { font-size: 34px; line-height: 1.02; letter-spacing: -0.035em; }
+
+  /* The five band labels truncate to nonsense at 295px; the caption already
+     names the active band. Scale, marker and score all stay. */
+  /* !important because ScoreBandScale sets `display: flex` inline, and an
+     inline style outranks any stylesheet rule. */
+  .kora-exec-surface [data-kora-encoding="score-band-scale"] > div:nth-of-type(2) { display: none !important; }
+}
+
+/* Methodology provenance is reference, not first reading: the band caption and
+   the config path are read in the disclosure layer, not under the judgment. */
+.kora-exec-surface [data-kora-encoding="score-band-scale"] > p { display: none !important; }
+.kora-exec-surface [data-kora-encoding="score-band-scale"] > p.kora-band-name { display: block !important; }
+
+/* Four disclosure rows on the canvas: title, caption, hairline, one affordance.
+   No filled card, no alternating ground, no rounded container, no ordinal. */
+.kora-disclosure-region .kora-chapter-band {
+  background: transparent;
+  border-radius: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(6, 3, 43, 0.09);
+}
+.kora-disclosure-region .kora-chapter-band:first-child { border-top: 1px solid rgba(6, 3, 43, 0.16); }
+.kora-disclosure-region .kora-chapter + .kora-chapter { margin-top: 0; }
+.kora-disclosure-region .kora-chapter-num { display: none; }
+.kora-disclosure-region summary.kora-chapter-head { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
+.kora-disclosure-region details[open] > summary.kora-chapter-head { margin-bottom: 24px; }

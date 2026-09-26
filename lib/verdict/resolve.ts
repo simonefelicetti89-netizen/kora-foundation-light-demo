@@ -6,15 +6,7 @@ import {
   STATE_CLAUSE, CONSTRAINT_CLAUSE, VERDICT_LIBRARY_VERSION,
   type BandKey, type SafeguardKey, type ConstraintType,
 } from './fragments';
-
-/** Which family a component belongs to, for constraint attribution. */
-const COMPONENT_CONSTRAINT: Record<string, ConstraintType> = {
-  AR: 'reach', MAR: 'reach',
-  EVQ: 'evidence',
-  INT: 'depth',
-  CONT: 'continuity',
-  EQW: 'equity', EQS: 'equity', PC: 'equity', PB: 'equity',
-};
+import { deriveBindingConstraint, type BindingConstraint } from './binding-constraint';
 
 export interface VerdictInputs {
   koraIndexValue: number;
@@ -28,6 +20,8 @@ export interface Verdict {
   band: BandKey;
   safeguard: SafeguardKey;
   constraint: ConstraintType;
+  /** The single decision every surface on the page consumes. */
+  binding: BindingConstraint;
   libraryVersion: string;
 }
 
@@ -37,69 +31,70 @@ export interface Verdict {
  * nothing is below its own scale midpoint — never as a fallback for missing
  * data, which returns the weakest available signal instead.
  */
+/**
+ * Kept as the constraint-TYPE accessor. It no longer decides anything: the
+ * decision lives in `deriveBindingConstraint`, so the verdict cannot disagree
+ * with the drivers, the precision line or the action rationale.
+ */
 export function deriveConstraintType(
   components: KoraIndexComponent[],
   macroblocks?: MacroblockScore[],
 ): ConstraintType {
-  const scored = components
-    .filter((c) => !c.external && c.code !== 'CS' && typeof c.value === 'number')
-    .map((c) => ({ family: COMPONENT_CONSTRAINT[c.code as string], value: c.value }))
-    .filter((c): c is { family: ConstraintType; value: number } => Boolean(c.family));
-
-  const bti = macroblocks?.find((m) => m.code === 'BTI');
-  const btiRatio = typeof bti?.score === 'number' ? bti.score / 100 : null;
-
-  const candidates: Array<{ family: ConstraintType; value: number }> = [...scored];
-  if (btiRatio !== null) candidates.push({ family: 'budget', value: btiRatio });
-  if (candidates.length === 0) return 'none';
-
-  candidates.sort((a, b) => a.value - b.value);
-  const weakest = candidates[0]!;
-  return weakest.value >= 0.5 ? 'none' : weakest.family;
+  return deriveBindingConstraint(components, macroblocks).type;
 }
 
 export function resolveVerdict(inputs: VerdictInputs): Verdict {
   const band = getScoreBand(inputs.koraIndexValue).key as BandKey;
   const safeguard = inputs.safeguardStatus as SafeguardKey;
-  const constraint = deriveConstraintType(inputs.components, inputs.macroblocks);
+  const binding = deriveBindingConstraint(inputs.components, inputs.macroblocks);
+  const constraint = binding.type;
 
   const state = STATE_CLAUSE[safeguard]?.[band] ?? STATE_CLAUSE.WARNING[band];
   const rest  = CONSTRAINT_CLAUSE[constraint];
 
   return {
     text: `${state} ${rest}`,
-    band, safeguard, constraint,
+    band, safeguard, constraint, binding,
     libraryVersion: VERDICT_LIBRARY_VERSION,
   };
 }
 
 /**
- * The precision sub-line: generated from ACTUAL FIGURES, never authored.
- * Every numeral traces to a field. Nothing is asserted that the inputs do not
- * support — a missing figure drops its clause rather than being invented.
+ * The precision sub-line — generated from ACTUAL FIGURES, never authored.
+ *
+ * It states the SAME constraint the verdict names, with its real number. It
+ * used to be hardcoded to activation rate + EVQ, so a page whose binding
+ * constraint was depth or continuity still said "evidence" underneath the
+ * verdict. Every numeral traces to a field; a missing figure drops its clause
+ * instead of being invented.
  */
 export function buildPrecisionLine(inputs: VerdictInputs & {
   activationRate?: number | null;
   meaningfulActivationRate?: number | null;
 }): string {
   const pct = (n: number) => `${Math.round(n * 100)}%`;
-  const get = (code: string) => {
-    const c = inputs.components.find((x) => x.code === code);
-    return typeof c?.value === 'number' ? c.value : null;
-  };
-  const parts: string[] = [];
+  const binding = deriveBindingConstraint(inputs.components, inputs.macroblocks);
+  const value   = binding.value;
 
-  if (typeof inputs.activationRate === 'number') {
-    parts.push(`Copertura della forza lavoro al ${pct(inputs.activationRate)}`);
+  // What the binding constraint actually says, in its own figure.
+  const CLAUSE: Record<string, (v: number) => string> = {
+    reach:      (v) => `solo ${pct(v)} della forza lavoro ha ricevuto attivazione verificata`,
+    evidence:   (v) => `${pct(1 - v)} delle Impact Units non è sostenuto da evidenza verificata`,
+    depth:      (v) => `le Impact Units per lavoratore attivo sono al ${pct(v)} del target`,
+    continuity: (v) => `la continuità fra periodi è al ${pct(v)} del target`,
+    equity:     (v) => `la distribuzione fra lavoratori e segmenti è al ${pct(v)} del target`,
+    budget:     (v) => `Budget-to-Human-Impact a ${Math.round(v * 100)}/100`,
+  };
+
+  // One piece of context the reader needs to place that number.
+  const context = typeof inputs.activationRate === 'number'
+    ? `Copertura della forza lavoro al ${pct(inputs.activationRate)}`
+    : null;
+
+  if (binding.type === 'none' || value === null) {
+    return context ? `${context}. Nessun vincolo sotto la soglia di attenzione.` : '';
   }
-  const evq = get('EVQ');
-  if (evq !== null) {
-    parts.push(`${pct(1 - evq)} delle Impact Units non è sostenuto da evidenza verificata`);
-  }
-  const bti = inputs.macroblocks?.find((m) => m.code === 'BTI');
-  if (parts.length < 2 && typeof bti?.score === 'number') {
-    parts.push(`Budget-to-Human-Impact a ${Math.round(bti.score)}/100`);
-  }
-  if (parts.length === 0) return '';
-  return parts.length === 1 ? `${parts[0]}.` : `${parts[0]}, ma ${parts.slice(1).join('; ')}.`;
+  const clause = CLAUSE[binding.type]?.(value);
+  if (!clause) return context ? `${context}.` : '';
+  return context && binding.type !== 'reach' ? `${context}, ma ${clause}.` : `${clause[0]!.toUpperCase()}${clause.slice(1)}.`;
 }

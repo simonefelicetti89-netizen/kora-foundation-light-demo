@@ -81,8 +81,10 @@ export function ScoreBandScale({ value, caption, onDark }: {
         ))}
       </div>
 
-      <p className="kt-caption" style={{ color: body, marginTop: 6 }}>
-        {caption ?? `Banda "${active.label}" — da ${Math.round(active.from)} a ${Math.round(active.to)} su 100.`}
+      {/* The active band NAME is the reading; the numeric range and the config
+          path are provenance and are suppressed on the executive surface. */}
+      <p className="kt-caption kora-band-name" style={{ color: body, marginTop: 6 }}>
+        {caption ?? active.label}
       </p>
       <p className="kt-caption" style={{ color: quiet, marginTop: 2 }}>
         Bande: {scale.sourceLabel} · pre_empirical_calibration
