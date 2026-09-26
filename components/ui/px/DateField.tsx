@@ -58,7 +58,7 @@ export function DateField({
 
   return (
     <div style={{ display: 'grid', gap: 7, minWidth: 0, fontFamily: PX.sans }}>
-      <label htmlFor={inputId} style={{ fontSize: 12.5, fontWeight: 700, color: PX.ink2 }}>
+      <label htmlFor={inputId} style={{ fontSize: '13px', fontWeight: 700, color: PX.ink2 }}>
         {label}{required ? ' *' : ''}
       </label>
 
@@ -76,7 +76,7 @@ export function DateField({
           onChange={(e) => onChange(e.target.value)}
           style={{
             height: 36, width: '100%', padding: '0 36px 0 12px',
-            font: 'inherit', fontSize: 13,
+            font: 'inherit', fontSize: '13px',
             // The native text is hidden, not removed: the control keeps its
             // role, its keyboard behaviour and its platform picker.
             color: 'transparent',
@@ -94,7 +94,7 @@ export function DateField({
           style={{
             position: 'absolute', left: 13, top: 0, height: 36,
             display: 'flex', alignItems: 'center',
-            fontSize: 13, fontVariantNumeric: 'tabular-nums',
+            fontSize: '13px', fontVariantNumeric: 'tabular-nums',
             color: disabled ? PX.inkMute : (shown ? PX.ink : PX.inkMute),
             pointerEvents: 'none',
           }}
@@ -107,9 +107,9 @@ export function DateField({
         />
       </div>
 
-      {hint ? <span id={hintId} style={{ fontSize: 11.5, color: PX.ink3 }}>{hint}</span> : null}
+      {hint ? <span id={hintId} style={{ fontSize: '12px', color: PX.ink3 }}>{hint}</span> : null}
       {error ? (
-        <span id={errId} style={{ fontSize: 12, fontWeight: 700, color: PX.risk }}>{error}</span>
+        <span id={errId} style={{ fontSize: '12px', fontWeight: 700, color: PX.risk }}>{error}</span>
       ) : null}
     </div>
   );

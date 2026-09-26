@@ -59,8 +59,8 @@ export function HeroDiagnosis({
           <p style={{
             fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             fontWeight:    600,
-            fontSize:      '10px',
-            letterSpacing: '0.12em',
+            fontSize:      '11px',
+            letterSpacing: '0.07em',
             textTransform: 'uppercase',
             color:         TOKENS.accent,
             marginBottom:  6,
@@ -70,7 +70,7 @@ export function HeroDiagnosis({
           {/* Diagnosis sentence — the most important line on the page */}
           <p style={{
             fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontSize:    'clamp(1.25rem, 2.5vw, 1.625rem)',
+            fontSize:    '20px',
             fontWeight:  400,
             color:       '#FFFFFF',
             letterSpacing: '-0.01em',
@@ -86,7 +86,7 @@ export function HeroDiagnosis({
           <p style={{
             fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             fontWeight:  700,
-            fontSize:    'clamp(3rem, 6vw, 4rem)',
+            fontSize:    '60px',
             color:       scoreColor,
             letterSpacing: '-0.04em',
             lineHeight:  0.9,
@@ -111,8 +111,8 @@ export function HeroDiagnosis({
           <p style={{
             fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             fontWeight:    600,
-            fontSize:      '9.5px',
-            letterSpacing: '0.09em',
+            fontSize:      '11px',
+            letterSpacing: '0.07em',
             textTransform: 'uppercase',
             color:         'rgba(255,255,255,0.30)',
             marginBottom:  8,
@@ -137,7 +137,7 @@ export function HeroDiagnosis({
           </span>
           <p style={{
             fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)',
-            fontSize:   '10px',
+            fontSize:   '11px',
             color:      'rgba(255,255,255,0.30)',
             marginTop:  5,
           }}>
@@ -153,8 +153,8 @@ export function HeroDiagnosis({
           <p style={{
             fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             fontWeight:    600,
-            fontSize:      '9.5px',
-            letterSpacing: '0.09em',
+            fontSize:      '11px',
+            letterSpacing: '0.07em',
             textTransform: 'uppercase',
             color:         'rgba(255,255,255,0.30)',
             marginBottom:  8,
@@ -164,7 +164,7 @@ export function HeroDiagnosis({
           <p style={{
             fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             fontWeight:  700,
-            fontSize:    '22px',
+            fontSize:    '20px',
             color:       '#FFFFFF',
             letterSpacing: '-0.02em',
             lineHeight:  1,
@@ -173,7 +173,7 @@ export function HeroDiagnosis({
           </p>
           <p style={{
             fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)',
-            fontSize:   '10px',
+            fontSize:   '11px',
             color:      'rgba(255,255,255,0.30)',
             marginTop:  5,
             lineHeight: 1.35,
@@ -187,7 +187,7 @@ export function HeroDiagnosis({
           <>
             <div style={{ width: 1, background: 'rgba(255,255,255,0.08)', alignSelf: 'stretch' }} />
             <div style={{ flex: 1, minWidth: 140 }}>
-              <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontWeight: 600, fontSize: '9.5px', letterSpacing: '0.09em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.30)', marginBottom: 8 }}>
+              <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontWeight: 700, fontSize: '11px', letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.30)', marginBottom: 8 }}>
                 Calibrazione
               </p>
               <span style={{
@@ -196,14 +196,14 @@ export function HeroDiagnosis({
                 background:   TOKENS.safeguard.watch.bg,
                 color:        TOKENS.safeguard.watch.text,
                 border:       `1px solid rgba(217,154,43,0.30)`,
-                fontSize:     '10px',
+                fontSize:     '11px',
                 fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
                 fontWeight:   600,
               }}>
                 {calibrationStatus.replace(/_/g, ' ')}
               </span>
               {methodologyVersion && (
-                <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '9px', color: 'rgba(255,255,255,0.22)', marginTop: 6 }}>
+                <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '11px', color: 'rgba(255,255,255,0.22)', marginTop: 6 }}>
                   {methodologyVersion}
                 </p>
               )}
@@ -217,7 +217,7 @@ export function HeroDiagnosis({
         marginTop:    16,
         paddingTop:   12,
         borderTop:    '1px solid rgba(255,255,255,0.07)',
-        fontSize:     '9px',
+        fontSize:     '11px',
         color:        'rgba(255,255,255,0.25)',
         lineHeight:   1.5,
         fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',

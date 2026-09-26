@@ -78,7 +78,7 @@ export function PxDataTable<T>({
   if (rows.length === 0) {
     return (
       <div ref={hostRef} style={{ padding: '36px 20px', textAlign: 'center', fontFamily: PX.sans }}>
-        <p style={{ fontSize: 12.5, color: PX.ink3, margin: 0 }}>{emptyLabel}</p>
+        <p style={{ fontSize: '13px', color: PX.ink3, margin: 0 }}>{emptyLabel}</p>
       </div>
     );
   }
@@ -101,8 +101,8 @@ export function PxDataTable<T>({
                   cursor: onSelect ? 'pointer' : undefined,
                 }}
               >
-                <div style={{ fontSize: 13.5, fontWeight: 700, overflowWrap: 'anywhere' }}>{recordTitle(row)}</div>
-                <dl style={{ display: 'grid', gridTemplateColumns: 'minmax(0,auto) minmax(0,1fr)', gap: '4px 12px', margin: 0, fontSize: 12 }}>
+                <div style={{ fontSize: '14px', fontWeight: 700, overflowWrap: 'anywhere' }}>{recordTitle(row)}</div>
+                <dl style={{ display: 'grid', gridTemplateColumns: 'minmax(0,auto) minmax(0,1fr)', gap: '4px 12px', margin: 0, fontSize: '12px' }}>
                   {columns.filter((c) => !c.hideInRecords).map((c) => (
                     <div key={c.key} style={{ display: 'contents' }}>
                       <dt style={{ color: PX.ink3, fontWeight: 600 }}>{c.header}</dt>
@@ -121,9 +121,9 @@ export function PxDataTable<T>({
         <div data-px-table="table" style={{ overflowX: 'auto', minWidth: 0 }}>
           <table style={{
             width: '100%', tableLayout: 'fixed', borderCollapse: 'separate', borderSpacing: 0,
-            fontSize: 13, fontFamily: PX.sans, fontVariantNumeric: 'tabular-nums',
+            fontSize: '13px', fontFamily: PX.sans, fontVariantNumeric: 'tabular-nums',
           }}>
-            {caption ? <caption style={{ captionSide: 'top', textAlign: 'left', padding: '0 10px 8px', fontSize: 11.5, color: PX.ink3 }}>{caption}</caption> : null}
+            {caption ? <caption style={{ captionSide: 'top', textAlign: 'left', padding: '0 10px 8px', fontSize: '12px', color: PX.ink3 }}>{caption}</caption> : null}
             <colgroup>
               {columns.map((c) => {
                 const surplus = Math.max(0, (width < 0 ? required : width) - required);
@@ -141,7 +141,7 @@ export function PxDataTable<T>({
                     style={{
                       position: 'sticky', top: 0, zIndex: 2, background: PX.l2,
                       textAlign: c.align ?? 'left', padding: '8px 10px', whiteSpace: 'nowrap',
-                      fontSize: 11, fontWeight: 800, letterSpacing: '0.07em',
+                      fontSize: '11px', fontWeight: 800, letterSpacing: '0.07em',
                       textTransform: 'uppercase', color: PX.ink3,
                       borderBottom: `1px solid ${PX.line2}`,
                     }}

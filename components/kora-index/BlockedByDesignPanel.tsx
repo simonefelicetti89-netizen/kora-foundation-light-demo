@@ -35,10 +35,10 @@ export function BlockedByDesignPanel({ blockedCount, blockedNote }: BlockedByDes
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
+          <p className="font-kora-sans text-kora-ink" style={{ fontSize: '20px', letterSpacing: '-0.01em' }}>
             Blocked by Design
           </p>
-          <p className="mt-1 text-xs leading-relaxed max-w-2xl" style={{ color: TOKENS.inkSecondary }}>
+          <p className="mt-1 kt-caption leading-relaxed max-w-2xl" style={{ color: TOKENS.inkSecondary }}>
             Compliance legale, HSE e documentale esclusa per design.
             Non è punteggio basso — è esclusione intenzionale e non bypassabile.
           </p>
@@ -48,12 +48,12 @@ export function BlockedByDesignPanel({ blockedCount, blockedNote }: BlockedByDes
           style={{ background: TOKENS.safeguard.cap.bg, border: `1px solid ${TOKENS.safeguard.cap.dot}` }}
         >
           <p
-            className="text-2xl font-bold"
+            className="kt-section font-bold"
             style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.safeguard.cap.text }}
           >
             {blockedCount.toLocaleString('it-IT')}
           </p>
-          <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.safeguard.cap.text }}>
+          <p className="kt-meta font-bold uppercase " style={{ color: TOKENS.safeguard.cap.text }}>
             record bloccati
           </p>
         </div>
@@ -61,12 +61,12 @@ export function BlockedByDesignPanel({ blockedCount, blockedNote }: BlockedByDes
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>Categorie bloccate</p>
+          <p className="kt-meta font-bold uppercase " style={{ color: TOKENS.inkHint }}>Categorie bloccate</p>
           <div className="space-y-1.5">
             {BLOCKED_CATEGORIES.map((cat) => (
-              <div key={cat.label} className="flex items-center gap-2 text-xs">
+              <div key={cat.label} className="flex items-center gap-2 kt-caption">
                 <span
-                  className="shrink-0 rounded px-1 py-0.5 text-[10px] font-bold font-mono"
+                  className="shrink-0 rounded px-1 py-0.5 kt-caption font-bold font-mono"
                   style={{ background: TOKENS.safeguard.cap.bg, color: TOKENS.safeguard.cap.text, border: `1px solid ${TOKENS.safeguard.cap.dot}` }}
                 >
                   {cat.code}
@@ -77,12 +77,12 @@ export function BlockedByDesignPanel({ blockedCount, blockedNote }: BlockedByDes
           </div>
         </div>
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>Contributo a KORA</p>
+          <p className="kt-meta font-bold uppercase " style={{ color: TOKENS.inkHint }}>Contributo a KORA</p>
           <div className="space-y-2">
             {ZERO_INDICATORS.map((ind) => (
               <div
                 key={ind.label}
-                className="flex items-center justify-between rounded-[8px] px-3 py-1.5 text-xs"
+                className="flex items-center justify-between rounded-[8px] px-3 py-1.5 kt-caption"
                 style={{ background: TOKENS.inkBorder }}
               >
                 <span style={{ color: TOKENS.inkSecondary }}>{ind.label}</span>
@@ -94,7 +94,7 @@ export function BlockedByDesignPanel({ blockedCount, blockedNote }: BlockedByDes
       </div>
 
       <div
-        className="rounded-[10px] p-3 text-xs leading-relaxed space-y-1"
+        className="rounded-[10px] p-3 kt-caption leading-relaxed space-y-1"
         style={{ background: TOKENS.safeguard.cap.bg, color: TOKENS.safeguard.cap.text }}
       >
         <p className="font-semibold">KORA non trasforma la compliance in impatto.</p>

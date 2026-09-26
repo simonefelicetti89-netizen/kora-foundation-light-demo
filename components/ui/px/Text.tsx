@@ -4,7 +4,7 @@
 //
 // Nine components, one per canonical role. A caller states WHAT THE TEXT IS,
 // never how big it should be — that is the whole point. `<Label>` and
-// `fontSize: 13` render the same pixels today, but only one of them still says
+// `fontSize: '13px'` render the same pixels today, but only one of them still says
 // something true after the scale is recalibrated, and only one of them can be
 // audited.
 //

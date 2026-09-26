@@ -14,7 +14,7 @@ export function SectionLabel({ children, className }: SectionLabelProps) {
       style={{
         fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
         fontWeight:    600,
-        fontSize:      '10.5px',
+        fontSize:      '11px',
         letterSpacing: '0.09em',
         textTransform: 'uppercase',
         color:         TOKENS.inkHint,

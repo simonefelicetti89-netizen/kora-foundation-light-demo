@@ -37,7 +37,7 @@ export function SurfaceHeader({ label, children }: { label: string; children?: R
     }}>
       <span style={{
         flex: '0 1 auto', minWidth: 0, overflowWrap: 'anywhere',
-        fontSize: 11, fontWeight: 700, letterSpacing: '0.075em',
+        fontSize: '11px', fontWeight: 700, letterSpacing: '0.075em',
         textTransform: 'uppercase', color: PX.ink3, fontFamily: PX.sans,
       }}>
         {label}

@@ -23,10 +23,10 @@ export function RecommendationsPanel({ btiRecommendations }: RecommendationsPane
   return (
     <div className="p-5 space-y-5" style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}>
       <div>
-        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
+        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '20px', letterSpacing: '-0.01em' }}>
           Raccomandazioni
         </p>
-        <p className="mt-1 text-xs leading-relaxed max-w-2xl" style={{ color: TOKENS.inkSecondary }}>
+        <p className="mt-1 kt-caption leading-relaxed max-w-2xl" style={{ color: TOKENS.inkSecondary }}>
           Azioni concrete basate sul pattern di attivazione e spesa rilevato da KORA.
           KORA identifica opportunità di attivazione e riallocazione — non garantisce impatti causali su retention o benessere.
         </p>
@@ -50,9 +50,9 @@ export function RecommendationsPanel({ btiRecommendations }: RecommendationsPane
               >
                 <div className="flex items-start gap-3 flex-wrap">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono" style={{ color: TOKENS.inkHint }}>{String(i + 1).padStart(2, '0')}</span>
+                    <span className="kt-caption font-mono" style={{ color: TOKENS.inkHint }}>{String(i + 1).padStart(2, '0')}</span>
                     <span
-                      className="rounded px-1.5 py-0.5 text-[10px] font-semibold"
+                      className="rounded px-1.5 py-0.5 kt-caption font-semibold"
                       style={{ background: styles.badge, color: styles.badgeText, border: `1px solid ${styles.leftBorder}` }}
                     >
                       {PRIORITY_LABELS[rec.priority]}
@@ -60,27 +60,27 @@ export function RecommendationsPanel({ btiRecommendations }: RecommendationsPane
                   </div>
                   {rec.target_macroblock && (
                     <span
-                      className="rounded px-1.5 py-0.5 text-[10px] font-mono font-semibold"
+                      className="rounded px-1.5 py-0.5 kt-caption font-mono font-semibold"
                       style={{ background: TOKENS.inkBorder, color: TOKENS.inkSecondary, border: TOKENS.cardBorder }}
                     >
                       {rec.target_macroblock}
                     </span>
                   )}
                 </div>
-                <p className="text-xs font-semibold leading-snug" style={{ color: TOKENS.ink }}>{rec.action_it}</p>
-                <p className="text-xs leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{rec.expected_signal_it}</p>
+                <p className="kt-caption font-semibold leading-snug" style={{ color: TOKENS.ink }}>{rec.action_it}</p>
+                <p className="kt-caption leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{rec.expected_signal_it}</p>
                 {rec.budget_note && (
-                  <p className="text-[10px] italic pt-1.5" style={{ color: TOKENS.inkHint, borderTop: TOKENS.cardBorder }}>{rec.budget_note}</p>
+                  <p className="kt-caption italic pt-1.5" style={{ color: TOKENS.inkHint, borderTop: TOKENS.cardBorder }}>{rec.budget_note}</p>
                 )}
               </div>
             );
           })}
         </div>
       ) : (
-        <p className="text-sm" style={{ color: TOKENS.inkHint }}>Nessuna raccomandazione disponibile per questo scenario.</p>
+        <p className="kt-secondary" style={{ color: TOKENS.inkHint }}>Nessuna raccomandazione disponibile per questo scenario.</p>
       )}
 
-      <div className="rounded-[10px] p-3 text-[10px] leading-relaxed" style={{ background: TOKENS.inkBorder, color: TOKENS.inkSecondary }}>
+      <div className="rounded-[10px] p-3 kt-caption leading-relaxed" style={{ background: TOKENS.inkBorder, color: TOKENS.inkSecondary }}>
         Queste raccomandazioni sono generate da dati sintetici di KORA Foundation Light in condizioni pre-calibrazione empirica.
         Non sono consigli legali, fiscali, HR o di strategia aziendale. Correlazione ≠ causalità.
       </div>

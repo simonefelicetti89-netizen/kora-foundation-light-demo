@@ -70,7 +70,7 @@ function EligibilityBadge({ cls }: { cls: InitiativeEligibilityClass }) {
   return (
     <span style={{
       display:       'inline-block',
-      fontSize:      '10px',
+      fontSize:      '11px',
       fontWeight:    600,
       borderRadius:  4,
       padding:       '2px 8px',
@@ -87,7 +87,7 @@ function ContributionChip({ contributed }: { contributed: boolean }) {
   return (
     <span style={{
       display:    'inline-block',
-      fontSize:   '10px',
+      fontSize:   '11px',
       fontWeight: 600,
       borderRadius: 4,
       padding:    '2px 8px',
@@ -106,7 +106,7 @@ function LegendRow({ cls }: { cls: InitiativeEligibilityClass }) {
     <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 6 }}>
       <span style={{
         flexShrink:  0,
-        fontSize:    '10px',
+        fontSize:    '11px',
         fontWeight:  600,
         borderRadius: 4,
         padding:     '2px 7px',
@@ -141,7 +141,7 @@ function InitiativeRow({ item }: { item: InitiativeExplainabilityEntry }) {
           {item.initiativeName}
         </p>
         {item.pillar && (
-          <p style={{ fontSize: '10px', color: TOKENS.inkHint, fontWeight: 500, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 4 }}>
+          <p style={{ fontSize: '11px', color: TOKENS.inkHint, fontWeight: 500, letterSpacing: '0.07em', marginBottom: 4 }}>
             {item.pillar}
           </p>
         )}
@@ -160,7 +160,7 @@ function InitiativeRow({ item }: { item: InitiativeExplainabilityEntry }) {
         <EligibilityBadge cls={item.eligibilityClass} />
         <ContributionChip contributed={item.contributedToKoraIndex} />
         {(item.approvedCount > 0 || item.pendingCount > 0 || item.blockedCount > 0) && (
-          <p style={{ fontSize: '10px', color: TOKENS.inkHint, textAlign: 'right' }}>
+          <p style={{ fontSize: '11px', color: TOKENS.inkHint, textAlign: 'right' }}>
             {item.approvedCount > 0 && <span>Approvate: {item.approvedCount} </span>}
             {item.pendingCount  > 0 && <span>In attesa: {item.pendingCount} </span>}
             {item.blockedCount  > 0 && <span>Bloccate: {item.blockedCount}</span>}
@@ -235,7 +235,7 @@ export function InitiativeExplainabilityPanel({ period }: Props) {
           </p>
         </div>
         {state === 'data' && data?.total != null && (
-          <span style={{ fontSize: '10px', fontWeight: 600, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkSecondary, borderRadius: 4, padding: '2px 8px', flexShrink: 0 }}>
+          <span style={{ fontSize: '11px', fontWeight: 600, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkSecondary, borderRadius: 4, padding: '2px 8px', flexShrink: 0 }}>
             {data.total} {data.total === 1 ? 'iniziativa' : 'iniziative'}
           </span>
         )}
@@ -250,7 +250,7 @@ export function InitiativeExplainabilityPanel({ period }: Props) {
           {/* ── Legend ── */}
           <div style={{ padding: '12px 16px', borderBottom: TOKENS.cardBorder, background: 'rgba(6,3,43,0.02)' }}
                data-testid="eligibility-legend">
-            <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.09em', color: TOKENS.inkHint, marginBottom: 8 }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 8 }}>
               Come vengono classificate le iniziative
             </p>
             <LegendRow cls="eligible" />
@@ -300,7 +300,7 @@ export function InitiativeExplainabilityPanel({ period }: Props) {
           )}
 
           {/* ── Footer ── */}
-          <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+          <p style={{ padding: '8px 14px', fontSize: '11px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
             Aggregato per categoria iniziativa · nessun dato individuale incluso · pre_empirical_calibration
           </p>
         </>

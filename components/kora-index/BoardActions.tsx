@@ -25,7 +25,7 @@ export function BoardActions({ actions }: BoardActionsProps) {
       <div style={{ marginBottom: 16 }}>
         <p style={{
           fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontSize:      '1.375rem',
+          fontSize:      '20px',
           color:         TOKENS.ink,
           letterSpacing: '-0.01em',
           lineHeight:    1.2,
@@ -80,7 +80,7 @@ export function BoardActions({ actions }: BoardActionsProps) {
               <p style={{
                 fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
                 fontWeight:  700,
-                fontSize:    '13.5px',
+                fontSize:    '14px',
                 color:       i === 0 ? '#FFFFFF' : TOKENS.ink,
                 lineHeight:  1.3,
                 letterSpacing: '-0.005em',
@@ -92,7 +92,7 @@ export function BoardActions({ actions }: BoardActionsProps) {
               {/* Detail */}
               <p style={{
                 fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                fontSize:   '11.5px',
+                fontSize:   '12px',
                 color:      i === 0 ? 'rgba(255,255,255,0.60)' : TOKENS.inkSecondary,
                 lineHeight: 1.5,
               }}>
@@ -105,7 +105,7 @@ export function BoardActions({ actions }: BoardActionsProps) {
                   {a.signal && (
                     <span style={{
                       fontFamily:  'Plus Jakarta Sans, var(--font-jakarta)',
-                      fontSize:    '10px',
+                      fontSize:    '11px',
                       color:       i === 0 ? TOKENS.accent : TOKENS.success,
                       fontWeight:  600,
                     }}>
@@ -115,7 +115,7 @@ export function BoardActions({ actions }: BoardActionsProps) {
                   {a.effort && (
                     <span style={{
                       fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)',
-                      fontSize:   '10px',
+                      fontSize:   '11px',
                       color:      i === 0 ? 'rgba(255,255,255,0.35)' : TOKENS.inkHint,
                     }}>
                       Effort: {a.effort}

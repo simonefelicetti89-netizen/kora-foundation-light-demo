@@ -29,7 +29,7 @@ export function BoundaryBadge({ mode, variant = 'light', suffix, className, styl
         alignItems:    'center',
         borderRadius:  4,
         padding:       '2px 7px',
-        fontSize:      '9px',
+        fontSize:      '11px',
         fontWeight:    700,
         letterSpacing: '0.10em',
         textTransform: 'uppercase',

@@ -40,8 +40,8 @@ function Row({ label, content, accent }: { label: string; content: string; accen
         <p style={{
           fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           fontWeight:    700,
-          fontSize:      '9px',
-          letterSpacing: '0.12em',
+          fontSize:      '11px',
+          letterSpacing: '0.07em',
           textTransform: 'uppercase',
           color:         accent ? KORA_COLORS.TERRACOTTA : TOKENS.inkHint,
           marginTop:     2,
@@ -105,8 +105,8 @@ export function ExecutiveIntelligencePanel({ summary, companyName, reportingPeri
             <p style={{
               fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
               fontWeight:    700,
-              fontSize:      '9px',
-              letterSpacing: '0.12em',
+              fontSize:      '11px',
+              letterSpacing: '0.07em',
               textTransform: 'uppercase',
               color:         TOKENS.inkHint,
               marginBottom:  3,
@@ -116,7 +116,7 @@ export function ExecutiveIntelligencePanel({ summary, companyName, reportingPeri
             <p style={{
               fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
               fontWeight: 700,
-              fontSize:   '17px',
+              fontSize:   '16px',
               color:      sc.text,
               lineHeight: 1.2,
             }}>
@@ -127,7 +127,7 @@ export function ExecutiveIntelligencePanel({ summary, companyName, reportingPeri
         {reportingPeriod && (
           <span style={{
             fontFamily:    'ui-monospace, SFMono-Regular, monospace',
-            fontSize:      '10px',
+            fontSize:      '11px',
             color:         TOKENS.inkHint,
             background:    'rgba(6,3,43,0.04)',
             border:        `1px solid ${TOKENS.inkBorder}`,
@@ -178,19 +178,19 @@ export function ExecutiveIntelligencePanel({ summary, companyName, reportingPeri
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
           <span style={{
             fontFamily:    'ui-monospace, SFMono-Regular, monospace',
-            fontSize:      '9px',
+            fontSize:      '11px',
             color:         TOKENS.inkMeta,
             background:    'rgba(6,3,43,0.03)',
             border:        `1px solid ${TOKENS.inkBorder}`,
             borderRadius:  3,
             padding:       '2px 6px',
-            letterSpacing: '0.03em',
+            letterSpacing: '0.07em',
           }}>
             pre_empirical_calibration
           </span>
           <span style={{
             fontFamily:    'ui-monospace, SFMono-Regular, monospace',
-            fontSize:      '9px',
+            fontSize:      '11px',
             color:         TOKENS.inkMeta,
             background:    'rgba(6,3,43,0.03)',
             border:        `1px solid ${TOKENS.inkBorder}`,

@@ -60,25 +60,25 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
         <div className="flex-1 min-w-0">
           {/* §3 — eyebrow: Inter non mono; §5 — resta viola (macroblock code) */}
           <p
-            className="uppercase font-semibold"
-            style={{ fontFamily: 'var(--font-jakarta)', fontSize: '11px', letterSpacing: '0.08em', color: TOKENS.accent }}
+            className="uppercase font-bold"
+            style={{ fontFamily: 'var(--font-jakarta)', fontSize: '11px', letterSpacing: '0.07em', color: TOKENS.accent }}
           >
             {macroblock.code}
           </p>
-          <p className="text-sm font-semibold mt-0.5" style={{ color: TOKENS.ink }}>
+          <p className="kt-secondary font-semibold mt-0.5" style={{ color: TOKENS.ink }}>
             {macroblock.code === 'BTI' ? <TM>{macroblock.label}</TM> : macroblock.label}
           </p>
         </div>
         <div className="text-right shrink-0">
           <span
-            style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '22px', color: scoreColor(macroblock.score), letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}
+            style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '20px', color: scoreColor(macroblock.score), letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}
           >
             {Math.round(macroblock.score)}
           </span>
-          <span className="text-xs ml-0.5" style={{ color: TOKENS.inkHint }}>/100</span>
+          <span className="kt-caption ml-0.5" style={{ color: TOKENS.inkHint }}>/100</span>
           {delta !== null && (
             <p
-              className="text-xs font-semibold mt-0.5"
+              className="kt-caption font-semibold mt-0.5"
               style={{ color: delta >= 0 ? TOKENS.safeguard.pass.text : TOKENS.safeguard.cap.text }}
             >
               {delta >= 0 ? '+' : ''}{Math.round(delta)}
@@ -96,11 +96,11 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
       </div>
 
       {/* Row 3 — Description */}
-      <p className="text-xs leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{explanation}</p>
+      <p className="kt-caption leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{explanation}</p>
 
       {/* Row 4 — Weight + components block */}
       <div className="rounded-[8px] p-2.5 space-y-2" style={{ background: TOKENS.inkBorder }}>
-        <div className="flex items-center gap-3 text-[10px]">
+        <div className="flex items-center gap-3 kt-caption">
           <span style={{ color: TOKENS.inkSecondary }}>Peso KORA Index</span>
           <span className="font-bold" style={{ color: TOKENS.ink }}>{Math.round(macroblock.weight * 100)}%</span>
         </div>
@@ -108,14 +108,14 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
         {componentCodes.length > 0 ? (
           <div>
             {/* §3 — Inter non mono */}
-            <p className="text-[9px] font-semibold uppercase tracking-wide mb-1" style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.inkHint }}>
+            <p className="kt-meta font-bold uppercase  mb-1" style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.inkHint }}>
               Componenti analitici
             </p>
             <div className="flex flex-wrap gap-1">
               {componentCodes.map((code) => (
                 <span
                   key={code}
-                  className="rounded px-1.5 py-0.5 text-[9px] font-mono"
+                  className="rounded px-1.5 py-0.5 kt-caption font-mono"
                   style={{ background: TOKENS.surface, border: TOKENS.cardBorder, color: TOKENS.inkSecondary }}
                 >
                   {code} — {COMPONENT_LABELS[code] ?? code}
@@ -124,7 +124,7 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
             </div>
           </div>
         ) : isBTI ? (
-          <p className="text-[9px] italic" style={{ color: TOKENS.inkHint }}>
+          <p className="kt-caption italic" style={{ color: TOKENS.inkHint }}>
             Calcolato dal motore — non derivato dai componenti analitici.
           </p>
         ) : null}
@@ -134,8 +134,8 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
       {macroblock.main_driver ? (
         <div className="rounded-[8px] p-2.5 space-y-1" style={{ background: TOKENS.inkBorder }}>
           {/* §3 — Inter non mono */}
-          <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.inkHint }}>Driver principale</p>
-          <p className="text-xs leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{macroblock.main_driver}</p>
+          <p className="kt-meta font-bold uppercase " style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.inkHint }}>Driver principale</p>
+          <p className="kt-caption leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{macroblock.main_driver}</p>
         </div>
       ) : <div />}
 
@@ -146,8 +146,8 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
           style={{ background: 'rgba(199,111,61,0.06)', border: '1px solid rgba(199,111,61,0.12)' }}
         >
           {/* §3 Inter non mono; §5 — header Opportunità: ink non viola */}
-          <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.ink }}>Opportunità</p>
-          <p className="text-xs leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{macroblock.risk_opportunity}</p>
+          <p className="kt-meta font-bold uppercase " style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.ink }}>Opportunità</p>
+          <p className="kt-caption leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{macroblock.risk_opportunity}</p>
         </div>
       ) : <div />}
 

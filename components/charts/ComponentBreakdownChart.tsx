@@ -29,17 +29,17 @@ function CustomTooltip({ active, payload }: TooltipProps) {
       boxShadow:    '0 12px 32px rgba(6,3,43,0.22)',
       minWidth:     160,
     }}>
-      <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', fontWeight: 600, color: TOKENS.accent, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
+      <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', fontWeight: 700, color: TOKENS.accent, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 4 }}>
         {d.name}
       </p>
-      <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '18px', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1 }}>
+      <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '20px', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1 }}>
         {d.value}%
       </p>
-      <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', color: 'rgba(255,255,255,0.55)', marginTop: 4, lineHeight: 1.4 }}>
+      <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '12px', color: 'rgba(255,255,255,0.55)', marginTop: 4, lineHeight: 1.4 }}>
         {d.fullLabel}
       </p>
       {d.weak && (
-        <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '9px', color: TOKENS.accent, marginTop: 4, fontWeight: 600 }}>
+        <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', color: TOKENS.accent, marginTop: 4, fontWeight: 600 }}>
           ↑ Area di miglioramento
         </p>
       )}
@@ -71,7 +71,7 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
       {/* Header */}
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
         <div>
-          <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '1.05rem', color: TOKENS.ink, letterSpacing: '-0.01em', lineHeight: 1.25 }}>
+          <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '16px', color: TOKENS.ink, letterSpacing: '-0.01em', lineHeight: 1.25 }}>
             10-Component Breakdown
           </p>
           <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 3 }}>
@@ -79,11 +79,11 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
           </p>
         </div>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexShrink: 0 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '10px', color: TOKENS.inkSecondary, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '12px', color: TOKENS.inkSecondary, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)' }}>
             <span style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(6,3,43,0.65)', display: 'inline-block' }} />
             Componente
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '10px', color: TOKENS.inkSecondary, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '12px', color: TOKENS.inkSecondary, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)' }}>
             <span style={{ width: 10, height: 10, borderRadius: 2, background: CHART_COLORS.primary, display: 'inline-block' }} />
             Area priorità
           </span>
@@ -105,7 +105,7 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
           <XAxis
             type="number"
             domain={[0, 100]}
-            tick={{ fontSize: 10, fill: CHART_COLORS.axis, fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}
+            tick={{ fontSize: '11px', fill: CHART_COLORS.axis, fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}
             tickFormatter={(v) => `${v}%`}
             axisLine={false}
             tickLine={false}
@@ -114,7 +114,7 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
             type="category"
             dataKey="name"
             width={32}
-            tick={{ fontSize: 11, fontFamily: 'ui-monospace, monospace', fill: CHART_COLORS.axis }}
+            tick={{ fontSize: '11px', fontFamily: 'ui-monospace, monospace', fill: CHART_COLORS.axis }}
             axisLine={false}
             tickLine={false}
           />

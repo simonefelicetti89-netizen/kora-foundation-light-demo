@@ -58,7 +58,7 @@ export function Explainer({ what, how, source, compact = false }: ExplainerProps
               borderRadius:   '50%',
               background:     TOKENS.inkBorder,
               color:          TOKENS.inkHint,
-              fontSize:       10,
+              fontSize:       '11px',
               fontFamily:     'ui-monospace, monospace',
               fontWeight:     700,
             }}
@@ -88,18 +88,18 @@ export function Explainer({ what, how, source, compact = false }: ExplainerProps
               fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             }}
           >
-            <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKENS.accent, marginBottom: 5 }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: TOKENS.accent, marginBottom: 5 }}>
               cosa misura
             </p>
-            <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5, marginBottom: 8 }}>{what}</p>
-            <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKENS.accent, marginBottom: 5 }}>
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5, marginBottom: 8 }}>{what}</p>
+            <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: TOKENS.accent, marginBottom: 5 }}>
               come si legge
             </p>
-            <p style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>{how}</p>
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>{how}</p>
             {source && (
               <>
                 <div style={{ height: 1, background: 'rgba(255,255,255,0.12)', margin: '8px 0' }} />
-                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>{source}</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>{source}</p>
               </>
             )}
           </div>
@@ -120,7 +120,7 @@ export function Explainer({ what, how, source, compact = false }: ExplainerProps
       gap:          6,
     }}>
       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-        <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKENS.accent, flexShrink: 0, paddingTop: 1 }}>
+        <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: TOKENS.accent, flexShrink: 0, paddingTop: 1 }}>
           cosa misura
         </span>
         <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
@@ -128,7 +128,7 @@ export function Explainer({ what, how, source, compact = false }: ExplainerProps
         </p>
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-        <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKENS.accent, flexShrink: 0, paddingTop: 1 }}>
+        <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: TOKENS.accent, flexShrink: 0, paddingTop: 1 }}>
           come si legge
         </span>
         <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
@@ -136,7 +136,7 @@ export function Explainer({ what, how, source, compact = false }: ExplainerProps
         </p>
       </div>
       {source && (
-        <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10.5px', color: TOKENS.inkMeta, lineHeight: 1.5, paddingTop: 2, borderTop: `1px solid ${TOKENS.inkBorder}`, marginTop: 2 }}>
+        <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', color: TOKENS.inkMeta, lineHeight: 1.5, paddingTop: 2, borderTop: `1px solid ${TOKENS.inkBorder}`, marginTop: 2 }}>
           {source}
         </p>
       )}

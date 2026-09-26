@@ -17,7 +17,7 @@ export function Status({ tone, children, icon }: { tone: PxTone; children: React
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
         minHeight: 23, padding: '2px 8px', borderRadius: PX.rChip,
-        fontSize: 11.5, fontWeight: 700, fontFamily: PX.sans,
+        fontSize: '12px', fontWeight: 700, fontFamily: PX.sans,
         background: t.tint, color: t.text,
         // The word wraps rather than truncating: a status that cannot be read
         // is not a status. Width pressure is absorbed by the row, not the word.
@@ -36,7 +36,7 @@ export function Chip({ children, selected = false }: { children: ReactNode; sele
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 6, height: 28, padding: '0 10px',
-      borderRadius: PX.rChip, fontSize: 12, fontWeight: 700, fontFamily: PX.sans,
+      borderRadius: PX.rChip, fontSize: '12px', fontWeight: 700, fontFamily: PX.sans,
       background: selected ? PX.violetTint : PX.l1,
       color: selected ? PX.violet700 : PX.ink2,
       border: `1px solid ${selected ? PX.violetEdge : PX.line2}`,

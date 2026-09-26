@@ -19,7 +19,7 @@ function SubFactor({ label, value }: { label: string; value: number }) {
   const barColor = pct >= 70 ? TOKENS.safeguard.pass.dot : pct >= 50 ? TOKENS.safeguard.watch.dot : TOKENS.safeguard.cap.dot;
   return (
     <div>
-      <div className="flex justify-between text-xs mb-1">
+      <div className="flex justify-between kt-caption mb-1">
         <span style={{ color: TOKENS.inkSecondary }}>{label}</span>
         <span className="font-mono font-semibold" style={{ color: TOKENS.ink }}>{pct}%</span>
       </div>
@@ -37,13 +37,13 @@ export function ConfidenceBreakdown({ record }: ConfidenceBreakdownProps) {
       style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}
     >
       <div className="flex items-center justify-between">
-        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
+        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '20px', letterSpacing: '-0.01em' }}>
           Confidence Score — Dettaglio
         </p>
         {record && (
-          <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '18px', color: TOKENS.accent }}>
+          <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '20px', color: TOKENS.accent }}>
             {Math.round(record.confidence_score * 100)}%
-            <span className="ml-1 text-xs font-normal capitalize" style={{ color: TOKENS.inkHint }}>
+            <span className="ml-1 kt-caption font-normal capitalize" style={{ color: TOKENS.inkHint }}>
               ({record.confidence_level})
             </span>
           </span>
@@ -63,7 +63,7 @@ export function ConfidenceBreakdown({ record }: ConfidenceBreakdownProps) {
           </div>
 
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: TOKENS.inkHint }}>
+            <p className="kt-meta font-bold uppercase  mb-2" style={{ color: TOKENS.inkHint }}>
               Copertura Fonti
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -72,7 +72,7 @@ export function ConfidenceBreakdown({ record }: ConfidenceBreakdownProps) {
                 return (
                   <span
                     key={src}
-                    className="rounded px-1.5 py-0.5 text-xs capitalize"
+                    className="rounded px-1.5 py-0.5 kt-caption capitalize"
                     style={{ background: s.bg, color: s.text, border: `1px solid ${s.border}` }}
                   >
                     {src.replace(/_/g, ' ')} · {status}
@@ -84,12 +84,12 @@ export function ConfidenceBreakdown({ record }: ConfidenceBreakdownProps) {
 
           {record.gaps_identified.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: TOKENS.inkHint }}>
+              <p className="kt-meta font-bold uppercase  mb-2" style={{ color: TOKENS.inkHint }}>
                 Lacune Identificate
               </p>
               <ul className="space-y-1">
                 {record.gaps_identified.map((gap, i) => (
-                  <li key={i} className="flex gap-2 text-xs" style={{ color: TOKENS.inkSecondary }}>
+                  <li key={i} className="flex gap-2 kt-caption" style={{ color: TOKENS.inkSecondary }}>
                     <span className="shrink-0" style={{ color: TOKENS.safeguard.watch.dot }}>▲</span>
                     <span>{gap}</span>
                   </li>
@@ -99,7 +99,7 @@ export function ConfidenceBreakdown({ record }: ConfidenceBreakdownProps) {
           )}
         </>
       ) : (
-        <p className="text-sm" style={{ color: TOKENS.inkHint }}>
+        <p className="kt-secondary" style={{ color: TOKENS.inkHint }}>
           Record Confidence Score non disponibile per questo scenario.
         </p>
       )}

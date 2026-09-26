@@ -35,7 +35,7 @@ function ThresholdGauge({
 
   return (
     <div>
-      <div className="flex justify-between text-xs text-[rgba(6,3,43,0.52)] mb-1">
+      <div className="flex justify-between kt-caption text-[rgba(6,3,43,0.52)] mb-1">
         <span className="font-mono font-semibold text-[rgba(6,3,43,0.78)]">{label}</span>
         <span className="font-semibold">{(value * 100).toFixed(0)}%</span>
       </div>
@@ -72,7 +72,7 @@ function ThresholdGauge({
           style={{ left: `${warnPct}%` }}
         />
       </div>
-      <div className="flex text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
+      <div className="flex kt-caption text-[rgba(6,3,43,0.40)] mt-0.5">
         <span style={{ width: `${flaggedPct}%` }} className="text-left">FLAGGED</span>
         <span style={{ width: `${warnPct - flaggedPct}%` }} className="text-center">WARN</span>
         <span className="flex-1 text-right">CLEAR ≥{clearMin * 100}%</span>
@@ -92,10 +92,10 @@ export function ActivationSafeguardPanel({
   return (
     <div className={cn('rounded-lg border bg-kora-paper p-4 space-y-4', className)}>
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Activation Safeguard</h3>
+        <h3 className="kt-secondary font-semibold text-[rgba(6,3,43,0.78)]">Activation Safeguard</h3>
         <span
           className={cn(
-            'rounded px-2 py-0.5 text-xs font-bold border',
+            'rounded px-2 py-0.5 kt-caption font-bold border',
             styles.bg,
             styles.text,
           )}
@@ -122,16 +122,16 @@ export function ActivationSafeguardPanel({
           />
         </div>
       ) : (
-        <p className="text-sm text-[rgba(6,3,43,0.40)]">Risultato Activation Safeguard non disponibile per questo scenario.</p>
+        <p className="kt-secondary text-[rgba(6,3,43,0.40)]">Risultato Activation Safeguard non disponibile per questo scenario.</p>
       )}
 
       {explanation && (
-        <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed border-t border-[rgba(6,3,43,0.05)] pt-3">
+        <p className="kt-caption text-[rgba(6,3,43,0.62)] leading-relaxed border-t border-[rgba(6,3,43,0.05)] pt-3">
           {explanation}
         </p>
       )}
 
-      <p className="text-xs text-[rgba(6,3,43,0.40)]">
+      <p className="kt-caption text-[rgba(6,3,43,0.40)]">
         CLEAR richiede AR ≥ 40% E MAR ≥ 30%. Logica OR — se uno dei due metrici è nella fascia di attenzione, lo stato viene attivato.
       </p>
     </div>

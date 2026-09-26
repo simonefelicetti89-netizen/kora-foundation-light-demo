@@ -40,10 +40,10 @@ export function KoraIndexBuildCard({ output, safeguard, aggregate }: KoraIndexBu
       style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}
     >
       <div>
-        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
+        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '20px', letterSpacing: '-0.01em' }}>
           Come è stato costruito questo KORA Index
         </p>
-        <p className="mt-1 text-xs leading-relaxed max-w-2xl" style={{ color: TOKENS.inkSecondary }}>
+        <p className="mt-1 kt-caption leading-relaxed max-w-2xl" style={{ color: TOKENS.inkSecondary }}>
           Il KORA Index non è un punteggio dichiarato dall&apos;azienda. È il risultato di una pipeline
           protetta di azioni, evidenze, review umana, aggregazione e spiegabilità.
         </p>
@@ -57,18 +57,18 @@ export function KoraIndexBuildCard({ output, safeguard, aggregate }: KoraIndexBu
           return (
             <div key={step.num} className="flex items-stretch lg:flex-1 gap-0">
               <div
-                className="flex-1 rounded-[10px] p-3 space-y-1 text-xs"
+                className="flex-1 rounded-[10px] p-3 space-y-1 kt-caption"
                 style={{ background: stepBg }}
               >
-                <p className="font-mono text-[9px] font-bold uppercase tracking-widest" style={{ color: TOKENS.inkHint }}>
+                <p className="font-mono kt-meta font-bold uppercase " style={{ color: TOKENS.inkHint }}>
                   Fase {step.num}
                 </p>
                 <p className="font-semibold leading-snug" style={{ color: stepText }}>{step.label}</p>
-                <p className="text-[10.5px] leading-relaxed" style={{ color: stepText, opacity: 0.8 }}>{step.detail}</p>
-                <p className="text-[10px] leading-relaxed italic" style={{ color: stepText, opacity: 0.55 }}>{step.note}</p>
+                <p className="kt-caption leading-relaxed" style={{ color: stepText, opacity: 0.8 }}>{step.detail}</p>
+                <p className="kt-caption leading-relaxed italic" style={{ color: stepText, opacity: 0.55 }}>{step.note}</p>
               </div>
               {i < steps.length - 1 && (
-                <div className="hidden lg:flex items-center justify-center px-1.5 text-xs select-none" style={{ color: TOKENS.inkHint }}>→</div>
+                <div className="hidden lg:flex items-center justify-center px-1.5 kt-caption select-none" style={{ color: TOKENS.inkHint }}>→</div>
               )}
             </div>
           );
@@ -76,7 +76,7 @@ export function KoraIndexBuildCard({ output, safeguard, aggregate }: KoraIndexBu
       </div>
 
       <div
-        className="grid gap-3 sm:grid-cols-2 text-xs pt-3"
+        className="grid gap-3 sm:grid-cols-2 kt-caption pt-3"
         style={{ borderTop: TOKENS.cardBorder }}
       >
         <p style={{ color: TOKENS.inkSecondary }}>
@@ -86,8 +86,8 @@ export function KoraIndexBuildCard({ output, safeguard, aggregate }: KoraIndexBu
         <p style={{ color: TOKENS.inkSecondary }}>
           <span className="font-semibold" style={{ color: TOKENS.ink }}>Metodologia: </span>
           Ogni output porta{' '}
-          <span className="font-mono text-[10px]">methodology_version_id</span> e{' '}
-          <span className="font-mono text-[10px]">calibration_status = pre_empirical_calibration</span>.
+          <span className="font-mono kt-caption">methodology_version_id</span> e{' '}
+          <span className="font-mono kt-caption">calibration_status = pre_empirical_calibration</span>.
         </p>
       </div>
     </div>

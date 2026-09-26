@@ -38,15 +38,15 @@ export function PageHead({
     <header style={{ display: 'flex', alignItems: 'flex-start', gap: 20, flexWrap: 'wrap', marginBottom: 20 }}>
       <div style={{ minWidth: 0, flex: '1 1 420px', display: 'grid', gap: 6 }}>
         {eyebrow && (
-          <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '0.075em', textTransform: 'uppercase', color: PX.ink3, fontFamily: PX.sans }}>
+          <p style={{ margin: 0, fontSize: '11px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: PX.ink3, fontFamily: PX.sans }}>
             {eyebrow}
           </p>
         )}
-        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, letterSpacing: '-0.028em', color: PX.ink, fontFamily: PX.sans, lineHeight: 1.15 }}>
+        <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 800, letterSpacing: '-0.028em', color: PX.ink, fontFamily: PX.sans, lineHeight: 1.15 }}>
           {title}
         </h1>
         {lead && (
-          <p style={{ margin: 0, maxWidth: '78ch', fontSize: 13, lineHeight: 1.6, color: PX.ink2, fontFamily: PX.sans }}>
+          <p style={{ margin: 0, maxWidth: '78ch', fontSize: '13px', lineHeight: 1.6, color: PX.ink2, fontFamily: PX.sans }}>
             {lead}
           </p>
         )}
@@ -111,7 +111,7 @@ export function SplitPart({ label, children }: { label?: string; children: React
   return (
     <div style={{ minWidth: 0, padding: '16px 18px' }}>
       {label && (
-        <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, letterSpacing: '0.075em', textTransform: 'uppercase', color: PX.ink3 }}>
+        <p style={{ margin: '0 0 10px', fontSize: '11px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: PX.ink3 }}>
           {label}
         </p>
       )}
@@ -138,7 +138,7 @@ export function Region({
     <section style={{ minWidth: 0, fontFamily: PX.sans, ...surface }}>
       {label && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '12px 18px', borderBottom: `1px solid ${PX.line}` }}>
-          <span style={{ flex: '0 1 auto', minWidth: 0, overflowWrap: 'anywhere', fontSize: 11, fontWeight: 700, letterSpacing: '0.075em', textTransform: 'uppercase', color: PX.ink3 }}>
+          <span style={{ flex: '0 1 auto', minWidth: 0, overflowWrap: 'anywhere', fontSize: '11px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: PX.ink3 }}>
             {label}
           </span>
           {actions && <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', minWidth: 0 }}>{actions}</div>}
@@ -160,11 +160,11 @@ export function Metric({
 }) {
   return (
     <div style={{ minWidth: 0, padding: '11px 13px', background: PX.l2, border: `1px solid ${PX.l2Edge}`, borderRadius: PX.rInner }}>
-      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: PX.ink3 }}>{label}</div>
-      <div style={{ marginTop: 4, fontSize: 21, fontWeight: 750, letterSpacing: '-0.022em', fontVariantNumeric: 'tabular-nums', color: tone === 'mute' ? PX.inkMute : PX.ink }}>
+      <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: PX.ink3 }}>{label}</div>
+      <div style={{ marginTop: 4, fontSize: '20px', fontWeight: 750, letterSpacing: '-0.022em', fontVariantNumeric: 'tabular-nums', color: tone === 'mute' ? PX.inkMute : PX.ink }}>
         {value}
       </div>
-      {hint && <div style={{ marginTop: 3, fontSize: 11.5, fontWeight: 600, color: PX.ink3, overflowWrap: 'anywhere' }}>{hint}</div>}
+      {hint && <div style={{ marginTop: 3, fontSize: '12px', fontWeight: 600, color: PX.ink3, overflowWrap: 'anywhere' }}>{hint}</div>}
     </div>
   );
 }
@@ -208,8 +208,8 @@ export function StateBlock({
       }}>
         <span style={{ width: 8, height: 8, borderRadius: PX.rPill, background: tone === 'pending' ? PX.info : PX.inkMute }} />
       </div>
-      <h4 style={{ margin: 0, fontSize: 14.5, fontWeight: 700, letterSpacing: '-0.008em', color: PX.ink }}>{title}</h4>
-      <p style={{ margin: 0, maxWidth: '62ch', fontSize: 12.5, lineHeight: 1.6, color: PX.ink3 }}>{body}</p>
+      <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700, letterSpacing: '-0.008em', color: PX.ink }}>{title}</h4>
+      <p style={{ margin: 0, maxWidth: '62ch', fontSize: '13px', lineHeight: 1.6, color: PX.ink3 }}>{body}</p>
       {action && <div style={{ marginTop: 6 }}>{action}</div>}
     </div>
   );

@@ -32,7 +32,7 @@ export function PageMasthead({ eyebrow, title, subline, meta }: PageMastheadProp
       {/* Title — font-kora-sans now aliases Jakarta after Fase 0 flip */}
       <h1
         className="font-kora-sans text-kora-ink leading-[1.04]"
-        style={{ fontSize: 'clamp(2rem, 4vw, 2.75rem)', letterSpacing: '-0.02em' }}
+        style={{ fontSize: '32px', letterSpacing: '-0.02em' }}
       >
         {title}
       </h1>

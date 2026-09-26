@@ -70,23 +70,23 @@ function ConceptRow({ entry }: { entry: GlossaryEntry }) {
     <div className="rounded-[8px] p-3 space-y-2" style={{ background: TOKENS.surface, border: TOKENS.cardBorder }}>
       <div className="flex items-start justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="rounded px-1.5 py-0.5 text-[9px] font-semibold" style={{ background: ts.bg, color: ts.text, border: `1px solid ${ts.border}` }}>
+          <span className="rounded px-1.5 py-0.5 kt-caption font-semibold" style={{ background: ts.bg, color: ts.text, border: `1px solid ${ts.border}` }}>
             {entry.type}
           </span>
           {entry.weight && (
-            <span className="rounded px-1.5 py-0.5 text-[9px] font-mono" style={{ background: TOKENS.inkBorder, color: TOKENS.inkSecondary, border: TOKENS.cardBorder }}>
+            <span className="rounded px-1.5 py-0.5 kt-caption font-mono" style={{ background: TOKENS.inkBorder, color: TOKENS.inkSecondary, border: TOKENS.cardBorder }}>
               Peso: {entry.weight}
             </span>
           )}
         </div>
-        <p className="text-xs font-semibold w-full sm:w-auto" style={{ color: TOKENS.ink }}>
+        <p className="kt-caption font-semibold w-full sm:w-auto" style={{ color: TOKENS.ink }}>
           {concept.label_it}
           {concept.label_en !== concept.label_it && (
-            <span className="ml-1.5 text-[10px] font-normal" style={{ color: TOKENS.inkHint }}>({concept.label_en})</span>
+            <span className="ml-1.5 kt-caption font-normal" style={{ color: TOKENS.inkHint }}>({concept.label_en})</span>
           )}
         </p>
       </div>
-      <p className="text-[11px] leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{concept.definition_it}</p>
+      <p className="kt-caption leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{concept.definition_it}</p>
     </div>
   );
 }
@@ -103,20 +103,20 @@ export function MethodologyGlossary() {
         style={{ borderRadius: TOKENS.cardRadius }}
       >
         <div>
-          <p className="text-xs font-semibold" style={{ color: TOKENS.ink }}>
+          <p className="kt-caption font-semibold" style={{ color: TOKENS.ink }}>
             Glossario metodologico — KORA Index v1.0
           </p>
-          <p className="text-[10px] mt-0.5" style={{ color: TOKENS.inkHint }}>
+          <p className="kt-caption mt-0.5" style={{ color: TOKENS.inkHint }}>
             4 macroblocks · 9 componenti analitici · CS esterno · Indicatori BTI · Concetti metodologici
           </p>
         </div>
-        <span className="shrink-0 text-sm font-mono ml-3" style={{ color: TOKENS.inkHint }}>{open ? '▲' : '▼'}</span>
+        <span className="shrink-0 kt-secondary font-mono ml-3" style={{ color: TOKENS.inkHint }}>{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
         <div className="px-4 pb-4 space-y-5 max-h-[70vh] overflow-y-auto" style={{ borderTop: TOKENS.cardBorder }}>
           <div
-            className="mt-3 rounded-[8px] px-3 py-2 text-[10px] leading-relaxed"
+            className="mt-3 rounded-[8px] px-3 py-2 kt-caption leading-relaxed"
             style={{ background: TOKENS.safeguard.watch.bg, color: TOKENS.safeguard.watch.text }}
           >
             <span className="font-semibold">KORA Foundation Light — Pre-calibrazione empirica. </span>
@@ -127,7 +127,7 @@ export function MethodologyGlossary() {
           {GLOSSARY_SECTIONS.map((section) => (
             <div key={section.heading} className="space-y-2">
               <p
-                className="text-[9px] font-bold uppercase tracking-widest pb-1"
+                className="kt-meta font-bold uppercase  pb-1"
                 style={{ color: TOKENS.inkHint, borderBottom: TOKENS.cardBorder }}
               >
                 {section.heading}
@@ -138,7 +138,7 @@ export function MethodologyGlossary() {
             </div>
           ))}
 
-          <p className="text-[10px] font-mono pt-1" style={{ color: TOKENS.inkHint }}>
+          <p className="kt-caption font-mono pt-1" style={{ color: TOKENS.inkHint }}>
             KORA Index v1.0 · calibration_status: pre_empirical_calibration · synthetic_demo_data: true
           </p>
         </div>

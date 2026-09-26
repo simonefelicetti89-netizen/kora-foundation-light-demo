@@ -22,7 +22,7 @@ export function Notice({ tone, children }: { tone: NoticeTone; children: ReactNo
       role={tone === 'risk' ? 'alert' : 'status'}
       style={{
         display: 'flex', flexWrap: 'wrap', gap: 10, padding: '12px 14px',
-        borderRadius: PX.rInner, fontSize: 12.5, lineHeight: 1.55, fontFamily: PX.sans,
+        borderRadius: PX.rInner, fontSize: '13px', lineHeight: 1.55, fontFamily: PX.sans,
         background: t.tint, color: t.text, boxShadow: `inset 3px 0 0 ${t.fill}`,
       }}
     >

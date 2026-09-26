@@ -110,7 +110,7 @@ export function ScoreDrivers({ weakComponents, macroblockScores }: ScoreDriversP
       <div style={{ marginBottom: 16, display: 'flex', alignItems: 'baseline', gap: 10 }}>
         <p style={{
           fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontSize:      '1.375rem',
+          fontSize:      '20px',
           color:         TOKENS.ink,
           letterSpacing: '-0.01em',
           lineHeight:    1.2,
@@ -150,7 +150,7 @@ export function ScoreDrivers({ weakComponents, macroblockScores }: ScoreDriversP
                 borderRadius: '50%',
                 background: STATUS_COLORS[i] ?? TOKENS.inkBorder,
                 color:      '#FFF',
-                fontSize:   '9px',
+                fontSize:   '11px',
                 fontWeight: 700,
                 display:    'flex',
                 alignItems: 'center',
@@ -161,9 +161,9 @@ export function ScoreDrivers({ weakComponents, macroblockScores }: ScoreDriversP
               </span>
               <p style={{
                 fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                fontSize:      '9.5px',
+                fontSize:      '11px',
                 fontWeight:    600,
-                letterSpacing: '0.08em',
+                letterSpacing: '0.07em',
                 textTransform: 'uppercase',
                 color:         TOKENS.inkHint,
               }}>
@@ -205,7 +205,7 @@ export function ScoreDrivers({ weakComponents, macroblockScores }: ScoreDriversP
               <span style={{ color: TOKENS.accent, fontSize: '12px', fontWeight: 700, flexShrink: 0, marginTop: 1 }}>→</span>
               <p style={{
                 fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                fontSize:   '11.5px',
+                fontSize:   '12px',
                 color:      TOKENS.accent,
                 lineHeight: 1.45,
                 fontWeight: 500,

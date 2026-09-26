@@ -32,9 +32,9 @@ export function KoraIndexHero({ output, className, variant = 'light' }: KoraInde
     )}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">KORA Index</p>
+          <p className="text-xs font-bold uppercase  text-[rgba(6,3,43,0.40)]">KORA Index</p>
           <div className="mt-1 flex items-end gap-3">
-            <span className={cn('text-5xl font-bold', dark ? 'text-white' : 'text-kora-ink')}>
+            <span className={cn('kt-display font-bold', dark ? 'text-white' : 'text-kora-ink')}>
               {indexValue !== null ? formatKoraIndex(indexValue) : '—'}
             </span>
             <span className={cn('mb-1 text-sm', dark ? 'text-[rgba(6,3,43,0.52)]' : 'text-[rgba(6,3,43,0.40)]')}>/ 100</span>
@@ -57,7 +57,7 @@ export function KoraIndexHero({ output, className, variant = 'light' }: KoraInde
 
       {/* Methodology version — non-suppressible */}
       <div className={cn('mt-4 border-t pt-3', dark ? 'border-[rgba(6,3,43,0.35)]' : 'border-[rgba(6,3,43,0.05)]')}>
-        <p className={cn('text-[12px] font-mono', dark ? 'text-[rgba(6,3,43,0.52)]' : 'text-[rgba(6,3,43,0.40)]')}>
+        <p className={cn('kt-caption font-mono', dark ? 'text-[rgba(6,3,43,0.52)]' : 'text-[rgba(6,3,43,0.40)]')}>
           {methodologyVersionId}&nbsp;·&nbsp;{calibrationStatus}
         </p>
       </div>

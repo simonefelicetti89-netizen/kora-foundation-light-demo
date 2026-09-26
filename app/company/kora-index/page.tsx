@@ -181,7 +181,7 @@ export default function KoraIndexDetail() {
   // B143: COMPANY_VIEWER rimosso. Se koraRole è null la sessione è in errore — non assumere alcun ruolo.
   if (!koraRole) {
     return (
-      <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-4 py-6 text-xs text-kora-critical text-center">
+      <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-4 py-6 kt-caption text-kora-critical text-center">
         Sessione non disponibile. Ricaricare la pagina o effettuare nuovamente il login.
       </div>
     );
@@ -331,7 +331,7 @@ export default function KoraIndexDetail() {
           below it: the judgment is what this surface is for, and every row above
           it is a row of scrolling before the reader learns anything. */}
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-        <span className="kt-meta" style={{ color: TOKENS.accent }}>
+        <span className="kt-caption" style={{ color: TOKENS.accent }}>
           <TM>KORA Index</TM> v1.0
         </span>
         <h1 className="kt-title" style={{ margin: 0, color: TOKENS.ink, minWidth: 0 }}>
@@ -450,7 +450,7 @@ export default function KoraIndexDetail() {
               </p>
               {equityAccess.accessRiskLevel !== 'insufficient_data' && (
                 <span style={{
-                  fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                  fontSize: '11px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
                   background: equityAccess.accessRiskLevel === 'alta' ? TOKENS.safeguard.cap.bg
                     : equityAccess.accessRiskLevel === 'media' ? TOKENS.safeguard.watch.bg
                     : TOKENS.safeguard.pass.bg,
@@ -461,7 +461,7 @@ export default function KoraIndexDetail() {
                   Rischio equità: {equityAccess.accessRiskLevel}
                 </span>
               )}
-              <span style={{ fontSize: '10px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
                 {eqCode} = {Math.round(equityAccess.eqValue * 100)}%
               </span>
             </div>
@@ -476,14 +476,14 @@ export default function KoraIndexDetail() {
                     { label: 'Segmenti sovra-attivati', items: equityAccess.overActivatedSegments, tone: TOKENS.safeguard.pass },
                   ].filter(({ items }) => items.length > 0).map(({ label, items, tone }) => (
                     <div key={label} style={{ marginBottom: '0.875rem' }}>
-                      <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 4 }}>{label}</p>
+                      <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 4 }}>{label}</p>
                       {items.map((seg) => (
                         <div key={seg.segmentId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 5, marginBottom: 3, background: 'rgba(6,3,43,0.02)', border: `1px solid rgba(6,3,43,0.06)` }}>
                           <p style={{ flex: 1, fontSize: '12px', color: TOKENS.ink, fontWeight: 500 }}>{seg.segmentLabel}</p>
                           <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
                             {Math.round(seg.activationRate * 100)}%
                           </p>
-                          <span style={{ fontSize: '10px', fontWeight: 600, color: tone?.text ?? TOKENS.inkSecondary, background: tone?.bg ?? 'rgba(6,3,43,0.05)', borderRadius: 4, padding: '1px 6px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 600, color: tone?.text ?? TOKENS.inkSecondary, background: tone?.bg ?? 'rgba(6,3,43,0.05)', borderRadius: 4, padding: '1px 6px' }}>
                             {seg.gapVsAverage >= 0 ? '+' : ''}{Math.round(seg.gapVsAverage * 100)}pp
                           </span>
                         </div>
@@ -511,7 +511,7 @@ export default function KoraIndexDetail() {
                 </>
               )}
             </div>
-            <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+            <p style={{ padding: '8px 14px', fontSize: '11px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
               Equity & Access Intelligence™ · pre_empirical_calibration · non modifica EQS né KORA Index™ · not_kora_index_component
             </p>
           </div>
@@ -555,7 +555,7 @@ export default function KoraIndexDetail() {
                 Evidence Reliability Intelligence™
               </p>
               <span style={{
-                fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                fontSize: '11px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
                 background: evidenceReliability.evidenceRiskLevel === 'alta' ? TOKENS.safeguard.cap.bg
                   : evidenceReliability.evidenceRiskLevel === 'media' ? TOKENS.safeguard.watch.bg
                   : TOKENS.safeguard.pass.bg,
@@ -565,7 +565,7 @@ export default function KoraIndexDetail() {
               }}>
                 Rischio evidenza: {evidenceReliability.evidenceRiskLevel}
               </span>
-              <span style={{ fontSize: '10px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
                 {evidenceReliability.evidenceLevelDistribution.primaryTier}
               </span>
             </div>
@@ -589,7 +589,7 @@ export default function KoraIndexDetail() {
                     { label: `Acceptable (L2): ${Math.round(evidenceReliability.evidenceLevelDistribution.acceptableShare * 100)}%`, color: TOKENS.safeguard.watch.text },
                     { label: `Weak (L0/L1): ${Math.round(evidenceReliability.evidenceLevelDistribution.weakShare * 100)}%`, color: TOKENS.safeguard.cap.text },
                   ].map(({ label, color }) => (
-                    <span key={label} style={{ fontSize: '10px', color, fontWeight: 500 }}>{label}</span>
+                    <span key={label} style={{ fontSize: '11px', color, fontWeight: 500 }}>{label}</span>
                   ))}
                 </div>
               </div>
@@ -598,12 +598,12 @@ export default function KoraIndexDetail() {
               </p>
               {evidenceReliability.upgradeOpportunities.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
-                  <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 2 }}>
+                  <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 2 }}>
                     Opportunità di miglioramento evidenza
                   </p>
                   {evidenceReliability.upgradeOpportunities.map((opp, i) => (
                     <div key={i} style={{ display: 'flex', gap: 8, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}>
-                      <span style={{ fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '1px 6px', whiteSpace: 'nowrap' as const, alignSelf: 'flex-start', marginTop: 1,
+                      <span style={{ fontSize: '11px', fontWeight: 600, borderRadius: 4, padding: '1px 6px', whiteSpace: 'nowrap' as const, alignSelf: 'flex-start', marginTop: 1,
                         background: opp.priority === 'alta' ? TOKENS.safeguard.cap.bg : TOKENS.safeguard.watch.bg,
                         color:      opp.priority === 'alta' ? TOKENS.safeguard.cap.text : TOKENS.safeguard.watch.text,
                       }}>
@@ -618,7 +618,7 @@ export default function KoraIndexDetail() {
                 </div>
               )}
             </div>
-            <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+            <p style={{ padding: '8px 14px', fontSize: '11px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
               Evidence Reliability Intelligence™ · pre_empirical_calibration · non modifica CS, EVQ né KORA Index™ · not_kora_index_component
             </p>
           </div>
@@ -640,7 +640,7 @@ export default function KoraIndexDetail() {
                 LIFE Diversity & Care Economy Intelligence™
               </p>
               <span style={{
-                fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                fontSize: '11px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
                 background: lifeSummary.concentrationStatus === 'diverse' ? TOKENS.safeguard.pass.bg
                   : lifeSummary.concentrationStatus === 'no_life_data' ? TOKENS.inkBorder
                   : TOKENS.safeguard.watch.bg,
@@ -652,7 +652,7 @@ export default function KoraIndexDetail() {
               </span>
               {careSummary && (
                 <span style={{
-                  fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                  fontSize: '11px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
                   background: careSummary.careEconomyStatus === 'broad' ? TOKENS.safeguard.pass.bg
                     : careSummary.careEconomyStatus === 'absent' ? TOKENS.safeguard.cap.bg
                     : TOKENS.safeguard.watch.bg,
@@ -691,7 +691,7 @@ export default function KoraIndexDetail() {
                 </div>
               )}
             </div>
-            <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+            <p style={{ padding: '8px 14px', fontSize: '11px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
               LIFE Diversity & Care Economy Intelligence™ · pre_empirical_calibration · non modifica KORA Index™ · not_kora_index_component
             </p>
           </div>
