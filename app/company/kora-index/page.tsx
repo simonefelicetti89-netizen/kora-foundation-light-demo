@@ -513,6 +513,7 @@ export default function KoraIndexDetail() {
               label="Budget-to-Human-Impact™"
               unitSuffix="/100"
               showSource
+              restrained
             />
             </div>
           </div>

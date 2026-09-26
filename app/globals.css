@@ -764,13 +764,15 @@ details.kora-chapter-band[open] > summary.kora-chapter-head::after { content: 'â
 
   /* The five band labels truncate to nonsense at 295px; the caption already
      names the active band. Scale, marker and score all stay. */
-  /* !important because ScoreBandScale sets `display: flex` inline, and an
-     inline style outranks any stylesheet rule. */
-  .kora-exec-surface [data-kora-encoding="score-band-scale"] > div:nth-of-type(2) { display: none !important; }
 }
 
 /* Methodology provenance is reference, not first reading: the band caption and
    the config path are read in the disclosure layer, not under the judgment. */
+/* The five inline band names are not in the approved design at any width: they
+   truncate, and they duplicate the human-readable active-band caption below.
+   !important because ScoreBandScale sets `display: flex` inline, and an inline
+   style outranks any stylesheet rule. */
+.kora-exec-surface [data-kora-encoding="score-band-scale"] > div:nth-of-type(2) { display: none !important; }
 .kora-exec-surface [data-kora-encoding="score-band-scale"] > p { display: none !important; }
 .kora-exec-surface [data-kora-encoding="score-band-scale"] > p.kora-band-name { display: block !important; }
 

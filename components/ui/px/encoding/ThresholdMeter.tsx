@@ -24,7 +24,7 @@ import { NoData, InsufficientData, Suppressed } from '../states';
  * painted as healthy.
  */
 export function ThresholdMeter({
-  metric, scale: scaleProp, value, label, unitSuffix, note, compact, showSource,
+  metric, scale: scaleProp, value, label, unitSuffix, note, compact, showSource, restrained,
 }: {
   /** One of the six threshold-bearing metrics. Omit only when passing `scale`. */
   metric?: MetricCode;
@@ -39,6 +39,14 @@ export function ThresholdMeter({
   unitSuffix?: string;
   note?: ReactNode;
   compact?: boolean;
+  /**
+   * Restrained grammar: the measured extent is drawn in INK, not in the
+   * assessment fill. The approved art direction allows semantic colour only as
+   * a numeral, a small mark or a 2px rule — never as the filled length of a
+   * bar, which reads as a progress meter rather than a position on a scale.
+   * The value, the thresholds and the claim are unchanged.
+   */
+  restrained?: boolean;
   /**
    * Provenance is mandatory on the SURFACE, not on every meter: ten meters each
    * repeating the same config path is noise that buries the one line a reader
@@ -89,14 +97,20 @@ export function ThresholdMeter({
         aria-valuemax={scale.max}
         aria-valuetext={`${shown}${unitSuffix ?? ''}, ${claim.label}`}
         style={{
-          position: 'relative', height: 8, marginTop: 8,
+          position: 'relative', height: restrained ? 3 : 8, marginTop: restrained ? 14 : 8,
           background: PX.inkWash, borderRadius: 999, overflow: 'visible',
         }}
       >
         <div style={{
           position: 'absolute', inset: 0, width: `${pos * 100}%`,
-          background: treat.fill, borderRadius: 999,
+          background: restrained ? PX.ink : treat.fill, borderRadius: 999,
         }} />
+        {restrained && (
+          <span aria-hidden="true" style={{
+            position: 'absolute', top: -5, bottom: -5, left: `${pos * 100}%`,
+            width: 2, marginLeft: -1, background: PX.ink, borderRadius: 1,
+          }} />
+        )}
         {scale.stops.filter((s) => s.at > scale.min).map((s) => (
           <span
             key={s.source}

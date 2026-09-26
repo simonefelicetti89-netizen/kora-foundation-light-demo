@@ -232,3 +232,58 @@ describe('approved design — ported WP142 technical correctness', () => {
     expect(code('components/kora-index/ConfidenceBreakdown.tsx')).not.toMatch(/pct\s*>=?\s*(70|50)/);
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// Final visual micro-remediation
+// ═══════════════════════════════════════════════════════════════════
+
+describe('approved design — score-band inline labels', () => {
+  const css = read('app/globals.css');
+
+  it('the five inline band names are suppressed on the executive surface at EVERY width', () => {
+    const rule = /\.kora-exec-surface \[data-kora-encoding="score-band-scale"\] > div:nth-of-type\(2\)\s*\{\s*display:\s*none\s*!important/;
+    expect(css).toMatch(rule);
+    // and NOT only inside a mobile media query
+    const idx = css.search(rule);
+    const before = css.slice(0, idx);
+    const opens = (before.match(/@media/g) || []).length;
+    const closesAfterLastMedia = before.lastIndexOf('@media') === -1
+      ? true
+      : before.slice(before.lastIndexOf('@media')).split('}').length - 1 >= 2;
+    expect(opens === 0 || closesAfterLastMedia, 'rule must not be scoped to a media query').toBe(true);
+  });
+
+  it('one human-readable active-band caption survives', () => {
+    const src = read('components/ui/px/encoding/ScoreBandScale.tsx');
+    expect(src).toMatch(/kora-band-name/);
+    expect(css).toMatch(/kora-band-name\s*\{\s*display:\s*block\s*!important/);
+  });
+
+  it('nothing is removed from the encoding or the methodology data', () => {
+    const src = read('components/ui/px/encoding/ScoreBandScale.tsx');
+    expect(src).toContain('thresholdScaleFor');
+    expect(src).toMatch(/bands\.map/);
+  });
+});
+
+describe('approved design — BTI restrained threshold grammar', () => {
+  const meter = read('components/ui/px/encoding/ThresholdMeter.tsx');
+
+  it('the measured extent is drawn in ink, never in the assessment fill', () => {
+    expect(meter).toMatch(/restrained \? PX\.ink : treat\.fill/);
+  });
+
+  it('the BTI detail opts into it', () => {
+    const page = read('app/company/kora-index/page.tsx');
+    const bti = page.slice(page.indexOf("macroblockScale('BTI')"));
+    expect(bti.slice(0, 400)).toMatch(/restrained/);
+  });
+
+  it('value, thresholds and methodology are untouched', () => {
+    expect(meter).toContain('thresholdScaleFor');
+    expect(meter).toContain('assessmentForScale');
+    expect(meter).toMatch(/scale\.stops\.filter/);
+    // the claim still comes from config, not from the caller
+    expect(meter).not.toMatch(/\b(tone|variant|color)\??:\s*(string|'[a-z])/);
+  });
+});
