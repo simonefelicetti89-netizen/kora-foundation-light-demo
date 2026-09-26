@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 import {
   STATE_CLAUSE, CONSTRAINT_CLAUSE, BAND_KEYS, SAFEGUARD_KEYS, CONSTRAINT_TYPES,
   VERDICT_CHAR_BUDGET, VERDICT_LIBRARY_VERSION,
@@ -59,7 +61,7 @@ describe('verdict library — determinism', () => {
   });
 
   it('nothing in the resolver reads the clock or a random source', () => {
-    const src = require('fs').readFileSync(require('path').resolve(__dirname, '../../lib/verdict/resolve.ts'), 'utf-8');
+    const src = fs.readFileSync(path.resolve(__dirname, '../../lib/verdict/resolve.ts'), 'utf-8');
     expect(src).not.toMatch(/Math\.random|Date\.now|new Date|fetch\(|localStorage/);
   });
 
