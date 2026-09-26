@@ -807,3 +807,21 @@ details.kora-chapter-band[open] > summary.kora-chapter-head::after { content: 'â
 .kora-disclosure-region .kora-chapter-num { display: none; }
 .kora-disclosure-region summary.kora-chapter-head { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
 .kora-disclosure-region details[open] > summary.kora-chapter-head { margin-bottom: 24px; }
+
+/* The Founder-approved closed-disclosure density. The generic chapter rule gives
+   a CLOSED <details> 16px top and bottom; on this surface the approved
+   composition has the four rows sit on their hairlines with no vertical padding,
+   which is what the page rendered while `--kora-space-md` was undefined and the
+   declaration was being dropped. Defining the scale made that latent rule take
+   effect and added 32px to every row.
+
+   `0` is permitted by the governed spacing contract: the inline rule exempts
+   values at or below the optical exception, `TAILWIND_OK` admits '0', and the
+   stylesheet is checked only for the custom-property definitions.
+
+   Scoped to the CLOSED state alone â€” open-state presentation, semantics,
+   interaction, labels and ordering are untouched. */
+.kora-disclosure-region details.kora-chapter-band:not([open]) {
+  padding-top: 0;
+  padding-bottom: 0;
+}
