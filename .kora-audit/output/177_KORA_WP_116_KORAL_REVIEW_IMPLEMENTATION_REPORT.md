@@ -2,13 +2,13 @@
 
 Status: **IMPLEMENTED, REMEDIATED, AND VALIDATED — NOT COMMITTED, NOT PUSHED** (per this task's and the 2026-09-19 remediation task's own explicit "STOP" instructions).
 
-Contract chain: Registry 142 → frozen canonical sources (doc 128 §23/24, doc 129, doc 130 §6/§19/§21) → report `176` (`KORA_WP_116_CANONICAL_PRE_CHECK.md`) → the 6 binding Founder Adjudications for this task → actual repository code truth (read before every write, per every prior WP in this engagement) → **2026-09-19 remediation task (Issue 1: Advisor confirmation vs. WP-113 Morphogenesis support; Issue 2: Review-Case concurrent idempotency) — see §0 below, which governs over any conflicting statement later in this document. → **2026-09-26 concurrent-caller race remediation (report `192`) — see §0-bis below, which governs over §0 and over any conflicting statement later in this document.**
+Contract chain: Registry 142 → frozen canonical sources (doc 128 §23/24, doc 129, doc 130 §6/§19/§21) → report `176` (`KORA_WP_116_CANONICAL_PRE_CHECK.md`) → the 6 binding Founder Adjudications for this task → actual repository code truth (read before every write, per every prior WP in this engagement) → **2026-09-19 remediation task (Issue 1: Advisor confirmation vs. WP-113 Morphogenesis support; Issue 2: Review-Case concurrent idempotency) — see §0 below, which governs over any conflicting statement later in this document. → **2026-09-26 concurrent-caller race remediation (report `272`) — see §0-bis below, which governs over §0 and over any conflicting statement later in this document.**
 
 ---
 
 ## 0-bis. REMEDIATION ADDENDUM (2026-09-26) — READ THIS FIRST, BEFORE §0
 
-A third genuine defect was found **after** this WP was recorded COMPLETE, by canonical CI #340 (run `36258620941`) — not by review. Full analysis: report `192`.
+A third genuine defect was found **after** this WP was recorded COMPLETE, by canonical CI #340 (run `36258620941`) — not by review. Full analysis: report `272`.
 
 `confirmAmbiguousCandidate()`'s graceful-race handling (described in §0.4/§0.5 below, and in that function's own header) lived **only in a `catch` block**, and its own comment assumed a concurrent loser "throws". It does not always throw. `assessMaterialChangeCandidate()` returns without throwing both when it short-circuits on an already-RECOGNIZED row (**L1**) and when `reverifyAgainstSource()` returns false (**L2**). So of the three real loser interleavings, only **L3** was handled:
 

@@ -1,5 +1,19 @@
 # 192 — KORA-WP-116 "KORAL Review" — Concurrent-Caller Race Remediation
 
+## 0. CORRECTION ADDENDUM (2026-09-26) — READ THIS FIRST. THIS REPORT IS MISFILED AND SUPERSEDED.
+
+**Superseded by report `272`** (`272_KORA_WP_116_CONCURRENT_CALLER_RACE_REMEDIATION.md`) on the canonical governance line, which carries every technical finding below unchanged. Two governance errors in this document are corrected there, and are recorded here rather than hidden:
+
+1. **Wrong governing registry.** This report's contract chain names Registry `142` as WP116's governing registry. It is not. **Registry `219` supersedes `142`** and is the canonical executable registry for the reconciled post-`110` line (namespace `001`–`144`). `142` is immutable superseded historical canon and, per `219`'s own statement, "was not edited in place" — yet the governance pass that produced this report amended `142`'s WP116 entry in place and published it. **Registry `142` has since been restored to its exact pre-amendment bytes** by forward corrective commit, verified byte-identical (2504 characters) against `219`'s own verbatim reproduction of that entry. The WP116 amendment now lives in **Registry `219`**, where it belongs.
+2. **Report-number collision.** `192` was already taken on the canonical governance line by `192_KORA_WP047_CANONICAL_PRECHECK.md`. This record is renumbered **`272`**.
+
+**Cause**, for the record: Registry `219` existed only on an unpushed branch, and `CLAUDE.md` §8 named only Registry `102`, so this pass found `102` and `142` in its own checkout and never `219`. That routing gap is corrected in `CLAUDE.md` §8 on the canonical governance line.
+
+**Nothing technical below is retracted.** The WP116 investigation, the four interleavings, the root cause, the wrapper-only remediation, the deterministic regression coverage and all validation evidence were established against real code and real CI, and stand as recorded.
+
+---
+
+
 Status: **REMEDIATED AND VALIDATED** — Product committed on `feature/kora-wp-116-concurrency-remediation`, CI-proven, canonical-integrated. Governance NOT pushed (separately controlled).
 
 Contract chain: Registry `142` (WP116 spec) → report `176` (canonical pre-check) → report `177` (implementation report, incl. its own 2026-09-19 remediation addendum) → **canonical CI #340 (run `36258620941`) DB-backed gate failure** → contract-first investigation (this report) → Founder Authorization "WP116 CONCURRENCY REMEDIATION" (2026-09-26).
