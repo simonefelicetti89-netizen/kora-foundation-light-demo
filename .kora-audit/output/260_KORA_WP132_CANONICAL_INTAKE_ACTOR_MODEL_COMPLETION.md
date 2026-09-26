@@ -1,0 +1,127 @@
+# 260 — KORA-WP-132 — CANONICAL INTAKE ACTOR MODEL REMEDIATION — COMPLETION
+
+**Date:** 2026-09-23 · **Milestone:** RX · **Pilot Status:** BASE PILOT BLOCKER
+**Implementation commit:** `459a0ec1799cdb34c1c532842f147df076a604d3`
+**Baseline:** `1e981f8067c388fc14ed3ea44f650cf2cf763a39` · **Branch:** `feature/wp132-canonical-intake-actor-remediation`
+
+> **WP-132 STATUS: COMPLETE.** All eight acceptance criteria pass. No migration, no `source_batch` row change, no RLS change. WP-133 scope not consumed.
+
+---
+
+## 1. BASELINE DETERMINATION
+
+The baseline was determined, not assumed. `1e981f80` is a **strict descendant** of canonical integration `3a383072` (4 commits: R0-A CI enforcement ×2, WP-125 test alignment, R0-C hardening + Admin dead-route repair), it is the most recently end-to-end validated Product state (R0-C exact-SHA), and the **WP-132 surfaces are byte-identical at both SHAs**, so the choice carried no implementation risk. Branching from `3a383072` would have regressed the R0-A and R0-C Product fixes.
+
+Executed in a dedicated worktree so the main worktree's 11 uncommitted Living KORAL files — one of which, `tests/unit/tenant-isolation.test.ts`, WP-132 had to modify — were never touched.
+
+## 2. THE CONTRADICTION, AND WHY RLS WAS NOT THE FIX
+
+Two intake paths coexisted:
+
+| Path | Guard | Effect |
+|---|---|---|
+| `/api/admin/data-intake/{accept,preview,upload-preview}` | `requireKoraAdmin` | canonical, operator-mediated |
+| `/api/company/data-ingest` → `company-ingest-service` | **`requireCompanyUser`** | legacy self-service → `analytics.source_batch` |
+
+The decisive finding: **migration 026's RLS already encoded the correct actor model**, restricting `COMPANY_ADMIN` writes to `source_type='company_submission'` with `batch_status IN ('submission_draft','submission_pending')`. The legacy service used the **service-role client**, bypassing it. The RLS model was never wrong — only the bypassing Product path was. This is precisely why the contract says *"the actor model is the deliverable; RLS unchanged"*, and no RLS was touched.
+
+**Preserved deliberately:** the Company `data-submissions` family still writes `company_submission` / `submission_draft` / `submission_pending` and creates no UEF and no scoring. That is the approved model's first half. A test asserting "Company cannot touch `source_batch`" would have been wrong and would have broken the approved model; the suite asserts the correct, narrower property.
+
+## 3. ACTOR MODEL — BEFORE / AFTER
+
+**Before:** a COMPANY_ADMIN could create canonical ingestion state through `/api/company/data-ingest`, service-role-backed, bypassing RLS.
+**After:** a COMPANY_ADMIN has **no executable path** to canonical ingestion state. Canonical intake is operator-mediated only. Company may still create submission state, by design.
+
+## 4. LEGACY PATH — RETIRED
+
+| Surface | Before | After |
+|---|---|---|
+| `app/api/company/data-ingest/` | 135-line route, `requireCompanyUser` | **deleted** |
+| `lib/ingestion-hardening/` | sole file, 233 lines, wrote `source_batch` | **deleted, directory and all** |
+| `app/company/data/upload/_components/ConfirmIngestPanel.tsx` | 105 lines, called the API | **deleted** |
+| `app/company/data/upload/page.tsx` | **3309 lines**, 31 client-side scoring references | **19-line redirect** to `/company/data`, 0 scoring references |
+
+Dependency analysis preceded every deletion: the service's only runtime consumer was the route being retired; `lib/ingestion-hardening/` contained nothing else; `ConfirmIngestPanel`'s only consumer was the upload page; and **no inbound UI link to `/company/data/upload` existed anywhere**.
+
+## 5. WP-049 STATUS MODEL — `ingested` REPRESENTED
+
+`analytics.source_batch.batch_status` is a plain `text NOT NULL DEFAULT 'pending'` column **with no CHECK constraint**, and the retired service was the **only writer** of `batch_status='ingested'` — a value absent from the TS row type and from every migration. Rows carrying it may therefore exist, and `buildDataIntakeStatusView` collapsed them into `in_progress` **forever**.
+
+`CanonicalIntakeStatus` now represents `'ingested'` as a terminal status, **derived from real canonical state** and read-only: nothing writes it any more, and the canonical operator path creates `'pending'`. **No row was created, altered or backfilled.** Four tests cover the new derivation and prove every other derivation unchanged.
+
+## 6. PHANTOM / ZERO-ROW BATCH STATE
+
+Verified in the canonical read model: an empty batch list yields `{batchCount: 0, intakeStatus: 'not_started', pendingReviewCount: 0}`; a zero-batch tenant can never report a pending review count; `batchCount` always equals the real row count. **No fix was required** — proven by test rather than asserted.
+
+## 7. RETIREMENT RECORD
+
+Architecture registry entry **`svc.company-ingest`**, `status: 'DEAD'`, `decisionRef: 'KORA-WP-132'`, following the KORA-WP-063 precedent for retirement records; `docs/ARCHITECTURE_REGISTRY.md` regenerated by its own generator.
+
+**The contract's governance-event obligation — "retirement recorded as a governance event via `006`" — is SATISFIED.** Adjudicated first: `006` is the Governance Audit Log Extension, whose acceptance is *"every governance action introduced by later WPs is traceable"*, and whose substrate is `audit.governance_event` (migration `051`, append-only). The architecture-registry entry is a component record and does **not** satisfy that clause, so a persisted row was required.
+
+| Field | Value |
+|---|---|
+| **Event id** | `db6d365a-1f1c-4300-aee9-cde5f4d9434b` |
+| **`event_type`** | `CANONICAL_INTAKE_PATH_RETIRED` |
+| **`source_module`** | `kora-wp-132` |
+| **`actor_role`** | `FOUNDER` |
+| **`actor_id`** | `founder:kora-primary` |
+| **`object_type` / `object_id`** | `product_path` / `app/api/company/data-ingest` |
+| **`tenant_id`** | `NULL` — global platform act (migration 051: *"system-level events have no tenant"*) |
+| **`occurred_at`** | `2026-09-24T05:27:01.755598+00:00` |
+| **Environment** | **staging `haqflkurpmeaxpikozjl` only** — Production never contacted |
+| **Write path** | one insert through `recordGovernanceEvent()`; no ad-hoc SQL |
+| **Verification** | 0 matching rows before; **exactly 1** after; payload read back and confirmed (implementation commit `459a0ec…`, baseline `1e981f80…`, report `260`, `rls_changed: false`, `migration: none`, `source_batch_rows_changed: false`) |
+
+**`FOUNDER` / `founder:kora-primary` is an audit and governance identity convention only** — established by Founder ruling 2026-09-24 for explicit Founder-authorized platform governance acts. **It is NOT a Product authentication role, NOT a member of the canonical access-matrix role enum, and NOT a Supabase auth user.** `lib/auth/access-matrix.ts` was not modified, no RLS was changed, and no authorization logic was touched.
+
+The architecture-registry `svc.company-ingest` DEAD entry remains in place as the complementary component record.
+
+## 8. TESTS
+
+**New:** `tests/unit/kora-wp-132-canonical-intake-actor-model.test.ts` — **31 tests** across nine sections: legacy path gone (A), zero runtime consumers (B), **a COMPANY_ADMIN cannot create canonical ingestion state by any path** (C), upload route reduced to a non-ingestion boundary (D), canonical Admin intake intact and Admin-only (E), WP-049 status coherence (F), no phantom or zero-row state (G), retirement recorded (H), WP-133 scope not consumed (I).
+
+**Updated, not weakened —** each now asserts the new model:
+
+| Suite | Change |
+|---|---|
+| `kora-wp-028-ingestion-hardening` | became a **retirement record** (b-truth precedent): its subject no longer exists, and "no Company route at all" is strictly stronger than any hardening of a reachable one |
+| `kora-wp-046-observability-foundation` | 5 assertions on the retired route/service removed |
+| `kora-wp-044-security-hardening-batch` | inventory 14 → 13 routes |
+| `pilot-trust-01-service-role-guard` | stale service-role allowlist entry removed |
+| `kora-wp-011-async-idempotency-contract` | stale importer allowlist entry removed |
+| `tenant-isolation` | 26 → 25 Company routes, with the reason recorded |
+| `kora-wp-049-explainable-quality-errors` | assertion reframed: WP-049's artefacts never reached the page, which WP-132 has since retired |
+| `kora-wp-073-accessibility-ia-full-closure` | 2 assertions on markup that no longer exists removed, with a note |
+| `wp-045-first-pilot-e2e-scenario` (integration) | STEP 4 seeds an **operator-created** batch; extracting the Admin route's inline batch creation would be WP-133 scope |
+
+**Results:** full unit suite **430/430 files, 13717 tests, 0 failures, 345 skipped**. `tsc --noEmit` clean. `eslint` **0 errors** (33 pre-existing warnings). `git diff --check` clean.
+
+## 9. DATA / MIGRATION / RLS
+
+**Migration: NONE** — 0 files changed under `supabase/migrations/`, 0 `.sql` files in the diff. **Existing `source_batch` row state changed: NO.** **RLS changed: NO.** No escalation trigger fired.
+
+## 10. ACCEPTANCE CRITERIA
+
+| # | Criterion | Result |
+|---|---|---|
+| 1 | Canonical intake actor model explicitly enforced in code | **PASS** |
+| 2 | Company user cannot create canonical ingestion state via the legacy path | **PASS** |
+| 3 | `/company/data/upload` retired / redirected / non-ingestion boundary | **PASS** — 19-line redirect |
+| 4 | `/api/company/data-ingest` retired or re-authorized | **PASS** — retired |
+| 5 | No phantom or zero-row batch state reaches an Operator or Company view | **PASS** — proven by test |
+| 6 | WP-049 status model coherent with `ingested` represented | **PASS** |
+| 7 | Legacy client-side scoring removed from the canonical Product path | **PASS** — 31 → 0 |
+| 8 | Tests prove Company cannot bypass operator-mediated ingestion | **PASS** — 31 tests |
+
+## 11. WP-133 SCOPE NOT CONSUMED
+
+No module was split for cleanliness, no file hierarchy redesigned, no service abstraction introduced, no ingestion architecture reorganised. The 3309-line page was **deleted down to a boundary, not refactored into components** — a distinction asserted by test. Where a proper fix would have required extracting the Admin route's inline batch creation, it was deliberately **not** done and the integration test seeds a row instead.
+
+## 12. CONTROLLED PILOT IMPACT
+
+WP-132's own blocker is removed. **This does not open the gate.** Section AJ still requires: methodology disclosure verified present (`calibration_status`, `methodology_version_id`, Confidence Score), and no unresolved pilot-critical dead Admin route (`KORA-WP-070` extended acceptance / `KORA-WP-127`). `R0-A`/`B`/`C` are `R0_COMPLETE` and were already satisfied. Gate 3 may remain OPEN at this gate only under the currently authorized synthetic / anonymous / non-live conditions.
+
+## 13. OUTSTANDING
+
+`F-12` OPEN · `EV-R02` open · Gate 3 and Gate 5 OPEN · `KORA-WP-117` Founder-deferred · `KORA-WP-133` (technical decomposition) now unblocked and must follow this package · branch not pushed.
