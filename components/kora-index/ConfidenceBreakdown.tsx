@@ -32,7 +32,7 @@ function SubFactor({ label, value }: { label: string; value: number }) {
 
 export function ConfidenceBreakdown({ record }: ConfidenceBreakdownProps) {
   return (
-    <div
+    <div data-wp142-block="confidence-panel"
       className="p-4 space-y-4"
       style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}
     >

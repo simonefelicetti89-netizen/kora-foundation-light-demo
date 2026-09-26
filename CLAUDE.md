@@ -516,3 +516,13 @@ For work not touched by the Master Plan (product positioning, pillars, language 
 **Gate status:** Gate 1 CLOSED · Gate 2 CLOSED WITH CONDITIONS (2026-06-22, staging only — see `docs/GATE2_STATUS.md`; still blocks production SQL/migrations) · Gate 3 OPEN · Gate 5 OPEN
 **Master Plan:** `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1.md` — architectural truth for target architecture, effective 2026-08-30 (supersedes v2.0, preserved at `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.0.md` as historical baseline); read before any architecturally significant session
 **Canonical reference:** `docs/kora-canonical-product-architecture-v1.md` (v1.1) — product positioning/methodology/privacy truth; read before every session
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

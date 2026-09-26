@@ -59,7 +59,7 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
   });
 
   return (
-    <div
+    <div data-wp142-block="breakdown-chart"
       style={{
         padding:      '1.5rem',
         background:   TOKENS.surface,

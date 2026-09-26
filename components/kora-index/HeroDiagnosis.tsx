@@ -33,6 +33,7 @@ export function HeroDiagnosis({
 
   return (
     <div
+      data-wp142-block="hero"
       style={{
         background:   TOKENS.ink,
         borderRadius: TOKENS.cardRadius,

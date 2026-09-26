@@ -90,7 +90,7 @@ export function ActivationSafeguardPanel({
   const styles = STATUS_STYLES[status];
 
   return (
-    <div className={cn('rounded-lg border bg-kora-paper p-4 space-y-4', className)}>
+    <div data-wp142-block="safeguard-panel" className={cn('rounded-lg border bg-kora-paper p-4 space-y-4', className)}>
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Activation Safeguard</h3>
         <span

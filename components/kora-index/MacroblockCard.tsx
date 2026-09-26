@@ -39,6 +39,7 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
 
   return (
     <div
+      data-wp142-block="macroblock-card"
       className={cn('p-4', className)}
       style={{
         background:          TOKENS.surface,

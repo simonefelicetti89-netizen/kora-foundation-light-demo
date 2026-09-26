@@ -39,7 +39,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
   const csValue = csComp?.value ?? null;
 
   return (
-    <div className={cn('space-y-5', className)}>
+    <div className={cn('space-y-5', className)} data-wp142-block="component-grid">
 
       {/* ── 9 operational components ── */}
       <div>
