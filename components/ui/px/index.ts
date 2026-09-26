@@ -19,6 +19,9 @@ export {
 } from './states';
 // KORA-WP-139 — canonical typographic roles.
 export { Display, Title, Section, Subsection, Body, Secondary, Label, Caption, Meta } from './Text';
+// KORA-WP-141 — composition: chapters, anchors, mobile priority.
+export { Chapter, PriorityStack, Priority } from './Chapter';
+export { RankedGroup, RankedItem, RankedLine } from './RankedGroup';
 // KORA-WP-142 — data visualisation grammar (approved-design subset).
 export {
   ThresholdMeter, ScoreBandScale, SafeguardSignificance,

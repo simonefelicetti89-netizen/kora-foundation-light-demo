@@ -548,3 +548,19 @@ export function typeStyle(
     ...(opts.tabular ? { fontVariantNumeric: 'tabular-nums' as const } : null),
   };
 }
+
+export const SPACE_STEPS = [4, 8, 16, 24, 32, 48] as const;
+export type SpaceStep = (typeof SPACE_STEPS)[number];
+
+/** Tailwind numeric suffixes whose resolved px value IS a canonical step. */
+export const TAILWIND_SPACE_STEPS = [1, 2, 4, 6, 8, 12] as const;
+
+export function isSpaceStep(px: number): px is SpaceStep {
+  return (SPACE_STEPS as readonly number[]).includes(px);
+}
+
+/** The nearest legal step. Used to justify a migration, never to guess at runtime. */
+export function nearestSpaceStep(px: number): SpaceStep {
+  return SPACE_STEPS.reduce((best, s) =>
+    Math.abs(s - px) < Math.abs(best - px) ? s : best) as SpaceStep;
+}
