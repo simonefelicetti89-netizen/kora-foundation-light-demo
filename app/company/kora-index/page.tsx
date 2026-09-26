@@ -30,6 +30,7 @@ import { SectionLabel }    from '@/components/ui/SectionLabel';
 import { Explainer }       from '@/components/ui/Explainer';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { TM }              from '@/components/ui/TM';
+import { Chapter }         from '@/components/ui/px';
 
 import { MacroblockCard }           from '@/components/kora-index/MacroblockCard';
 import { KoraIndexBuildCard }       from '@/components/kora-index/KoraIndexBuildCard';
@@ -62,28 +63,12 @@ const EXP = {
 
 // ── Section divider ───────────────────────────────────────────────────────────
 
-function Divider({ label }: { label: string }) {
-  return (
-    <div style={{ paddingTop: 32, marginTop: 32, borderTop: `1px solid ${TOKENS.inkBorder}`, marginBottom: 20 }}>
-      <p style={{
-        fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-        fontWeight:    600,
-        fontSize:      '9.5px',
-        letterSpacing: '0.10em',
-        textTransform: 'uppercase',
-        color:         TOKENS.inkHint,
-      }}>
-        {label}
-      </p>
-    </div>
-  );
-}
 
 // ── No-data / no-session state ────────────────────────────────────────────────
 
 function NoDataState({ companyName }: { companyName?: string | null }) {
   return (
-    <div className="space-y-5" data-testid="company-kora-index-page">
+    <div className="space-y-4" data-testid="company-kora-index-page">
       <PageMasthead
         eyebrow="KORA Index v1.0 · Scomposizione analitica"
         title={companyName ?? 'La tua organizzazione'}
@@ -321,10 +306,10 @@ export default function KoraIndexDetail() {
   });
 
   return (
-    <div style={{ maxWidth: 900 }} data-testid="company-kora-index-page">
+    <div className="kora-priority-stack" style={{ maxWidth: 900 }} data-testid="company-kora-index-page">
 
       {/* ── Page header ── */}
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 24 }}>
         <p style={{
           fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           fontWeight:    600,
@@ -336,7 +321,7 @@ export default function KoraIndexDetail() {
         }}>
           <TM>KORA Index</TM> v1.0 · Intelligence analitica
         </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <h1 style={{
             fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             fontSize:      'clamp(1.75rem, 3vw, 2.25rem)',
@@ -352,16 +337,7 @@ export default function KoraIndexDetail() {
       </div>
 
 
-      {/* ══ EXECUTIVE INTELLIGENCE LAYER™ ═══════════════════════════════════ */}
-
-      <ExecutiveIntelligencePanel
-        summary={executiveIntelligence}
-        companyName={liveCompanyName ?? null}
-        reportingPeriod={output.reporting_period}
-      />
-
-      {/* ══ SECTION 1: HERO DIAGNOSIS ════════════════════════════════════════ */}
-
+      {/* T1 — the judgment. It leads, because it is what the surface answers. */}
       <HeroDiagnosis
         value={output.kora_index_value}
         safeguardStatus={output.safeguard_status}
@@ -372,20 +348,19 @@ export default function KoraIndexDetail() {
         calibrationStatus={output.calibration_status}
       />
 
-      {/* ══ SECTION 2: BOARD ACTIONS ═════════════════════════════════════════ */}
-
-      {boardActions.length > 0 && (
-        <div style={{ marginTop: 28 }}>
-          <BoardActions actions={boardActions} />
-        </div>
-      )}
-
+      {/* T2 — the reading: why that judgment holds. */}
+      <ExecutiveIntelligencePanel
+        summary={executiveIntelligence}
+        companyName={liveCompanyName ?? null}
+        reportingPeriod={output.reporting_period}
+      />
+      {/* Board actions moved into the single Raccomandazioni chapter below. */}
       {/* ══ SECTION 3: TECHNICAL BREAKDOWN ══════════════════════════════════ */}
 
-      <Divider label="Scomposizione tecnica — macroblocchi e componenti" />
+      <Chapter id="scomposizione" label="Scomposizione tecnica — macroblocchi, componenti ed equity" tier="T3" mobileOrder={3}>
 
       <SectionLabel>4 macroblocchi</SectionLabel>
-      <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4 mt-4">
+      <div className="grid gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-4 mt-4">
         {macroblocks.map((mb) => (
           <MacroblockCard key={mb.code} macroblock={mb} />
         ))}
@@ -410,7 +385,7 @@ export default function KoraIndexDetail() {
             overflow:     'hidden',
             marginTop:    16,
           }}>
-            <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 8 }}>
               <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
                 Distribuzione attivazione per segmento
               </p>
@@ -442,7 +417,7 @@ export default function KoraIndexDetail() {
                     { label: 'Segmenti sovra-attivati', items: equityAccess.overActivatedSegments, tone: TOKENS.safeguard.pass },
                   ].filter(({ items }) => items.length > 0).map(({ label, items, tone }) => (
                     <div key={label} style={{ marginBottom: '0.875rem' }}>
-                      <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 6 }}>{label}</p>
+                      <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 4 }}>{label}</p>
                       {items.map((seg) => (
                         <div key={seg.segmentId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 5, marginBottom: 3, background: 'rgba(6,3,43,0.02)', border: `1px solid rgba(6,3,43,0.06)` }}>
                           <p style={{ flex: 1, fontSize: '12px', color: TOKENS.ink, fontWeight: 500 }}>{seg.segmentLabel}</p>
@@ -465,9 +440,9 @@ export default function KoraIndexDetail() {
                     {equityAccess.narrative}
                   </p>
                   {equityAccess.recommendations.length > 0 && (
-                    <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column' as const, gap: 5 }}>
+                    <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
                       {equityAccess.recommendations.map((rec, i) => (
-                        <div key={i} style={{ display: 'flex', gap: 6, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}>
+                        <div key={i} style={{ display: 'flex', gap: 4, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}>
                           <span style={{ color: TOKENS.inkHint, fontSize: '12px', flexShrink: 0, marginTop: 1 }}>›</span>
                           <p style={{ fontSize: '11px', color: TOKENS.ink, lineHeight: 1.55 }}>{rec}</p>
                         </div>
@@ -484,41 +459,38 @@ export default function KoraIndexDetail() {
         </div>
       )}
 
-      {/* Pipeline build */}
-      <div className="mt-6">
-        <SectionLabel>Pipeline di costruzione</SectionLabel>
+
+      </Chapter>
+
+      <Chapter id="pipeline" label="Pipeline di costruzione" tier="T4" mobileOrder={5} collapsible>
         <div className="mt-4">
           <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
         </div>
-      </div>
+      </Chapter>
 
       {/* Eligibility gate */}
-      <div className="mt-6">
-        <SectionLabel>Eligibility gate</SectionLabel>
-        <div style={{ marginBottom: 12 }}>
+      <Chapter id="eligibility" label="Eligibility gate" tier="T4" mobileOrder={6} collapsible>
+        <div style={{ marginBottom: 8 }}>
           <Explainer {...EXP.eligibility} compact />
         </div>
         <div className="mt-4">
           <EligibilityGatePanel summary={eligibilityGate} />
         </div>
-      </div>
+      </Chapter>
 
       {/* Blocked by design */}
-      <div className="mt-6">
-        <SectionLabel>Compliance & blocked</SectionLabel>
+      <Chapter id="compliance" label="Compliance & blocked" tier="T4" mobileOrder={8} collapsible>
         <BlockedByDesignPanel blockedCount={eligibilityGate.blocked_count} blockedNote={eligibilityGate.blocked_note} />
-      </div>
+      </Chapter>
 
       {/* Initiative explainability — per-initiative eligibility and KORA Index contribution */}
-      <div className="mt-6">
-        <SectionLabel>Perché le iniziative hanno inciso</SectionLabel>
+      <Chapter id="explainability" label="Perché le iniziative hanno inciso" tier="T4" mobileOrder={7} collapsible>
         <InitiativeExplainabilityPanel period={reportingPeriodForLive} />
-      </div>
+      </Chapter>
 
       {/* Safeguard + Confidence */}
-      <div className="mt-6">
-        <SectionLabel>Safeguard & confidence</SectionLabel>
-        <div style={{ display: 'flex', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+      <Chapter id="safeguard" label="Safeguard, confidence e affidabilità delle evidenze" tier="T3" mobileOrder={4}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
           <Explainer {...EXP.safeguard} compact />
           <Explainer {...EXP.cs} compact />
         </div>
@@ -555,7 +527,7 @@ export default function KoraIndexDetail() {
             borderRadius: TOKENS.cardRadius,
             overflow:     'hidden',
           }}>
-            <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 8 }}>
               <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
                 Evidence Reliability Intelligence™
               </p>
@@ -576,7 +548,7 @@ export default function KoraIndexDetail() {
             </div>
             <div style={{ padding: '1rem 1.25rem' }}>
               <div style={{ marginBottom: '1rem' }}>
-                <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 6 }}>Distribuzione livello evidenza</p>
+                <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>Distribuzione livello evidenza</p>
                 <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', gap: 2 }}>
                   {evidenceReliability.evidenceLevelDistribution.strongShare > 0 && (
                     <div style={{ flex: evidenceReliability.evidenceLevelDistribution.strongShare, background: TOKENS.safeguard.pass.text, opacity: 0.85 }} title={`Strong: ${Math.round(evidenceReliability.evidenceLevelDistribution.strongShare * 100)}%`} />
@@ -588,7 +560,7 @@ export default function KoraIndexDetail() {
                     <div style={{ flex: evidenceReliability.evidenceLevelDistribution.weakShare, background: TOKENS.safeguard.cap.text, opacity: 0.65 }} title={`Weak: ${Math.round(evidenceReliability.evidenceLevelDistribution.weakShare * 100)}%`} />
                   )}
                 </div>
-                <div style={{ display: 'flex', gap: 12, marginTop: 5 }}>
+                <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                   {[
                     { label: `Strong (L3/L4): ${Math.round(evidenceReliability.evidenceLevelDistribution.strongShare * 100)}%`, color: TOKENS.safeguard.pass.text },
                     { label: `Acceptable (L2): ${Math.round(evidenceReliability.evidenceLevelDistribution.acceptableShare * 100)}%`, color: TOKENS.safeguard.watch.text },
@@ -598,11 +570,11 @@ export default function KoraIndexDetail() {
                   ))}
                 </div>
               </div>
-              <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65, marginBottom: 10 }}>
+              <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65, marginBottom: 8 }}>
                 {evidenceReliability.advisorNarrative}
               </p>
               {evidenceReliability.upgradeOpportunities.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 5 }}>
+                <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
                   <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 2 }}>
                     Opportunità di miglioramento evidenza
                   </p>
@@ -628,7 +600,7 @@ export default function KoraIndexDetail() {
             </p>
           </div>
         )}
-      </div>
+      </Chapter>
 
       {/* LIFE Diversity + Care Economy Intelligence™ */}
       {lifeSummary && (
@@ -639,7 +611,7 @@ export default function KoraIndexDetail() {
             borderRadius: TOKENS.cardRadius,
             overflow:     'hidden',
           }}>
-            <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 8 }}>
               <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
                 LIFE Diversity & Care Economy Intelligence™
               </p>
@@ -668,7 +640,7 @@ export default function KoraIndexDetail() {
                 </span>
               )}
             </div>
-            <div style={{ padding: '1rem 1.25rem', display: 'grid', gap: 12, gridTemplateColumns: careSummary ? '1fr 1fr' : '1fr' }}>
+            <div style={{ padding: '1rem 1.25rem', display: 'grid', gap: 8, gridTemplateColumns: careSummary ? '1fr 1fr' : '1fr' }}>
               <div>
                 <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>LIFE Diversity</p>
                 <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55, marginBottom: 8 }}>
@@ -704,15 +676,18 @@ export default function KoraIndexDetail() {
 
       {/* ══ SECTION 4: EXPLAINABILITY + RECOMMENDATIONS + GLOSSARY ══════════ */}
 
-      <Divider label="Raccomandazioni e metodologia" />
-
-      <div className="mt-4">
+      {/* KORA-WP-141 — RECOMMENDATIONS EXACTLY ONCE. They previously rendered in
+          three separate places: the executive panel above, a board-actions block
+          under the hero, and this one at the foot of the page. A reader met
+          recommendations three times and could not tell which was authoritative. */}
+      <Chapter id="raccomandazioni" label="Raccomandazioni" tier="T2" mobileOrder={2}>
+        {boardActions.length > 0 && <BoardActions actions={boardActions} />}
         <RecommendationsPanel btiRecommendations={btiRecommendations} />
-      </div>
+      </Chapter>
 
-      <div className="mt-6">
+      <Chapter id="metodologia" label="Metodologia e perimetro" tier="T5" mobileOrder={9}>
         <MethodologyGlossary />
-      </div>
+      </Chapter>
 
       <ProvenanceFooter
         methodologyVersionId={output.methodology_version_id}

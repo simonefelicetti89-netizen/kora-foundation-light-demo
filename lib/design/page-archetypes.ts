@@ -176,3 +176,21 @@ export function mobileRatioVerdict(desktopPx: number, mobilePx: number): 'accept
   if (r <= 1.6) return 'warning';
   return 'fail';
 }
+
+/**
+ * SPACING EXCEPTIONS on a KORA-WP-141-touched surface, documented rather than
+ * silently skipped — the contract permits an exception only if it says so.
+ *
+ * 1. OPTICAL OFFSETS ≤ 3px. `marginTop: 1` on a badge glyph is optical
+ *    alignment, not a layout decision; snapping it to 4px would visibly move
+ *    the glyph and change the KORA-WP-124 visual language this package is
+ *    forbidden to redesign.
+ * 2. COMPONENT-INTERNAL CHIP PADDING, e.g. `padding: '2px 8px'` on a status
+ *    chip. That is the chip's own shape, owned by KORA-WP-140's surface roles,
+ *    not spacing between blocks.
+ *
+ * Everything else on a touched surface resolves to a SPACE step. Ties resolve
+ * DOWNWARD, because the length contract warns explicitly against padding a
+ * surface to make a number look better.
+ */
+export const SPACING_EXCEPTION_MAX_OPTICAL_PX = 3;

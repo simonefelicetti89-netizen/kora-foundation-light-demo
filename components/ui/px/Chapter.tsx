@@ -16,12 +16,13 @@
 // KORA-WP-139 typography; a chapter only says where one part of a surface ends
 // and the next begins, and which part a phone should meet first.
 
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import type React from 'react';
 import { PX } from '@/lib/design/kora-design-tokens';
 import type { Tier } from '@/lib/design/page-archetypes';
 
 export function Chapter({
-  id, label, tier, aside, children,
+  id, label, tier, aside, mobileOrder, collapsible, children,
 }: {
   /** Anchor target. A chapter without an id cannot be linked to or tested. */
   id: string;
@@ -30,16 +31,46 @@ export function Chapter({
   tier: Tier;
   /** Optional right-aligned context — never an action. */
   aside?: ReactNode;
+  /** Position in the MOBILE reading order. Inert above 767px. */
+  mobileOrder?: number;
+  /**
+   * Progressive disclosure. Only legitimate for T4 operational detail: it uses
+   * a real <details>, so the content stays in the DOM, stays findable and stays
+   * reachable by assistive technology. It is NOT a way to shorten a page by
+   * hiding required evidence — a mandatory disclosure must never be collapsed.
+   */
+  collapsible?: boolean;
   children: ReactNode;
 }) {
+  const head = (
+    <>
+      <h2 id={`${id}-label`} className="kt-meta" style={{ margin: 0, flex: '1 1 auto', color: PX.ink3 }}>
+        {label}
+      </h2>
+      {aside && <div style={{ flex: '0 0 auto', minWidth: 0 }}>{aside}</div>}
+    </>
+  );
+  const attrs = {
+    id,
+    'data-kora-chapter': id,
+    'data-tier': tier,
+    className: 'kora-chapter',
+    ...(mobileOrder === undefined ? null : {
+      'data-mobile-order': mobileOrder,
+      style: { ['--kora-mobile-order' as string]: String(mobileOrder) } as React.CSSProperties,
+    }),
+  };
+  if (collapsible) {
+    return (
+      <details {...attrs} data-collapsible="true">
+        <summary className="kora-chapter-head" style={{ cursor: 'pointer', listStyle: 'none' }}>{head}</summary>
+        <div className="kora-chapter-body">{children}</div>
+      </details>
+    );
+  }
   return (
-    <section id={id} data-kora-chapter={id} data-tier={tier} className="kora-chapter" aria-labelledby={`${id}-label`}>
-      <div className="kora-chapter-head">
-        <h2 id={`${id}-label`} className="kt-meta" style={{ margin: 0, flex: '1 1 auto', color: PX.ink3 }}>
-          {label}
-        </h2>
-        {aside && <div style={{ flex: '0 0 auto', minWidth: 0 }}>{aside}</div>}
-      </div>
+    <section {...attrs} aria-labelledby={`${id}-label`}>
+      <div className="kora-chapter-head">{head}</div>
       <div className="kora-chapter-body">{children}</div>
     </section>
   );
