@@ -23,7 +23,7 @@ import type { ExecutiveIntelligenceSummary } from '@/services/executive-intellig
 
 function Row({ label, content, accent }: { label: string; content: string; accent?: boolean }) {
   return (
-    <div style={{
+    <div className="kora-kv" style={{
       display:       'grid',
       gridTemplateColumns: '168px 1fr',
       gap:           '0 20px',
@@ -51,7 +51,7 @@ interface Props {
 
 export function ExecutiveIntelligencePanel({ summary }: Props) {
   return (
-    <div style={{
+    <div className="kora-flat-mobile" style={{
       background:   TOKENS.surface,
       border:       TOKENS.cardBorder,
       borderRadius: TOKENS.cardRadius,

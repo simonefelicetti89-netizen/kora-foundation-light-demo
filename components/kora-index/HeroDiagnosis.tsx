@@ -57,6 +57,7 @@ export function HeroDiagnosis({
 
   return (
     <div
+      className="kora-hero-t1"
       style={{
         background:   TOKENS.ink,
         borderRadius: TOKENS.cardRadius,

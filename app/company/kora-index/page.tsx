@@ -30,7 +30,7 @@ import { SectionLabel }    from '@/components/ui/SectionLabel';
 import { Explainer }       from '@/components/ui/Explainer';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { TM }              from '@/components/ui/TM';
-import { Chapter }         from '@/components/ui/px';
+import { Chapter, Priority } from '@/components/ui/px';
 import { ScoreDrivers }    from '@/components/kora-index/ScoreDrivers';
 
 import { MacroblockCard }           from '@/components/kora-index/MacroblockCard';
@@ -60,6 +60,36 @@ const EXP = {
     what: 'Classifica ogni record come Eligible (genera IU), Limited (economic relief, 0 IU) o Blocked (compliance, 0 IU).',
     how:  'Solo i record Eligible contribuiscono al KORA Index™. Blocked e Limited sono tracciati nel BTI™.',
   },
+} as const;
+
+// ── KORA-WP-141 — the declared 375px reading order ────────────────────────────
+//
+// Founder review rejected the phone composition as desktop content compressed
+// into a phone. The mobile journey is DECLARED here rather than inherited from
+// the desktop DOM, which is what "re-prioritisation, never reflow" means:
+//
+//   1  EXECUTIVE JUDGMENT       HeroDiagnosis — order 0, always first, never collapsed
+//   2  SAFEGUARD + CONFIDENCE   reliability   — collapsed on the phone only; the
+//                                               STATES are already in the hero, so
+//                                               what is behind the toggle is the
+//                                               detailed breakdown, not the status
+//   3  PRIMARY ACTION           action        — "Direzione raccomandata", the one
+//                                               canonical action source
+//   4  PRINCIPAL DRIVERS        drivers       — "Cosa limita il punteggio": why the
+//                                               judgment exists
+//   5  SUPPORTING EVIDENCE      narrative + breakdown + the T4 intelligence chapters
+//   6  METHODOLOGY / PROVENANCE methodology, then provenance LAST
+//
+// Above 767px every value here is inert.
+const MOBILE_ORDER = {
+  reliability: 1,
+  action:      2,
+  drivers:     3,
+  narrative:   4,
+  breakdown:   5,
+  // 6..12 are the T4 intelligence chapters, declared inline
+  methodology: 13,
+  provenance:  14,
 } as const;
 
 // ── Section divider ───────────────────────────────────────────────────────────
@@ -354,24 +384,31 @@ export default function KoraIndexDetail() {
           list. Putting them beside each other rather than stacked is what lets
           the first viewport carry judgment, safeguard, confidence, drivers AND
           direction at once — which is the whole point of the contract. */}
+      {/* KORA-WP-141 MOBILE — the split is ONE block on desktop and TWO
+          independently-prioritised blocks on a phone (globals.css promotes its
+          children at the breakpoint). The drivers explain the judgment, so they
+          arrive before the narrative synthesis on 375px; on 1440 the DOM order
+          and the asymmetric columns are untouched. */}
       <div className="kora-exec-split">
-        <div style={{ minWidth: 0 }}>
+        <Priority order={MOBILE_ORDER.narrative}>
           <ExecutiveIntelligencePanel summary={executiveIntelligence} />
-        </div>
+        </Priority>
         {weakComponents.length > 0 && (
-          <aside style={{ minWidth: 0 }} aria-label="Driver principali">
-            <ScoreDrivers weakComponents={weakComponents} />
-          </aside>
+          <Priority order={MOBILE_ORDER.drivers}>
+            <aside style={{ minWidth: 0 }} aria-label="Driver principali">
+              <ScoreDrivers weakComponents={weakComponents} />
+            </aside>
+          </Priority>
         )}
       </div>
       {/* ══ SECTION 3: TECHNICAL BREAKDOWN ══════════════════════════════════ */}
 
-      <Chapter id="raccomandazioni" label="Direzione raccomandata" tier="T2" mobileOrder={2} index={1}>
+      <Chapter id="raccomandazioni" label="Direzione raccomandata" tier="T2" mobileOrder={MOBILE_ORDER.action} index={1}>
         {boardActions.length > 0 && <BoardActions actions={boardActions} />}
         <RecommendationsPanel btiRecommendations={btiRecommendations} />
       </Chapter>
 
-      <Chapter id="safeguard" label="Safeguard, confidence e affidabilità delle evidenze" tier="T3" mobileOrder={1} index={2}>
+      <Chapter id="safeguard" label="Safeguard, confidence e affidabilità delle evidenze" tier="T3" mobileOrder={MOBILE_ORDER.reliability} index={2} collapseMobile>
         <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
           <Explainer {...EXP.safeguard} compact />
           <Explainer {...EXP.cs} compact />
@@ -383,7 +420,7 @@ export default function KoraIndexDetail() {
 
       </Chapter>
 
-      <Chapter id="scomposizione" label="Scomposizione tecnica — macroblocchi, componenti ed equity" tier="T3" mobileOrder={3} index={3} collapsible>
+      <Chapter id="scomposizione" label="Scomposizione tecnica — macroblocchi, componenti ed equity" tier="T3" mobileOrder={MOBILE_ORDER.breakdown} index={3} collapsible>
 
       <SectionLabel>4 macroblocchi</SectionLabel>
       <div className="grid gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-4 mt-4">
@@ -402,13 +439,13 @@ export default function KoraIndexDetail() {
 
       </Chapter>
 
-      <Chapter id="pipeline" label="Pipeline di costruzione" tier="T4" mobileOrder={4} collapsible index={4}>
+      <Chapter id="pipeline" label="Pipeline di costruzione" tier="T4" mobileOrder={6} collapsible index={4}>
         <div className="mt-4">
           <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
         </div>
       </Chapter>
 
-      <Chapter id="eligibility" label="Eligibility gate" tier="T4" mobileOrder={5} collapsible index={5}>
+      <Chapter id="eligibility" label="Eligibility gate" tier="T4" mobileOrder={7} collapsible index={5}>
         <div style={{ marginBottom: 8 }}>
           <Explainer {...EXP.eligibility} compact />
         </div>
@@ -417,15 +454,15 @@ export default function KoraIndexDetail() {
         </div>
       </Chapter>
 
-      <Chapter id="compliance" label="Compliance & blocked" tier="T4" mobileOrder={6} collapsible index={6}>
+      <Chapter id="compliance" label="Compliance & blocked" tier="T4" mobileOrder={8} collapsible index={6}>
         <BlockedByDesignPanel blockedCount={eligibilityGate.blocked_count} blockedNote={eligibilityGate.blocked_note} />
       </Chapter>
 
-      <Chapter id="explainability" label="Perché le iniziative hanno inciso" tier="T4" mobileOrder={7} collapsible index={7}>
+      <Chapter id="explainability" label="Perché le iniziative hanno inciso" tier="T4" mobileOrder={9} collapsible index={7}>
         <InitiativeExplainabilityPanel period={reportingPeriodForLive} />
       </Chapter>
 
-      <Chapter id="intelligence-equity" label="Equity & Access Intelligence™" tier="T4" mobileOrder={8} collapsible index={8}>
+      <Chapter id="intelligence-equity" label="Equity & Access Intelligence™" tier="T4" mobileOrder={10} collapsible index={8}>
       {/* Equity & Access Intelligence™ */}
       {equityAccess && (
         <div className="mt-6">
@@ -514,7 +551,7 @@ export default function KoraIndexDetail() {
 
       </Chapter>
 
-      <Chapter id="intelligence-evidenza" label="Evidence Reliability Intelligence™" tier="T4" mobileOrder={9} collapsible index={9}>
+      <Chapter id="intelligence-evidenza" label="Evidence Reliability Intelligence™" tier="T4" mobileOrder={11} collapsible index={9}>
         {/* Evidence Reliability Intelligence™ */}
         {!evidenceReliability && !liveCtx && evidenceReliabilityIntelligenceService.canAccess(koraRole) && (
           <div
@@ -618,7 +655,7 @@ export default function KoraIndexDetail() {
         )}
       </Chapter>
 
-      <Chapter id="intelligence-life" label="LIFE Diversity & Care Economy Intelligence™" tier="T4" mobileOrder={10} collapsible index={10}>
+      <Chapter id="intelligence-life" label="LIFE Diversity & Care Economy Intelligence™" tier="T4" mobileOrder={12} collapsible index={10}>
       {/* LIFE Diversity + Care Economy Intelligence™ */}
       {lifeSummary && (
         <div style={{ marginTop: 16 }}>
@@ -699,15 +736,17 @@ export default function KoraIndexDetail() {
           recommendations three times and could not tell which was authoritative. */}
       </Chapter>
 
-      <Chapter id="metodologia" label="Glossario metodologico" tier="T4" mobileOrder={11} collapsible index={11}>
+      <Chapter id="metodologia" label="Glossario metodologico" tier="T4" mobileOrder={MOBILE_ORDER.methodology} collapsible index={11}>
         <MethodologyGlossary />
       </Chapter>
 
-      <ProvenanceFooter
-        methodologyVersionId={output.methodology_version_id}
-        calibrationStatus={output.calibration_status}
-        reportingPeriod={output.reporting_period}
-      />
+      <Priority order={MOBILE_ORDER.provenance}>
+        <ProvenanceFooter
+          methodologyVersionId={output.methodology_version_id}
+          calibrationStatus={output.calibration_status}
+          reportingPeriod={output.reporting_period}
+        />
+      </Priority>
 
     </div>
   );

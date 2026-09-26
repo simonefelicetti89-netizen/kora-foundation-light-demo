@@ -22,7 +22,7 @@ import { PX } from '@/lib/design/kora-design-tokens';
 import type { Tier } from '@/lib/design/page-archetypes';
 
 export function Chapter({
-  id, label, tier, aside, mobileOrder, index, band, collapsible, children,
+  id, label, tier, aside, mobileOrder, index, band, collapsible, collapseMobile, children,
 }: {
   /** Anchor target. A chapter without an id cannot be linked to or tested. */
   id: string;
@@ -59,6 +59,13 @@ export function Chapter({
    * judgment.
    */
   collapsible?: boolean;
+  /**
+   * Progressive disclosure ON A PHONE ONLY. Same real <details>, same DOM, same
+   * reachability — but above 767px the body is forced open and the toggle is
+   * inert, so a desktop composition that has already been accepted does not move
+   * because a phone needed a shorter first journey.
+   */
+  collapseMobile?: boolean;
   children: ReactNode;
 }) {
   const head = (
@@ -88,9 +95,13 @@ export function Chapter({
       style: { ['--kora-mobile-order' as string]: String(mobileOrder) } as React.CSSProperties,
     }),
   };
-  if (collapsible) {
+  if (collapsible || collapseMobile) {
     return (
-      <details {...attrs} data-collapsible="true">
+      <details
+        {...attrs}
+        data-collapsible={collapsible ? 'true' : undefined}
+        data-collapse-mobile={!collapsible && collapseMobile ? 'true' : undefined}
+      >
         <summary className="kora-chapter-head" style={{ cursor: 'pointer', listStyle: 'none' }}>{head}</summary>
         <div className="kora-chapter-body">{children}</div>
       </details>

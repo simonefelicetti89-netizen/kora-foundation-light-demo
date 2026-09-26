@@ -25,7 +25,7 @@ export function RankedGroup({ title, note, tier = 'section', children }: {
   children: ReactNode;
 }) {
   return (
-    <div style={{
+    <div className="kora-flat-mobile" style={{
       background:   TOKENS.surface,
       border:       TOKENS.cardBorder,
       borderRadius: TOKENS.cardRadius,
@@ -46,7 +46,7 @@ export function RankedItem({ rank, title, meta, last, children }: {
   children?: ReactNode;
 }) {
   return (
-    <div style={{
+    <div className="kora-ranked-item" style={{
       display:             'grid',
       gridTemplateColumns: '28px 1fr',
       gap:                 '0 12px',

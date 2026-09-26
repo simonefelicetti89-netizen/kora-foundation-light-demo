@@ -634,6 +634,9 @@ input[type='date']::-webkit-calendar-picker-indicator { opacity: 0; cursor: poin
 .kora-priority-stack > * { order: 0; }
 @media (max-width: 767px) {
   .kora-priority-stack > [data-mobile-order] { order: var(--kora-mobile-order, 0); }
+  /* A block promoted out of .kora-exec-split by `display: contents` is a flex item
+     of the stack but a DOM grandchild, so it needs its own rule to be ordered. */
+  .kora-priority-stack > .kora-exec-split > [data-mobile-order] { order: var(--kora-mobile-order, 0); }
   .kora-chapter + .kora-chapter { margin-top: var(--kora-space-sm); }
 }
 
@@ -655,3 +658,62 @@ details.kora-chapter-band > summary.kora-chapter-head::after {
   content: '+'; margin-left: auto; color: rgba(6, 3, 43, 0.34); font-weight: 700;
 }
 details.kora-chapter-band[open] > summary.kora-chapter-head::after { content: '−'; }
+
+/* ── KORA-WP-141 MOBILE COMPOSITION ────────────────────────────────────────────
+   Founder review froze the 1440 composition and rejected 375 as "desktop content
+   compressed into a phone". Everything below is scoped to the phone breakpoint or
+   to a marker class desktop ignores, so the approved desktop cannot move. */
+
+@media (max-width: 767px) {
+  /* The executive split is two independently-prioritised blocks on a phone, not
+     one block that happens to stack. `display: contents` promotes its children to
+     flex items of the priority stack so each can declare its own mobile order. */
+  .kora-exec-split { display: contents; }
+
+  /* A card inside a chapter is a card inside a card. At 375px the chapter's own
+     band is the boundary, so the inner panel gives up its chrome and its side
+     padding — which is ~52px of reading width returned to the prose. */
+  .kora-flat-mobile {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* LABEL | LONG PARAGRAPH is a desktop pattern. On a phone the label sits above
+     its content and the content gets the full measure. */
+  .kora-kv { grid-template-columns: minmax(0, 1fr) !important; gap: 2px 0 !important; }
+
+  /* Rank stays visible but stops costing 40px of every line. */
+  .kora-ranked-item { grid-template-columns: 18px minmax(0, 1fr) !important; gap: 0 8px !important; }
+
+  .kora-hero-t1 { padding: 24px 20px !important; }
+}
+
+/* A chapter that collapses ONLY on a phone. Above the breakpoint the body is
+   forced open and the disclosure affordance is inert, so the Founder-approved
+   desktop sees exactly the section it saw before. */
+@media (min-width: 768px) {
+  /* The UA hides a closed <details>' contents through the ::details-content slot,
+     not through a plain child rule, so both have to be answered. */
+  details[data-collapse-mobile="true"]::details-content {
+    content-visibility: visible;
+    block-size: auto;
+  }
+  details[data-collapse-mobile="true"] > .kora-chapter-body {
+    display: grid;
+    content-visibility: visible;
+  }
+  details[data-collapse-mobile="true"] > summary.kora-chapter-head { cursor: default; pointer-events: none; }
+  details[data-collapse-mobile="true"] > summary.kora-chapter-head::after { content: none; }
+  details[data-collapse-mobile="true"]:not([open]) {
+    padding-top: var(--kora-space-lg);
+    padding-bottom: var(--kora-space-lg);
+  }
+  details[data-collapse-mobile="true"]:not([open]) > summary.kora-chapter-head {
+    border-bottom: 1px solid rgba(6, 3, 43, 0.10);
+    padding-bottom: var(--kora-space-sm);
+    margin-bottom: var(--kora-space-md);
+  }
+}
