@@ -548,3 +548,33 @@ export function typeStyle(
     ...(opts.tabular ? { fontVariantNumeric: 'tabular-nums' as const } : null),
   };
 }
+
+// ── KORA-WP-141 — the canonical spacing scale, made usable ───────────────────
+//
+// SPACE already existed above with SIX steps and ZERO adoption against ~2,282
+// inline spacing decisions and ~3,325 Tailwind spacing utilities. This block
+// does not invent a second system — it makes the existing one addressable, so a
+// surface this package touches can resolve every spacing decision to a step.
+//
+// THE TAILWIND QUESTION, ANSWERED HONESTLY: Tailwind's 4px scale and SPACE
+// agree at 4/8/16/24/32/48 (p-1/p-2/p-4/p-6/p-8/p-12). A Tailwind utility on a
+// touched surface is therefore legal WHEN AND ONLY WHEN it resolves to a step.
+// `p-3` (12px), `p-5` (20px) and `p-7` (28px) do not, and are the ones that
+// must not survive on a demonstrator. Nothing about the Tailwind config is
+// changed, and no untouched legacy page is forced onto the scale.
+
+export const SPACE_STEPS = [4, 8, 16, 24, 32, 48] as const;
+export type SpaceStep = (typeof SPACE_STEPS)[number];
+
+/** Tailwind numeric suffixes whose resolved px value IS a canonical step. */
+export const TAILWIND_SPACE_STEPS = [1, 2, 4, 6, 8, 12] as const;
+
+export function isSpaceStep(px: number): px is SpaceStep {
+  return (SPACE_STEPS as readonly number[]).includes(px);
+}
+
+/** The nearest legal step. Used to justify a migration, never to guess at runtime. */
+export function nearestSpaceStep(px: number): SpaceStep {
+  return SPACE_STEPS.reduce((best, s) =>
+    Math.abs(s - px) < Math.abs(best - px) ? s : best) as SpaceStep;
+}

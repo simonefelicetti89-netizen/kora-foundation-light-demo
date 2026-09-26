@@ -573,3 +573,41 @@ input[type='date']::-webkit-calendar-picker-indicator { opacity: 0; cursor: poin
   .kt-title   { font-size: 26px; }
   .kt-section { font-size: 18px; }
 }
+
+/* ── KORA-WP-141 — composition: chapters, spacing scale, mobile priority ─────
+   The spacing custom properties mirror SPACE in lib/design/kora-design-tokens.ts
+   and a test asserts they match, exactly as the type scale does. They exist so
+   a CSS rule can reach the scale; TypeScript still reaches SPACE directly. */
+:root {
+  --kora-space-xs: 4px;
+  --kora-space-sm: 8px;
+  --kora-space-md: 16px;
+  --kora-space-lg: 24px;
+  --kora-space-xl: 32px;
+  --kora-space-2xl: 48px;
+}
+
+/* A chapter is a named division of a surface with an anchor. It is deliberately
+   NOT a card: the rule and the label carry the boundary, so a page can be
+   divided without another bordered rectangle. */
+.kora-chapter { display: block; min-width: 0; }
+.kora-chapter + .kora-chapter { margin-top: var(--kora-space-2xl); }
+.kora-chapter-head {
+  display: flex; align-items: baseline; gap: var(--kora-space-md);
+  padding-bottom: var(--kora-space-sm);
+  border-bottom: 1px solid rgba(6, 3, 43, 0.09);
+  margin-bottom: var(--kora-space-lg);
+}
+.kora-chapter-body { display: grid; gap: var(--kora-space-lg); min-width: 0; }
+
+/* MOBILE IS RE-PRIORITISATION, NOT REFLOW.
+   A surface declares a mobile order per chapter; below the mobile breakpoint the
+   flex order applies, so what a phone reader needs first arrives first even when
+   the desktop DOM order differs. Above the breakpoint the declaration is inert,
+   which is why a page can carry it without changing desktop at all. */
+.kora-priority-stack { display: flex; flex-direction: column; gap: var(--kora-space-lg); min-width: 0; }
+.kora-priority-stack > * { order: 0; }
+@media (max-width: 767px) {
+  .kora-priority-stack > [data-mobile-order] { order: var(--kora-mobile-order, 0); }
+  .kora-chapter + .kora-chapter { margin-top: var(--kora-space-xl); }
+}
