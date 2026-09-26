@@ -67,10 +67,13 @@ const BTI_STATUS = getMacroblockStatusThresholds();
 const BTI_GOOD = BTI_STATUS.buono.min;
 const BTI_DEV  = BTI_STATUS.sviluppo.min;
 
+// The declared 375px reading order. Inert above 767px.
+//   1 judgment (order 0, always first)   4 the reading
+//   2 drivers + actions                  5 BTI detail
+//   3 —                                  6 disclosures   7 reference
 const MOBILE_ORDER = {
-  drivers: 1, actions: 2, reading: 3, bti: 4,
-  d1: 5, d2: 6, d3: 7, d4: 8,
-  reference: 9,
+  ranked: 1, reading: 2, bti: 3, disclosures: 4, reference: 5,
+  d1: 1, d2: 2, d3: 3, d4: 4,
 } as const;
 
 // ── Explainer definitions ─────────────────────────────────────────────────────
@@ -395,7 +398,7 @@ export default function KoraIndexDetail() {
     <div className="kora-priority-stack" style={{ maxWidth: 1120 }} data-testid="company-kora-index-page">
 
       {/* ── CHROME — one line ─────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, flexWrap: 'wrap', marginBottom: 24 }}>
+      <div className="kora-masthead" style={{ display: 'flex', alignItems: 'baseline', gap: 16, flexWrap: 'wrap', marginBottom: 24 }}>
         <span className="kt-meta" style={{ color: PX.inkMute }}><TM>KORA Index</TM> v1.0</span>
         <h1 className="kt-title" style={{ margin: 0, color: PX.ink, minWidth: 0 }}>
           {liveCompanyName ?? 'La tua organizzazione'}
@@ -464,15 +467,13 @@ export default function KoraIndexDetail() {
       </ExecutiveSurface>
 
       {/* ── T3 — localisation | imperatives ───────────────────────────────── */}
-      <div className="kora-two-col" style={{ marginTop: 40 }}>
-        <Priority order={MOBILE_ORDER.drivers}>
+      <Priority order={MOBILE_ORDER.ranked}>
+        <div className="kora-two-col" style={{ marginTop: 40 }}>
           <ScoreDrivers weakComponents={weakComponents} />
-        </Priority>
-        <div className="kora-two-col-rule" aria-hidden="true" />
-        <Priority order={MOBILE_ORDER.actions}>
+          <div className="kora-two-col-rule" aria-hidden="true" />
           <BoardActions actions={boardActions} />
-        </Priority>
-      </div>
+        </div>
+      </Priority>
 
       {/* ── T3 — the reading. Names no component, issues no imperative. ───── */}
       <Priority order={MOBILE_ORDER.reading}>
@@ -502,6 +503,7 @@ export default function KoraIndexDetail() {
       )}
 
       {/* ── T4/T5 — exactly four disclosure groups ────────────────────────── */}
+      <Priority order={MOBILE_ORDER.disclosures}>
       <div className="kora-disclosure-region" style={{ marginTop: 48 }}>
 
         <Chapter id="costruzione" label="Come è costruito il punteggio" tier="T4" index={1} mobileOrder={MOBILE_ORDER.d1} collapsible
@@ -836,6 +838,7 @@ export default function KoraIndexDetail() {
         </Chapter>
 
       </div>
+      </Priority>
 
       {/* ── Reference line — non-suppressible, last on every width ─────────── */}
       <Priority order={MOBILE_ORDER.reference}>

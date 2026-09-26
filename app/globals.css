@@ -743,3 +743,16 @@ details.kora-chapter-band[open] > summary.kora-chapter-head::after { content: '�
   .kora-two-col { grid-template-columns: minmax(0, 1fr); gap: 32px 0; }
   .kora-two-col-rule { display: none; }
 }
+
+/* ══ Approved KORA Index design — mobile refinements ══════════════════════════
+   Declared, not reflowed. The desktop composition is untouched above 767px. */
+@media (max-width: 767px) {
+  /* The band strip keeps its scale and its ACTIVE name; the five tiny labels
+     truncate to nonsense at 295px, so the caption carries the name instead. */
+  [data-kora-encoding="score-band-scale"] > div:nth-of-type(2) { display: none; }
+
+  /* Masthead: the boundary sits beside the eyebrow, the company name below.
+     Three stacked lines is chrome eating the first screen. */
+  .kora-masthead { gap: 10px; }
+  .kora-masthead h1 { flex: 1 1 100%; order: 2; }
+}
