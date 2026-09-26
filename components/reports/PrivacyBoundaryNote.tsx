@@ -11,15 +11,15 @@ export function PrivacyBoundaryNote() {
 
   return (
     <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-kora-paper p-6 space-y-4">
-      <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">I — Perimetro Privacy e Metodologia</p>
+      <p className="text-xs font-bold uppercase  text-[rgba(6,3,43,0.40)]">I — Perimetro Privacy e Metodologia</p>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {/* Privacy */}
         <div className="rounded-lg border border-[rgba(47,125,85,0.14)] bg-[rgba(47,125,85,0.08)] p-4 space-y-2">
-          <p className="text-[12px] font-bold text-kora-success uppercase tracking-wide">Privacy garantita</p>
+          <p className="kt-meta font-bold text-kora-success uppercase ">Privacy garantita</p>
           <ul className="space-y-1.5">
             {items.map((item, i) => (
-              <li key={i} className="flex gap-1.5 text-[12px] text-kora-success leading-relaxed">
+              <li key={i} className="flex gap-1.5 kt-caption text-kora-success leading-relaxed">
                 <span className="shrink-0 mt-0.5 text-[rgba(47,125,85,0.75)]">·</span>
                 {item}
               </li>
@@ -30,8 +30,8 @@ export function PrivacyBoundaryNote() {
         {/* Methodology */}
         <div className="space-y-3">
           <div className="rounded-lg border border-amber-100 bg-[rgba(217,154,43,0.08)] p-4 space-y-2">
-            <p className="text-[12px] font-bold text-amber-700 uppercase tracking-wide">Perimetro metodologico</p>
-            <div className="space-y-1.5 text-[12px] text-kora-warning-text leading-relaxed">
+            <p className="kt-meta font-bold text-amber-700 uppercase ">Perimetro metodologico</p>
+            <div className="space-y-1.5 kt-caption text-kora-warning-text leading-relaxed">
               <p>Output di intelligence diagnostica organizzativa — non una certificazione, non un rating regolatorio.</p>
               <p>Metodologia in fase pre-empirical calibration — pesi e soglie raffinati post-Delphi Study e programma pilota.</p>
               <p>Correlazione ≠ causalità su tutte le implicazioni business.</p>
@@ -39,8 +39,8 @@ export function PrivacyBoundaryNote() {
           </div>
 
           <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] p-4 space-y-2">
-            <p className="text-[12px] font-bold text-[rgba(6,3,43,0.62)] uppercase tracking-wide">Nota CSR/ESG</p>
-            <p className="text-[12px] text-[rgba(6,3,43,0.52)] leading-relaxed">
+            <p className="kt-meta font-bold text-[rgba(6,3,43,0.62)] uppercase ">Nota CSR/ESG</p>
+            <p className="kt-caption text-[rgba(6,3,43,0.52)] leading-relaxed">
               KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
               Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale,
               assurance o reporting obbligatorio.
@@ -48,7 +48,7 @@ export function PrivacyBoundaryNote() {
           </div>
 
           <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] p-4 space-y-1">
-            <p className="text-[12px] font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Label obbligatorie</p>
+            <p className="kt-meta font-bold text-[rgba(6,3,43,0.52)] uppercase ">Label obbligatorie</p>
             <div className="flex flex-wrap gap-1.5 mt-1">
               {[
                 'pre_empirical_calibration',
@@ -56,7 +56,7 @@ export function PrivacyBoundaryNote() {
                 'KORA Foundation Light',
                 'informational_only',
               ].map((tag) => (
-                <span key={tag} className="font-mono text-[12px] rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-1.5 py-0.5 text-[rgba(6,3,43,0.52)]">
+                <span key={tag} className="font-mono kt-caption rounded border border-[rgba(6,3,43,0.08)] bg-kora-paper px-1.5 py-0.5 text-[rgba(6,3,43,0.52)]">
                   {tag}
                 </span>
               ))}

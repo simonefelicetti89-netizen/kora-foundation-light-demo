@@ -96,7 +96,7 @@ const EXP = {
 
 function Divider({ label }: { label: string }) {
   return (
-    <div style={{ paddingTop: 32, marginTop: 32, borderTop: `1px solid ${TOKENS.inkBorder}`, marginBottom: 20 }}>
+    <div style={{ paddingTop: 32, marginTop: 32, borderTop: `1px solid ${TOKENS.inkBorder}`, marginBottom: 16 }}>
       <p style={{
         fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
         fontWeight:    600,
@@ -115,7 +115,7 @@ function Divider({ label }: { label: string }) {
 
 function NoDataState({ companyName }: { companyName?: string | null }) {
   return (
-    <div className="space-y-5" data-testid="company-kora-index-page">
+    <div className="space-y-4" data-testid="company-kora-index-page">
       <PageMasthead
         eyebrow="KORA Index v1.0 · Scomposizione analitica"
         title={companyName ?? 'La tua organizzazione'}
@@ -224,7 +224,9 @@ export default function KoraIndexDetail() {
   // department_activation already filtered at N≥10 server-side.
   // Sprint 1: EQ→EQS (Equity Segments). Use EQW when available (Pilot+), else EQS.
   const eqComponent  = output.components.find((c) => c.code === 'EQS' || c.code === 'EQW');
-  const eqValue      = eqComponent?.value ?? 0;
+  // `?? 0` made an ABSENT equity component indistinguishable from one that
+  // measured zero. `null` travels, and the render already guards for it.
+  const eqValue      = typeof eqComponent?.value === 'number' ? eqComponent.value : null;
   const eqCode       = eqComponent?.code ?? 'EQS';
   const equityAccess = equityAccessIntelligenceService.compute(aggregate ?? null, eqValue, koraRole, undefined);
 
@@ -314,7 +316,8 @@ export default function KoraIndexDetail() {
 
   // ── Recommendations ───────────────────────────────────────────────────────
   // Sprint 1: VR→EVQ (Evidence Quality proxy for recommendation logic)
-  const vrValue  = output.components.find((c) => c.code === 'EVQ')?.value ?? 0;
+  const vrComponent = output.components.find((c) => c.code === 'EVQ');
+  const vrValue  = typeof vrComponent?.value === 'number' ? vrComponent.value : null;
   const arValue  = aggregate?.activation_rate ?? 0;
   const marValue = aggregate?.meaningful_activation_rate ?? 0;
 
@@ -408,7 +411,7 @@ export default function KoraIndexDetail() {
     <div className="kora-priority-stack" style={{ maxWidth: 1120 }} data-testid="company-kora-index-page">
 
       {/* ── CHROME — one line ─────────────────────────────────────────────── */}
-      <div className="kora-masthead" style={{ display: 'flex', alignItems: 'baseline', gap: 16, flexWrap: 'wrap', marginBottom: 24 }}>
+      <div className="kora-masthead" style={{ display: 'flex', alignItems: 'baseline', gap: 16, flexWrap: 'wrap', marginBottom: 0 }}>
         <span className="kt-meta" style={{ color: PX.inkMute }}><TM>KORA Index</TM> v1.0</span>
         <h1 className="kt-title" style={{ margin: 0, color: PX.ink, minWidth: 0 }}>
           {liveCompanyName ?? 'La tua organizzazione'}
@@ -428,11 +431,11 @@ export default function KoraIndexDetail() {
               <p className="kt-meta" style={{ color: 'rgba(255,255,255,0.50)', marginBottom: 8 }}>
                 <TM>KORA Index</TM>
               </p>
-              <p style={{ color: '#FFFFFF', display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <p style={{ color: '#FFFFFF', display: 'flex', alignItems: 'baseline', gap: 4 }}>
                 <span className="kt-title kt-num">{Math.round(output.kora_index_value)}</span>
                 <span className="kt-secondary kt-num" style={{ color: 'rgba(255,255,255,0.34)', fontWeight: 600 }}>/100</span>
               </p>
-              <div style={{ marginTop: 10 }}>
+              <div style={{ marginTop: 8 }}>
                 <ScoreBandScale value={output.kora_index_value} onDark />
               </div>
             </>
@@ -469,12 +472,12 @@ export default function KoraIndexDetail() {
         <ExecutiveRule />
 
         {primaryAction && (
-          <p className="kt-section" style={{ fontWeight: 600, color: '#FFFFFF', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+          <p className="kt-section" style={{ fontWeight: 600, color: '#FFFFFF', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
             <span aria-hidden="true" style={{ color: 'rgba(255,255,255,0.50)', flex: '0 0 auto' }}>→</span>
             <span>
               {primaryAction}
               {actionDiverges && (
-                <span className="kt-caption" style={{ display: 'block', fontWeight: 400, color: 'rgba(255,255,255,0.50)', marginTop: 6 }}>
+                <span className="kt-caption" style={{ display: 'block', fontWeight: 400, color: 'rgba(255,255,255,0.50)', marginTop: 4 }}>
                   Azione a maggiore impatto ponderato: agisce su un macroblocco diverso dal vincolo primario.
                 </span>
               )}
@@ -485,7 +488,7 @@ export default function KoraIndexDetail() {
 
       {/* ── T3 — localisation | imperatives ───────────────────────────────── */}
       <Priority order={MOBILE_ORDER.ranked}>
-        <div className="kora-two-col" style={{ marginTop: 40 }}>
+        <div className="kora-two-col" style={{ marginTop: 16 }}>
           <ScoreDrivers weakComponents={weakComponents} />
           <div className="kora-two-col-rule" aria-hidden="true" />
           <BoardActions actions={boardActions} />
@@ -494,7 +497,7 @@ export default function KoraIndexDetail() {
 
       {/* ── T3 — the reading. Names no component, issues no imperative. ───── */}
       <Priority order={MOBILE_ORDER.reading}>
-        <div style={{ marginTop: 40, paddingTop: 40, borderTop: `1px solid ${PX.line}` }}>
+        <div style={{ marginTop: 16, paddingTop: 32, borderTop: `1px solid ${PX.line}` }}>
           <ExecutiveIntelligencePanel summary={executiveIntelligence} />
         </div>
       </Priority>
@@ -502,7 +505,7 @@ export default function KoraIndexDetail() {
       {/* ── T3 — BTI detail ───────────────────────────────────────────────── */}
       {btiScore !== null && (
         <Priority order={MOBILE_ORDER.bti}>
-          <div style={{ marginTop: 40, paddingTop: 40, borderTop: `1px solid ${PX.line}` }}>
+          <div style={{ marginTop: 16, paddingTop: 32, borderTop: `1px solid ${PX.line}` }}>
             <p className="kt-meta" style={{ color: PX.inkMute, marginBottom: 8 }}>Budget-to-Human-Impact™</p>
             {/* Constrained measure: a threshold track spanning 1,120px reads as
                 an arbitrary progress bar rather than a position against a scale. */}
@@ -522,7 +525,7 @@ export default function KoraIndexDetail() {
 
       {/* ── T4/T5 — exactly four disclosure groups ────────────────────────── */}
       <Priority order={MOBILE_ORDER.disclosures}>
-      <div className="kora-disclosure-region" style={{ marginTop: 48 }}>
+      <div className="kora-disclosure-region" style={{ marginTop: 24 }}>
 
         <Chapter id="costruzione" label="Come è costruito il punteggio" tier="T4" index={1} mobileOrder={MOBILE_ORDER.d1} collapsible
           aside={<span className="kt-caption" style={{ color: PX.ink3 }}>4 macroblocchi · 10 componenti con valori e pesi · pipeline</span>}>
@@ -585,12 +588,12 @@ export default function KoraIndexDetail() {
               borderRadius: TOKENS.cardRadius,
               overflow:     'hidden',
             }}>
-              <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
                   Evidence Reliability Intelligence™
                 </p>
                 <span style={{
-                  fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                  fontSize: '11px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
                   background: evidenceReliability.evidenceRiskLevel === 'alta' ? TOKENS.safeguard.cap.bg
                     : evidenceReliability.evidenceRiskLevel === 'media' ? TOKENS.safeguard.watch.bg
                     : TOKENS.safeguard.pass.bg,
@@ -600,13 +603,13 @@ export default function KoraIndexDetail() {
                 }}>
                   Rischio evidenza: {evidenceReliability.evidenceRiskLevel}
                 </span>
-                <span style={{ fontSize: '10px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
                   {evidenceReliability.evidenceLevelDistribution.primaryTier}
                 </span>
               </div>
               <div style={{ padding: '1rem 1.25rem' }}>
                 <div style={{ marginBottom: '1rem' }}>
-                  <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 6 }}>Distribuzione livello evidenza</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>Distribuzione livello evidenza</p>
                   <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', gap: 2 }}>
                     {evidenceReliability.evidenceLevelDistribution.strongShare > 0 && (
                       <div style={{ flex: evidenceReliability.evidenceLevelDistribution.strongShare, background: TOKENS.safeguard.pass.text, opacity: 0.85 }} title={`Strong: ${Math.round(evidenceReliability.evidenceLevelDistribution.strongShare * 100)}%`} />
@@ -618,27 +621,27 @@ export default function KoraIndexDetail() {
                       <div style={{ flex: evidenceReliability.evidenceLevelDistribution.weakShare, background: TOKENS.safeguard.cap.text, opacity: 0.65 }} title={`Weak: ${Math.round(evidenceReliability.evidenceLevelDistribution.weakShare * 100)}%`} />
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: 12, marginTop: 5 }}>
+                  <div style={{ display: 'flex', gap: 16, marginTop: 4 }}>
                     {[
                       { label: `Strong (L3/L4): ${Math.round(evidenceReliability.evidenceLevelDistribution.strongShare * 100)}%`, color: TOKENS.safeguard.pass.text },
                       { label: `Acceptable (L2): ${Math.round(evidenceReliability.evidenceLevelDistribution.acceptableShare * 100)}%`, color: TOKENS.safeguard.watch.text },
                       { label: `Weak (L0/L1): ${Math.round(evidenceReliability.evidenceLevelDistribution.weakShare * 100)}%`, color: TOKENS.safeguard.cap.text },
                     ].map(({ label, color }) => (
-                      <span key={label} style={{ fontSize: '10px', color, fontWeight: 500 }}>{label}</span>
+                      <span key={label} style={{ fontSize: '11px', color, fontWeight: 500 }}>{label}</span>
                     ))}
                   </div>
                 </div>
-                <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65, marginBottom: 10 }}>
+                <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65, marginBottom: 8 }}>
                   {evidenceReliability.advisorNarrative}
                 </p>
                 {evidenceReliability.upgradeOpportunities.length > 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 5 }}>
-                    <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 2 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
+                    <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 2 }}>
                       Opportunità di miglioramento evidenza
                     </p>
                     {evidenceReliability.upgradeOpportunities.map((opp, i) => (
                       <div key={i} style={{ display: 'flex', gap: 8, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}>
-                        <span style={{ fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '1px 6px', whiteSpace: 'nowrap' as const, alignSelf: 'flex-start', marginTop: 1,
+                        <span style={{ fontSize: '11px', fontWeight: 600, borderRadius: 4, padding: '1px 6px', whiteSpace: 'nowrap' as const, alignSelf: 'flex-start', marginTop: 1,
                           background: opp.priority === 'alta' ? TOKENS.safeguard.cap.bg : TOKENS.safeguard.watch.bg,
                           color:      opp.priority === 'alta' ? TOKENS.safeguard.cap.text : TOKENS.safeguard.watch.text,
                         }}>
@@ -653,7 +656,7 @@ export default function KoraIndexDetail() {
                   </div>
                 )}
               </div>
-              <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+              <p style={{ padding: '8px 14px', fontSize: '11px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
                 Evidence Reliability Intelligence™ · pre_empirical_calibration · non modifica CS, EVQ né KORA Index™ · not_kora_index_component
               </p>
             </div>
@@ -668,12 +671,12 @@ export default function KoraIndexDetail() {
               borderRadius: TOKENS.cardRadius,
               overflow:     'hidden',
             }}>
-              <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
                   LIFE Diversity & Care Economy Intelligence™
                 </p>
                 <span style={{
-                  fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                  fontSize: '11px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
                   background: lifeSummary.concentrationStatus === 'diverse' ? TOKENS.safeguard.pass.bg
                     : lifeSummary.concentrationStatus === 'no_life_data' ? TOKENS.inkBorder
                     : TOKENS.safeguard.watch.bg,
@@ -685,7 +688,7 @@ export default function KoraIndexDetail() {
                 </span>
                 {careSummary && (
                   <span style={{
-                    fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                    fontSize: '11px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
                     background: careSummary.careEconomyStatus === 'broad' ? TOKENS.safeguard.pass.bg
                       : careSummary.careEconomyStatus === 'absent' ? TOKENS.safeguard.cap.bg
                       : TOKENS.safeguard.watch.bg,
@@ -697,7 +700,7 @@ export default function KoraIndexDetail() {
                   </span>
                 )}
               </div>
-              <div style={{ padding: '1rem 1.25rem', display: 'grid', gap: 12, gridTemplateColumns: careSummary ? '1fr 1fr' : '1fr' }}>
+              <div style={{ padding: '1rem 1.25rem', display: 'grid', gap: 16, gridTemplateColumns: careSummary ? '1fr 1fr' : '1fr' }}>
                 <div>
                   <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>LIFE Diversity</p>
                   <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55, marginBottom: 8 }}>
@@ -724,7 +727,7 @@ export default function KoraIndexDetail() {
                   </div>
                 )}
               </div>
-              <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+              <p style={{ padding: '8px 14px', fontSize: '11px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
                 LIFE Diversity & Care Economy Intelligence™ · pre_empirical_calibration · non modifica KORA Index™ · not_kora_index_component
               </p>
             </div>
@@ -774,13 +777,13 @@ export default function KoraIndexDetail() {
                 overflow:     'hidden',
                 marginTop:    16,
               }}>
-                <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
                     Distribuzione attivazione per segmento
                   </p>
                   {equityAccess.accessRiskLevel !== 'insufficient_data' && (
                     <span style={{
-                      fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                      fontSize: '11px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
                       background: equityAccess.accessRiskLevel === 'alta' ? TOKENS.safeguard.cap.bg
                         : equityAccess.accessRiskLevel === 'media' ? TOKENS.safeguard.watch.bg
                         : TOKENS.safeguard.pass.bg,
@@ -791,7 +794,7 @@ export default function KoraIndexDetail() {
                       Rischio equità: {equityAccess.accessRiskLevel}
                     </span>
                   )}
-                  <span style={{ fontSize: '10px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
                     {eqCode} = {Math.round(equityAccess.eqValue * 100)}%
                   </span>
                 </div>
@@ -806,14 +809,14 @@ export default function KoraIndexDetail() {
                         { label: 'Segmenti sovra-attivati', items: equityAccess.overActivatedSegments, tone: TOKENS.safeguard.pass },
                       ].filter(({ items }) => items.length > 0).map(({ label, items, tone }) => (
                         <div key={label} style={{ marginBottom: '0.875rem' }}>
-                          <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 6 }}>{label}</p>
+                          <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.07em', color: TOKENS.inkHint, marginBottom: 4 }}>{label}</p>
                           {items.map((seg) => (
                             <div key={seg.segmentId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 5, marginBottom: 3, background: 'rgba(6,3,43,0.02)', border: `1px solid rgba(6,3,43,0.06)` }}>
                               <p style={{ flex: 1, fontSize: '12px', color: TOKENS.ink, fontWeight: 500 }}>{seg.segmentLabel}</p>
                               <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
                                 {Math.round(seg.activationRate * 100)}%
                               </p>
-                              <span style={{ fontSize: '10px', fontWeight: 600, color: tone?.text ?? TOKENS.inkSecondary, background: tone?.bg ?? 'rgba(6,3,43,0.05)', borderRadius: 4, padding: '1px 6px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: 600, color: tone?.text ?? TOKENS.inkSecondary, background: tone?.bg ?? 'rgba(6,3,43,0.05)', borderRadius: 4, padding: '1px 6px' }}>
                                 {seg.gapVsAverage >= 0 ? '+' : ''}{Math.round(seg.gapVsAverage * 100)}pp
                               </span>
                             </div>
@@ -829,9 +832,9 @@ export default function KoraIndexDetail() {
                         {equityAccess.narrative}
                       </p>
                       {equityAccess.recommendations.length > 0 && (
-                        <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column' as const, gap: 5 }}>
+                        <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column' as const, gap: 4 }}>
                           {equityAccess.recommendations.map((rec, i) => (
-                            <div key={i} style={{ display: 'flex', gap: 6, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}>
+                            <div key={i} style={{ display: 'flex', gap: 4, padding: '7px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}>
                               <span style={{ color: TOKENS.inkHint, fontSize: '12px', flexShrink: 0, marginTop: 1 }}>›</span>
                               <p style={{ fontSize: '11px', color: TOKENS.ink, lineHeight: 1.55 }}>{rec}</p>
                             </div>
@@ -841,7 +844,7 @@ export default function KoraIndexDetail() {
                     </>
                   )}
                 </div>
-                <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+                <p style={{ padding: '8px 14px', fontSize: '11px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
                   Equity & Access Intelligence™ · pre_empirical_calibration · non modifica EQS né KORA Index™ · not_kora_index_component
                 </p>
               </div>
@@ -860,7 +863,7 @@ export default function KoraIndexDetail() {
 
       {/* ── Reference line — non-suppressible, last on every width ─────────── */}
       <Priority order={MOBILE_ORDER.reference}>
-        <div style={{ marginTop: 48 }}>
+        <div style={{ marginTop: 24 }}>
           {/* The reference layer is canvas, caption typography, no card and no
               coloured pill. `MethodologyBadge` renders `calibration_status` as an
               amber pill; it is shared with /company/reports, which is approved

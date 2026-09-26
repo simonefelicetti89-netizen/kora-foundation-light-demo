@@ -25,8 +25,8 @@ export { RankedGroup, RankedItem, RankedLine } from './RankedGroup';
 // KORA-WP-142 — data visualisation grammar (approved-design subset).
 export {
   ThresholdMeter, ScoreBandScale, SafeguardSignificance,
-  ContributionBars, DistributionStrip,
-  type ContributionItem, type DistributionSlice,
+  ContributionBars, DistributionStrip, ConfidenceGauge, TrendIndicator,
+  type ContributionItem, type DistributionSlice, type TrendInput,
 } from './encoding';
 // Approved KORA Index design primitives.
 export { ExecutiveSurface, ExecutiveRule, VerdictLine, SignalRow, Signal, IntelligenceGroup } from './design';

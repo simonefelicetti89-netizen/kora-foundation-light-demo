@@ -150,12 +150,19 @@ export class EquityAccessIntelligenceService {
 
   compute(
     aggregate: CompanyAggregateExtended | null,
-    eqValue: number,
+    /**
+     * `null` means the equity component has NO value this period. The caller
+     * used to pass 0, which made an absent component indistinguishable from one
+     * that measured zero — the service already models absence as
+     * `insufficient_data`, so absence now reaches it intact.
+     */
+    eqValue: number | null,
     role: KoraRole,
     groups?: WorkforceAggregateGroup[],
   ): EquityAccessSummary | null {
     if (!this.canAccess(role)) return null;
     if (!aggregate) return null;
+    if (eqValue === null) return this._insufficientData(0);
 
     const companyAvg = aggregate.activation_rate;
     const deptMap = aggregate.department_activation ?? {};

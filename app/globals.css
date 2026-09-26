@@ -575,6 +575,22 @@ input[type='date']::-webkit-calendar-picker-indicator { opacity: 0; cursor: poin
 }
 
 /* ══ KORA-WP-141 composition foundation — chapters, priority, mobile ══ */
+
+/* The governed spacing scale, as CSS custom properties, so a CSS rule can reach
+   it — TypeScript still reaches SPACE directly. Transcribed EXACTLY from the
+   WP141 technical source; no value is invented and the scale is not altered.
+   These were used 19 times and defined zero times: a `var()` that resolves to
+   nothing computes the property to `unset`, it does NOT fall back to an earlier
+   declaration, so every one of those rules was silently dropped. */
+:root {
+  --kora-space-xs: 4px;
+  --kora-space-sm: 8px;
+  --kora-space-md: 16px;
+  --kora-space-lg: 24px;
+  --kora-space-xl: 32px;
+  --kora-space-2xl: 48px;
+}
+
 .kora-chapter { display: block; min-width: 0; }
 .kora-chapter + .kora-chapter { margin-top: var(--kora-space-md); }
 .kora-chapter-head {

@@ -20,8 +20,13 @@ export interface LiveRecommendationInputs {
   safeguardStatus: string;
   arValue: number;
   marValue: number;
-  vrValue: number;
-  eqValue: number;
+  /**
+   * `null` = the component has NO value this period. Callers used to pass 0,
+   * which made absence indistinguishable from a measured zero; a recommendation
+   * is only generated where a real value supports it.
+   */
+  vrValue: number | null;
+  eqValue: number | null;
   confidenceScore: number;
   confidenceGaps: string[];
   eligibleCount: number;
@@ -90,11 +95,11 @@ export function generateLiveRecommendations(inputs: LiveRecommendationInputs): L
       expected_signal_it: 'Data Reliability Index™ sotto soglia — il Verification Rate (VR) e la qualità complessiva del dato sono penalizzati. Raccogliere report di partecipazione dai fornitori welfare (upgrade L1→L2 o L2→L3).',
       target_macroblock: 'QUALITY',
     });
-  } else if (vrValue < 0.55) {
+  } else if (vrValue !== null && vrValue < 0.55) {
     recs.push({
       priority: 'media',
       action_it: 'Aumentare la copertura di evidenze verificate per i programmi attivi.',
-      expected_signal_it: `Verification Rate (VR) = ${Math.round(vrValue * 100)}%. Richiedere documentazione ai fornitori può migliorare VR e Confidence Score senza modificare il programma.`,
+      expected_signal_it: `Verification Rate (VR) = ${Math.round((vrValue ?? 0) * 100)}%. Richiedere documentazione ai fornitori può migliorare VR e Confidence Score senza modificare il programma.`,
       target_macroblock: 'QUALITY',
     });
   }
@@ -105,14 +110,14 @@ export function generateLiveRecommendations(inputs: LiveRecommendationInputs): L
     recs.push({
       priority: 'alta',
       action_it: `Pianificare iniziative mirate ai segmenti sotto-attivati${underSegs ? ': ' + underSegs : ''}.`,
-      expected_signal_it: `EQ = ${Math.round(eqValue * 100)}% — distribuzione non uniforme rilevata. Programmi con accesso allargato ai segmenti sotto-rappresentati possono migliorare EQ e il macroblock Distribution & Equity.`,
+      expected_signal_it: `EQ = ${eqValue === null ? 'n/d' : `${Math.round(eqValue * 100)}%`} — distribuzione non uniforme rilevata. Programmi con accesso allargato ai segmenti sotto-rappresentati possono migliorare EQ e il macroblock Distribution & Equity.`,
       target_macroblock: 'EQUITY',
     });
-  } else if (eqValue < 0.40) {
+  } else if (eqValue !== null && eqValue < 0.40) {
     recs.push({
       priority: 'media',
       action_it: 'Verificare la distribuzione dell\'accesso ai programmi tra reparti e fasce di seniority.',
-      expected_signal_it: `EQ = ${Math.round(eqValue * 100)}% — possibile concentrazione in segmenti già ad alta partecipazione. Analisi Equity & Access raccomandata.`,
+      expected_signal_it: `EQ = ${Math.round((eqValue ?? 0) * 100)}% — possibile concentrazione in segmenti già ad alta partecipazione. Analisi Equity & Access raccomandata.`,
       target_macroblock: 'EQUITY',
     });
   }

@@ -103,7 +103,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
                 <th scope="col" key={h} style={{
                   padding: '6px 10px', textAlign: 'left',
                   fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px',
-                  letterSpacing: '0.06em', textTransform: 'uppercase',
+                  letterSpacing: '0.07em', textTransform: 'uppercase',
                   color: TOKENS.violet, background: TOKENS.accentSoft,
                 }}>
                   {h}

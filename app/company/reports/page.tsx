@@ -11,6 +11,12 @@
 //     absence of data and not a fault — the period simply has not been scored;
 //   - KORA Contribution is NOT YET AVAILABLE, not the empty grey box that read
 //     as "nothing here".
+// KORA-WP-141 composed this surface. Archetype REPORT_EXPORT: a board-ready
+// output that must carry its evidence IN FULL, so its length contract is the
+// 4,000px subtype AN.1 ratified and NOT the 2,500px Cockpit figure. The mobile
+// ratio was 2.01x — a FAIL — and it is addressed by chaptering and progressive
+// disclosure on the operational tiers, never by deleting required evidence.
+//
 // KORA-WP-140 structure is FINAL here and must not be altered.
 // KORA-WP-139 migrated the typography onto the canonical nine-role scale on top
 // of that structure: every size now comes from a named role, no text sits below
@@ -30,7 +36,7 @@ import { DecisionContext }         from '@/components/ui/DecisionContext';
 import { ProvenanceFooter }        from '@/components/company/cockpit/ProvenanceFooter';
 import {
   HeroJudgment, PrimaryMetric, SupportingMetric, EvidencePanel, WarningSafeguard,
-  ActionGroup, Disclosure, Loading, NotYetAvailable,
+  ActionGroup, Disclosure, Loading, NotYetAvailable, Chapter,
 } from '@/components/ui/px';
 import type { Assessment } from '@/lib/design/surface-state-grammar';
 import { TOKENS, typeStyle } from '@/lib/design/kora-design-tokens';
@@ -94,26 +100,14 @@ export default function Reports() {
   const safeguard = activationSafeguardService.evaluate(AR, MAR);
 
   return (
-    <div className="space-y-6">
+    <div className="kora-priority-stack">
 
       <PageMasthead
         eyebrow="Decision Pack · LIVE"
         title="Report direzionali"
         subline="Output board-ready per HR, Finance, ESG e board. Evidenze strutturate, attivazione e raccomandazioni in formato decisionale."
       />
-      <DecisionContext
-        question="Quali output portare al board, agli advisor ESG e alle funzioni HR e Finance?"
-        boundary="KORA Foundation Light · pre_empirical_calibration · non certificativo · dati live"
-      />
 
-      {/* ── Lettura direzionale — DISCLOSURE, non un avviso ─────────────────── */}
-      <Disclosure label="Lettura direzionale — non certificativa">
-        <p style={{ ...typeStyle('body'), color: TOKENS.inkSecondary }}>
-          KORA converte dati aggregati, KORA Index, Confidence Score, Safeguard e raccomandazioni in output direzionali.
-          Il Decision Pack è un supporto informativo per il confronto interno — non una certificazione ESG, non un report regolatorio automatico,
-          non un&apos;attestazione pubblica.
-        </p>
-      </Disclosure>
 
       {/* ── KORA Index™ live — HERO JUDGMENT (uno solo per superficie) ──────── */}
       <HeroJudgment
@@ -144,7 +138,7 @@ export default function Reports() {
         }
       >
         <Disclosure label="Calibrazione e metodologia">
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             <span style={{ ...typeStyle('caption'), fontFamily: 'ui-monospace, monospace', color: TOKENS.safeguard.watch.text }}>pre_empirical_calibration</span>
             <span style={{ ...typeStyle('caption'), fontFamily: 'ui-monospace, monospace', color: TOKENS.safeguard.cap.text }}>production_ready: false</span>
             <span style={{ ...typeStyle('caption'), fontFamily: 'ui-monospace, monospace', color: TOKENS.inkHint }}>{aggregate.methodology_version_id}</span>
@@ -171,20 +165,9 @@ export default function Reports() {
         </ActionGroup>
       </HeroJudgment>
 
-      {/* ── Scomposizione — EVIDENCE, non un secondo hero ───────────────────── */}
-      <EvidencePanel label="KORA Index™ — Scomposizione 10 componenti">
-        <div className="space-y-6">
-          <KoraIndexHero output={output} />
-          <ComponentBreakdown components={output.components} />
-        </div>
-      </EvidencePanel>
-
-      {/* ── Activation Safeguard — il dettaglio SPIEGA, non allarma due volte ─ */}
-      <EvidencePanel>
-        <ActivationSafeguardPanel result={safeguard} explanation={undefined} />
-      </EvidencePanel>
-
-      {/* ── Export & distribuzione — ACTION ─────────────────────────────────── */}
+      {/* T3 — the evidence behind the judgment. Full, never collapsed: the
+          ten-component breakdown is a mandatory KORA Index disclosure. */}
+      <Chapter id="export" label="Export & distribuzione" tier="T2" mobileOrder={1} index={1}>
       <ActionGroup
         label="Export & distribuzione"
         note={
@@ -207,7 +190,27 @@ export default function Reports() {
         </a>
       </ActionGroup>
 
-      {/* ── KORA Contribution™ — NOT YET AVAILABLE, non un vuoto ────────────── */}
+      </Chapter>
+
+      <Chapter id="evidenza" label="Evidenza — scomposizione e safeguard" tier="T3" mobileOrder={3} index={2} collapsible>
+      <EvidencePanel label="KORA Index™ — Scomposizione 10 componenti">
+        <div className="space-y-6">
+          <KoraIndexHero output={output} />
+          <ComponentBreakdown components={output.components} />
+        </div>
+      </EvidencePanel>
+
+      {/* ── Activation Safeguard — il dettaglio SPIEGA, non allarma due volte ─ */}
+      <EvidencePanel>
+        <ActivationSafeguardPanel result={safeguard} explanation={undefined} />
+      </EvidencePanel>
+
+      </Chapter>
+
+      {/* T4 — operational and companion detail. Collapsible: none of this is a
+          mandatory KORA Index disclosure, and a <details> keeps it in the DOM
+          and reachable by assistive technology rather than removing it. */}
+      <Chapter id="companion" label="Indicatori companion e mapping normativo" tier="T4" mobileOrder={4} collapsible index={3}>
       <EvidencePanel label="KORA Contribution™ — indicatore companion, separato dal KORA Index™">
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -231,9 +234,29 @@ export default function Reports() {
         <NormativeMappingLightSection mapping={getNormativeMappingLight()} />
       </EvidencePanel>
 
-      {/* ── Confini metodologici — DISCLOSURE ───────────────────────────────── */}
+      </Chapter>
+
+      {/* T5 — the boundary. Always present, always last, never collapsed. */}
+      <Chapter id="perimetro" label="Confini metodologici e perimetro informativo" tier="T5" mobileOrder={5} index={4}>
+      {/* KORA-WP-141 — the framing question and the directional-reading caveat
+          moved here from the top of the page. They are perimeter, not judgment,
+          and every row of them above the fold was a row the reader scrolled
+          past before learning the score. */}
+      <DecisionContext
+        question="Quali output portare al board, agli advisor ESG e alle funzioni HR e Finance?"
+        boundary="KORA Foundation Light · pre_empirical_calibration · non certificativo · dati live"
+      />
+
+      <Disclosure label="Lettura direzionale — non certificativa">
+        <p style={{ ...typeStyle('body'), color: TOKENS.inkSecondary }}>
+          KORA converte dati aggregati, KORA Index, Confidence Score, Safeguard e raccomandazioni in output direzionali.
+          Il Decision Pack è un supporto informativo per il confronto interno — non una certificazione ESG, non un report regolatorio automatico,
+          non un&apos;attestazione pubblica.
+        </p>
+      </Disclosure>
+
       <Disclosure label="Confini metodologici e perimetro informativo">
-        <p style={{ ...typeStyle('subsection'), color: TOKENS.ink, marginBottom: 12 }}>
+        <p style={{ ...typeStyle('subsection'), color: TOKENS.ink, marginBottom: 8 }}>
           Decision Pack misura l&apos;organizzazione, non gli individui.
         </p>
         <ul style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -254,6 +277,8 @@ export default function Reports() {
       <Disclosure>
         <PrivacyBoundaryNote />
       </Disclosure>
+
+      </Chapter>
 
       <ProvenanceFooter
         methodologyVersionId={aggregate.methodology_version_id}

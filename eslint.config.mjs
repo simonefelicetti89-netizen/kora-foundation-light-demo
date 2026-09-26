@@ -38,10 +38,35 @@ const TYPOGRAPHY_LINT_SOURCES = {
   rules: { 'no-restricted-syntax': 'off' },
 };
 
+const SPACING_LINT = {
+  name: 'kora/spacing-scale',
+  rules: {
+    'no-restricted-syntax': ['warn',
+      {
+        selector: "Property[key.name='fontSize']",
+        message:
+          'KORA-WP-139: use a canonical type role, not an inline fontSize. ' +
+          'Import typeStyle(role) from lib/design/kora-design-tokens, or one of the ' +
+          'primitives in components/ui/px (Title, Section, Body, Secondary, Label, ' +
+          'Caption, Meta). 11px is reserved for the `meta` role; nothing renders below it.',
+      },
+      {
+        selector: "Property[key.name=/^(padding|margin|gap|rowGap|columnGap)/][value.type='Literal'][value.value!=0]",
+        message:
+          'KORA-WP-141: resolve spacing to the canonical SPACE scale (4/8/16/24/32/48) ' +
+          'from lib/design/kora-design-tokens — a literal spacing value is drift. ' +
+          'A Tailwind utility is legal only where it resolves to a step (p-1/2/4/6/8/12).',
+      },
+    ],
+  },
+};
+
+
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   TYPOGRAPHY_LINT,
+  SPACING_LINT,
   TYPOGRAPHY_LINT_SOURCES,
   // Override default ignores of eslint-config-next.
   globalIgnores([
