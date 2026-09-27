@@ -66,7 +66,7 @@ export default function FinancialGovernanceLive() {
   const reportingPeriod = koraIndex.reporting_period ?? 'Periodo attivo';
 
   return (
-    <div className="space-y-6">
+    <div data-testid="company-financial-page" className="space-y-6">
 
       {/* ── Boundary ─────────────────────────────────────────────────────────── */}
       <PageMasthead
@@ -151,21 +151,10 @@ export default function FinancialGovernanceLive() {
           >
             Vai al KORA Index →
           </Link>
-          <Link
-            href="/demo/guide"
-            style={{
-              borderRadius:   6,
-              border:         `1px solid rgba(6,3,43,0.14)`,
-              background:     'rgba(6,3,43,0.03)',
-              padding:        '8px 14px',
-              fontSize:       '12px',
-              fontWeight:     500,
-              color:          TOKENS.inkSecondary,
-              textDecoration: 'none',
-            }}
-          >
-            Demo Guide →
-          </Link>
+            {/* KORA-WP-128: the 'Demo Guide →' link to /demo/guide was removed.
+                The route was deleted by the CC-00 demo retirement (2026-09-05),
+                so a paying customer was being offered a dead destination.
+                Removed rather than redirected: there is no demo runtime. */}
         </div>
       </div>
 

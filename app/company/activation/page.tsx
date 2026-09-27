@@ -61,7 +61,7 @@ export default function Activation() {
   const hasKoraData = scoring?.status === 'ok';
   if (!hasKoraData) {
     return (
-      <div className="space-y-4">
+      <div data-testid="company-activation-page" className="space-y-4">
         <div style={{ padding: '32px 0' }}>
           <p style={{ fontSize: '14px', fontWeight: 700, color: TOKENS.ink }}>
             Dati di attivazione non ancora disponibili
@@ -80,7 +80,7 @@ export default function Activation() {
   const safeguard = activationSafeguardService.evaluate(AR, MAR);
 
   return (
-    <div className="space-y-6">
+    <div data-testid="company-activation-page" className="space-y-6">
 
       <PageMasthead
         eyebrow="Intelligence operativa · LIVE"

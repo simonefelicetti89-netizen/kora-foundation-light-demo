@@ -5,7 +5,6 @@
 // Form → mailto: zero backend. prefers-reduced-motion respected.
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { PACKAGES, PILOT_EMAIL } from '@/lib/landing/packages';
 import { useLandingReveal } from '@/components/landing/useLandingReveal';
 import { MarketingNav } from '@/components/landing/MarketingNav';
@@ -14,7 +13,10 @@ import styles from './pilot.module.css';
 
 const PILOT_NAV_LINKS = [
   { label: '← Home',         href: '/'           },
-  { label: 'Esplora la demo', href: '/demo/guide' },
+  // KORA-WP-128: 'Esplora la demo' -> /demo/guide removed. The route was
+  // deleted by the CC-00 demo retirement (2026-09-05); the link outlived it.
+  // Removed rather than redirected — Master Plan v2.1 §13 ("One Product / No
+  // Demo Runtime") means there is no demo destination to point at.
 ];
 
 // ── FAQ item ─────────────────────────────────────────────────────────────────
@@ -153,7 +155,6 @@ export default function PilotPage() {
           </p>
           <div className={`${styles.heroCta} ${styles.reveal} ${styles.revealIn} ${styles.d3}`}>
             <a className={styles.btnPrimary} href="#contatto">Richiedi informazioni →</a>
-            <Link className={styles.btnGhost} href="/demo/guide">Prima esplora la demo</Link>
           </div>
           <div className={`${styles.heroMeta} ${styles.reveal} ${styles.revealIn} ${styles.d4}`}>
             {[

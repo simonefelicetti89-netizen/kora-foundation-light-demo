@@ -100,7 +100,7 @@ export default function Reports() {
   const safeguard = activationSafeguardService.evaluate(AR, MAR);
 
   return (
-    <div className="kora-priority-stack">
+    <div data-testid="company-reports-page" className="kora-priority-stack">
 
       <PageMasthead
         eyebrow="Decision Pack · LIVE"

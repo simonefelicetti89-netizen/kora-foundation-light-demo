@@ -256,7 +256,14 @@ describe('KORA-WP-073 — no orphaned configured destinations', () => {
     // exempted here — this guard targets genuinely orphaned (typo'd,
     // deleted-but-still-linked) destinations, not a full route-existence
     // audit of every preview screen (out of this WP's own scope).
-    const exempt = new Set(['/company', '/demo/advisor', '/demo/guide', '/demo/future-vision']);
+    // KORA-WP-128, 2026-09-27: '/demo/guide' REMOVED from the exemption. The
+    // route was deleted by the CC-00 demo retirement (2026-09-05) and the
+    // exemption existed only because three call sites still pointed at it.
+    // Those are now gone (app/pilot/page.tsx x2, app/company/financial x1), so
+    // the guard now enforces it like any other destination. This is an
+    // enforcement-infrastructure edit — strictly NARROWER than before — and it
+    // does NOT reopen KORA-WP-073, which remains COMPLETE.
+    const exempt = new Set(['/company', '/demo/advisor', '/demo/future-vision']);
     for (const href of new Set(roleHrefs)) {
       if (exempt.has(href)) continue;
       const candidatePaths = [
