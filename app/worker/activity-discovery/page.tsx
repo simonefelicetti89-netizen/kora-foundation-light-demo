@@ -21,8 +21,10 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { TOKENS, PILLAR_COLORS, SPACE, typeStyle, TYPE_FAMILY, type PillarColorKey } from '@/lib/design/kora-design-tokens';
-import { PageHead, Workspace, Col, Notice } from '@/components/ui/px';
+import { TOKENS, PILLAR_COLORS, PX, SPACE, typeStyle, TYPE_FAMILY, type PillarColorKey } from '@/lib/design/kora-design-tokens';
+import {
+  PageHead, Workspace, Col, Notice, Region, Band, SplitRegion, SplitPart, Facts, RankedGroup, Chip,
+} from '@/components/ui/px';
 import {
   getPartnerActivities,
   FISCAL_CATEGORY_LABELS,
@@ -35,49 +37,6 @@ import {
 } from '@/lib/partner-activities/catalog';
 
 export const metadata = { title: 'Attività disponibili · KORA' };
-
-function Panel({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: SPACE.md }}>
-      {children}
-    </div>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p style={{ ...typeStyle('meta'), color: TOKENS.inkHint, margin: `0 0 ${SPACE.sm}px` }}>
-      {children}
-    </p>
-  );
-}
-
-function Tag({ children }: { children: React.ReactNode }) {
-  return (
-    <span
-      style={{
-        display: 'inline-block', ...typeStyle('caption', { weight: 700 }), padding: '3px 9px' /* optical: chip-internal, KORA-WP-141 documented exception */, borderRadius: 999,
-        background: 'rgba(6,3,43,0.05)', color: TOKENS.inkSecondary, border: `1px solid ${TOKENS.inkBorder}`,
-      }}
-    >
-      {children}
-    </span>
-  );
-}
-
-function PillarTag({ pillar }: { pillar: PillarColorKey }) {
-  const color = PILLAR_COLORS[pillar];
-  return (
-    <span
-      style={{
-        display: 'inline-block', ...typeStyle('caption', { weight: 700 }), padding: '3px 9px' /* optical: chip-internal, KORA-WP-141 documented exception */, borderRadius: 999,
-        background: `${color}1A`, color, border: `1px solid ${color}45`,
-      }}
-    >
-      {pillar}
-    </span>
-  );
-}
 
 interface FlowStep {
   step: string;
@@ -111,41 +70,41 @@ const FUTURE_ACTION_CTA: Record<FutureWorkerAction, string> = {
   info_only: 'Scopri di più',
 };
 
-function ActivityCard({ activity }: { activity: PartnerActivity }) {
+// One catalogue ROW per activity, not a card. KORA-WP-129 W1 remediation:
+// the previous card carried up to eight chips (type, fiscal, primary pillar,
+// every secondary pillar, delivery mode, status) at equal weight. Here the
+// pillar keeps its colour — it is the field the catalogue groups by — and every
+// other qualifier collapses into one quiet caption line. Status stays a Chip
+// because it is a truth signal, not a qualifier.
+function ActivityRow({ activity, last }: { activity: PartnerActivity; last: boolean }) {
+  const pillarColor = PILLAR_COLORS[activity.primaryPillar];
+  const qualifiers = [
+    ACTIVITY_TYPE_LABELS[activity.activityType],
+    FISCAL_CATEGORY_LABELS[activity.fiscalCategory],
+    DELIVERY_MODE_LABELS[activity.deliveryMode],
+    ...(activity.secondaryPillars.length > 0 ? [`anche ${activity.secondaryPillars.join(' · ')}`] : []),
+  ].join(' · ');
   return (
     <div
       style={{
-        display: 'flex', flexDirection: 'column', gap: SPACE.sm, padding: `${SPACE.md}px ${SPACE.md}px`,
-        borderRadius: TOKENS.cardRadiusSm, border: TOKENS.cardBorder, background: '#fff',
+        display: 'grid', gap: SPACE.xs, padding: `${SPACE.md}px 0`,
+        borderBottom: last ? undefined : `1px solid ${PX.line}`,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: SPACE.sm, flexWrap: 'wrap' }}>
-        <div>
-          <p style={{ margin: 0, ...typeStyle('label', { weight: 700 }), color: TOKENS.ink }}>{activity.title}</p>
-          <p style={{ margin: '2px 0 0' /* optical: baseline nudge under the activity title */, ...typeStyle('caption'), color: TOKENS.inkHint }}>{activity.partnerName}</p>
-        </div>
-        <span
-          style={{
-            ...typeStyle('caption', { weight: 700 }), padding: '3px 10px' /* optical: chip-internal, KORA-WP-141 documented exception */, borderRadius: 999,
-            background: 'rgba(6,3,43,0.05)', color: TOKENS.inkSecondary, whiteSpace: 'nowrap',
-          }}
-        >
-          {PARTNER_ACTIVITY_STATUS_LABELS[activity.status]}
-        </span>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: SPACE.sm, flexWrap: 'wrap' }}>
+        <p style={{ margin: 0, ...typeStyle('label', { weight: 700 }), color: TOKENS.ink }}>
+          {activity.title}
+          <span style={{ ...typeStyle('caption'), color: TOKENS.inkHint }}>{' · '}{activity.partnerName}</span>
+        </p>
+        <Chip>{PARTNER_ACTIVITY_STATUS_LABELS[activity.status]}</Chip>
       </div>
 
       <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkSecondary }}>{activity.shortDescription}</p>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: SPACE.xs, flexWrap: 'wrap' }}>
-        <Tag>{ACTIVITY_TYPE_LABELS[activity.activityType]}</Tag>
-        <Tag>{FISCAL_CATEGORY_LABELS[activity.fiscalCategory]}</Tag>
-        <PillarTag pillar={activity.primaryPillar} />
-        {activity.secondaryPillars.map((p) => <PillarTag key={p} pillar={p} />)}
-        <Tag>{DELIVERY_MODE_LABELS[activity.deliveryMode]}</Tag>
-      </div>
-
       <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkHint }}>
-        Segnale KORA Index: {INDEX_SIGNAL_ELIGIBILITY_LABELS[activity.indexSignalEligibility]}
+        <span style={{ ...typeStyle('caption', { weight: 700 }), color: pillarColor }}>{activity.primaryPillar}</span>
+        {' · '}{qualifiers}
+        {' · '}Segnale KORA Index: {INDEX_SIGNAL_ELIGIBILITY_LABELS[activity.indexSignalEligibility]}
       </p>
 
       <button
@@ -153,7 +112,7 @@ function ActivityCard({ activity }: { activity: PartnerActivity }) {
         disabled
         title="Non attivo in questa anteprima — nessuna azione reale"
         style={{
-          ...typeStyle('caption', { weight: 700 }), padding: `${SPACE.sm}px ${SPACE.md}px`, borderRadius: 10, alignSelf: 'flex-start',
+          ...typeStyle('caption', { weight: 700 }), padding: `${SPACE.xs}px ${SPACE.md}px`, borderRadius: 8, justifySelf: 'start',
           border: `1px solid ${TOKENS.inkBorder}`, background: 'rgba(6,3,43,0.04)', color: TOKENS.inkHint, cursor: 'not-allowed',
         }}
       >
@@ -184,7 +143,7 @@ export default async function WorkerActivityDiscoveryPage() {
   return (
     <div
       data-testid="activity-discovery-page"
-      style={{ maxWidth: 1080, margin: '0 auto', padding: `${SPACE.xl}px ${SPACE.md}px ${SPACE['2xl']}px`, fontFamily: TYPE_FAMILY }}
+      style={{ maxWidth: 1180, margin: '0 auto', padding: `${SPACE.xl}px ${SPACE.md}px ${SPACE['2xl']}px`, fontFamily: TYPE_FAMILY }}
     >
 
       <PageHead
@@ -198,9 +157,6 @@ export default async function WorkerActivityDiscoveryPage() {
         </>}
       />
 
-      <Workspace>
-        <Col span="full">
-
       {/* Preview banner — KORA-WP-125 Notice, copy unchanged. Deliberately NOT a
           KORA-WP-140 state: the seven states answer "why is this DATA absent",
           while this answers "this CAPABILITY is not live". See report. */}
@@ -210,97 +166,109 @@ export default async function WorkerActivityDiscoveryPage() {
         Nessuna prenotazione, candidatura, richiesta di contatto o riscatto voucher è reale in questa build.
       </Notice>
 
-      {/* 2. Worker privacy/control panel */}
-      <Panel>
-        <SectionLabel>Il tuo controllo</SectionLabel>
-        <ul style={{ margin: 0, paddingLeft: SPACE.md, display: 'flex', flexDirection: 'column', gap: SPACE.xs }}>
-          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>Sfogliare queste attività non ti espone in alcun modo alla tua azienda.</li>
-          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>Scegliere di prenotare, candidarti, richiedere contatto o riscattare un voucher creerebbe una relazione avviata da te con il partner.</li>
-          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>Solo i dati necessari a quella relazione verrebbero condivisi con il partner — mai di più.</li>
-          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>La tua azienda continuerebbe a ricevere solo report aggregati, mai la tua scelta individuale.</li>
-          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>Nessuna prenotazione o condivisione reale avviene in questo sprint.</li>
-        </ul>
-      </Panel>
+      {/* PRIVACY / CONTROL — first thing after the lead, at full measure, on both
+          desktop and mobile. This is the worker's guarantee about browsing; it
+          outranks the catalogue it governs. */}
+      <Workspace style={{ marginTop: SPACE.lg }}>
+        <Band tone="inset">
+          <div style={{ padding: `${SPACE.md}px ${SPACE.md}px` }}>
+            <p style={{ margin: `0 0 ${SPACE.sm}px`, ...typeStyle('meta'), color: TOKENS.inkHint }}>Il tuo controllo</p>
+            <ul style={{ margin: 0, paddingLeft: SPACE.md, display: 'grid', gap: SPACE.sm }}>
+              <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>Sfogliare queste attività non ti espone in alcun modo alla tua azienda.</li>
+              <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>Scegliere di prenotare, candidarti, richiedere contatto o riscattare un voucher creerebbe una relazione avviata da te con il partner.</li>
+              <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>Solo i dati necessari a quella relazione verrebbero condivisi con il partner — mai di più.</li>
+              <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>La tua azienda continuerebbe a ricevere solo report aggregati, mai la tua scelta individuale.</li>
+              <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>Nessuna prenotazione o condivisione reale avviene in questo sprint.</li>
+            </ul>
+          </div>
+        </Band>
+      </Workspace>
 
-      {/* 4. Discovery filters/groups — non-interactive browse-by summary */}
-      <Panel>
-        <SectionLabel>Sfoglia per</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: SPACE.sm }}>
-          <div style={{ ...typeStyle('caption'), color: TOKENS.inkSecondary }}>Pilastro KORA — <strong style={{ color: TOKENS.ink }}>5</strong></div>
-          <div style={{ ...typeStyle('caption'), color: TOKENS.inkSecondary }}>Categoria fiscale/welfare — <strong style={{ color: TOKENS.ink }}>{fiscalCategoryCount}</strong></div>
-          <div style={{ ...typeStyle('caption'), color: TOKENS.inkSecondary }}>Partner — <strong style={{ color: TOKENS.ink }}>{partnerCount}</strong></div>
-          <div style={{ ...typeStyle('caption'), color: TOKENS.inkSecondary }}>Tipo attività — <strong style={{ color: TOKENS.ink }}>{activityTypeCount}</strong></div>
-          <div style={{ ...typeStyle('caption'), color: TOKENS.inkSecondary }}>Azione futura — <strong style={{ color: TOKENS.ink }}>{actionCount}</strong></div>
-        </div>
-        <p style={{ margin: `${SPACE.sm}px 0 0`, ...typeStyle('caption'), color: TOKENS.inkHint }}>
-          Anteprima — nessun filtro interattivo reale in questa build.
-        </p>
-      </Panel>
+      <Workspace style={{ marginTop: SPACE.lg }}>
 
-      {/* 5. Suggested lanes */}
-      <Panel>
-        <SectionLabel>Corsie suggerite</SectionLabel>
-        <p style={{ margin: `0 0 ${SPACE.md}px`, ...typeStyle('caption'), color: TOKENS.inkHint }}>
-          Sono suggerimenti, non classifiche. Nessuna profilazione individuale, nessun tracciamento delle tue
-          preferenze visibile all&apos;azienda.
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE.md }}>
-          {LANES.map((lane) => {
-            const laneActivities = activities.filter(
-              (a) => a.primaryPillar === lane.pillar || a.secondaryPillars.includes(lane.pillar),
-            );
-            if (laneActivities.length === 0) return null;
-            return (
-              <div key={lane.pillar} style={{ display: 'flex', flexDirection: 'column', gap: SPACE.sm }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: SPACE.sm }}>
-                  <PillarTag pillar={lane.pillar} />
-                  <p style={{ margin: 0, ...typeStyle('label', { weight: 700 }), color: TOKENS.ink }}>{lane.label}</p>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE.sm }}>
-                  {laneActivities.map((a) => <ActivityCard key={a.activityId} activity={a} />)}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </Panel>
+        {/* PRIMARY — the catalogue. Each of the real activities renders EXACTLY
+            ONCE, in its PRIMARY pillar group; secondary pillars read as row
+            metadata rather than as a second render. Founder adjudication
+            2026-09-27: the catalogue represents real activities, not
+            activity × taxonomy-membership combinations. */}
+        <Col span="main">
+          <Region label="Catalogo attività">
+            <p style={{ margin: `0 0 ${SPACE.md}px`, ...typeStyle('caption'), color: TOKENS.inkHint }}>
+              Sono suggerimenti, non classifiche. Nessuna profilazione individuale, nessun tracciamento delle tue
+              preferenze visibile all&apos;azienda.
+            </p>
+            {LANES.map((lane) => {
+              const laneActivities = activities.filter((a) => a.primaryPillar === lane.pillar);
+              if (laneActivities.length === 0) return null;
+              return (
+                <RankedGroup key={lane.pillar} title={lane.label} tier="subsection">
+                  {laneActivities.map((a, i) => (
+                    <ActivityRow key={a.activityId} activity={a} last={i === laneActivities.length - 1} />
+                  ))}
+                </RankedGroup>
+              );
+            })}
+          </Region>
+        </Col>
 
-      {/* 7. Phase 2 flow note */}
-      <Panel>
-        <SectionLabel>Flusso Fase 2</SectionLabel>
-        <FlowMap
-          steps={[
-            { step: 'L\'azienda abilita un perimetro', note: 'Categoria fiscale, pilastro, partner, o scelta libera — vedi /company/activity-selection.' },
-            { step: 'Tu scegli volontariamente' },
-            { step: 'Il partner gestisce la relazione' },
-            { step: 'KORA aggrega i segnali' },
-            { step: 'Futuro segnale KORA Index' },
-          ]}
-        />
-      </Panel>
+        {/* Rail — orientation only. The control statement is deliberately NOT
+            here: Founder mobile priority for this surface is
+            privacy/control -> catalogue -> counts -> explanation, and a rail
+            renders AFTER main when the grid collapses. It is a full-measure band
+            above the grid instead. */}
+        <Col span="rail">
+          <Region label="Sfoglia per">
+            <Facts
+              rows={[
+                ['Pilastro KORA', '5'],
+                ['Categoria fiscale/welfare', String(fiscalCategoryCount)],
+                ['Partner', String(partnerCount)],
+                ['Tipo attività', String(activityTypeCount)],
+                ['Azione futura', String(actionCount)],
+              ]}
+            />
+            <p style={{ margin: `${SPACE.sm}px 0 0`, ...typeStyle('caption'), color: TOKENS.inkHint }}>
+              Anteprima — nessun filtro interattivo reale in questa build.
+            </p>
+          </Region>
+        </Col>
 
-      {/* 8. KORA Index note */}
-      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: `${SPACE.md}px ${SPACE.md}px` }}>
-        <SectionLabel>Nota KORA Index</SectionLabel>
-        <p style={{ margin: 0, ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
-          L&apos;attivazione di queste attività potrà in futuro diventare un segnale aggregato per il KORA
-          Index. Nessun calcolo live del KORA Index è modificato in questo sprint. Le tue scelte individuali
-          non vengono mai riportate all&apos;azienda.
-        </p>
-      </div>
-
-      {/* 9. Contribution note */}
-      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: `${SPACE.md}px ${SPACE.md}px` }}>
-        <SectionLabel>Nota Contribution</SectionLabel>
-        <p style={{ margin: 0, ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
-          Le Attività Partner non alimentano mai direttamente KORA Contribution. Le iniziative KORA Space
-          restano separate. Alcune attività potranno essere impacchettate in un&apos;iniziativa solo tramite
-          un percorso separato di proposta, revisione e adozione.
-        </p>
-      </div>
+        {/* DEMOTED — model explanation. One inset band with three labelled
+            regions separated by a rule, rather than three panels competing with
+            the catalogue for primary weight. No information is removed. */}
+        <Band tone="inset">
+          <SplitRegion columns={3}>
+            <SplitPart label="Flusso Fase 2">
+              <FlowMap
+                steps={[
+                  { step: 'L\'azienda abilita un perimetro', note: 'Categoria fiscale, pilastro, partner, o scelta libera — vedi /company/activity-selection.' },
+                  { step: 'Tu scegli volontariamente' },
+                  { step: 'Il partner gestisce la relazione' },
+                  { step: 'KORA aggrega i segnali' },
+                  { step: 'Futuro segnale KORA Index' },
+                ]}
+              />
+            </SplitPart>
+            <SplitPart label="Nota KORA Index">
+              <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkSecondary }}>
+                L&apos;attivazione di queste attività potrà in futuro diventare un segnale aggregato per il KORA
+                Index. Nessun calcolo live del KORA Index è modificato in questo sprint. Le tue scelte individuali
+                non vengono mai riportate all&apos;azienda.
+              </p>
+            </SplitPart>
+            <SplitPart label="Nota Contribution">
+              <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkSecondary }}>
+                Le Attività Partner non alimentano mai direttamente KORA Contribution. Le iniziative KORA Space
+                restano separate. Alcune attività potranno essere impacchettate in un&apos;iniziativa solo tramite
+                un percorso separato di proposta, revisione e adozione.
+              </p>
+            </SplitPart>
+          </SplitRegion>
+        </Band>
+      </Workspace>
 
       {/* Cross-links */}
-      <div style={{ display: 'flex', gap: SPACE.sm, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: SPACE.sm, flexWrap: 'wrap', marginTop: SPACE.lg }}>
         <Link href="/worker/activity-discovery/detail" style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.accent, textDecoration: 'none' }}>
           Anteprima dettaglio attività →
         </Link>
@@ -317,9 +285,6 @@ export default async function WorkerActivityDiscoveryPage() {
           KORA Activation Layer — riferimento di modello →
         </Link>
       </div>
-
-        </Col>
-      </Workspace>
 
     </div>
   );
