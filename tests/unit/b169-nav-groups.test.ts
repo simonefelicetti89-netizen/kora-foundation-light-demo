@@ -30,23 +30,51 @@ describe('ADMIN_NAV_GROUPS — structure', () => {
   // /commons (real capability) moved to 'network-content', /admin/demo/acme-001
   // (demo-only) left the Product navigation, /admin/operator escalated as
   // UNKNOWN. See the retirement note in lib/navigation/admin-nav-groups.ts.
-  it('has exactly 6 groups', () => {
+  // ── SUPERSEDED by KORA-WP-127, 2026-09-27 ────────────────────────────────
+  // Authority: Registry 219 `KORA-WP-127` — "founder/lab/demo tooling is
+  // separated from operational navigation".
+  //
+  // WHAT CHANGED, AND WHY THIS IS NOT A WEAKENING. The three assertions below
+  // previously pinned 6 groups, an exact 6-id list, and `environmentTag ===
+  // undefined` on EVERY group. Together they pinned the precise defect
+  // KORA-WP-127 is contracted to remove: 'Founder Validation' sitting inside
+  // the operational 'pilot-lifecycle' group, with no mechanism distinguishing
+  // founder tooling from operational destinations.
+  //
+  // This block's own header states the invariant it exists to protect —
+  // "the Admin navigation is data-driven, its structure is pinned here, and
+  // widening it stays a visible test edit". A visible, documented test edit is
+  // therefore the sanctioned mechanism for a governed structural change, not a
+  // circumvention of it. Every assertion below is re-pointed at the new
+  // governed truth and NONE is relaxed: the count is still exact, the id list
+  // is still exact and ordered, and the environment-tag rule is now STRICTER
+  // than before — previously "no group is tagged", now "exactly one group is
+  // tagged, it is the founder group, and its tag is exactly FOUNDER".
+  //
+  // KORA-WP-073 is COMPLETE and is NOT reopened: this file is Admin navigation
+  // enforcement infrastructure (B169), not WP-073's navigation semantics.
+  it('has exactly 7 groups', () => {
     // GOVERNANCE-UI-01 added a dedicated 'governance' group — platform-wide
     // credibility surface, deliberately not nested inside 'operations'.
     // 7 -> 6: 'demo-lab' retired (see the note above).
-    expect(ADMIN_NAV_GROUPS).toHaveLength(6);
+    // 6 -> 7: 'founder-tooling' separated out of 'pilot-lifecycle' (KORA-WP-127).
+    expect(ADMIN_NAV_GROUPS).toHaveLength(7);
   });
 
-  it('group IDs are exactly: pilot-lifecycle, companies, governance, operations, network-content, platform', () => {
+  it('group IDs are exactly: pilot-lifecycle, companies, governance, operations, network-content, platform, founder-tooling', () => {
     expect(ADMIN_NAV_GROUPS.map((g) => g.id)).toEqual([
-      'pilot-lifecycle', 'companies', 'governance', 'operations', 'network-content', 'platform',
+      'pilot-lifecycle', 'companies', 'governance', 'operations', 'network-content', 'platform', 'founder-tooling',
     ]);
+  });
+
+  it('founder tooling is LAST, so operational navigation is never interrupted by it', () => {
+    expect(ADMIN_NAV_GROUPS[ADMIN_NAV_GROUPS.length - 1].id).toBe('founder-tooling');
   });
 
   it('no group is a demo-orchestration group, and none is tagged SYNTHETIC', () => {
     expect(ADMIN_NAV_GROUPS.find((g) => g.id === 'demo-lab')).toBeUndefined();
     for (const g of ADMIN_NAV_GROUPS) {
-      expect(g.environmentTag, `${g.id} carries an environment tag`).toBeUndefined();
+      expect(g.environmentTag, `${g.id} is tagged SYNTHETIC`).not.toBe('SYNTHETIC');
       expect(g.label).not.toMatch(/demo|synthetic|sintetic/i);
     }
   });
@@ -65,9 +93,25 @@ describe('ADMIN_NAV_GROUPS — structure', () => {
     expect(net?.items.some((i) => i.href === '/commons')).toBe(true);
   });
 
-  it('no other group has an environmentTag', () => {
-    const tagged = ADMIN_NAV_GROUPS.filter((g) => g.id !== 'demo-lab' && g.environmentTag);
-    expect(tagged).toHaveLength(0);
+  // SUPERSEDED by KORA-WP-127 — stricter, not weaker: exactly one tagged group,
+  // identified by id, with an exact tag value.
+  it('exactly one group carries an environmentTag, it is founder-tooling, and the tag is FOUNDER', () => {
+    const tagged = ADMIN_NAV_GROUPS.filter((g) => g.environmentTag);
+    expect(tagged.map((g) => g.id)).toEqual(['founder-tooling']);
+    expect(tagged[0].environmentTag).toBe('FOUNDER');
+  });
+
+  // KORA-WP-127 — the named defect, asserted directly so it cannot silently return.
+  it('founder tooling is NOT inside any operational group', () => {
+    const operational = ADMIN_NAV_GROUPS.filter((g) => g.id !== 'founder-tooling');
+    for (const g of operational) {
+      for (const item of g.items) {
+        expect(item.href, `${item.href} is founder tooling inside operational group "${g.id}"`)
+          .not.toMatch(/founder/i);
+        expect(item.label, `"${item.label}" is founder tooling inside operational group "${g.id}"`)
+          .not.toMatch(/founder/i);
+      }
+    }
   });
 });
 
@@ -77,10 +121,17 @@ describe('ADMIN_NAV_GROUPS — canonical hrefs present', () => {
   const allItems = ADMIN_NAV_GROUPS.flatMap((g) => g.items);
   const allHrefs = allItems.map((i) => i.href);
 
-  it('pilot-lifecycle has Pipeline & Trials and Founder Validation', () => {
+  // SUPERSEDED by KORA-WP-127: 'Founder Validation' left this group. The
+  // destination is NOT retired — it is asserted below, in its new home.
+  it('pilot-lifecycle has Pipeline & Trials, and no longer carries Founder Validation', () => {
     const group = ADMIN_NAV_GROUPS.find((g) => g.id === 'pilot-lifecycle')!;
     expect(group.items.map((i) => i.href)).toContain('/admin/pipeline');
-    expect(group.items.map((i) => i.href)).toContain('/admin/founder-validation');
+    expect(group.items.map((i) => i.href)).not.toContain('/admin/founder-validation');
+  });
+
+  it('Founder Validation is still reachable — separated, never retired', () => {
+    const founder = ADMIN_NAV_GROUPS.find((g) => g.id === 'founder-tooling')!;
+    expect(founder.items.map((i) => i.href)).toContain('/admin/founder-validation');
   });
 
   it('companies group has All Companies and Tenant Registry', () => {

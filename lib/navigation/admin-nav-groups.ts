@@ -23,7 +23,11 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Pilot Lifecycle',
     items: [
       { label: 'Pipeline & Trials',   href: '/admin/pipeline' },
-      { label: 'Founder Validation',  href: '/admin/founder-validation' },
+      // KORA-WP-127: 'Founder Validation' moved OUT of this operational group
+      // to the 'founder-tooling' group below. Its contract requires that
+      // "founder/lab/demo tooling is separated from operational navigation",
+      // and an operator scanning Pilot Lifecycle was being offered a founder
+      // instrument beside a real operational destination.
     ],
   },
   {
@@ -130,6 +134,23 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { label: 'Diagnostics',    href: '/admin/platform/diagnostics' },
       { label: 'Future Vision',  href: '/admin/future-vision', inactive: true },
+    ],
+  },
+  // ── KORA-WP-127 — founder tooling, separated from operational navigation ──
+  // Placed LAST and carrying the FOUNDER environment tag, which is the badge
+  // mechanism this file's own `environmentTag` field and Sidebar's own BADGE
+  // map already provide (`LIVE`, `SYNTHETIC`, `ROADMAP`, `FOUNDER`) and which
+  // no group had ever set. No second labelling mechanism is introduced.
+  //
+  // This separates, it does not retire: `/admin/founder-validation` remains
+  // reachable and unchanged. Route retirement is explicitly NOT authorized by
+  // KORA-WP-127 and remains a Founder decision.
+  {
+    id:             'founder-tooling',
+    label:          'Founder Tooling',
+    environmentTag: 'FOUNDER',
+    items: [
+      { label: 'Founder Validation',  href: '/admin/founder-validation' },
     ],
   },
 ];
