@@ -12,7 +12,8 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, SPACE, typeStyle, TYPE_FAMILY } from '@/lib/design/kora-design-tokens';
+import { PageHead, Workspace, Col, Notice } from '@/components/ui/px';
 import {
   getKoraLinkEcosystemContext,
   getKoraLinkRoleSummary,
@@ -22,11 +23,9 @@ import { KoraLinkRoleDashboard } from '@/components/kora-link/KoraLinkRoleDashbo
 
 export const metadata = { title: 'Il tuo KORA Link · KORA' };
 
-const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
-
 function Panel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: 20 }}>
+    <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: SPACE.md }}>
       {children}
     </div>
   );
@@ -34,7 +33,7 @@ function Panel({ children }: { children: React.ReactNode }) {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.inkHint, margin: '0 0 10px' }}>
+    <p style={{ ...typeStyle('meta'), color: TOKENS.inkHint, margin: `0 0 ${SPACE.sm}px` }}>
       {children}
     </p>
   );
@@ -49,13 +48,13 @@ function StatusCard({ label, status, description, tone }: { label: string; statu
     future:    TOKENS.inkHint,
   };
   return (
-    <div style={{ border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadiusSm, padding: '12px 14px', background: TOKENS.surface }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+    <div style={{ border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadiusSm, padding: `${SPACE.sm}px ${SPACE.md}px`, background: TOKENS.surface }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: SPACE.sm, marginBottom: SPACE.xs }}>
         <span style={{ width: 7, height: 7, borderRadius: 999, background: TONE_COLOR[tone], flexShrink: 0 }} />
-        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: TOKENS.ink }}>{label}</p>
+        <p style={{ margin: 0, ...typeStyle('caption', { weight: 700 }), color: TOKENS.ink }}>{label}</p>
       </div>
-      <p style={{ margin: '0 0 4px', fontSize: 12, fontWeight: 700, color: TOKENS.inkSecondary }}>{status}</p>
-      <p style={{ margin: 0, fontSize: 11, color: TOKENS.inkHint, lineHeight: 1.5 }}>{description}</p>
+      <p style={{ margin: `0 0 ${SPACE.xs}px`, ...typeStyle('caption', { weight: 700 }), color: TOKENS.inkSecondary }}>{status}</p>
+      <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkHint }}>{description}</p>
     </div>
   );
 }
@@ -72,37 +71,37 @@ export default async function WorkerKoraLinkActivatePage() {
   const nfcReadyForManualTest = Boolean(context.koraLinkEnabled);
 
   return (
-    <div style={{ maxWidth: 780, margin: '0 auto', padding: '32px 20px 64px', fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div
+      data-testid="kora-link-activate-page"
+      style={{ maxWidth: 780, margin: '0 auto', padding: `${SPACE.xl}px ${SPACE.md}px ${SPACE['2xl']}px`, fontFamily: TYPE_FAMILY }}
+    >
 
-      <div>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.inkHint, margin: '0 0 8px' }}>
-          Worker · KORA Link
-        </p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: TOKENS.ink, margin: '0 0 8px', letterSpacing: '-0.02em' }}>
-          Il tuo KORA Link
-        </h1>
-        <p style={{ fontSize: 13.5, color: TOKENS.inkSecondary, margin: 0, lineHeight: 1.6, maxWidth: 620 }}>
+      <PageHead
+        eyebrow="Worker · KORA Link"
+        title="Il tuo KORA Link"
+        lead={<>
           KORA Link è il tuo punto di accesso personale a KORA: un collegamento fisico–digitale che, una volta
           attivato con il tuo consenso, ti collega in modo sicuro al tuo profilo worker. Il test del chip NFC fisico
           fa parte del pilota — questa pagina mostra lo stato attuale, non un&apos;attivazione reale.
-        </p>
-      </div>
+        </>}
+      />
 
-      {/* Demo shell banner — explicit, non-suppressible */}
-      <div style={{ background: 'rgba(97,86,245,0.06)', border: `1px dashed rgba(97,86,245,0.35)`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 18px' }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: TOKENS.violet }}>
-          Anteprima design — no DB, nessuna RLS, nessuna chiamata a Supabase o RPC. Non attivo.
-        </p>
-        <p style={{ margin: '6px 0 0', fontSize: 12, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
-          Questa pagina mostra come funzionerà l&apos;attivazione una volta chiusi i gate di readiness —
-          il pulsante sottostante non esegue alcuna azione reale.
-        </p>
-      </div>
+      <Workspace>
+        <Col span="full">
+
+      {/* Demo shell banner — explicit, non-suppressible. KORA-WP-125 Notice,
+          copy unchanged; `role="status"` now announces it to assistive tech. */}
+      <Notice tone="info">
+        <strong>Anteprima design — no DB, nessuna RLS, nessuna chiamata a Supabase o RPC. Non attivo.</strong>
+        {' '}
+        Questa pagina mostra come funzionerà l&apos;attivazione una volta chiusi i gate di readiness —
+        il pulsante sottostante non esegue alcuna azione reale.
+      </Notice>
 
       {/* Pilot status cards */}
       <div>
         <SectionLabel>Stato pilota</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: SPACE.sm }}>
           <StatusCard
             label="Account worker"
             status="Attivo"
@@ -139,7 +138,7 @@ export default async function WorkerKoraLinkActivatePage() {
       {/* Activation action — disabled preview, no real activation */}
       <Panel>
         <SectionLabel>Attivazione</SectionLabel>
-        <p style={{ margin: '0 0 14px', fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+        <p style={{ margin: `0 0 ${SPACE.md}px`, ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
           Avvicinando il telefono al chip fisico KORA Link assegnato dalla tua azienda, si aprirà
           automaticamente una pagina di conferma sicura con richiesta di consenso esplicita.
         </p>
@@ -148,9 +147,8 @@ export default async function WorkerKoraLinkActivatePage() {
           disabled
           title="Non attivo in questa anteprima — nessuna attivazione reale"
           style={{
-            fontSize: 12.5,
-            fontWeight: 700,
-            padding: '10px 18px',
+            ...typeStyle('label', { weight: 700 }),
+            padding: `${SPACE.sm}px ${SPACE.md}px`,
             borderRadius: 10,
             border: `1px solid ${TOKENS.inkBorder}`,
             background: 'rgba(6,3,43,0.04)',
@@ -165,11 +163,11 @@ export default async function WorkerKoraLinkActivatePage() {
       {/* Consent — placeholder pending DPO/legal review, mirrors /my-kora/kora-link */}
       <Panel>
         <SectionLabel>Consenso</SectionLabel>
-        <p style={{ margin: '0 0 8px', fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+        <p style={{ margin: `0 0 ${SPACE.sm}px`, ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
           Confermando l&apos;attivazione, autorizzeresti l&apos;associazione del tuo KORA Link al tuo profilo
           worker KORA. Potrai revocare in qualsiasi momento chiedendo la disattivazione al tuo KORA Admin.
         </p>
-        <p style={{ margin: 0, fontSize: 11, color: TOKENS.inkHint, lineHeight: 1.5 }}>
+        <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkHint }}>
           Testo privacy/consenso in attesa di revisione DPO (Gate 3). Il testo definitivo del consenso non è
           ancora stato approvato — la versione qui mostrata è provvisoria e non vincolante.
         </p>
@@ -185,7 +183,7 @@ export default async function WorkerKoraLinkActivatePage() {
       {companyBoundary && (
         <Panel>
           <SectionLabel>Cosa la tua azienda non vede</SectionLabel>
-          <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+          <p style={{ margin: 0, ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
             {companyBoundary.statement} La tua azienda vede solo conteggi aggregati di adozione — mai
             se, quando o come tu abbia usato il tuo KORA Link.
           </p>
@@ -195,20 +193,20 @@ export default async function WorkerKoraLinkActivatePage() {
       {/* Confine privacy — full statement, Task F */}
       <Panel>
         <SectionLabel>Confine privacy</SectionLabel>
-        <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+        <ul style={{ margin: 0, paddingLeft: SPACE.md, display: 'flex', flexDirection: 'column', gap: SPACE.sm }}>
+          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
             La tua azienda vede solo insight aggregati, mai la tua attività individuale.
           </li>
-          <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
             {workerBoundary?.statement ?? 'Il tuo KORA Link è personale — controlli sempre tu attivazione e consenso.'}
           </li>
-          <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
             I tuoi dati personali/individuali non vengono mai mostrati alla tua azienda.
           </li>
-          <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
             La condivisione con partner esterni non è attiva, a meno che tu non la avvii esplicitamente in flussi futuri.
           </li>
-          <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
             L&apos;URL del chip NFC non contiene mai il tuo nome, la tua email o altri dati sensibili.
           </li>
         </ul>
@@ -217,21 +215,21 @@ export default async function WorkerKoraLinkActivatePage() {
       {/* Safe next actions */}
       <Panel>
         <SectionLabel>Prossimi passi</SectionLabel>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE.sm }}>
           <Link
             href="/worker/workspace"
             data-testid="kora-link-back-to-workspace"
-            style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.ink, background: TOKENS.taupe, padding: '9px 16px', borderRadius: 8, textDecoration: 'none', display: 'inline-block', width: 'fit-content' }}
+            style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.ink, background: TOKENS.taupe, padding: `${SPACE.sm}px ${SPACE.md}px`, borderRadius: 8, textDecoration: 'none', display: 'inline-block', width: 'fit-content' }}
           >
             ← Torna al tuo spazio operativo
           </Link>
           <Link
             href="/worker/privacy"
-            style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.ink, background: TOKENS.taupe, padding: '9px 16px', borderRadius: 8, textDecoration: 'none', display: 'inline-block', width: 'fit-content' }}
+            style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.ink, background: TOKENS.taupe, padding: `${SPACE.sm}px ${SPACE.md}px`, borderRadius: 8, textDecoration: 'none', display: 'inline-block', width: 'fit-content' }}
           >
             Leggi il confine privacy completo
           </Link>
-          <p style={{ margin: '4px 0 0', fontSize: 11.5, color: TOKENS.inkHint, lineHeight: 1.5 }}>
+          <p style={{ margin: `${SPACE.xs}px 0 0`, ...typeStyle('caption'), color: TOKENS.inkHint }}>
             In attesa dell&apos;attivazione pilota — nessuna azione è richiesta da parte tua ora.
           </p>
           <button
@@ -239,9 +237,8 @@ export default async function WorkerKoraLinkActivatePage() {
             disabled
             title="Non attivo — configurazione riservata al pilota"
             style={{
-              fontSize: 12,
-              fontWeight: 700,
-              padding: '8px 14px',
+              ...typeStyle('caption', { weight: 700 }),
+              padding: `${SPACE.sm}px ${SPACE.md}px`,
               borderRadius: 8,
               border: `1px solid ${TOKENS.inkBorder}`,
               background: 'rgba(6,3,43,0.03)',
@@ -254,6 +251,9 @@ export default async function WorkerKoraLinkActivatePage() {
           </button>
         </div>
       </Panel>
+
+        </Col>
+      </Workspace>
 
     </div>
   );

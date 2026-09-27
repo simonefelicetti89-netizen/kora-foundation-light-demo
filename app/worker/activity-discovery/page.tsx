@@ -21,7 +21,8 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { TOKENS, PILLAR_COLORS, type PillarColorKey } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS, SPACE, typeStyle, TYPE_FAMILY, type PillarColorKey } from '@/lib/design/kora-design-tokens';
+import { PageHead, Workspace, Col, Notice } from '@/components/ui/px';
 import {
   getPartnerActivities,
   FISCAL_CATEGORY_LABELS,
@@ -35,11 +36,9 @@ import {
 
 export const metadata = { title: 'Attività disponibili · KORA' };
 
-const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
-
 function Panel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: 20 }}>
+    <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: SPACE.md }}>
       {children}
     </div>
   );
@@ -47,7 +46,7 @@ function Panel({ children }: { children: React.ReactNode }) {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.inkHint, margin: '0 0 10px' }}>
+    <p style={{ ...typeStyle('meta'), color: TOKENS.inkHint, margin: `0 0 ${SPACE.sm}px` }}>
       {children}
     </p>
   );
@@ -57,7 +56,7 @@ function Tag({ children }: { children: React.ReactNode }) {
   return (
     <span
       style={{
-        display: 'inline-block', fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999,
+        display: 'inline-block', ...typeStyle('caption', { weight: 700 }), padding: '3px 9px' /* optical: chip-internal, KORA-WP-141 documented exception */, borderRadius: 999,
         background: 'rgba(6,3,43,0.05)', color: TOKENS.inkSecondary, border: `1px solid ${TOKENS.inkBorder}`,
       }}
     >
@@ -71,7 +70,7 @@ function PillarTag({ pillar }: { pillar: PillarColorKey }) {
   return (
     <span
       style={{
-        display: 'inline-block', fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 999,
+        display: 'inline-block', ...typeStyle('caption', { weight: 700 }), padding: '3px 9px' /* optical: chip-internal, KORA-WP-141 documented exception */, borderRadius: 999,
         background: `${color}1A`, color, border: `1px solid ${color}45`,
       }}
     >
@@ -87,13 +86,13 @@ interface FlowStep {
 
 function FlowMap({ steps }: { steps: FlowStep[] }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE.sm }}>
       {steps.map((s, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-          <span style={{ fontSize: 10.5, color: TOKENS.inkHint, width: 16, flexShrink: 0 }}>{i + 1}</span>
+        <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: SPACE.sm }}>
+          <span style={{ ...typeStyle('caption'), color: TOKENS.inkHint, width: SPACE.md, flexShrink: 0 }}>{i + 1}</span>
           <div>
-            <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: TOKENS.ink }}>{s.step}</p>
-            {s.note && <p style={{ margin: '2px 0 0', fontSize: 11.5, color: TOKENS.inkSecondary, lineHeight: 1.5 }}>{s.note}</p>}
+            <p style={{ margin: 0, ...typeStyle('label', { weight: 700 }), color: TOKENS.ink }}>{s.step}</p>
+            {s.note && <p style={{ margin: '2px 0 0' /* optical: baseline nudge under the step label */, ...typeStyle('caption'), color: TOKENS.inkSecondary }}>{s.note}</p>}
           </div>
         </div>
       ))}
@@ -116,18 +115,18 @@ function ActivityCard({ activity }: { activity: PartnerActivity }) {
   return (
     <div
       style={{
-        display: 'flex', flexDirection: 'column', gap: 8, padding: '14px 16px',
+        display: 'flex', flexDirection: 'column', gap: SPACE.sm, padding: `${SPACE.md}px ${SPACE.md}px`,
         borderRadius: TOKENS.cardRadiusSm, border: TOKENS.cardBorder, background: '#fff',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: SPACE.sm, flexWrap: 'wrap' }}>
         <div>
-          <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: TOKENS.ink }}>{activity.title}</p>
-          <p style={{ margin: '2px 0 0', fontSize: 11.5, color: TOKENS.inkHint }}>{activity.partnerName}</p>
+          <p style={{ margin: 0, ...typeStyle('label', { weight: 700 }), color: TOKENS.ink }}>{activity.title}</p>
+          <p style={{ margin: '2px 0 0' /* optical: baseline nudge under the activity title */, ...typeStyle('caption'), color: TOKENS.inkHint }}>{activity.partnerName}</p>
         </div>
         <span
           style={{
-            fontSize: 10.5, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+            ...typeStyle('caption', { weight: 700 }), padding: '3px 10px' /* optical: chip-internal, KORA-WP-141 documented exception */, borderRadius: 999,
             background: 'rgba(6,3,43,0.05)', color: TOKENS.inkSecondary, whiteSpace: 'nowrap',
           }}
         >
@@ -135,9 +134,9 @@ function ActivityCard({ activity }: { activity: PartnerActivity }) {
         </span>
       </div>
 
-      <p style={{ margin: 0, fontSize: 12, color: TOKENS.inkSecondary, lineHeight: 1.5 }}>{activity.shortDescription}</p>
+      <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkSecondary }}>{activity.shortDescription}</p>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: SPACE.xs, flexWrap: 'wrap' }}>
         <Tag>{ACTIVITY_TYPE_LABELS[activity.activityType]}</Tag>
         <Tag>{FISCAL_CATEGORY_LABELS[activity.fiscalCategory]}</Tag>
         <PillarTag pillar={activity.primaryPillar} />
@@ -145,7 +144,7 @@ function ActivityCard({ activity }: { activity: PartnerActivity }) {
         <Tag>{DELIVERY_MODE_LABELS[activity.deliveryMode]}</Tag>
       </div>
 
-      <p style={{ margin: 0, fontSize: 11, color: TOKENS.inkHint }}>
+      <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkHint }}>
         Segnale KORA Index: {INDEX_SIGNAL_ELIGIBILITY_LABELS[activity.indexSignalEligibility]}
       </p>
 
@@ -154,7 +153,7 @@ function ActivityCard({ activity }: { activity: PartnerActivity }) {
         disabled
         title="Non attivo in questa anteprima — nessuna azione reale"
         style={{
-          fontSize: 12, fontWeight: 700, padding: '8px 14px', borderRadius: 10, alignSelf: 'flex-start',
+          ...typeStyle('caption', { weight: 700 }), padding: `${SPACE.sm}px ${SPACE.md}px`, borderRadius: 10, alignSelf: 'flex-start',
           border: `1px solid ${TOKENS.inkBorder}`, background: 'rgba(6,3,43,0.04)', color: TOKENS.inkHint, cursor: 'not-allowed',
         }}
       >
@@ -183,57 +182,57 @@ export default async function WorkerActivityDiscoveryPage() {
   const actionCount = new Set(activities.map((a) => a.futureWorkerAction)).size;
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto', padding: '32px 20px 64px', fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div
+      data-testid="activity-discovery-page"
+      style={{ maxWidth: 1080, margin: '0 auto', padding: `${SPACE.xl}px ${SPACE.md}px ${SPACE['2xl']}px`, fontFamily: TYPE_FAMILY }}
+    >
 
-      {/* 1. Intro panel */}
-      <div>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.inkHint, margin: '0 0 8px' }}>
-          Worker · Fase 2 Activation Intelligence
-        </p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: TOKENS.ink, margin: '0 0 8px', letterSpacing: '-0.02em' }}>
-          Attività disponibili
-        </h1>
-        <p style={{ fontSize: 13.5, color: TOKENS.inkSecondary, margin: 0, lineHeight: 1.6, maxWidth: 720 }}>
+      <PageHead
+        eyebrow="Worker · Fase 2 Activation Intelligence"
+        title="Attività disponibili"
+        lead={<>
           Queste sono Attività Partner standard — non iniziative KORA Space, non iniziative Contribution.
           La scelta è sempre tua e volontaria: sfogliare questa pagina non ti espone in alcun modo alla tua
           azienda. L&apos;azienda riceve solo esiti aggregati; il partner vede informazioni nominative solo
           dopo un&apos;azione che scegli tu di avviare.
-        </p>
-      </div>
+        </>}
+      />
 
-      {/* Preview banner */}
-      <div style={{ background: 'rgba(97,86,245,0.06)', border: `1px dashed rgba(97,86,245,0.35)`, borderRadius: TOKENS.cardRadiusSm, padding: '14px 18px' }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: TOKENS.violet }}>
-          Anteprima design — dati mock, nessuna connessione a database o servizi esterni. Non attivo.
-        </p>
-        <p style={{ margin: '6px 0 0', fontSize: 12, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
-          Nessuna prenotazione, candidatura, richiesta di contatto o riscatto voucher è reale in questa build.
-        </p>
-      </div>
+      <Workspace>
+        <Col span="full">
+
+      {/* Preview banner — KORA-WP-125 Notice, copy unchanged. Deliberately NOT a
+          KORA-WP-140 state: the seven states answer "why is this DATA absent",
+          while this answers "this CAPABILITY is not live". See report. */}
+      <Notice tone="info">
+        <strong>Anteprima design — dati mock, nessuna connessione a database o servizi esterni. Non attivo.</strong>
+        {' '}
+        Nessuna prenotazione, candidatura, richiesta di contatto o riscatto voucher è reale in questa build.
+      </Notice>
 
       {/* 2. Worker privacy/control panel */}
       <Panel>
         <SectionLabel>Il tuo controllo</SectionLabel>
-        <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>Sfogliare queste attività non ti espone in alcun modo alla tua azienda.</li>
-          <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>Scegliere di prenotare, candidarti, richiedere contatto o riscattare un voucher creerebbe una relazione avviata da te con il partner.</li>
-          <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>Solo i dati necessari a quella relazione verrebbero condivisi con il partner — mai di più.</li>
-          <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>La tua azienda continuerebbe a ricevere solo report aggregati, mai la tua scelta individuale.</li>
-          <li style={{ fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>Nessuna prenotazione o condivisione reale avviene in questo sprint.</li>
+        <ul style={{ margin: 0, paddingLeft: SPACE.md, display: 'flex', flexDirection: 'column', gap: SPACE.xs }}>
+          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>Sfogliare queste attività non ti espone in alcun modo alla tua azienda.</li>
+          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>Scegliere di prenotare, candidarti, richiedere contatto o riscattare un voucher creerebbe una relazione avviata da te con il partner.</li>
+          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>Solo i dati necessari a quella relazione verrebbero condivisi con il partner — mai di più.</li>
+          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>La tua azienda continuerebbe a ricevere solo report aggregati, mai la tua scelta individuale.</li>
+          <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>Nessuna prenotazione o condivisione reale avviene in questo sprint.</li>
         </ul>
       </Panel>
 
       {/* 4. Discovery filters/groups — non-interactive browse-by summary */}
       <Panel>
         <SectionLabel>Sfoglia per</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
-          <div style={{ fontSize: 12, color: TOKENS.inkSecondary }}>Pilastro KORA — <strong style={{ color: TOKENS.ink }}>5</strong></div>
-          <div style={{ fontSize: 12, color: TOKENS.inkSecondary }}>Categoria fiscale/welfare — <strong style={{ color: TOKENS.ink }}>{fiscalCategoryCount}</strong></div>
-          <div style={{ fontSize: 12, color: TOKENS.inkSecondary }}>Partner — <strong style={{ color: TOKENS.ink }}>{partnerCount}</strong></div>
-          <div style={{ fontSize: 12, color: TOKENS.inkSecondary }}>Tipo attività — <strong style={{ color: TOKENS.ink }}>{activityTypeCount}</strong></div>
-          <div style={{ fontSize: 12, color: TOKENS.inkSecondary }}>Azione futura — <strong style={{ color: TOKENS.ink }}>{actionCount}</strong></div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: SPACE.sm }}>
+          <div style={{ ...typeStyle('caption'), color: TOKENS.inkSecondary }}>Pilastro KORA — <strong style={{ color: TOKENS.ink }}>5</strong></div>
+          <div style={{ ...typeStyle('caption'), color: TOKENS.inkSecondary }}>Categoria fiscale/welfare — <strong style={{ color: TOKENS.ink }}>{fiscalCategoryCount}</strong></div>
+          <div style={{ ...typeStyle('caption'), color: TOKENS.inkSecondary }}>Partner — <strong style={{ color: TOKENS.ink }}>{partnerCount}</strong></div>
+          <div style={{ ...typeStyle('caption'), color: TOKENS.inkSecondary }}>Tipo attività — <strong style={{ color: TOKENS.ink }}>{activityTypeCount}</strong></div>
+          <div style={{ ...typeStyle('caption'), color: TOKENS.inkSecondary }}>Azione futura — <strong style={{ color: TOKENS.ink }}>{actionCount}</strong></div>
         </div>
-        <p style={{ margin: '10px 0 0', fontSize: 11, color: TOKENS.inkHint }}>
+        <p style={{ margin: `${SPACE.sm}px 0 0`, ...typeStyle('caption'), color: TOKENS.inkHint }}>
           Anteprima — nessun filtro interattivo reale in questa build.
         </p>
       </Panel>
@@ -241,23 +240,23 @@ export default async function WorkerActivityDiscoveryPage() {
       {/* 5. Suggested lanes */}
       <Panel>
         <SectionLabel>Corsie suggerite</SectionLabel>
-        <p style={{ margin: '0 0 14px', fontSize: 11.5, color: TOKENS.inkHint, lineHeight: 1.5 }}>
+        <p style={{ margin: `0 0 ${SPACE.md}px`, ...typeStyle('caption'), color: TOKENS.inkHint }}>
           Sono suggerimenti, non classifiche. Nessuna profilazione individuale, nessun tracciamento delle tue
           preferenze visibile all&apos;azienda.
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE.md }}>
           {LANES.map((lane) => {
             const laneActivities = activities.filter(
               (a) => a.primaryPillar === lane.pillar || a.secondaryPillars.includes(lane.pillar),
             );
             if (laneActivities.length === 0) return null;
             return (
-              <div key={lane.pillar} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div key={lane.pillar} style={{ display: 'flex', flexDirection: 'column', gap: SPACE.sm }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: SPACE.sm }}>
                   <PillarTag pillar={lane.pillar} />
-                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: TOKENS.ink }}>{lane.label}</p>
+                  <p style={{ margin: 0, ...typeStyle('label', { weight: 700 }), color: TOKENS.ink }}>{lane.label}</p>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE.sm }}>
                   {laneActivities.map((a) => <ActivityCard key={a.activityId} activity={a} />)}
                 </div>
               </div>
@@ -281,9 +280,9 @@ export default async function WorkerActivityDiscoveryPage() {
       </Panel>
 
       {/* 8. KORA Index note */}
-      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: `${SPACE.md}px ${SPACE.md}px` }}>
         <SectionLabel>Nota KORA Index</SectionLabel>
-        <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+        <p style={{ margin: 0, ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
           L&apos;attivazione di queste attività potrà in futuro diventare un segnale aggregato per il KORA
           Index. Nessun calcolo live del KORA Index è modificato in questo sprint. Le tue scelte individuali
           non vengono mai riportate all&apos;azienda.
@@ -291,9 +290,9 @@ export default async function WorkerActivityDiscoveryPage() {
       </div>
 
       {/* 9. Contribution note */}
-      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <div style={{ background: TOKENS.insetPanel, border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: `${SPACE.md}px ${SPACE.md}px` }}>
         <SectionLabel>Nota Contribution</SectionLabel>
-        <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+        <p style={{ margin: 0, ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
           Le Attività Partner non alimentano mai direttamente KORA Contribution. Le iniziative KORA Space
           restano separate. Alcune attività potranno essere impacchettate in un&apos;iniziativa solo tramite
           un percorso separato di proposta, revisione e adozione.
@@ -301,23 +300,26 @@ export default async function WorkerActivityDiscoveryPage() {
       </div>
 
       {/* Cross-links */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <Link href="/worker/activity-discovery/detail" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
+      <div style={{ display: 'flex', gap: SPACE.sm, flexWrap: 'wrap' }}>
+        <Link href="/worker/activity-discovery/detail" style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.accent, textDecoration: 'none' }}>
           Anteprima dettaglio attività →
         </Link>
-        <Link href="/worker/commons" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
+        <Link href="/worker/commons" style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.accent, textDecoration: 'none' }}>
           KORA Space — iniziative reali (diverso dalle attività) →
         </Link>
-        <Link href="/partner/activity-catalog" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
+        <Link href="/partner/activity-catalog" style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.accent, textDecoration: 'none' }}>
           Catalogo Attività Partner (vista partner) →
         </Link>
-        <Link href="/company/activity-selection" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
+        <Link href="/company/activity-selection" style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.accent, textDecoration: 'none' }}>
           Come l&apos;azienda configura il perimetro →
         </Link>
-        <Link href="/admin/kora-activation-layer" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
+        <Link href="/admin/kora-activation-layer" style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.accent, textDecoration: 'none' }}>
           KORA Activation Layer — riferimento di modello →
         </Link>
       </div>
+
+        </Col>
+      </Workspace>
 
     </div>
   );

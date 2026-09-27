@@ -158,6 +158,14 @@ export const ROUTE_ARCHETYPE: Record<string, Archetype> = {
   // Worker
   '/worker/workspace':             'EXECUTIVE_JUDGMENT',
   '/worker/privacy':               'DISCLOSURE_STATIC',
+  // KORA-WP-129 Wave 4b (W1). activity-discovery is declared DIRECTORY_INDEX
+  // because its bulk is a catalogue of activity cards, and the 2000px warn it
+  // then trips is left to FIRE rather than silenced by a laxer archetype: the
+  // surface really does mix a catalogue with four policy panels. That length is
+  // reported as composition debt, not resolved here.
+  '/worker/activity-discovery':        'DIRECTORY_INDEX',
+  '/worker/activity-discovery/detail': 'RECORD_DETAIL',
+  '/worker/kora-link/activate':        'DISCLOSURE_STATIC',
   // Partner
   '/partner/workspace':            'OPERATIONAL_WORKSPACE',
   // Public
