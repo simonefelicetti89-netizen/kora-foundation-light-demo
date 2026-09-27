@@ -59,6 +59,58 @@ These are mechanically checkable: `npm run governance:registry-check`. A DELTA w
 fail-closed failure is not complete. Known exceptions and not-derivable invariants are disclosed by that run
 and are **not** cleared by it.
 
+**FOUNDER REVIEW PUBLICATION CONTRACT — binding, added 2026-09-27 (report `274`, Founder ruling of the same
+date).** A candidate that materially changes a **user-visible Product surface** may not be pushed for proof and
+may not enter the canonical Product line until the Founder has reviewed that exact candidate and authorized
+publication. **Exact-SHA CI is necessary technical evidence and is NEVER Founder publication authority.** This
+restores the visual workflow evidenced by `KORA-WP-139`–`142` (reports `269`, `270`, `271`), in which the
+candidate branch was held local and unpushed, the Founder ruling was recorded on the frozen candidate SHA, and
+CI ran only afterwards.
+
+- **BINDING SEQUENCE.** PRECHECK → IMPLEMENT LOCALLY → LOCAL CANDIDATE COMMIT → LOCAL TECHNICAL VALIDATION →
+  FOUNDER REVIEW PACKAGE → **FOUNDER REVIEW / PUBLICATION DECISION** → *(only after approval)* PUSH PROOF
+  BRANCH → EXACT-SHA CI → CANONICAL INTEGRATION → CANONICAL CI → GOVERNANCE COMPLETION where the WP contract
+  is fully satisfied.
+- **NO PRE-REVIEW PUSH.** For a materially user-visible candidate: do not push the candidate, do not push a
+  proof branch, and do not make remote CI a prerequisite of Founder judgment. Local candidate commits and
+  local technical validation are permitted and expected — they are the material the Founder reviews. The
+  Founder reviews the exact frozen **local** candidate SHA.
+- **MATERIAL EFFECT, NOT FILENAME.** Founder Review is mandatory where a change affects rendered UI,
+  navigation/IA, visible labels, visible Product copy, visual hierarchy, typography, spacing, responsive
+  composition, visible states, dashboards/cockpits, user-visible interaction flows, or design-system output.
+  Test-only changes, evidence archives, governance artefacts, backend-only logic and **mechanically proven**
+  non-rendering instrumentation do not independently trigger it. A path-based detector may flag candidates
+  conservatively; **it may never mechanically waive Founder Review where a user-visible effect exists.**
+- **POST-CI REMEDIATION.** If proof CI forces a visually material remediation, the resulting candidate returns
+  to Founder Review before publication. If the remediation is **provably** non-visual, the prior publication
+  authorization carries forward under the non-visual-descendant rule above.
+- **THREE DISTINCT CONCEPTS, NEVER COLLAPSED.** *Technical Acceptance* is mechanical (tests, guards,
+  validation, CI). *Founder Review* is the Founder seeing the implemented result and deciding whether that
+  user-visible candidate may be published. *Formal Founder Visual Acceptance* is an immutable acceptance
+  record required only where a WP or gate contract explicitly requires one. **Founder Review is mandatory for
+  materially user-visible publication even where the WP requires no Formal Founder Visual Acceptance**, and it
+  contributes nothing toward `KORA-WP-131`.
+- **`KORA-WP-126` PREPARES REVIEW AND NEVER REPLACES IT.** Mechanical evidence cannot approve a visual change
+  on the Founder's behalf. That package's own review-enforced / Founder-judgment boundary
+  (`assertMechanisable()`) is binding here.
+- **REVIEW PACKAGE.** Candidate SHA · baseline SHA · scope per WP · before/after evidence at the canonical
+  viewport matrix, **shown to the Founder, not merely referenced** · affected personas and routes · measured
+  warnings · outstanding acceptance debt · technical validation result · an explicit statement of what enters
+  canonical if approved. The Founder is never sent to GitHub, CI, a terminal, the filesystem or artifact
+  storage to reach the decision.
+- **`INV-15`, when implemented, may verify only:** a Founder Review record exists; it names an immutable
+  40-character candidate SHA; it declares the affected visual scope; an explicit publication authorization
+  exists; and the pushed or proposed canonical candidate is the reviewed SHA or a provably non-visual
+  descendant. It **must not** judge visual quality, infer Founder approval, approve screenshots, or infer
+  approval from CI or from silence. **STATUS: PENDING ENFORCEMENT IMPLEMENTATION** — the governance harness
+  currently exists only on the unpublished `gate3/prelive-privacy-remediation` line, and Gate 3 must NOT be
+  published, nor unrelated Product/migration history pulled into canonical, merely to obtain the checker.
+  **The contract above is binding regardless of enforcement availability.**
+- **WAVE 4a IS A RECORDED PROCESS EXCEPTION.** PX-C Wave 4a (`KORA-WP-127`/`129`/`128`) reached canonical at
+  `87fbdfa9621462f3d82e727726520fa590d2d4aa` **before** this gate existed. History is not rewritten and the
+  publication is not silently reverted; **no retrospective Founder approval is inferred**. Founder judgment is
+  recovered explicitly in report `274`. No package was marked COMPLETE by that wave.
+
 ---
 
 ## SECTION B — ALL 119 FULL WP SPECIFICATIONS (I0 — FOUNDATION/SAFETY)
