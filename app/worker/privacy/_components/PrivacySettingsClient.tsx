@@ -49,7 +49,7 @@ import {
   Notice, Status, Facts, StateBlock, SkeletonRows,
 } from '@/components/ui/px';
 import { Button } from '@/components/ui/Button';
-import { PX } from '@/lib/design/kora-design-tokens';
+import { PX, SPACE, typeStyle } from '@/lib/design/kora-design-tokens';
 
 interface PrivacySettingsClientProps {
   userEmail: string;
@@ -176,39 +176,39 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
             absolutely; both statements below are canonical Product semantics
             and are reproduced verbatim. */}
         <Band>
-          <div data-testid="privacy-employer-not-visible" style={{ padding: '18px 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.075em', textTransform: 'uppercase', color: PX.ink3 }}>
+          <div data-testid="privacy-employer-not-visible" style={{ padding: `${SPACE.md}px ${SPACE.lg}px` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: SPACE.sm, flexWrap: 'wrap', marginBottom: SPACE.sm }}>
+              <span style={{ ...typeStyle('meta', { weight: 700 }), letterSpacing: '0.075em', textTransform: 'uppercase', color: PX.ink3 }}>
                 Il confine con il tuo datore di lavoro
               </span>
               <Status tone="ok">Garanzia attiva</Status>
             </div>
-            <p style={{ margin: 0, fontSize: 17, fontWeight: 750, letterSpacing: '-0.018em', color: PX.ink }}>
+            <p style={{ margin: 0, ...typeStyle('subsection', { weight: 750 }), letterSpacing: '-0.018em', color: PX.ink }}>
               Il tuo datore di lavoro non vede questi dati.
             </p>
-            <p style={{ margin: '8px 0 0', maxWidth: '72ch', fontSize: 13, lineHeight: 1.65, color: PX.ink2 }}>
+            <p style={{ margin: `${SPACE.sm}px 0 0`, maxWidth: '72ch', ...typeStyle('secondary'), lineHeight: 1.65, color: PX.ink2 }}>
               KORA misura le organizzazioni, non valuta i singoli lavoratori.
               Il tuo spazio personale, il tuo CV e la tua storia di partecipazione sono visibili solo a te.
             </p>
 
-            <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${PX.line}` }}>
+            <div style={{ marginTop: SPACE.md, paddingTop: SPACE.md, borderTop: `1px solid ${PX.line}` }}>
               {loading ? (
                 <SkeletonRows rows={2} rowHeight={20} label="Caricamento dello stato privacy in corso." />
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '10px 26px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: `${SPACE.sm}px ${SPACE.lg}px` }}>
                   {[
                     ['Spazio personale', status?.workspacePrivate],
                     ['Dynamic Impact CV', status?.dynamicCvPrivate],
                     ['Storia di partecipazione', status?.participationPrivate],
                     ['Visibilità aziendale', status?.onlyAggregatedVisible],
                   ].map(([label, ok]) => (
-                    <span key={String(label)} style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+                    <span key={String(label)} style={{ display: 'flex', alignItems: 'center', gap: SPACE.sm, minWidth: 0 }}>
                       <Status tone={ok ? 'ok' : 'idle'}>
                         {label === 'Visibilità aziendale'
                           ? (ok ? 'Solo aggregati' : 'Non determinata')
                           : (ok ? 'Privato' : 'Non determinato')}
                       </Status>
-                      <span style={{ minWidth: 0, fontSize: 12.5, fontWeight: 600, color: PX.ink2, overflowWrap: 'anywhere' }}>{label}</span>
+                      <span style={{ minWidth: 0, ...typeStyle('caption', { weight: 600 }), color: PX.ink2, overflowWrap: 'anywhere' }}>{label}</span>
                     </span>
                   ))}
                 </div>
@@ -227,10 +227,10 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
               {loading ? (
                 <SkeletonRows rows={5} rowHeight={22} label="Caricamento dei dati privati in corso." />
               ) : settings ? (
-                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 9 }}>
+                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: SPACE.sm }}>
                   {settings.privateData.map((item) => (
-                    <li key={item} style={{ display: 'flex', gap: 9, alignItems: 'flex-start', fontSize: 13, lineHeight: 1.55, color: PX.ink2 }}>
-                      <span aria-hidden="true" style={{ width: 5, height: 5, borderRadius: PX.rPill, background: PX.ok, flex: 'none', marginTop: 7 }} />
+                    <li key={item} style={{ display: 'flex', gap: SPACE.sm, alignItems: 'flex-start', ...typeStyle('secondary'), lineHeight: 1.55, color: PX.ink2 }}>
+                      <span aria-hidden="true" style={{ width: 5, height: 5, borderRadius: PX.rPill, background: PX.ok, flex: 'none', marginTop: SPACE.sm }} />
                       <span style={{ minWidth: 0 }}>{item}</span>
                     </li>
                   ))}
@@ -251,10 +251,10 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
               {loading ? (
                 <SkeletonRows rows={3} rowHeight={22} label="Caricamento dei dati aggregati in corso." />
               ) : settings ? (
-                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 9 }}>
+                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: SPACE.sm }}>
                   {settings.aggregatedData.map((item) => (
-                    <li key={item} style={{ display: 'flex', gap: 9, alignItems: 'flex-start', fontSize: 13, lineHeight: 1.55, color: PX.ink2 }}>
-                      <span aria-hidden="true" style={{ width: 5, height: 5, borderRadius: PX.rPill, background: PX.info, flex: 'none', marginTop: 7 }} />
+                    <li key={item} style={{ display: 'flex', gap: SPACE.sm, alignItems: 'flex-start', ...typeStyle('secondary'), lineHeight: 1.55, color: PX.ink2 }}>
+                      <span aria-hidden="true" style={{ width: 5, height: 5, borderRadius: PX.rPill, background: PX.info, flex: 'none', marginTop: SPACE.sm }} />
                       <span style={{ minWidth: 0 }}>{item}</span>
                     </li>
                   ))}
@@ -265,7 +265,7 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
                   body="I dati aggregati visibili alla tua azienda non sono stati caricati. La soglia di privacy resta applicata lato server."
                 />
               )}
-              <p style={{ margin: '14px 0 0', paddingTop: 12, borderTop: `1px solid ${PX.line}`, fontSize: 12, lineHeight: 1.6, color: PX.ink3 }}>
+              <p style={{ margin: `${SPACE.md}px 0 0`, paddingTop: SPACE.md, borderTop: `1px solid ${PX.line}`, ...typeStyle('caption'), lineHeight: 1.6, color: PX.ink3 }}>
                 I dati aggregati sono calcolati su gruppi con almeno 10 lavoratori attivi.
                 Sotto questa soglia, i dati vengono soppressi per tutelare la tua privacy.
               </p>
@@ -288,7 +288,7 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
             }
           >
             <div data-testid="privacy-sharing-controls">
-              <p style={{ margin: '0 0 13px', fontSize: 12.5, lineHeight: 1.6, color: PX.ink2 }}>
+              <p style={{ margin: `0 0 ${SPACE.md}px`, ...typeStyle('caption'), lineHeight: 1.6, color: PX.ink2 }}>
                 La condivisione è sempre sotto il tuo controllo.
                 Solo tu puoi creare e revocare i link. Il datore di lavoro non vede mai questo CV.
               </p>
@@ -303,11 +303,11 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
                   body="Nessuno sta consultando il tuo Dynamic Impact CV tramite un link. Ne esiste uno solo se lo crei tu."
                 />
               ) : (
-                <div style={{ display: 'grid', gap: 12 }}>
+                <div style={{ display: 'grid', gap: SPACE.md }}>
                   {activeShares.map((s) => (
-                    <div key={s.id} style={{ padding: '12px 13px', borderRadius: PX.rInner, background: PX.l2, border: `1px solid ${PX.l2Edge}` }}>
+                    <div key={s.id} style={{ padding: `${SPACE.md}px`, borderRadius: PX.rInner, background: PX.l2, border: `1px solid ${PX.l2Edge}` }}>
                       <Status tone="ok">Link attivo</Status>
-                      <div style={{ marginTop: 10 }}>
+                      <div style={{ marginTop: SPACE.sm }}>
                         <Facts
                           rows={[
                             ['Creato il', formatDate(s.created_at)],
@@ -321,22 +321,22 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
                 </div>
               )}
 
-              <ul style={{ margin: '14px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 7 }}>
+              <ul style={{ margin: `${SPACE.md}px 0 0`, padding: 0, listStyle: 'none', display: 'grid', gap: SPACE.sm }}>
                 {CV_SHARE_PROPERTIES.map((item) => (
-                  <li key={item} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 11.5, lineHeight: 1.5, color: PX.ink3 }}>
+                  <li key={item} style={{ display: 'flex', gap: SPACE.sm, alignItems: 'flex-start', ...typeStyle('caption'), lineHeight: 1.5, color: PX.ink3 }}>
                     <span aria-hidden="true" style={{ width: 4, height: 4, borderRadius: PX.rPill, background: PX.ok, flex: 'none', marginTop: 6 }} />
                     <span style={{ minWidth: 0 }}>{item}</span>
                   </li>
                 ))}
               </ul>
 
-              <div style={{ marginTop: 14 }}>
+              <div style={{ marginTop: SPACE.md }}>
                 <a
                   href="/worker/dynamic-cv"
                   data-testid="privacy-sharing-cv-toggle"
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 7, height: 34, padding: '0 13px',
-                    borderRadius: PX.rCtl, fontSize: 12.5, fontWeight: 700, textDecoration: 'none',
+                    display: 'inline-flex', alignItems: 'center', gap: SPACE.sm, height: 34, padding: `0 ${SPACE.md}px`,
+                    borderRadius: PX.rCtl, ...typeStyle('caption', { weight: 700 }), textDecoration: 'none',
                     background: `linear-gradient(180deg, ${PX.btnFrom}, ${PX.btnTo})`,
                     color: PX.onViolet, boxShadow: PX.btnShadow,
                   }}
@@ -345,7 +345,7 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
                   <ArrowUpRight size={14} strokeWidth={2.4} aria-hidden="true" />
                 </a>
               </div>
-              <p style={{ margin: '11px 0 0', fontSize: 11, lineHeight: 1.55, color: PX.ink3 }}>
+              <p style={{ margin: `${SPACE.sm}px 0 0`, ...typeStyle('caption'), lineHeight: 1.55, color: PX.ink3 }}>
                 Creazione e revoca avvengono nel tuo Dynamic Impact CV, che ne resta l&apos;unico proprietario.
               </p>
             </div>
@@ -355,21 +355,21 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
 
         <Col span={6}>
           <Region label="Capability non ancora disponibili">
-            <div data-testid="privacy-future-capabilities" style={{ display: 'grid', gap: 12 }}>
+            <div data-testid="privacy-future-capabilities" style={{ display: 'grid', gap: SPACE.md }}>
               {FUTURE_CAPABILITIES.map((c) => (
                 <div key={c.title} style={{ minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 700, color: PX.ink2 }}>{c.title}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: SPACE.sm, flexWrap: 'wrap' }}>
+                    <span style={{ ...typeStyle('caption', { weight: 700 }), color: PX.ink2 }}>{c.title}</span>
                     <Status tone="idle">Non disponibile</Status>
                   </div>
-                  <p style={{ margin: '3px 0 0', fontSize: 11.5, lineHeight: 1.55, color: PX.ink3 }}>{c.body}</p>
+                  <p style={{ margin: `${SPACE.xs}px 0 0`, ...typeStyle('caption'), lineHeight: 1.55, color: PX.ink3 }}>{c.body}</p>
                 </div>
               ))}
             </div>
           </Region>
 
           <Region label="Collegamenti">
-            <div data-testid="privacy-links-section" style={{ display: 'grid', gap: 9 }}>
+            <div data-testid="privacy-links-section" style={{ display: 'grid', gap: SPACE.sm }}>
               {[
                 ['/worker/onboarding?mode=review', 'Rivedi le impostazioni di onboarding'],
                 ['/worker/dynamic-cv', 'Vedi il tuo Dynamic Impact CV'],
@@ -378,7 +378,7 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
                 <a
                   key={href}
                   href={href}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 700, color: PX.violet700, textDecoration: 'none' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: SPACE.xs, ...typeStyle('caption', { weight: 700 }), color: PX.violet700, textDecoration: 'none' }}
                 >
                   {label}
                   <ArrowUpRight size={13} strokeWidth={2.4} aria-hidden="true" />
@@ -403,7 +403,7 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
                   `233` removed from a Company value field; it is dropped
                   here. The methodology version and calibration status are
                   genuinely current governance facts and are preserved. */}
-              <p style={{ margin: '12px 0 0', fontSize: 11, lineHeight: 1.6, color: PX.ink3 }}>
+              <p style={{ margin: `${SPACE.md}px 0 0`, ...typeStyle('caption'), lineHeight: 1.6, color: PX.ink3 }}>
                 Metodologia KORA v0.1 · calibrazione pre-empirica. Le regole di privacy sono applicate dal
                 server a ogni richiesta e non dipendono da questa schermata.
               </p>

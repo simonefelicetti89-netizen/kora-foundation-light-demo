@@ -5,7 +5,7 @@
 // NEVER shows rankings, percentiles, or comparisons with other workers.
 
 import type { WorkerActivationProfile, PillarDistributionEntry } from '@/app/api/worker/activation-profile/route';
-import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS, SPACE, typeStyle } from '@/lib/design/kora-design-tokens';
 
 
 const PILLAR_LABELS: Record<string, string> = {
@@ -30,25 +30,25 @@ function PillarBar({ entry, max }: { entry: PillarDistributionEntry; max: number
   const hasActivity = entry.total_active > 0;
 
   return (
-    <div style={{ display: 'grid', gap: 4 }}>
+    <div style={{ display: 'grid', gap: SPACE.xs }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: SPACE.xs }}>
           <span style={{
             width: 6, height: 6, borderRadius: '50%',
             background: hasActivity ? color : 'rgba(6,3,43,0.15)',
             flexShrink: 0, display: 'inline-block',
           }} />
           <span style={{
-            fontSize: 11, fontWeight: 700, color: hasActivity ? TOKENS.ink : 'rgba(6,3,43,0.35)',
+            ...typeStyle('caption', { weight: 700 }), color: hasActivity ? TOKENS.ink : 'rgba(6,3,43,0.35)',
           }}>
             {PILLAR_LABELS[entry.pillar] ?? entry.pillar}
           </span>
-          <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.35)' }}>
+          <span style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.35)' }}>
             {PILLAR_DESCRIPTIONS[entry.pillar]}
           </span>
         </div>
         <span style={{
-          fontSize: 10, fontWeight: 700, color: hasActivity ? color : 'rgba(6,3,43,0.25)',
+          ...typeStyle('caption', { weight: 700, tabular: true }), color: hasActivity ? color : 'rgba(6,3,43,0.25)',
           fontVariantNumeric: 'tabular-nums',
         }}>
           {entry.total_active}
@@ -71,10 +71,10 @@ function StatCell({ label, value }: { label: string; value: number }) {
   return (
     <div style={{
       background: 'rgba(6,3,43,0.03)', border: '1px solid rgba(6,3,43,0.07)',
-      borderRadius: 7, padding: '10px 12px', textAlign: 'center',
+      borderRadius: 7, padding: `${SPACE.sm}px ${SPACE.md}px`, textAlign: 'center',
     }}>
-      <div style={{ fontSize: 18, fontWeight: 800, color: TOKENS.ink, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: 9, color: 'rgba(6,3,43,0.45)', marginTop: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+      <div style={{ ...typeStyle('subsection', { weight: 800, tabular: true }), color: TOKENS.ink, lineHeight: 1 }}>{value}</div>
+      <div style={{ ...typeStyle('meta', { weight: 600 }), color: 'rgba(6,3,43,0.45)', marginTop: SPACE.xs, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
     </div>
   );
 }
@@ -96,13 +96,13 @@ export function ActivationProfileSection({ profile }: { profile: WorkerActivatio
           data-testid="activation-profile-empty"
           style={{
             background: 'rgba(6,3,43,0.03)', border: '1px dashed rgba(6,3,43,0.12)',
-            borderRadius: 8, padding: '20px', textAlign: 'center', marginTop: 14,
+            borderRadius: 8, padding: `${SPACE.lg}px`, textAlign: 'center', marginTop: SPACE.md,
           }}
         >
-          <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', margin: 0, lineHeight: 1.6 }}>
+          <p style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.45)', margin: 0 }}>
             Nessuna attività registrata ancora.<br />
             Esprimi interesse o iscriviti a un&apos;iniziativa per iniziare.<br />
-            <span style={{ fontSize: 11, color: 'rgba(6,3,43,0.35)' }}>
+            <span style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.35)' }}>
               Questo profilo non è una valutazione individuale e non viene condiviso con la tua azienda.
             </span>
           </p>
@@ -114,17 +114,17 @@ export function ActivationProfileSection({ profile }: { profile: WorkerActivatio
   }
 
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
+    <div style={{ display: 'grid', gap: SPACE.md }}>
       {/* Privacy card — always visible */}
       <PrivacyCard />
 
       {/* Pillar distribution */}
       <div style={{
         background: '#fff', border: '1px solid rgba(6,3,43,0.08)',
-        borderRadius: 10, padding: '18px 20px',
+        borderRadius: 10, padding: `${SPACE.md}px ${SPACE.lg}px`,
       }}>
         <h3 style={subheadingStyle}>Distribuzione per pillar</h3>
-        <div style={{ display: 'grid', gap: 12 }}>
+        <div style={{ display: 'grid', gap: SPACE.md }}>
           {profile.pillarDistribution.map(entry => (
             <PillarBar key={entry.pillar} entry={entry} max={max} />
           ))}
@@ -134,17 +134,17 @@ export function ActivationProfileSection({ profile }: { profile: WorkerActivatio
       {/* Activity summary */}
       <div style={{
         background: '#fff', border: '1px solid rgba(6,3,43,0.08)',
-        borderRadius: 10, padding: '18px 20px',
+        borderRadius: 10, padding: `${SPACE.md}px ${SPACE.lg}px`,
       }}>
         <h3 style={subheadingStyle}>Riepilogo attività</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: SPACE.sm }}>
           <StatCell label="Interessi" value={activitySummary.total_interested} />
           <StatCell label="Iscrizioni" value={activitySummary.total_registered} />
           <StatCell label="Presenze" value={activitySummary.total_attended} />
           <StatCell label="Cancellati" value={activitySummary.total_cancelled} />
         </div>
         {lastDate && (
-          <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', marginTop: 10, marginBottom: 0 }}>
+          <p style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.35)', marginTop: SPACE.sm, marginBottom: 0 }}>
             Ultimo aggiornamento: {lastDate}
           </p>
         )}
@@ -153,10 +153,10 @@ export function ActivationProfileSection({ profile }: { profile: WorkerActivatio
       {/* Insights */}
       <div style={{
         background: '#fff', border: '1px solid rgba(6,3,43,0.08)',
-        borderRadius: 10, padding: '18px 20px',
+        borderRadius: 10, padding: `${SPACE.md}px ${SPACE.lg}px`,
       }}>
         <h3 style={subheadingStyle}>Segnali di attivazione</h3>
-        <div style={{ display: 'grid', gap: 10 }}>
+        <div style={{ display: 'grid', gap: SPACE.sm }}>
           {profile.strongestPillar && (
             <InsightRow
               label="Pillar più attivo"
@@ -190,17 +190,17 @@ export function ActivationProfileSection({ profile }: { profile: WorkerActivatio
 // ── Sub-components ──────────────────────────────────────────────────────────────
 
 const subheadingStyle: React.CSSProperties = {
-  fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-  letterSpacing: '0.07em', color: 'rgba(6,3,43,0.40)', marginBottom: 14, marginTop: 0,
+  ...typeStyle('meta', { weight: 700 }), textTransform: 'uppercase',
+  letterSpacing: '0.07em', color: 'rgba(6,3,43,0.40)', marginBottom: SPACE.md, marginTop: 0,
 };
 
 function PrivacyCard() {
   return (
     <div style={{
       background: 'rgba(47,125,85,0.06)', border: '1px solid rgba(47,125,85,0.18)',
-      borderRadius: 8, padding: '12px 16px',
+      borderRadius: 8, padding: `${SPACE.md}px ${SPACE.md}px`,
     }}>
-      <p style={{ fontSize: 11, color: BADGE_TOKENS.eligible.text, margin: 0, lineHeight: 1.6 }}>
+      <p style={{ ...typeStyle('caption'), color: BADGE_TOKENS.eligible.text, margin: 0 }}>
         <strong>Profilo privato.</strong>{' '}
         Il tuo datore di lavoro vede solo dati aggregati sopra soglia — mai questo profilo individuale.
         Non è una valutazione individuale e non genera ranking.
@@ -214,17 +214,17 @@ function InsightRow({
 }: { label: string; value: string; color: string; muted?: boolean }) {
   return (
     <div style={{
-      display: 'flex', gap: 10, alignItems: 'flex-start',
-      paddingBottom: 8, borderBottom: '1px solid rgba(6,3,43,0.05)',
+      display: 'flex', gap: SPACE.sm, alignItems: 'flex-start',
+      paddingBottom: SPACE.sm, borderBottom: '1px solid rgba(6,3,43,0.05)',
     }}>
       <span style={{
-        fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+        ...typeStyle('meta', { weight: 700 }), textTransform: 'uppercase', letterSpacing: '0.06em',
         color: 'rgba(6,3,43,0.40)', flexShrink: 0, paddingTop: 1, minWidth: 140,
       }}>
         {label}
       </span>
-      <span style={{ fontSize: 11, color: muted ? 'rgba(6,3,43,0.40)' : TOKENS.ink, fontStyle: muted ? 'italic' : 'normal' }}>
-        <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: color, marginRight: 5, verticalAlign: 'middle' }} />
+      <span style={{ ...typeStyle('caption'), color: muted ? 'rgba(6,3,43,0.40)' : TOKENS.ink, fontStyle: muted ? 'italic' : 'normal' }}>
+        <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: color, marginRight: SPACE.xs, verticalAlign: 'middle' }} />
         {value}
       </span>
     </div>
@@ -234,8 +234,8 @@ function InsightRow({
 function InterpretationNote({ text }: { text: string }) {
   return (
     <p style={{
-      fontSize: 10, color: 'rgba(6,3,43,0.40)', lineHeight: 1.6, margin: 0,
-      borderTop: '1px solid rgba(6,3,43,0.05)', paddingTop: 12,
+      ...typeStyle('caption'), color: 'rgba(6,3,43,0.40)', margin: 0,
+      borderTop: '1px solid rgba(6,3,43,0.05)', paddingTop: SPACE.md,
     }}>
       {text}
     </p>

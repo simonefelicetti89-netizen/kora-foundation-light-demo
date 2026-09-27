@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase/types';
-import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS, SPACE, typeStyle } from '@/lib/design/kora-design-tokens';
 
 export type InitiativeItem = {
   id: string;
@@ -79,7 +79,7 @@ function CTAButton({
   variant: 'primary' | 'secondary' | 'danger';
 }) {
   const base: React.CSSProperties = {
-    padding: '7px 16px', borderRadius: 6, fontSize: 11, fontWeight: 700,
+    padding: `${SPACE.sm}px ${SPACE.md}px`, borderRadius: 6, ...typeStyle('label', { weight: 700 }),
     cursor: disabled ? 'not-allowed' : 'pointer',
     opacity: disabled ? 0.6 : 1, transition: 'opacity 0.1s',
   };
@@ -129,45 +129,45 @@ function InitiativeCard({
   return (
     <div style={{
       background: '#fff', border: '1px solid rgba(6,3,43,0.09)',
-      borderRadius: 10, padding: '16px 18px',
+      borderRadius: 10, padding: `${SPACE.md}px ${SPACE.md}px`,
     }}>
       {/* Header row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: SPACE.xs, marginBottom: SPACE.xs, flexWrap: 'wrap' }}>
             <span style={{
-              fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
+              ...typeStyle('meta', { weight: 700 }), letterSpacing: '0.07em', textTransform: 'uppercase',
               color: pillarColor,
             }}>
               {PILLAR_LABELS[init.pillar] ?? init.pillar}
             </span>
             {init.mode && (
-              <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.40)' }}>· {init.mode}</span>
+              <span style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.40)' }}>· {init.mode}</span>
             )}
             {init.location && (
-              <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.40)' }}>· {init.location}</span>
+              <span style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.40)' }}>· {init.location}</span>
             )}
             {init.eligibility_class && init.eligibility_class !== 'eligible' && (
               <span style={{
-                fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-                background: BADGE_TOKENS.limited.bg, color: BADGE_TOKENS.limited.text, borderRadius: 4, padding: '1px 5px',
+                ...typeStyle('meta', { weight: 700 }), letterSpacing: '0.06em', textTransform: 'uppercase',
+                background: BADGE_TOKENS.limited.bg, color: BADGE_TOKENS.limited.text, borderRadius: 4, padding: '1px 5px', /* optical: chip-internal padding, KORA-WP-141 documented exception */
               }}>
                 {ELIGIBILITY_LABELS[init.eligibility_class] ?? init.eligibility_class}
               </span>
             )}
           </div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, marginBottom: 2 }}>
+          <div style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.ink, marginBottom: 2 }}>
             {init.title}
           </div>
           {init.description && (
-            <div style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', lineHeight: 1.4 }}>
+            <div style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.50)' }}>
               {init.description.length > 160
                 ? `${init.description.slice(0, 160)}…`
                 : init.description}
             </div>
           )}
           {(init.start_date ?? init.end_date) && (
-            <div style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', marginTop: 4 }}>
+            <div style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.35)', marginTop: SPACE.xs }}>
               {init.start_date && `Dal ${formatDateIT(init.start_date)}`}
               {init.end_date && ` al ${formatDateIT(init.end_date)}`}
             </div>
@@ -177,10 +177,10 @@ function InitiativeCard({
         {/* Current status badge */}
         {currentStatus && (
           <span style={{
-            fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+            ...typeStyle('meta', { weight: 700 }), letterSpacing: '0.06em', textTransform: 'uppercase',
             background: currentStatus === 'attended' ? BADGE_TOKENS.eligible.bg : currentStatus === 'registered' ? BADGE_TOKENS.info.bg : currentStatus === 'interested' ? 'rgba(6,3,43,0.06)' : TOKENS.surface,
             color: currentStatus === 'attended' ? BADGE_TOKENS.eligible.text : currentStatus === 'registered' ? BADGE_TOKENS.info.text : currentStatus === 'interested' ? 'rgba(6,3,43,0.60)' : TOKENS.inkSecondary,
-            borderRadius: 4, padding: '2px 7px', flexShrink: 0, marginLeft: 10,
+            borderRadius: 4, padding: '2px 7px', /* optical: chip-internal */ flexShrink: 0, marginLeft: SPACE.sm,
           }}>
             {STATUS_LABELS[currentStatus]}
           </span>
@@ -189,7 +189,7 @@ function InitiativeCard({
 
       {/* CTAs — not shown if attended (set by admin/system, immutable) */}
       {!isAttended && (
-        <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ marginTop: SPACE.md, display: 'flex', gap: SPACE.sm, flexWrap: 'wrap', alignItems: 'center' }}>
           {(currentStatus === null || currentStatus === 'cancelled') && (
             <CTAButton
               label="Mi interessa"
@@ -215,12 +215,12 @@ function InitiativeCard({
             />
           )}
           {loading && (
-            <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', fontStyle: 'italic' }}>
+            <span style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.40)', fontStyle: 'italic' }}>
               Aggiornamento…
             </span>
           )}
           {saved && !loading && (
-            <span data-testid="initiative-saved-feedback" style={{ fontSize: 10, color: BADGE_TOKENS.eligible.text, fontStyle: 'italic' }}>
+            <span data-testid="initiative-saved-feedback" style={{ ...typeStyle('caption'), color: BADGE_TOKENS.eligible.text, fontStyle: 'italic' }}>
               Aggiornamento salvato
             </span>
           )}
@@ -228,7 +228,7 @@ function InitiativeCard({
       )}
 
       {error && (
-        <p style={{ fontSize: 10, color: BADGE_TOKENS.blocked.text, marginTop: 8, marginBottom: 0 }}>{error}</p>
+        <p style={{ ...typeStyle('caption'), color: BADGE_TOKENS.blocked.text, marginTop: SPACE.sm, marginBottom: 0 }}>{error}</p>
       )}
     </div>
   );
@@ -245,7 +245,7 @@ export function InitiativeCardsClient({ initiatives }: { initiatives: Initiative
 
   if (initiatives.length === 0) {
     return (
-      <p data-testid="initiative-cards-empty" style={{ fontSize: 12, color: 'rgba(6,3,43,0.40)', margin: 0, lineHeight: 1.6 }}>
+      <p data-testid="initiative-cards-empty" style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.40)', margin: 0 }}>
         Nessuna iniziativa disponibile per la tua azienda.<br />
         Le iniziative vengono pubblicate dall&apos;amministratore KORA —
         quando attive, appariranno qui e potrai esprimere interesse o iscriverti.
@@ -254,7 +254,7 @@ export function InitiativeCardsClient({ initiatives }: { initiatives: Initiative
   }
 
   return (
-    <div style={{ display: 'grid', gap: 12 }}>
+    <div style={{ display: 'grid', gap: SPACE.md }}>
       {initiatives.map(init => (
         <InitiativeCard
           key={init.id}

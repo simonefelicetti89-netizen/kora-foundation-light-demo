@@ -14,7 +14,7 @@ import { ActivationProfileSection } from './_components/ActivationProfileSection
 import { PX } from '@/lib/design/kora-design-tokens';
 import { PageHead, Workspace, Col, Status } from '@/components/ui/px';
 import type { WorkerActivationProfile, PillarDistributionEntry } from '@/app/api/worker/activation-profile/route';
-import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_COLORS, TOKENS, SPACE, typeStyle } from '@/lib/design/kora-design-tokens';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -243,8 +243,8 @@ export default async function WorkerWorkspacePage() {
           <>
             <span data-testid="workspace-hero" hidden>{firstName ? `Ciao, ${firstName}` : 'Il mio spazio'}</span>
             <span style={{
-              display: 'inline-flex', alignItems: 'center', height: 23, padding: '0 9px', borderRadius: PX.rChip,
-              fontSize: 11.5, fontWeight: 700, background: sc.bg, color: sc.text,
+              display: 'inline-flex', alignItems: 'center', height: 23, padding: '0 9px' /* optical: control-internal */, borderRadius: PX.rChip,
+              ...typeStyle('caption', { weight: 700 }), background: sc.bg, color: sc.text,
             }}>
               {sc.label}
             </span>
@@ -253,7 +253,7 @@ export default async function WorkerWorkspacePage() {
             </span>
             <a
               href="/worker/onboarding?mode=review"
-              style={{ fontSize: 12, fontWeight: 600, color: PX.violet700, textDecoration: 'none', alignSelf: 'center' }}
+              style={{ ...typeStyle('caption', { weight: 600 }), color: PX.violet700, textDecoration: 'none', alignSelf: 'center' }}
             >
               Rivedi privacy boundary
             </a>
@@ -267,9 +267,9 @@ export default async function WorkerWorkspacePage() {
       {/* Privacy notice — always visible */}
       <div style={{
         background: 'rgba(47,125,85,0.06)', border: '1px solid rgba(47,125,85,0.20)',
-        borderRadius: 10, padding: '14px 18px', marginBottom: 28,
+        borderRadius: 10, padding: `${SPACE.md}px ${SPACE.md}px`, marginBottom: SPACE.xl,
       }}>
-        <p style={{ fontSize: 12, color: BADGE_TOKENS.eligible.text, margin: 0, lineHeight: 1.6 }}>
+        <p style={{ ...typeStyle('caption'), color: BADGE_TOKENS.eligible.text, margin: 0, lineHeight: 1.6 }}>
           <strong>Privacy:</strong> Il tuo datore di lavoro non può vedere questi dati individuali.
           Solo tu puoi accedere a questo spazio. KORA misura le organizzazioni, non le persone.
         </p>
@@ -278,10 +278,10 @@ export default async function WorkerWorkspacePage() {
       {/* Identity card */}
       <div style={{
         background: '#fff', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10,
-        padding: '20px 24px', marginBottom: 20,
+        padding: `${SPACE.lg}px ${SPACE.lg}px`, marginBottom: SPACE.lg,
       }}>
         <h2 style={sectionHeadingStyle}>La tua identità KORA</h2>
-        <div style={{ display: 'grid', gap: 10 }}>
+        <div style={{ display: 'grid', gap: SPACE.sm }}>
           <Row label="Email" value={worker.email} />
           <Row label="Azienda" value={companyName} />
           <Row label="Onboarding" value={onboardingDone ? 'Completato' : 'In attesa'} />
@@ -291,7 +291,7 @@ export default async function WorkerWorkspacePage() {
       {/* Initiatives section */}
       <div style={{
         background: '#fff', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10,
-        padding: '20px 24px', marginBottom: 20,
+        padding: `${SPACE.lg}px ${SPACE.lg}px`, marginBottom: SPACE.lg,
       }}>
         <h2 style={sectionHeadingStyle}>Le tue iniziative</h2>
         <InitiativeCardsClient initiatives={initiatives} />
@@ -300,22 +300,22 @@ export default async function WorkerWorkspacePage() {
       {/* History section */}
       <div style={{
         background: '#fff', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10,
-        padding: '20px 24px', marginBottom: 20,
+        padding: `${SPACE.lg}px ${SPACE.lg}px`, marginBottom: SPACE.lg,
       }}>
         <h2 style={sectionHeadingStyle}>Il mio storico</h2>
         {history.length === 0 ? (
-          <p data-testid="workspace-history-empty" style={{ fontSize: 12, color: 'rgba(6,3,43,0.40)', margin: 0, lineHeight: 1.6 }}>
+          <p data-testid="workspace-history-empty" style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.40)', margin: 0, lineHeight: 1.6 }}>
             Non hai ancora partecipazioni registrate.<br />
             Esprimi interesse o iscriviti a un&apos;iniziativa nella sezione &ldquo;Le tue iniziative&rdquo; qui sopra.
           </p>
         ) : (
-          <div style={{ display: 'grid', gap: 10 }}>
+          <div style={{ display: 'grid', gap: SPACE.sm }}>
             {history.map((h, i) => (
               <HistoryRow key={i} item={h} />
             ))}
           </div>
         )}
-        <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', marginTop: 12, marginBottom: 0, lineHeight: 1.5 }}>
+        <p style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.30)', marginTop: SPACE.md, marginBottom: 0, lineHeight: 1.5 }}>
           Solo tu puoi vedere questo storico. Non è condiviso con l&apos;azienda.
           Ti aiuta a capire il tuo percorso di attivazione — l&apos;azienda vede solo segnali aggregati, mai la tua attività individuale.
         </p>
@@ -326,39 +326,39 @@ export default async function WorkerWorkspacePage() {
         data-testid="workspace-partner-preview"
         style={{
           background: '#fff', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10,
-          padding: '20px 24px', marginBottom: 20,
+          padding: `${SPACE.lg}px ${SPACE.lg}px`, marginBottom: SPACE.lg,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: SPACE.md }}>
           <h2 style={sectionHeadingStyle}>Partner & opportunità</h2>
           {partnerPreview.length > 0 && (
             <a
               href="/worker/opportunities"
-              style={{ fontSize: 11, color: BADGE_TOKENS.info.text, textDecoration: 'none', fontWeight: 600 }}
+              style={{ ...typeStyle('caption', { weight: 600 }), color: BADGE_TOKENS.info.text, textDecoration: 'none' }}
             >
               Vedi tutti →
             </a>
           )}
         </div>
         {partnerPreview.length === 0 ? (
-          <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.40)', margin: 0, lineHeight: 1.6 }}>
+          <p style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.40)', margin: 0, lineHeight: 1.6 }}>
             La rete partner sarà disponibile prossimamente.<br />
-            <span style={{ fontSize: 11 }}>
+            <span style={{ ...typeStyle('caption') }}>
               I partner vengono pubblicati dall&apos;amministratore KORA.
             </span>
           </p>
         ) : (
-          <div style={{ display: 'grid', gap: 10 }}>
+          <div style={{ display: 'grid', gap: SPACE.sm }}>
             {partnerPreview.map(p => (
               <PartnerPreviewRow key={p.id} partner={p} />
             ))}
             <a
               href="/worker/opportunities"
               style={{
-                fontSize: 11, fontWeight: 700, color: TOKENS.ink,
+                ...typeStyle('caption', { weight: 700 }), color: TOKENS.ink,
                 background: 'rgba(6,3,43,0.04)', border: '1px solid rgba(6,3,43,0.10)',
-                borderRadius: 7, padding: '8px 14px', textDecoration: 'none',
-                display: 'inline-block', marginTop: 6, textAlign: 'center',
+                borderRadius: 7, padding: `${SPACE.sm}px ${SPACE.md}px`, textDecoration: 'none',
+                display: 'inline-block', marginTop: SPACE.xs, textAlign: 'center',
               }}
             >
               Esplora tutti i partner →
@@ -373,42 +373,42 @@ export default async function WorkerWorkspacePage() {
         style={{
           border:         '1px solid rgba(59,110,186,0.18)',
           borderRadius:   14,
-          padding:        '18px 22px',
+          padding: `${SPACE.md}px ${SPACE.lg}px`,
           background:     TOKENS.surface,
-          marginBottom:   16,
+          marginBottom: SPACE.md,
           display:        'flex',
           alignItems:     'flex-start',
           justifyContent: 'space-between',
-          gap:            16,
+          gap: SPACE.md,
         }}
       >
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.info.base, margin: '0 0 6px' }}>
+          <p style={{ ...typeStyle('meta', { weight: 700 }), letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.info.base, margin: `0 0 ${SPACE.xs}px` }}>
             Le tue tracce personali
           </p>
-          <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
+          <p style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.ink, margin: `0 0 ${SPACE.xs}px` }}>
             Partecipazioni e percorso privato
           </p>
-          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
+          <p style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.50)', margin: `0 0 ${SPACE.md}px`, lineHeight: 1.5 }}>
             Le partecipazioni confermate restano nel tuo percorso privato.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE.xs }}>
             <a
               href="/worker/bookings"
               data-testid="workspace-trace-bookings-link"
-              style={{ fontSize: 12, fontWeight: 600, color: TOKENS.info.base, textDecoration: 'none' }}
+              style={{ ...typeStyle('caption', { weight: 600 }), color: TOKENS.info.base, textDecoration: 'none' }}
             >
               Prenotazioni &amp; partecipazioni →
             </a>
             <a
               href="/worker/personal-impact-balance"
-              style={{ fontSize: 12, fontWeight: 600, color: PX.violet700, textDecoration: 'none' }}
+              style={{ ...typeStyle('caption', { weight: 600 }), color: PX.violet700, textDecoration: 'none' }}
             >
               Il tuo bilancio →
             </a>
             <a
               href="/worker/dynamic-cv"
-              style={{ fontSize: 12, fontWeight: 600, color: TOKENS.success, textDecoration: 'none' }}
+              style={{ ...typeStyle('caption', { weight: 600 }), color: TOKENS.success, textDecoration: 'none' }}
             >
               Dynamic Impact CV →
             </a>
@@ -416,11 +416,11 @@ export default async function WorkerWorkspacePage() {
         </div>
         <span
           style={{
-            fontSize:      9,
+            ...typeStyle('caption'),
             fontWeight:    700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
-            padding:       '3px 8px',
+            padding: '3px 8px' /* optical: chip-internal, KORA-WP-141 documented exception */,
             borderRadius:  999,
             background:    'rgba(59,110,186,0.10)',
             color:         TOKENS.info.base,
@@ -447,23 +447,23 @@ export default async function WorkerWorkspacePage() {
         style={{
           border:         '1px solid var(--px-line-2)',
           borderRadius:   14,
-          padding:        '18px 22px',
+          padding: `${SPACE.md}px ${SPACE.lg}px`,
           background:     TOKENS.surface,
-          marginBottom:   16,
+          marginBottom: SPACE.md,
           display:        'flex',
           alignItems:     'flex-start',
           justifyContent: 'space-between',
-          gap:            16,
+          gap: SPACE.md,
         }}
       >
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: PX.violet700, margin: '0 0 6px' }}>
+          <p style={{ ...typeStyle('meta', { weight: 700 }), letterSpacing: '0.08em', textTransform: 'uppercase', color: PX.violet700, margin: `0 0 ${SPACE.xs}px` }}>
             My KORA · Area personale
           </p>
-          <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
+          <p style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.ink, margin: `0 0 ${SPACE.xs}px` }}>
             Il tuo spazio privato KORA
           </p>
-          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
+          <p style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.50)', margin: `0 0 ${SPACE.md}px`, lineHeight: 1.5 }}>
             Il tuo bilancio privato e le tue esperienze di attivazione. Solo tu puoi vederlo.
           </p>
           <a
@@ -471,11 +471,11 @@ export default async function WorkerWorkspacePage() {
             data-testid="workspace-my-kora-pib-link"
             style={{
               display:        'inline-block',
-              fontSize:       12,
+              ...typeStyle('caption'),
               fontWeight:     600,
               color:          PX.violet700,
               textDecoration: 'none',
-              padding:        '7px 14px',
+              padding: `${SPACE.sm}px ${SPACE.md}px`,
               border:         `1px solid ${PX.violetEdge}`,
               borderRadius:   8,
               background:     PX.violetTint,
@@ -486,11 +486,11 @@ export default async function WorkerWorkspacePage() {
         </div>
         <span
           style={{
-            fontSize:      9,
+            ...typeStyle('caption'),
             fontWeight:    700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
-            padding:       '3px 8px',
+            padding: '3px 8px' /* optical: chip-internal, KORA-WP-141 documented exception */,
             borderRadius:  999,
             background:    'var(--px-violet-tint)',
             color:         PX.violet700,
@@ -506,23 +506,23 @@ export default async function WorkerWorkspacePage() {
         style={{
           border:         '1px solid rgba(97,86,245,0.18)',
           borderRadius:   14,
-          padding:        '18px 22px',
+          padding: `${SPACE.md}px ${SPACE.lg}px`,
           background:     TOKENS.surface,
-          marginBottom:   16,
+          marginBottom: SPACE.md,
           display:        'flex',
           alignItems:     'flex-start',
           justifyContent: 'space-between',
-          gap:            16,
+          gap: SPACE.md,
         }}
       >
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.violet, margin: '0 0 6px' }}>
+          <p style={{ ...typeStyle('meta', { weight: 700 }), letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.violet, margin: `0 0 ${SPACE.xs}px` }}>
             KORA Link
           </p>
-          <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
+          <p style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.ink, margin: `0 0 ${SPACE.xs}px` }}>
             Il tuo collegamento fisico–digitale KORA
           </p>
-          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
+          <p style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.50)', margin: `0 0 ${SPACE.md}px`, lineHeight: 1.5 }}>
             In preparazione per il pilota. La tua azienda vede solo conteggi aggregati di adozione — mai la tua attività individuale.
           </p>
           <a
@@ -530,11 +530,11 @@ export default async function WorkerWorkspacePage() {
             data-testid="workspace-kora-link-link"
             style={{
               display:        'inline-block',
-              fontSize:       12,
+              ...typeStyle('caption'),
               fontWeight:     600,
               color:          TOKENS.violet,
               textDecoration: 'none',
-              padding:        '7px 14px',
+              padding: `${SPACE.sm}px ${SPACE.md}px`,
               border:         '1px solid rgba(97,86,245,0.28)',
               borderRadius:   8,
               background:     'rgba(97,86,245,0.06)',
@@ -545,11 +545,11 @@ export default async function WorkerWorkspacePage() {
         </div>
         <span
           style={{
-            fontSize:      9,
+            ...typeStyle('caption'),
             fontWeight:    700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
-            padding:       '3px 8px',
+            padding: '3px 8px' /* optical: chip-internal, KORA-WP-141 documented exception */,
             borderRadius:  999,
             background:    'rgba(97,86,245,0.10)',
             color:         TOKENS.violet,
@@ -565,22 +565,22 @@ export default async function WorkerWorkspacePage() {
         style={{
           border:       '1px solid rgba(6,3,43,0.10)',
           borderRadius: 14,
-          padding:      '20px 22px',
+          padding: `${SPACE.lg}px ${SPACE.lg}px`,
           background:   TOKENS.surface,
           display:      'flex',
           alignItems:   'flex-start',
           justifyContent: 'space-between',
-          gap:          16,
+          gap: SPACE.md,
         }}
       >
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.info.base, margin: '0 0 6px' }}>
+          <p style={{ ...typeStyle('meta', { weight: 700 }), letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.info.base, margin: `0 0 ${SPACE.xs}px` }}>
             Dynamic Impact CV
           </p>
-          <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
+          <p style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.ink, margin: `0 0 ${SPACE.xs}px` }}>
             {hasAnyActivity ? 'Il tuo percorso KORA è in costruzione' : 'Inizia a costruire il tuo profilo'}
           </p>
-          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
+          <p style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.50)', margin: `0 0 ${SPACE.md}px`, lineHeight: 1.5 }}>
             {hasAnyActivity
               ? 'CV privato disponibile. Il tuo datore di lavoro non vede questi dati.'
               : 'Partecipa alle prime iniziative per generare il tuo CV KORA.'}
@@ -590,11 +590,11 @@ export default async function WorkerWorkspacePage() {
             data-testid="workspace-dynamic-cv-link"
             style={{
               display:        'inline-block',
-              fontSize:       12,
+              ...typeStyle('caption'),
               fontWeight:     600,
               color:          TOKENS.info.base,
               textDecoration: 'none',
-              padding:        '7px 14px',
+              padding: `${SPACE.sm}px ${SPACE.md}px`,
               border:         '1px solid rgba(59,110,186,0.28)',
               borderRadius:   8,
               background:     'rgba(59,110,186,0.06)',
@@ -605,11 +605,11 @@ export default async function WorkerWorkspacePage() {
         </div>
         <span
           style={{
-            fontSize:      9,
+            ...typeStyle('caption'),
             fontWeight:    700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
-            padding:       '3px 8px',
+            padding: '3px 8px' /* optical: chip-internal, KORA-WP-141 documented exception */,
             borderRadius:  999,
             background:    hasAnyActivity ? 'rgba(47,125,85,0.10)' : 'rgba(6,3,43,0.06)',
             color:         hasAnyActivity ? TOKENS.success : 'rgba(6,3,43,0.40)',
@@ -625,23 +625,23 @@ export default async function WorkerWorkspacePage() {
         style={{
           border:         '1px solid rgba(6,3,43,0.10)',
           borderRadius:   14,
-          padding:        '18px 22px',
+          padding: `${SPACE.md}px ${SPACE.lg}px`,
           background:     TOKENS.surface,
-          marginTop:      16,
+          marginTop: SPACE.md,
           display:        'flex',
           alignItems:     'flex-start',
           justifyContent: 'space-between',
-          gap:            16,
+          gap: SPACE.md,
         }}
       >
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.success, margin: '0 0 6px' }}>
+          <p style={{ ...typeStyle('meta', { weight: 700 }), letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.success, margin: `0 0 ${SPACE.xs}px` }}>
             Privacy & Condivisione
           </p>
-          <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
+          <p style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.ink, margin: `0 0 ${SPACE.xs}px` }}>
             I tuoi dati restano privati
           </p>
-          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
+          <p style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.50)', margin: `0 0 ${SPACE.md}px`, lineHeight: 1.5 }}>
             Il datore di lavoro vede solo medie aggregate anonime. Mai dati individuali.
           </p>
           <a
@@ -649,11 +649,11 @@ export default async function WorkerWorkspacePage() {
             data-testid="workspace-privacy-link"
             style={{
               display:        'inline-block',
-              fontSize:       12,
+              ...typeStyle('caption'),
               fontWeight:     600,
               color:          TOKENS.success,
               textDecoration: 'none',
-              padding:        '7px 14px',
+              padding: `${SPACE.sm}px ${SPACE.md}px`,
               border:         '1px solid rgba(47,125,85,0.28)',
               borderRadius:   8,
               background:     'rgba(47,125,85,0.06)',
@@ -664,11 +664,11 @@ export default async function WorkerWorkspacePage() {
         </div>
         <span
           style={{
-            fontSize:      9,
+            ...typeStyle('caption'),
             fontWeight:    700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
-            padding:       '3px 8px',
+            padding: '3px 8px' /* optical: chip-internal, KORA-WP-141 documented exception */,
             borderRadius:  999,
             background:    'rgba(47,125,85,0.10)',
             color:         TOKENS.success,
@@ -681,7 +681,7 @@ export default async function WorkerWorkspacePage() {
       {/* Private activation profile */}
       <div style={{
         background: '#fff', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10,
-        padding: '20px 24px', marginBottom: 20,
+        padding: `${SPACE.lg}px ${SPACE.lg}px`, marginBottom: SPACE.lg,
       }}>
         <h2 style={sectionHeadingStyle}>Il mio profilo privato</h2>
         <ActivationProfileSection profile={activationProfile} />
@@ -690,7 +690,7 @@ export default async function WorkerWorkspacePage() {
       {/* "KORA Foundation Light" removed as implementation-era scaffolding
           (KORA-WP-125 §10). The privacy statement it carried is Product truth
           and is preserved verbatim. */}
-      <p style={{ margin: 0, fontSize: 11, lineHeight: 1.6, color: PX.ink3 }}>
+      <p style={{ margin: 0, ...typeStyle('caption'), lineHeight: 1.6, color: PX.ink3 }}>
         Spazio lavoratore · I dati aziendali rimangono aggregati e non mostrano dati individuali.
       </p>
 
@@ -704,8 +704,8 @@ export default async function WorkerWorkspacePage() {
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 const sectionHeadingStyle: React.CSSProperties = {
-  fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
-  letterSpacing: '0.07em', color: 'rgba(6,3,43,0.45)', marginBottom: 14, marginTop: 0,
+  ...typeStyle('caption', { weight: 700 }), textTransform: 'uppercase',
+  letterSpacing: '0.07em', color: 'rgba(6,3,43,0.45)', marginBottom: SPACE.md, marginTop: 0,
 };
 
 
@@ -723,24 +723,24 @@ function HistoryRow({ item }: { item: HistoryItem }) {
 
   return (
     <div style={{
-      paddingBottom: 10, borderBottom: '1px solid rgba(6,3,43,0.05)',
+      paddingBottom: SPACE.sm, borderBottom: '1px solid rgba(6,3,43,0.05)',
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: pillarColor, marginRight: 6 }}>
+          <span style={{ ...typeStyle('meta', { weight: 700 }), textTransform: 'uppercase', color: pillarColor, marginRight: SPACE.xs }}>
             {item.pillar}
           </span>
-          <span style={{ fontSize: 12, color: TOKENS.ink }}>{item.initiative_title}</span>
+          <span style={{ ...typeStyle('caption'), color: TOKENS.ink }}>{item.initiative_title}</span>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-          <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.45)' }}>{partLabel}</span>
-          <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', fontFamily: 'monospace' }}>{date}</span>
+        <div style={{ display: 'flex', gap: SPACE.sm, alignItems: 'center', flexShrink: 0 }}>
+          <span style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.45)' }}>{partLabel}</span>
+          <span style={{ ...typeStyle('caption', { tabular: true }), color: 'rgba(6,3,43,0.30)' }}>{date}</span>
         </div>
       </div>
       {item.private_note && (
         <div style={{
-          marginTop: 5, fontSize: 11, color: 'rgba(6,3,43,0.50)',
-          background: 'rgba(6,3,43,0.03)', borderRadius: 5, padding: '5px 8px',
+          marginTop: SPACE.xs, ...typeStyle('caption'), color: 'rgba(6,3,43,0.50)',
+          background: 'rgba(6,3,43,0.03)', borderRadius: 5, padding: '5px 8px' /* optical: chip-internal */,
           fontStyle: 'italic', lineHeight: 1.4,
         }}>
           {item.private_note}
@@ -762,19 +762,19 @@ function PartnerPreviewRow({ partner }: { partner: { id: string; name: string; p
   const pc = PILLAR_COLORS_MAP[partner.pillar] ?? '#555';
   return (
     <div style={{
-      paddingBottom: 10, borderBottom: '1px solid rgba(6,3,43,0.05)',
+      paddingBottom: SPACE.sm, borderBottom: '1px solid rgba(6,3,43,0.05)',
       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     }}>
       <div>
-        <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: pc, marginRight: 6 }}>
+        <span style={{ ...typeStyle('meta', { weight: 700 }), textTransform: 'uppercase', color: pc, marginRight: SPACE.xs }}>
           {partner.pillar}
         </span>
-        <span style={{ fontSize: 12, color: TOKENS.ink, fontWeight: 600 }}>{partner.name}</span>
+        <span style={{ ...typeStyle('caption', { weight: 600 }), color: TOKENS.ink }}>{partner.name}</span>
         {partner.category && (
-          <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', marginLeft: 6 }}>{partner.category}</span>
+          <span style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.40)', marginLeft: SPACE.xs }}>{partner.category}</span>
         )}
       </div>
-      <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.35)', flexShrink: 0 }}>
+      <span style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.35)', flexShrink: 0 }}>
         {DELIVERY_SHORT[partner.delivery_mode] ?? partner.delivery_mode}
       </span>
     </div>
@@ -783,9 +783,9 @@ function PartnerPreviewRow({ partner }: { partner: { id: string; name: string; p
 
 function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, borderBottom: '1px solid rgba(6,3,43,0.05)' }}>
-      <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(6,3,43,0.50)' }}>{label}</span>
-      <span style={{ fontSize: 13, color: TOKENS.ink, fontFamily: mono ? 'monospace' : 'inherit' }}>{value}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: SPACE.sm, borderBottom: '1px solid rgba(6,3,43,0.05)' }}>
+      <span style={{ ...typeStyle('caption', { weight: 600 }), color: 'rgba(6,3,43,0.50)' }}>{label}</span>
+      <span style={{ ...typeStyle('label', { tabular: mono }), color: TOKENS.ink }}>{value}</span>
     </div>
   );
 }
@@ -793,18 +793,18 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
 function PlaceholderSection({ title, description }: { title: string; description: string }) {
   return (
     <div style={{
-      background: TOKENS.surface, border: '1px dashed rgba(6,3,43,0.15)', borderRadius: 10, padding: '18px 20px',
+      background: TOKENS.surface, border: '1px dashed rgba(6,3,43,0.15)', borderRadius: 10, padding: `${SPACE.md}px ${SPACE.lg}px`,
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-        <h3 style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: 0 }}>{title}</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: SPACE.sm, marginBottom: SPACE.xs }}>
+        <h3 style={{ ...typeStyle('label', { weight: 700 }), color: TOKENS.ink, margin: 0 }}>{title}</h3>
         <span style={{
-          fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
-          background: 'rgba(6,3,43,0.07)', color: 'rgba(6,3,43,0.45)', borderRadius: 3, padding: '1px 5px',
+          ...typeStyle('meta', { weight: 700 }), letterSpacing: '0.07em', textTransform: 'uppercase',
+          background: 'rgba(6,3,43,0.07)', color: 'rgba(6,3,43,0.45)', borderRadius: 3, padding: '1px 5px' /* optical: chip-internal */,
         }}>
           Prossimamente
         </span>
       </div>
-      <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', margin: 0, lineHeight: 1.5 }}>{description}</p>
+      <p style={{ ...typeStyle('caption'), color: 'rgba(6,3,43,0.45)', margin: 0, lineHeight: 1.5 }}>{description}</p>
     </div>
   );
 }
