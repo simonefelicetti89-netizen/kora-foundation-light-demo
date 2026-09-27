@@ -23,6 +23,24 @@ export function EmptyState({ title, body, action, icon, variant = 'default' }: E
 
   return (
     <div
+      // KORA-WP-129 Wave 4b (T2) — READINESS marker. Deliberately NOT a state
+      // classification.
+      //
+      // KORA-WP-126's capture protocol must know a surface has RESOLVED before
+      // it records evidence; a loading surface must never satisfy that. This
+      // component is pre-KORA-WP-140 and emits nothing a capture can wait on,
+      // so surfaces resolving through it (via NoDataState) could not be
+      // evidenced at all.
+      //
+      // Why not `data-px-state`: that attribute is KORA-WP-140's grammar and
+      // names one of seven kinds. EmptyState does not implement that grammar,
+      // so reusing it would either claim a semantic this component lacks or
+      // invent an eighth kind. This is an orthogonal readiness flag — no second
+      // state system, and no semantic change here.
+      //
+      // Loading stays distinguishable: KORA-WP-140's own `Loading` renders
+      // through StateFrame with `data-px-state="LOADING"` and never sets this.
+      data-px-resolved="true"
       role={variant === 'access-denied' ? 'alert' : undefined}
       style={{
         display:        'flex',

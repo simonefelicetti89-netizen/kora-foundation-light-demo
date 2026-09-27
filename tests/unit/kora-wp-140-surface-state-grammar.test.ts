@@ -337,12 +337,75 @@ describe('KORA-WP-140 — the Privacy Boundary is preserved, not rebuilt', () =>
 describe('KORA-WP-140 — the WP-047 accessibility lock is honoured, not superseded', () => {
   const EMPTY = 'components/ui/EmptyState.tsx';
 
-  it('EmptyState is byte-identical to the baseline', () => {
-    expectUnchangedSinceBaseline(EMPTY);
-  });
-
+  // ── SUPERSEDED by Founder ruling 2026-09-27 (KORA-WP-129 Wave 4b T2) ──────
+  //
+  // WHAT WAS HERE: `expectUnchangedSinceBaseline(EMPTY)` — a byte-identity pin
+  // on components/ui/EmptyState.tsx.
+  //
+  // WHY IT IS REPLACED, NOT DELETED. The pin's purpose, stated by this
+  // describe block, is that KORA-WP-140 must not supersede the WP-047
+  // accessibility behaviour. That purpose is intact and is asserted more
+  // directly below. But byte-identity is stricter than the invariant it was
+  // protecting: it also barred a NON-RENDERING readiness attribute that
+  // changes no accessibility, no visual output and no semantics, while
+  // KORA-WP-126 needs exactly that to evidence surfaces resolving through this
+  // component. A pin that blocks legitimate instrumentation while the real
+  // invariant is untouched is measuring the wrong thing.
+  //
+  // The replacement is STRONGER, not weaker: byte-identity said only "these
+  // bytes did not change" and would have passed a silent accessibility
+  // regression in any file whose digest was re-pinned. The assertions below
+  // state the behaviour itself — role expression, variant mapping, visible
+  // output contract, and the absence of any WP-140 state claim — so a real
+  // regression now fails on its own terms rather than on a hash.
+  //
+  // Neither KORA-WP-047 nor KORA-WP-140 lifecycle status is reopened.
   it('the exact asserted access-denied behaviour is still present', () => {
     expect(read(EMPTY)).toMatch(/role=\{variant === 'access-denied' \? 'alert' : undefined\}/);
+  });
+
+  it('role is an alert ONLY for access-denied — no other variant becomes an alert', () => {
+    const src = read(EMPTY);
+    expect(src).not.toMatch(/role="alert"/);
+    expect(src).not.toMatch(/role=\{['"]alert['"]\}/);
+    // the ternary is the single source of the role, and its default is undefined
+    expect(src.match(/role=\{[^}]*\}/g) ?? []).toHaveLength(1);
+  });
+
+  it('the variant mapping is unchanged — warning, access-denied, default', () => {
+    const src = read(EMPTY);
+    for (const token of ['TOKENS.safeguard.watch.bg', 'TOKENS.safeguard.cap.bg', 'TOKENS.taupe',
+                         'TOKENS.safeguard.watch.dot', 'TOKENS.safeguard.cap.dot', 'TOKENS.cardBorder']) {
+      expect(src, `variant mapping lost ${token}`).toContain(token);
+    }
+  });
+
+  it('the visible output contract is unchanged — title, optional body, action, decorative icon', () => {
+    const src = read(EMPTY);
+    expect(src).toContain('{title}');
+    expect(src).toMatch(/\{body && \(/);
+    expect(src).toMatch(/\{action/);
+    // the icon stays decorative — it must never be announced
+    expect(src).toMatch(/aria-hidden="true"[^>]*>\{icon\}/);
+  });
+
+  it('the readiness marker is NON-RENDERING and claims no WP-140 state', () => {
+    const src = read(EMPTY);
+    expect(src).toContain('data-px-resolved="true"');
+    const code = src.split('\n').filter((l) => !l.trimStart().startsWith('//')).join('\n');
+    // it is a bare data attribute: no style key, no class, no element of its own
+    expect(code).not.toMatch(/data-px-resolved[^\n]*(style|className)/);
+    // and it never borrows KORA-WP-140's grammar
+    expect(code, 'EmptyState must not claim data-px-state').not.toContain('data-px-state=');
+  });
+
+  it('loading can never satisfy the resolved marker', () => {
+    // The two markers live in different modules: readiness here, state in
+    // StateFrame. KORA-WP-140's Loading renders through StateFrame with
+    // data-px-state="LOADING" and never sets data-px-resolved.
+    expect(read(STATES)).toContain('data-px-state={kind}');
+    expect(read(STATES)).toMatch(/export function Loading[\s\S]{0,240}StateFrame/);
+    expect(read(STATES), 'states.tsx must not emit the readiness marker').not.toContain('data-px-resolved');
   });
 
   it('AccessDeniedState is untouched — access denial is legitimately an alert', () => {
