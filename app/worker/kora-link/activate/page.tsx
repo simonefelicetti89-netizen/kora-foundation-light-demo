@@ -18,8 +18,9 @@ import {
   getKoraLinkEcosystemContext,
   getKoraLinkRoleSummary,
   KORA_LINK_PRIVACY_BOUNDARIES,
+  type KoraLinkCapabilityId,
+  type KoraLinkCapabilityState,
 } from '@/lib/kora-link/ecosystem';
-import { KoraLinkRoleDashboard } from '@/components/kora-link/KoraLinkRoleDashboard';
 
 export const metadata = { title: 'Il tuo KORA Link · KORA' };
 
@@ -56,6 +57,57 @@ function statusRow(
     </>
   )];
 }
+
+// WORKER-FACING PROJECTION of the shared capability truth.
+//
+// KORA-WP-129 W1, Founder review 2 finding: the shared capability records carry
+// ONE label and ONE description for every role, and both are authored in
+// implementation language — route paths, RPC names, feature-flag names, gate
+// counts, fallback behaviour. That is correct for the Admin surfaces that also
+// consume these records; it is the wrong information hierarchy for a worker,
+// who needs to know WHAT the link will let them do, not HOW it is built.
+//
+// This map is ADDITIVE and Worker-only. It changes no capability identity, no
+// `roles`, no `requiredGates`, no flag, no RPC and no state: the `id` and the
+// derived `state` below still come from the shared model, and every row is
+// rendered from it. Only the human-readable wording is role-appropriate.
+// `KoraLinkRoleDashboard` is unchanged and still serves Company, Partner and
+// Admin — which render NONE of these five records (their own capability sets are
+// `company_aggregate_visibility` and `partner_verified_scan`).
+const WORKER_CAPABILITY_MEANING: Partial<Record<KoraLinkCapabilityId, { name: string; meaning: string }>> = {
+  public_route: {
+    name:    'Aprire il tuo KORA Link dal chip',
+    meaning: 'Avvicinando il telefono al chip si aprirà una pagina sicura, che verifica il collegamento e non mostra mai dati sensibili.',
+  },
+  db_lookup: {
+    name:    'Verifica del collegamento',
+    meaning: 'KORA controlla che il tuo collegamento sia valido e attivo prima di mostrarti qualsiasi cosa. Se la verifica non è possibile, non viene mostrato nulla.',
+  },
+  worker_activation: {
+    name:    'Attivare il tuo KORA Link',
+    meaning: 'Potrai associare il tuo KORA Link al tuo profilo worker. L\'attivazione parte sempre da te.',
+  },
+  consent_capture: {
+    name:    'Confermare il tuo consenso',
+    meaning: 'L\'attivazione richiederà sempre una tua conferma esplicita. Il testo definitivo del consenso è in attesa di approvazione DPO.',
+  },
+  space_initiative_linking: {
+    name:    'Collegarti alle iniziative KORA Space',
+    meaning: 'In futuro il tuo KORA Link potrà collegarti alle iniziative KORA Space a cui scegli di partecipare.',
+  },
+};
+
+// Worker-facing rendering of the SHARED state value. The state itself is never
+// reinterpreted — `locked` and `requires_gate` both still mean "not available",
+// and no state is ever presented as available when it is not.
+const WORKER_STATE_WORDING: Record<KoraLinkCapabilityState, { label: string; tone: 'ok' | 'info' }> = {
+  available:     { label: 'Disponibile',                  tone: 'ok'   },
+  configured:    { label: 'Attivo in ambiente di prova',   tone: 'info' },
+  locked:        { label: 'Non ancora attivo',             tone: 'info' },
+  requires_gate: { label: 'In attesa di verifica esterna', tone: 'info' },
+  planned:       { label: 'Previsto in futuro',            tone: 'info' },
+  disabled:      { label: 'Non attivo',                    tone: 'info' },
+};
 
 export default async function WorkerKoraLinkActivatePage() {
   const auth = await requireWorkerUser();
@@ -202,26 +254,55 @@ export default async function WorkerKoraLinkActivatePage() {
                 <li style={{ ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
                   L&apos;URL del chip NFC non contiene mai il tuo nome, la tua email o altri dati sensibili.
                 </li>
+                {/* The two governed worker boundary statements were previously
+                    rendered verbatim by KoraLinkBoundaryCard, which left with the
+                    shared dashboard. Their MEANING is preserved above, in worker
+                    language, and neither guarantee is weakened:
+                      • `worker_controls_activation` is rendered VERBATIM as the
+                        second bullet (`workerBoundary.statement`).
+                      • `no_raw_token_persistence` — "solo il digest HMAC-SHA256
+                        attraversa il livello dati" — is stated as the fifth
+                        bullet instead: the NFC URL never carries the worker's
+                        name, email or other sensitive data. Rendering the
+                        original sentence here would reintroduce exactly the
+                        implementation language this remediation removes, on the
+                        one surface where a worker reads their own guarantees.
+                    Recorded for Founder decision, not decided silently. */}
               </ul>
             </SplitPart>
           </SplitRegion>
         </Band>
 
-        {/* 4. WHAT HAPPENS WHEN ACTIVATION BECOMES AVAILABLE — the shared
-            capability shell, demoted below the privacy guarantee.
-            `showReadiness={false}` is an EXISTING prop of the shared component
-            (it defaults to true): the nine internal readiness gates — Runtime
-            base, Schema 034, DPO/legal, RLS 035, Staging env, Public route
-            enablement, Worker activation, Partner scan, Production readiness —
-            are Admin governance evidence and already have governed Admin
-            surfaces. Passing the prop at THIS call site only leaves the shared
-            component, and the Company/Partner/Admin surfaces, untouched. */}
+        {/* 4. WHAT HAPPENS WHEN ACTIVATION BECOMES AVAILABLE.
+            Composed HERE rather than through KoraLinkRoleDashboard, because that
+            component exposes no presentation hook for capabilities — it takes
+            only `capability` and renders the shared implementation wording. The
+            nine internal readiness gates are gone with it; they are Admin
+            governance evidence and already have governed Admin surfaces, so
+            nothing is relocated or duplicated. The shared components and the
+            Company/Partner/Admin surfaces are untouched.
+            Five cards become five facts: hierarchy follows worker meaning. */}
         <Band>
           <div style={{ padding: `${SPACE.md}px ${SPACE.md}px` }}>
-            <KoraLinkRoleDashboard
-              summary={summary}
-              capabilitiesTitle="Cosa potrai fare con KORA Link"
-              showReadiness={false}
+            <p style={{ margin: `0 0 ${SPACE.md}px`, ...typeStyle('meta'), color: TOKENS.inkHint }}>
+              Cosa potrai fare con KORA Link
+            </p>
+            <Facts
+              rows={summary.capabilities.map((c) => {
+                const worker = WORKER_CAPABILITY_MEANING[c.id];
+                const state = WORKER_STATE_WORDING[c.state];
+                return [
+                  worker?.name ?? c.label,
+                  (
+                    <>
+                      <Status tone={state.tone}>{state.label}</Status>
+                      <span style={{ display: 'block', marginTop: SPACE.xs, ...typeStyle('caption'), color: TOKENS.inkHint }}>
+                        {worker?.meaning ?? c.description}
+                      </span>
+                    </>
+                  ),
+                ] as [string, React.ReactNode];
+              })}
             />
           </div>
         </Band>
