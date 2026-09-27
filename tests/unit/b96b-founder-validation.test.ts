@@ -473,17 +473,28 @@ describe('B96-B Hero metrics', () => {
 // /admin/founder-validation is now in Pilot Lifecycle group.
 describe('B96-B Navigation — Founder group in admin sidebar', () => {
 
-  it('admin sidebar Pilot Lifecycle group contains Founder Validation link (B169 — merged from Founder group)', () => {
+  // ── SUPERSEDED by KORA-WP-127, 2026-09-27 ────────────────────────────────
+  // These two assertions pinned 'Founder Validation' INSIDE the operational
+  // 'Pilot Lifecycle' group. KORA-WP-127's contract requires the opposite:
+  // "founder/lab/demo tooling is separated from operational navigation".
+  // The substance this test protects — the destination is reachable from Admin
+  // navigation and carries a real label — is preserved exactly and simply
+  // re-pointed at its new home. The destination is NOT retired.
+  it('admin sidebar exposes Founder Validation in the separated founder group (KORA-WP-127)', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const pilotGroup = groups.find((g) => g.heading === 'Pilot Lifecycle');
-    expect(pilotGroup).toBeDefined();
-    const founderItem = pilotGroup?.items.find((i) => i.href === '/admin/founder-validation');
+    const founderGroup = groups.find((g) => g.heading === 'Founder Tooling');
+    expect(founderGroup).toBeDefined();
+    const founderItem = founderGroup?.items.find((i) => i.href === '/admin/founder-validation');
     expect(founderItem).toBeDefined();
+
+    // and it is no longer offered beside operational destinations
+    const pilotGroup = groups.find((g) => g.heading === 'Pilot Lifecycle');
+    expect(pilotGroup?.items.some((i) => i.href === '/admin/founder-validation')).toBe(false);
   });
 
-  it('Founder Validation item has correct label in Pilot Lifecycle group', () => {
+  it('Founder Validation item has correct label in the founder group', () => {
     const groups     = buildNavGroups('KORA_ADMIN');
-    const pilotGroup = groups.find((g) => g.heading === 'Pilot Lifecycle');
+    const pilotGroup = groups.find((g) => g.heading === 'Founder Tooling');
     const item       = pilotGroup?.items.find((i) => i.href === '/admin/founder-validation');
     expect(item?.label).toBeTruthy();
   });

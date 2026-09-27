@@ -80,9 +80,16 @@ describe('KORA-WP-012 (B/C) — reachable from normal Admin navigation', () => {
     expect(hits).toHaveLength(1);
   });
 
-  it('it lives in the existing companies group — no new information architecture', () => {
+  it('it lives in the existing companies group — KORA-WP-012 introduced no information architecture of its own', () => {
+    // SUPERSEDED IN PART by KORA-WP-127, 2026-09-27. The group-id list below is
+    // incidental to this test: its subject is that WORKFORCE BASELINE sits in
+    // the pre-existing 'companies' group, i.e. that KORA-WP-012 invented no IA.
+    // That claim is unchanged and still asserted below. The list gains
+    // 'founder-tooling' because KORA-WP-127 — which IS contracted to
+    // rationalise Admin information architecture — separated founder tooling
+    // out of the operational 'pilot-lifecycle' group.
     const groupIds = ADMIN_NAV_GROUPS.map((g) => g.id);
-    expect(groupIds).toEqual(['pilot-lifecycle', 'companies', 'governance', 'operations', 'network-content', 'platform']);
+    expect(groupIds).toEqual(['pilot-lifecycle', 'companies', 'governance', 'operations', 'network-content', 'platform', 'founder-tooling']);
     const group = ADMIN_NAV_GROUPS.find((g) => g.items.some((i) => i.href === ADMIN_ROUTE));
     expect(group?.id).toBe('companies');
   });
