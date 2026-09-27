@@ -166,6 +166,17 @@ export const ROUTE_ARCHETYPE: Record<string, Archetype> = {
   '/worker/activity-discovery':        'DIRECTORY_INDEX',
   '/worker/activity-discovery/detail': 'RECORD_DETAIL',
   '/worker/kora-link/activate':        'DISCLOSURE_STATIC',
+  // KORA-WP-129 Wave 4b (W2). Chosen by what each surface's job actually is,
+  // not by which threshold is easiest to pass:
+  //   bookings      — the worker WORKS THROUGH their own requests (they can
+  //                   cancel one), so OPERATIONAL_WORKSPACE, not a directory.
+  //   commons       — a list whose job is to get the reader into an initiative.
+  //   opportunities — an informational partner catalogue, same job.
+  //   PIB           — one record and everything true about it.
+  '/worker/bookings':                  'OPERATIONAL_WORKSPACE',
+  '/worker/commons':                   'DIRECTORY_INDEX',
+  '/worker/opportunities':             'DIRECTORY_INDEX',
+  '/worker/personal-impact-balance':   'RECORD_DETAIL',
   // Partner
   '/partner/workspace':            'OPERATIONAL_WORKSPACE',
   // Public

@@ -3,13 +3,18 @@
 // B116: Interactive partner catalog with pillar filter for workers.
 // Display-only: no booking, no contact, no ranking, no pricing.
 // No click tracking — browsing is private and not stored.
+//
+// KORA-WP-129 Wave 4b (W2): the card grid becomes ONE Region of hairline rows.
+// The pillar filter is EXISTING capability and is preserved exactly — no
+// ranking, recommendation or personalisation is introduced. Every label,
+// description and privacy sentence is unchanged.
 
 import { useState } from 'react';
 import type { PartnerItem } from '../page';
-import { BADGE_TOKENS, PILLAR_COLORS, TOKENS, type PillarColorKey } from '@/lib/design/kora-design-tokens';
+import { PILLAR_COLORS, TOKENS, SPACE, typeStyle, PX, type PillarColorKey } from '@/lib/design/kora-design-tokens';
+import { Region, Chip, NotYetAvailable, Zero } from '@/components/ui/px';
 
 const PILLARS   = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
-
 
 const PILLAR_LABELS: Record<string, string> = {
   LIFE: 'Life', GROWTH: 'Growth', CONNECTION: 'Connection',
@@ -36,28 +41,22 @@ export function PartnerCatalogClient({ partners }: { partners: PartnerItem[] }) 
     : partners.filter(p => p.pillar === pillarFilter);
 
   if (partners.length === 0) {
+    // Not an absence of data but a capability that is not live yet: the admin
+    // publishes partners, and until then there is nothing to show.
     return (
-      <div
-        data-testid="partner-catalog-empty"
-        style={{
-          background: 'rgba(6,3,43,0.03)', border: '1px dashed rgba(6,3,43,0.15)',
-          borderRadius: 10, padding: '32px', textAlign: 'center',
-        }}
-      >
-        <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.45)', margin: 0, lineHeight: 1.6 }}>
-          La rete partner sarà disponibile prossimamente.<br />
-          <span style={{ fontSize: 11, color: 'rgba(6,3,43,0.35)' }}>
-            I partner vengono pubblicati dall&apos;amministratore KORA — quando attivi, appariranno qui organizzati per pillar.
-          </span>
-        </p>
+      <div data-testid="partner-catalog-empty">
+        <NotYetAvailable
+          title="La rete partner sarà disponibile prossimamente"
+          expected="I partner vengono pubblicati dall'amministratore KORA — quando attivi, appariranno qui organizzati per pillar."
+        />
       </div>
     );
   }
 
   return (
-    <div>
-      {/* Pillar filter */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+    <Region label="Rete partner">
+      {/* Pillar filter — existing capability, unchanged */}
+      <div style={{ display: 'flex', gap: SPACE.sm, marginBottom: SPACE.md, flexWrap: 'wrap' }}>
         <FilterChip label="Tutti" active={pillarFilter === 'all'} onClick={() => setPillarFilter('all')} />
         {PILLARS.filter(p => partners.some(partner => partner.pillar === p)).map(p => (
           <FilterChip
@@ -71,99 +70,77 @@ export function PartnerCatalogClient({ partners }: { partners: PartnerItem[] }) 
       </div>
 
       {displayed.length === 0 ? (
-        <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.40)', textAlign: 'center', padding: '24px 0' }}>
-          Nessun partner per il pillar selezionato.
-        </p>
+        <Zero measured={`partner nel pillar ${pillarFilter}`} />
       ) : (
-        <div style={{ display: 'grid', gap: 12 }}>
-          {displayed.map(partner => (
-            <PartnerCard key={partner.id} partner={partner} />
+        <div>
+          {displayed.map((partner, i) => (
+            <PartnerRow key={partner.id} partner={partner} last={i === displayed.length - 1} />
           ))}
         </div>
       )}
 
-      <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', marginTop: 20, lineHeight: 1.5 }}>
+      <p style={{ ...typeStyle('caption'), color: TOKENS.inkHint, marginTop: SPACE.md, marginBottom: 0 }}>
         {displayed.length} partner{displayed.length !== 1 ? ' disponibili' : ' disponibile'}
         {pillarFilter !== 'all' && ` per pillar ${pillarFilter}`}.
         La tua navigazione non viene registrata né condivisa con la tua azienda.
       </p>
-    </div>
+    </Region>
   );
 }
 
-function PartnerCard({ partner }: { partner: PartnerItem }) {
+// One partner ROW, not a card. The pillar keeps its colour because the
+// catalogue is organised by pillar; every other qualifier is quiet text.
+function PartnerRow({ partner, last }: { partner: PartnerItem; last: boolean }) {
   const pillarColor = PILLAR_COLORS[partner.pillar as PillarColorKey] ?? TOKENS.inkHint;
 
   return (
     <div
       data-testid={`partner-card-${partner.pillar}`}
       style={{
-        background: '#fff', border: '1px solid rgba(6,3,43,0.09)',
-        borderRadius: 10, padding: '16px 18px',
+        display: 'grid', gap: SPACE.xs, padding: `${SPACE.md}px 0`,
+        borderBottom: last ? undefined : `1px solid ${PX.line}`,
       }}
     >
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
-            <span style={{
-              fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
-              color: pillarColor,
-            }}>
-              {PILLAR_LABELS[partner.pillar] ?? partner.pillar}
-            </span>
-            <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.35)' }}>
-              {PILLAR_DESCRIPTIONS[partner.pillar]}
-            </span>
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, marginBottom: 2 }}>
-            {partner.name}
-          </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: SPACE.sm, flexWrap: 'wrap' }}>
+        <p style={{ margin: 0, ...typeStyle('label', { weight: 700 }), color: TOKENS.ink }}>
+          {partner.name}
           {partner.category && (
-            <div style={{ fontSize: 10, color: 'rgba(6,3,43,0.45)' }}>{partner.category}</div>
+            <span style={{ ...typeStyle('caption'), color: TOKENS.inkHint }}>{' · '}{partner.category}</span>
           )}
-        </div>
-        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-          <span style={{
-            fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-            background: 'rgba(6,3,43,0.05)', color: 'rgba(6,3,43,0.50)',
-            borderRadius: 4, padding: '2px 6px',
-          }}>
-            {DELIVERY_LABELS[partner.delivery_mode] ?? partner.delivery_mode}
-          </span>
-          {partner.city && (
-            <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.35)' }}>{partner.city}</span>
-          )}
-        </div>
+        </p>
+        <Chip>{DELIVERY_LABELS[partner.delivery_mode] ?? partner.delivery_mode}</Chip>
       </div>
 
-      {/* Description */}
+      <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkHint }}>
+        <span style={{ ...typeStyle('caption', { weight: 700 }), color: pillarColor }}>
+          {PILLAR_LABELS[partner.pillar] ?? partner.pillar}
+        </span>
+        {' · '}{PILLAR_DESCRIPTIONS[partner.pillar]}
+        {partner.city && <>{' · '}{partner.city}</>}
+      </p>
+
       {partner.description && (
-        <div style={{ fontSize: 11, color: 'rgba(6,3,43,0.55)', lineHeight: 1.5, marginTop: 8 }}>
+        <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkSecondary }}>
           {partner.description.length > 180
             ? `${partner.description.slice(0, 180)}…`
             : partner.description}
-        </div>
+        </p>
       )}
 
-      {/* External link — opens in new tab, no tracking */}
       {partner.website_url && (
-        <div style={{ marginTop: 12 }}>
+        <p style={{ margin: 0 }}>
           <a
             href={partner.website_url}
             target="_blank"
             rel="noreferrer noopener"
-            style={{
-              fontSize: 11, fontWeight: 600, color: BADGE_TOKENS.info.text,
-              textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4,
-            }}
+            style={{ ...typeStyle('caption', { weight: 700 }), color: TOKENS.accent, textDecoration: 'none' }}
           >
             Scopri di più →
           </a>
-          <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.30)', marginLeft: 8 }}>
+          <span style={{ ...typeStyle('caption'), color: TOKENS.inkHint, marginLeft: SPACE.sm }}>
             (link esterno — KORA non traccia questo click)
           </span>
-        </div>
+        </p>
       )}
     </div>
   );
@@ -176,12 +153,12 @@ function FilterChip({
     <button
       onClick={onClick}
       style={{
-        padding: '4px 14px', borderRadius: 99, fontSize: 11, fontWeight: 600,
-        cursor: 'pointer', border: '1px solid',
+        ...typeStyle('caption', { weight: 600 }),
+        padding: `${SPACE.xs}px 14px` /* optical: control-internal, KORA-WP-141 documented exception */,
+        borderRadius: 99, cursor: 'pointer', border: '1px solid',
         background: active ? (color ?? TOKENS.ink) : 'transparent',
-        color: active ? '#fff' : (color ?? 'rgba(6,3,43,0.55)'),
-        borderColor: active ? (color ?? TOKENS.ink) : 'rgba(6,3,43,0.15)',
-        transition: 'all 0.1s',
+        color: active ? '#fff' : (color ?? TOKENS.inkSecondary),
+        borderColor: active ? (color ?? TOKENS.ink) : TOKENS.inkBorder,
       }}
     >
       {label}

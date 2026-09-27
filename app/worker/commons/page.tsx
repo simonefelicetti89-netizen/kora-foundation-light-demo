@@ -23,11 +23,10 @@ import { OPENING_GRADE_LABELS, OPENING_GRADE_COLORS } from '@/lib/commons/types'
 import { InitiativesMapClient } from '@/components/commons/InitiativesMapClient';
 import { WorkerBookingButton } from '@/components/commons/WorkerBookingButton';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
-import { BADGE_TOKENS, PILLAR_SURFACE, TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, PILLAR_SURFACE, TOKENS, SPACE, typeStyle, TYPE_FAMILY, PX } from '@/lib/design/kora-design-tokens';
+import { PageHead, Workspace, Col, Region, Notice, Chip, NoData } from '@/components/ui/px';
 
 export const metadata = { title: 'KORA Space · Worker' };
-
-const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
 const CATEGORY_LABELS: Record<string, string> = {
   announcement:      'Annuncio',
@@ -112,269 +111,179 @@ export default async function WorkerCommonsPage() {
   return (
     <div
       data-testid="worker-commons"
-      style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px 80px', fontFamily: FONT }}
+      style={{ maxWidth: 1180, margin: '0 auto', padding: `${SPACE.lg}px ${SPACE.md}px ${SPACE['2xl']}px`, fontFamily: TYPE_FAMILY }}
     >
       {/* Back nav */}
-      <Link href="/worker/workspace" style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', textDecoration: 'none', display: 'inline-block', marginBottom: 24 }}>
+      <Link href="/worker/workspace" style={{ ...typeStyle('caption'), color: TOKENS.inkHint, textDecoration: 'none', display: 'inline-block', marginBottom: SPACE.sm }}>
         ← Spazio operativo
       </Link>
 
-      {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ marginBottom: 8 }}>
-          <BoundaryBadge mode="LIVE" variant="light" />
-        </div>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: '0 0 8px' }}>
-          KORA Space
-        </h1>
-        <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}>
-          Iniziative, opportunità e contenuti pubblicati per la tua organizzazione e la rete KORA.
-        </p>
-      </div>
+      <PageHead
+        eyebrow="My KORA · KORA Space"
+        title="KORA Space"
+        lead="Iniziative, opportunità e contenuti pubblicati per la tua organizzazione e la rete KORA."
+        meta={<BoundaryBadge mode="LIVE" variant="light" />}
+      />
 
-      {/* Privacy notice — non-suppressible */}
-      <div
-        data-testid="worker-commons-privacy-notice"
-        style={{
-          background:   'rgba(47,125,85,0.07)',
-          border:       '1.5px solid rgba(47,125,85,0.22)',
-          borderRadius: 12,
-          padding:      '12px 16px',
-          marginBottom: 28,
-          display:      'flex',
-          gap:          10,
-          alignItems:   'flex-start',
-        }}
-      >
-        <span style={{ fontSize: 14, lineHeight: 1.2, flexShrink: 0 }}>&#128274;</span>
-        <p style={{ fontSize: 12, color: TOKENS.success, margin: 0, lineHeight: 1.6 }}>
+      {/* Privacy notice — non-suppressible. Now the governed system message,
+          which carries its own icon; the decorative lock glyph is dropped.
+          Copy unchanged. */}
+      <div data-testid="worker-commons-privacy-notice">
+        <Notice tone="ok">
           KORA Space mostra contenuti approvati per il tuo tenant e iniziative aperte alla rete.
           La partecipazione è sempre volontaria e non genera classifiche individuali.
           La tua visualizzazione non viene mostrata al datore di lavoro come dato individuale — l&apos;azienda vede solo segnali aggregati.
-        </p>
+        </Notice>
       </div>
 
-      {/* Booking lifecycle — non-suppressible. Salvaged verbatim (B-WORKER-3)
-          from /my-kora/kora-space's removed live branch — same explainer
-          copy, now shown once here instead of duplicated on both surfaces. */}
-      {hasInitiatives && (
-        <div
-          data-testid="space-booking-lifecycle"
-          style={{
-            background: 'rgba(47,125,85,0.04)', border: '1px solid rgba(47,125,85,0.14)',
-            borderRadius: 10, padding: '12px 16px', marginBottom: 20,
-          }}
-        >
-          <p style={{ fontSize: 11, fontWeight: 700, color: BADGE_TOKENS.eligible.text, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Come funziona la partecipazione
-          </p>
-          <ol style={{ fontSize: 11, color: BADGE_TOKENS.eligible.text, margin: 0, paddingLeft: 16, lineHeight: 1.9 }}>
-            <li>Richiedi partecipazione su KORA Space</li>
-            <li>KORA esamina la richiesta</li>
-            <li>Ricevi conferma (partecipazione confermata)</li>
-            <li>Partecipazione registrata dopo l&apos;evento</li>
-            <li>Traccia privata nel tuo percorso personale (solo tua)</li>
-            <li>Segnale aggregato per l&apos;ecosistema — il datore di lavoro non vede il tuo percorso individuale</li>
-          </ol>
-        </div>
-      )}
+      <Workspace style={{ marginTop: SPACE.lg }}>
 
-      {/* ── Sezione Iniziative ────────────────────────────────────────────── */}
-      {hasInitiatives && (
-        <section
-          data-testid="worker-commons-initiatives"
-          style={{ marginBottom: 40 }}
-        >
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: TOKENS.ink, letterSpacing: '-0.02em', margin: '0 0 16px' }}>
-            Iniziative partecipabili
-          </h2>
+        {/* PRIMARY — what the worker can actually enter. */}
+        <Col span="main">
+          {hasInitiatives && (
+            <Region label="Iniziative partecipabili">
+              {/* Mappa — dynamic Leaflet (no SSR) */}
+              <div data-testid="worker-commons-map" style={{ marginBottom: SPACE.md }}>
+                <InitiativesMapClient initiatives={initiatives} height={340} />
+              </div>
 
-          {/* Mappa — dynamic Leaflet (no SSR) */}
-          <div data-testid="worker-commons-map" style={{ marginBottom: 20 }}>
-            <InitiativesMapClient initiatives={initiatives} height={340} />
+              <section data-testid="worker-commons-initiatives">
+                {initiatives.map((initiative, idx) => {
+                  const grade = initiative.opening_grade as InitiativeOpeningGrade | null;
+                  const gradeLabel = grade ? OPENING_GRADE_LABELS[grade] : null;
+                  const pillarStyle = initiative.pillar ? PILLAR_COLORS[initiative.pillar] : null;
+
+                  return (
+                    <article
+                      key={initiative.id}
+                      data-testid="worker-commons-initiative-card"
+                      style={{
+                        display: 'grid', gap: SPACE.xs, padding: `${SPACE.md}px 0`,
+                        borderBottom: idx === initiatives.length - 1 ? undefined : `1px solid ${PX.line}`,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: SPACE.sm, flexWrap: 'wrap' }}>
+                        <h3 style={{ margin: 0, ...typeStyle('subsection'), color: TOKENS.ink }}>
+                          {initiative.title}
+                        </h3>
+                        {grade && gradeLabel && (
+                          <span data-testid={`opening-grade-badge-${grade}`}>
+                            <Chip>{gradeLabel}</Chip>
+                          </span>
+                        )}
+                      </div>
+
+                      <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkHint }}>
+                        {initiative.pillar && pillarStyle && (
+                          <span style={{ ...typeStyle('caption', { weight: 700 }), color: pillarStyle.text }}>{initiative.pillar}{' · '}</span>
+                        )}
+                        {CATEGORY_LABELS[initiative.category] ?? initiative.category}
+                        {initiative.event_start_at && <>{' · '}{new Date(initiative.event_start_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}</>}
+                        {initiative.location_address && <>{' · '}{initiative.location_address}</>}
+                        {initiative.capacity_internal != null && <>{' · '}{initiative.capacity_internal} posti{initiative.capacity_cross != null ? ` (+${initiative.capacity_cross} cross-azienda)` : ''}</>}
+                      </p>
+
+                      <p style={{ margin: 0, ...typeStyle('secondary'), color: TOKENS.inkSecondary, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {initiative.body}
+                      </p>
+
+                      {/* Pulsante Prenota — solo per iniziative cross_company */}
+                      {/* B185: WorkerBookingButton (client) POSTs JSON — sostituisce la form HTML
+                          che inviava application/x-www-form-urlencoded mentre l'API richiede JSON. */}
+                      {grade === 'cross_company' && (
+                        <div style={{ justifySelf: 'start' }}>
+                          <WorkerBookingButton postId={initiative.id} initialStatus={bookingStatusByPostId[initiative.id]} />
+                        </div>
+                      )}
+                      {grade !== 'cross_company' && (
+                        <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkHint }}>
+                          Iniziativa informativa, pubblicata dalla tua azienda — non richiede prenotazione in KORA Space.
+                        </p>
+                      )}
+                    </article>
+                  );
+                })}
+              </section>
+            </Region>
+          )}
+
+          {/* ── Sezione Post generici ─────────────────────────────────────────── */}
+          <Region label="Contenuti">
+            {allPosts.length === 0 ? (
+              <div data-testid="worker-commons-empty">
+                <NoData
+                  missing={hasInitiatives
+                    ? 'Nessun contenuto generico — guarda le iniziative sopra.'
+                    : 'La tua organizzazione non ha ancora pubblicato contenuti in KORA Space.'}
+                />
+              </div>
+            ) : (
+              <div>
+                {allPosts.map((post, idx) => {
+                  const pillarStyle = post.pillar ? PILLAR_COLORS[post.pillar] : null;
+                  return (
+                    <article
+                      key={post.id}
+                      data-testid="worker-commons-post-card"
+                      style={{
+                        display: 'grid', gap: SPACE.xs, padding: `${SPACE.md}px 0`,
+                        borderBottom: idx === allPosts.length - 1 ? undefined : `1px solid ${PX.line}`,
+                      }}
+                    >
+                      <h2 style={{ margin: 0, ...typeStyle('subsection'), color: TOKENS.ink }}>
+                        {post.title}
+                      </h2>
+                      <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkHint }}>
+                        {post.pillar && pillarStyle && (
+                          <span style={{ ...typeStyle('caption', { weight: 700 }), color: pillarStyle.text }}>{post.pillar}{' · '}</span>
+                        )}
+                        {CATEGORY_LABELS[post.category] ?? post.category}
+                        {' · '}Pubblicato il{' '}
+                        {new Date(post.published_at ?? post.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </p>
+                      <p style={{ margin: 0, ...typeStyle('secondary'), color: TOKENS.inkSecondary, whiteSpace: 'pre-wrap' }}>
+                        {post.body}
+                      </p>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </Region>
+        </Col>
+
+        {/* Subordinate: how participation works, and the boundary footer. */}
+        <Col span="rail">
+          {/* Booking lifecycle — non-suppressible. Salvaged verbatim (B-WORKER-3)
+              from /my-kora/kora-space's removed live branch — same explainer
+              copy, now shown once here instead of duplicated on both surfaces. */}
+          {hasInitiatives && (
+            <div data-testid="space-booking-lifecycle">
+              <Region label="Come funziona la partecipazione" tone="inset">
+                <ol style={{ margin: 0, paddingLeft: SPACE.md, display: 'grid', gap: SPACE.xs, ...typeStyle('caption'), color: BADGE_TOKENS.eligible.text }}>
+                  <li>Richiedi partecipazione su KORA Space</li>
+                  <li>KORA esamina la richiesta</li>
+                  <li>Ricevi conferma (partecipazione confermata)</li>
+                  <li>Partecipazione registrata dopo l&apos;evento</li>
+                  <li>Traccia privata nel tuo percorso personale (solo tua)</li>
+                  <li>Segnale aggregato per l&apos;ecosistema — il datore di lavoro non vede il tuo percorso individuale</li>
+                </ol>
+              </Region>
+            </div>
+          )}
+
+          {/* Boundary footer */}
+          <div data-testid="worker-commons-footer">
+            <Region label="Confine KORA Space" tone="inset">
+              <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkHint }}>
+                KORA Space · Tenant-scoped · Solo contenuti approvati da KORA ·
+                Nessun commento · Nessuna reaction · Nessun read receipt ·
+                Mappa: OpenStreetMap · La tua visualizzazione non viene mostrata al datore di lavoro come dato individuale.
+              </p>
+            </Region>
           </div>
-
-          {/* Cards iniziative */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {initiatives.map((initiative) => {
-              const grade = initiative.opening_grade as InitiativeOpeningGrade | null;
-              const gradeStyle = grade ? OPENING_GRADE_COLORS[grade] : null;
-              const gradeLabel = grade ? OPENING_GRADE_LABELS[grade] : null;
-              const pillarStyle = initiative.pillar ? PILLAR_COLORS[initiative.pillar] : null;
-
-              return (
-                <article
-                  key={initiative.id}
-                  data-testid="worker-commons-initiative-card"
-                  style={{
-                    background:   '#FFFFFF',
-                    border:       '1px solid rgba(6,3,43,0.09)',
-                    borderRadius: 14,
-                    padding:      '16px 20px',
-                  }}
-                >
-                  {/* Badges */}
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                    {grade && gradeStyle && (
-                      <span
-                        data-testid={`opening-grade-badge-${grade}`}
-                        style={{
-                          fontSize:     9,
-                          fontWeight:   700,
-                          color:        gradeStyle.text,
-                          padding:      '2px 8px',
-                          borderRadius: 4,
-                          background:   gradeStyle.bg,
-                          border:       `1px solid ${gradeStyle.border}`,
-                          letterSpacing: '0.04em',
-                        }}
-                      >
-                        {gradeLabel}
-                      </span>
-                    )}
-                    {initiative.pillar && pillarStyle && (
-                      <span style={{ fontSize: 9, fontWeight: 600, color: pillarStyle.text, padding: '2px 8px', borderRadius: 4, background: pillarStyle.bg }}>
-                        {initiative.pillar}
-                      </span>
-                    )}
-                    <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.35)', padding: '2px 8px', background: 'rgba(6,3,43,0.04)', borderRadius: 4 }}>
-                      {CATEGORY_LABELS[initiative.category] ?? initiative.category}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 style={{ fontSize: 14, fontWeight: 700, color: TOKENS.ink, margin: '0 0 6px', lineHeight: 1.35 }}>
-                    {initiative.title}
-                  </h3>
-
-                  {/* Body preview */}
-                  <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.60)', margin: '0 0 10px', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {initiative.body}
-                  </p>
-
-                  {/* Meta row */}
-                  <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', marginBottom: grade === 'cross_company' ? 12 : 0 }}>
-                    {initiative.event_start_at && (
-                      <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.50)' }}>
-                        📅{' '}
-                        {new Date(initiative.event_start_at).toLocaleDateString('it-IT', {
-                          day: 'numeric', month: 'long', year: 'numeric',
-                        })}
-                      </span>
-                    )}
-                    {initiative.location_address && (
-                      <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.50)' }}>
-                        📍 {initiative.location_address}
-                      </span>
-                    )}
-                    {initiative.capacity_internal != null && (
-                      <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)' }}>
-                        {initiative.capacity_internal} posti
-                        {initiative.capacity_cross != null ? ` (+${initiative.capacity_cross} cross-azienda)` : ''}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Pulsante Prenota — solo per iniziative cross_company */}
-                  {/* B185: WorkerBookingButton (client) POSTs JSON — sostituisce la form HTML
-                      che inviava application/x-www-form-urlencoded mentre l'API richiede JSON. */}
-                  {grade === 'cross_company' && (
-                    <WorkerBookingButton postId={initiative.id} initialStatus={bookingStatusByPostId[initiative.id]} />
-                  )}
-                  {grade !== 'cross_company' && (
-                    <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', margin: '4px 0 0', lineHeight: 1.4 }}>
-                      Iniziativa informativa, pubblicata dalla tua azienda — non richiede prenotazione in KORA Space.
-                    </p>
-                  )}
-                </article>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* ── Sezione Post generici ─────────────────────────────────────────── */}
-      <section>
-        <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: TOKENS.ink, letterSpacing: '-0.02em', margin: '0 0 16px' }}>
-          Contenuti
-        </h2>
-
-        {allPosts.length === 0 ? (
-          <div
-            data-testid="worker-commons-empty"
-            style={{
-              textAlign:    'center',
-              padding:      '48px 24px',
-              background:   'rgba(6,3,43,0.03)',
-              borderRadius: 14,
-              border:       '1px dashed rgba(6,3,43,0.10)',
-            }}
-          >
-            <p style={{ fontSize: 14, fontWeight: 600, color: TOKENS.ink, margin: '0 0 8px' }}>
-              Nessun contenuto ancora
-            </p>
-            <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', margin: 0 }}>
-              {hasInitiatives
-                ? 'Nessun contenuto generico — guarda le iniziative sopra.'
-                : 'La tua organizzazione non ha ancora pubblicato contenuti in KORA Space.'}
-            </p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {allPosts.map((post) => {
-              const pillarStyle = post.pillar ? PILLAR_COLORS[post.pillar] : null;
-              return (
-                <article
-                  key={post.id}
-                  data-testid="worker-commons-post-card"
-                  style={{
-                    background:   '#FFFFFF',
-                    border:       '1px solid rgba(6,3,43,0.09)',
-                    borderRadius: 14,
-                    padding:      '18px 22px',
-                  }}
-                >
-                  {/* Badges */}
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-                    <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', padding: '2px 8px', background: 'rgba(6,3,43,0.05)', borderRadius: 4 }}>
-                      {CATEGORY_LABELS[post.category] ?? post.category}
-                    </span>
-                    {post.pillar && pillarStyle && (
-                      <span style={{ fontSize: 10, fontWeight: 600, color: pillarStyle.text, padding: '2px 8px', borderRadius: 4, background: pillarStyle.bg }}>
-                        {post.pillar}
-                      </span>
-                    )}
-                  </div>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: TOKENS.ink, margin: '0 0 8px', lineHeight: 1.35 }}>
-                    {post.title}
-                  </h2>
-                  <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.65)', margin: '0 0 12px', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>
-                    {post.body}
-                  </p>
-                  <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', margin: 0 }}>
-                    Pubblicato il{' '}
-                    {new Date(post.published_at ?? post.created_at).toLocaleDateString('it-IT', {
-                      day: 'numeric', month: 'long', year: 'numeric',
-                    })}
-                  </p>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* Boundary footer */}
-      <div
-        data-testid="worker-commons-footer"
-        style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 16, marginTop: 40 }}
-      >
-        <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', margin: 0, lineHeight: 1.6 }}>
-          KORA Space · Tenant-scoped · Solo contenuti approvati da KORA ·
-          Nessun commento · Nessuna reaction · Nessun read receipt ·
-          Mappa: OpenStreetMap · La tua visualizzazione non viene mostrata al datore di lavoro come dato individuale.
-        </p>
-      </div>
+        </Col>
+      </Workspace>
     </div>
   );
 }

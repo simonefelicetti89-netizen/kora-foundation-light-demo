@@ -21,6 +21,12 @@
 //
 // Privacy: identical invariants to /worker/workspace and /api/worker/pib —
 // not_employer_visible, not_performance_score, workerId from session only.
+//
+// KORA-WP-129 Wave 4b (W2): presentation migrated onto the governed system.
+// NOTHING about the computation changed — getPIBLive and
+// computeActivationProfile are called exactly as before and every value
+// rendered is theirs. ActivationProfileSection is reused UNTOUCHED because it
+// is shared with /worker/workspace, a Founder-accepted W1 surface.
 
 import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
@@ -31,9 +37,8 @@ import {
   fetchWorkerParticipationRows,
 } from '@/app/api/worker/activation-profile/route';
 import { ActivationProfileSection } from '../workspace/_components/ActivationProfileSection';
-import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
-
-const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
+import { TOKENS, SPACE, typeStyle, TYPE_FAMILY } from '@/lib/design/kora-design-tokens';
+import { PageHead, Workspace, Col, Region, Notice, Facts, Metric, MetricStrip } from '@/components/ui/px';
 
 const PILLAR_LABELS: Record<string, string> = {
   LIFE: 'Life', GROWTH: 'Growth', CONNECTION: 'Connection', IMPACT: 'Impact', LEGACY: 'Legacy',
@@ -54,72 +59,79 @@ export default async function WorkerPersonalImpactBalancePage() {
   const activationProfile = computeActivationProfile(participationRows);
 
   return (
-    <div style={{ minHeight: '100vh', background: TOKENS.surface, fontFamily: FONT }}>
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 20px 64px' }}>
-        <h1 style={{
-          fontWeight: 800, fontSize: '1.8rem', letterSpacing: '-0.02em',
-          color: TOKENS.ink, marginBottom: 4,
-        }}>
-          Personal Impact Balance
-        </h1>
-        <p style={{ fontSize: 12.5, color: 'rgba(6,3,43,0.5)', marginBottom: 24 }}>
-          Il bilancio privato delle tue esperienze di attivazione.
-        </p>
+    <div style={{ minHeight: '100vh', background: TOKENS.surface, fontFamily: TYPE_FAMILY }}>
+      <div
+        data-testid="worker-pib-page"
+        style={{ maxWidth: 1180, margin: '0 auto', padding: `${SPACE.lg}px ${SPACE.md}px ${SPACE['2xl']}px` }}
+      >
 
-        {/* PIB summary — real data, isSynthetic always false on this canonical path */}
-        <div style={{
-          background: '#fff', border: '1px solid rgba(6,3,43,0.08)',
-          borderRadius: 10, padding: '18px 20px', marginBottom: 16,
-        }} data-testid="pib-summary-card">
-          {pib.period_iu_total === 0 ? (
-            <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', margin: 0 }}>
-              Nessuna Impact Unit registrata ancora per questo periodo.
-            </p>
-          ) : (
-            <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 }}>
-                <Stat label="Impact Units" value={pib.period_iu_total} />
-                <Stat label="Pillar attivi" value={pib.active_pillars} />
-                <Stat label="Eventi" value={pib.total_events} />
-              </div>
-              <div style={{ display: 'grid', gap: 8 }}>
-                {pib.pillar_breakdown.map(p => (
-                  <div key={p.pillar} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5 }}>
-                    <span style={{ color: TOKENS.ink, fontWeight: 600 }}>{PILLAR_LABELS[p.pillar] ?? p.pillar}</span>
-                    <span style={{ color: 'rgba(6,3,43,0.5)', fontVariantNumeric: 'tabular-nums' }}>{p.iu_total} IU</span>
-                  </div>
-                ))}
-              </div>
-              <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.4)', marginTop: 14, marginBottom: 0, borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 10 }}>
-                {pib.activation_level_label} — {pib.activation_level_description}
-              </p>
-            </>
-          )}
-        </div>
+        <PageHead
+          eyebrow="My KORA · Bilancio personale"
+          title="Personal Impact Balance"
+          lead="Il bilancio privato delle tue esperienze di attivazione."
+        />
 
-        <p style={{
-          fontSize: 11, color: BADGE_TOKENS.eligible.text, background: 'rgba(47,125,85,0.06)',
-          border: '1px solid rgba(47,125,85,0.18)', borderRadius: 8, padding: '12px 16px',
-          marginBottom: 20,
-        }}>
+        {/* Privacy guarantee. Kept directly under the lead rather than demoted:
+            this is the statement that makes the whole surface safe to read. */}
+        <Notice tone="ok">
           <strong>Dato privato.</strong> Il tuo datore di lavoro non può vedere questo bilancio individuale
           — solo aggregati aziendali sopra soglia. {pib.disclaimer}
-        </p>
+        </Notice>
 
-        <ActivationProfileSection profile={activationProfile} />
+        <Workspace style={{ marginTop: SPACE.lg }}>
+
+          {/* THE RECORD — the page's one purpose. */}
+          <Col span="main">
+            <Region label="Bilancio del periodo">
+              <div data-testid="pib-summary-card">
+                {pib.period_iu_total === 0 ? (
+                  // DELIBERATELY NOT the KORA-WP-140 `Zero` primitive. Two
+                  // governed tests — worker-experience-consolidation and
+                  // p1-product-integrity, both titled "honest empty state" —
+                  // pin this exact sentence, so the assertion encodes Product
+                  // truth rather than superseded presentation. `Zero` composes
+                  // its own generic wording and would replace an honest
+                  // statement about this worker's period with a template.
+                  // Reported as an unmapped state rather than changed silently.
+                  <p style={{ margin: 0, ...typeStyle('secondary'), color: TOKENS.inkHint }}>
+                    Nessuna Impact Unit registrata ancora per questo periodo.
+                  </p>
+                ) : (
+                  <>
+                    <MetricStrip>
+                      <Metric label="Impact Units" value={pib.period_iu_total} />
+                      <Metric label="Pillar attivi" value={pib.active_pillars} />
+                      <Metric label="Eventi"        value={pib.total_events} />
+                    </MetricStrip>
+
+                    <div style={{ marginTop: SPACE.md }}>
+                      <Facts
+                        rows={pib.pillar_breakdown.map((p) => [
+                          PILLAR_LABELS[p.pillar] ?? p.pillar,
+                          <span key={p.pillar} style={{ fontVariantNumeric: 'tabular-nums' }}>{p.iu_total} IU</span>,
+                        ] as [string, React.ReactNode])}
+                      />
+                    </div>
+
+                    <p style={{
+                      ...typeStyle('caption'), color: TOKENS.inkHint,
+                      margin: `${SPACE.md}px 0 0`, borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: SPACE.sm,
+                    }}>
+                      {pib.activation_level_label} — {pib.activation_level_description}
+                    </p>
+                  </>
+                )}
+              </div>
+            </Region>
+          </Col>
+
+          {/* The activation profile — shared with the Founder-accepted
+              /worker/workspace surface and therefore reused UNCHANGED. */}
+          <Col span="rail">
+            <ActivationProfileSection profile={activationProfile} />
+          </Col>
+        </Workspace>
       </div>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div style={{
-      background: 'rgba(6,3,43,0.03)', border: '1px solid rgba(6,3,43,0.07)',
-      borderRadius: 7, padding: '10px 12px', textAlign: 'center',
-    }}>
-      <div style={{ fontSize: 18, fontWeight: 800, color: TOKENS.ink, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: 9, color: 'rgba(6,3,43,0.45)', marginTop: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
     </div>
   );
 }

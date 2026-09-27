@@ -9,12 +9,17 @@
 // this component never needs a "checking / demo" probe: the server wrapper
 // (page.tsx) already guarantees a real WORKER session via requireWorkerUser()
 // before this component ever renders.
+//
+// KORA-WP-129 Wave 4b (W2): presentation migrated onto the governed system.
+// No booking state, status label, cancellation rule or API call changed. The
+// one behavioural improvement is that `loading` now RENDERS the governed
+// LOADING state instead of returning null, which was a real KORA-WP-140 gap:
+// the surface used to show nothing at all while in flight.
 
 import { useState, useEffect } from 'react';
-import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
+import { BADGE_TOKENS, TOKENS, SPACE, typeStyle, TYPE_FAMILY, PX } from '@/lib/design/kora-design-tokens';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
-
-const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
+import { PageHead, Workspace, Col, Region, Notice, Status, Loading, NoData } from '@/components/ui/px';
 
 type BookingsMode = 'loading' | 'live' | 'empty';
 
@@ -37,35 +42,37 @@ interface InitiativeSummary {
 // Statuses where the worker may cancel their booking.
 const CANCELLABLE_STATUSES = new Set(['pending', 'requested', 'approved', 'confirmed']);
 
-const BOOKING_STATUS_COPY: Record<string, { label: string; color: string }> = {
-  pending:   { label: 'Richiesta inviata',          color: TOKENS.safeguard.watch.text           },
-  requested: { label: 'Richiesta inviata',          color: TOKENS.safeguard.watch.text           },
-  approved:  { label: 'Partecipazione confermata',  color: TOKENS.success           },
-  confirmed: { label: 'Partecipazione confermata',  color: TOKENS.success           },
-  rejected:  { label: 'Richiesta non approvata',    color: TOKENS.critical           },
-  attended:  { label: 'Partecipazione completata',  color: TOKENS.info.base           },
-  cancelled: { label: 'Annullata',                  color: 'rgba(6,3,43,0.45)' },
+// Labels are unchanged. `tone` carries the SAME semantic the per-status colour
+// carried before, through the governed tone system rather than a raw hex:
+// watch -> warn, success -> ok, critical -> risk, informational -> info.
+type StatusTone = 'ok' | 'info' | 'warn' | 'risk';
+const BOOKING_STATUS_COPY: Record<string, { label: string; tone: StatusTone }> = {
+  pending:   { label: 'Richiesta inviata',          tone: 'warn' },
+  requested: { label: 'Richiesta inviata',          tone: 'warn' },
+  approved:  { label: 'Partecipazione confermata',  tone: 'ok'   },
+  confirmed: { label: 'Partecipazione confermata',  tone: 'ok'   },
+  rejected:  { label: 'Richiesta non approvata',    tone: 'risk' },
+  attended:  { label: 'Partecipazione completata',  tone: 'info' },
+  cancelled: { label: 'Annullata',                  tone: 'info' },
 };
 
-function statusMeta(status: string): { label: string; color: string } {
-  return BOOKING_STATUS_COPY[status] ?? { label: 'Stato in verifica', color: 'rgba(6,3,43,0.40)' };
+function statusMeta(status: string): { label: string; tone: StatusTone } {
+  return BOOKING_STATUS_COPY[status] ?? { label: 'Stato in verifica', tone: 'info' };
+}
+
+function itDate(value: string): string {
+  return new Date(value).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function PrivacyNotice() {
   return (
-    <div
-      data-testid="worker-bookings-employer-privacy-notice"
-      style={{
-        background: 'rgba(47,125,85,0.06)', border: '1.5px solid rgba(47,125,85,0.22)',
-        borderRadius: 10, padding: '12px 16px', marginBottom: 20,
-      }}
-    >
-      <p style={{ fontFamily: FONT, fontSize: 12, color: TOKENS.success, margin: 0, lineHeight: 1.7 }}>
+    <div data-testid="worker-bookings-employer-privacy-notice">
+      <Notice tone="ok">
         <strong>Il datore di lavoro non vede il tuo percorso individuale.</strong>{' '}
         Le tue prenotazioni sono private e non generano alcuna classifica individuale.
         La partecipazione confermata può contribuire
         alla tua timeline personale e, in forma aggregata, alla KORA Contribution dell&apos;ecosistema.
-      </p>
+      </Notice>
     </div>
   );
 }
@@ -118,216 +125,172 @@ export function BookingsClient() {
     }
   }
 
-  if (mode === 'loading') return null;
-
   return (
-    <div style={{ maxWidth: 560, fontFamily: FONT, padding: '24px 20px' }}>
-      <p style={{ fontWeight: 700, fontSize: '10px', letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 10 }}>
-        My KORA · Prenotazioni
-      </p>
-      <h1 style={{ fontWeight: 800, fontSize: '1.875rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: TOKENS.ink, marginBottom: 6 }}>
-        Prenotazioni &amp; Richieste
-      </h1>
-      <p style={{ fontSize: '13.5px', color: TOKENS.inkSecondary, lineHeight: 1.55, marginBottom: 20 }}>
-        Stato delle tue richieste di partecipazione alle iniziative KORA Space.
-        Richiesta → conferma — nessun marketplace, nessun pagamento.
-      </p>
+    <div
+      data-testid="worker-bookings-page"
+      style={{ maxWidth: 1180, margin: '0 auto', padding: `${SPACE.lg}px ${SPACE.md}px ${SPACE['2xl']}px`, fontFamily: TYPE_FAMILY }}
+    >
+      <PageHead
+        eyebrow="My KORA · Prenotazioni"
+        title="Prenotazioni & Richieste"
+        lead={<>
+          Stato delle tue richieste di partecipazione alle iniziative KORA Space.
+          Richiesta → conferma — nessun marketplace, nessun pagamento.
+        </>}
+        meta={mode === 'live' ? <BoundaryBadge mode="LIVE" variant="light" /> : undefined}
+      />
 
       <PrivacyNotice />
 
-      {mode === 'live' && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ marginBottom: 10 }}>
-            <BoundaryBadge mode="LIVE" variant="light" />
-          </div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Le tue prenotazioni ({liveBookings.length})
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {liveBookings.map((booking) => {
-              const sm         = statusMeta(booking.status);
-              const initiative = initiativesMap[booking.post_id];
-              const title      = initiative?.title ?? `Iniziativa #${booking.post_id.slice(0, 8)}`;
-              const pillar     = initiative?.pillar;
-              const eventDate  = initiative?.event_start_at
-                ? new Date(initiative.event_start_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })
-                : null;
-              return (
-                <div
-                  key={booking.id}
-                  data-testid={`worker-booking-record-${booking.id}`}
-                  style={{
-                    background: '#FFFFFF', border: '1px solid rgba(6,3,43,0.09)',
-                    borderRadius: 12, padding: '14px 16px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
-                      background: `${sm.color}14`, color: sm.color, border: `1px solid ${sm.color}33`,
-                    }}>
-                      {sm.label}
-                    </span>
-                    {pillar && (
-                      <span style={{ fontSize: 9, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: 'rgba(6,3,43,0.05)', color: 'rgba(6,3,43,0.55)' }}>
-                        {pillar}
-                      </span>
-                    )}
-                    <span style={{ fontSize: 10, color: TOKENS.inkHint, marginLeft: 'auto' }}>
-                      {new Date(booking.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </span>
-                  </div>
+      <Workspace style={{ marginTop: SPACE.lg }}>
 
-                  <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px', lineHeight: 1.3 }}>
-                    {title}
-                  </p>
+        {/* THE RECORD — the worker's own requests and what they can do next. */}
+        <Col span="main">
+          <Region label={mode === 'live' ? `Le tue prenotazioni (${liveBookings.length})` : 'Le tue prenotazioni'}>
+            {mode === 'loading' && <Loading label="Caricamento delle tue prenotazioni." />}
 
-                  {eventDate && (
-                    <p style={{ fontSize: 10, color: TOKENS.inkSecondary, margin: '0 0 4px' }}>
-                      Data evento: {eventDate}
-                    </p>
-                  )}
+            {mode === 'empty' && (
+              <div data-testid="worker-bookings-empty-state">
+                <NoData missing="Le tue prenotazioni KORA Space appariranno qui dopo la conferma da parte dell'admin." />
+              </div>
+            )}
 
-                  {booking.attended_at && (
-                    <p style={{ fontSize: 10, color: TOKENS.success, margin: '4px 0 0' }}>
-                      Partecipazione confermata il {new Date(booking.attended_at).toLocaleDateString('it-IT')}
-                    </p>
-                  )}
-
-                  {CANCELLABLE_STATUSES.has(booking.status) && (
+            {mode === 'live' && (
+              <div>
+                {liveBookings.map((booking, idx) => {
+                  const sm         = statusMeta(booking.status);
+                  const initiative = initiativesMap[booking.post_id];
+                  const title      = initiative?.title ?? `Iniziativa #${booking.post_id.slice(0, 8)}`;
+                  const pillar     = initiative?.pillar;
+                  const eventDate  = initiative?.event_start_at ? itDate(initiative.event_start_at) : null;
+                  return (
                     <div
-                      data-testid={`worker-booking-cancel-section-${booking.id}`}
-                      style={{ marginTop: 8 }}
+                      key={booking.id}
+                      data-testid={`worker-booking-record-${booking.id}`}
+                      style={{
+                        display: 'grid', gap: SPACE.xs, padding: `${SPACE.md}px 0`,
+                        borderBottom: idx === liveBookings.length - 1 ? undefined : `1px solid ${PX.line}`,
+                      }}
                     >
-                      <p style={{ fontSize: 10, color: TOKENS.inkSecondary, margin: '0 0 6px', fontFamily: FONT }}>
-                        Puoi annullare una richiesta finché non è stata completata.
+                      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: SPACE.sm, flexWrap: 'wrap' }}>
+                        <p style={{ margin: 0, ...typeStyle('label', { weight: 700 }), color: TOKENS.ink }}>
+                          {title}
+                          {pillar && <span style={{ ...typeStyle('caption'), color: TOKENS.inkHint }}>{' · '}{pillar}</span>}
+                        </p>
+                        <Status tone={sm.tone}>{sm.label}</Status>
+                      </div>
+
+                      <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkHint }}>
+                        Richiesta il {itDate(booking.created_at)}
+                        {eventDate && <>{' · '}Data evento: {eventDate}</>}
+                        {booking.attended_at && <>{' · '}Partecipazione confermata il {new Date(booking.attended_at).toLocaleDateString('it-IT')}</>}
                       </p>
-                      <button
-                        data-testid={`worker-booking-cancel-btn-${booking.id}`}
-                        disabled={cancellingId === booking.id}
-                        onClick={() => void handleCancel(booking.id)}
-                        style={{
-                          fontSize:     11,
-                          fontWeight:   600,
-                          padding:      '5px 12px',
-                          borderRadius: 7,
-                          border:       '1px solid rgba(158,59,47,0.25)',
-                          background:   'rgba(158,59,47,0.06)',
-                          color:        TOKENS.critical,
-                          cursor:       cancellingId === booking.id ? 'not-allowed' : 'pointer',
-                          fontFamily:   FONT,
-                        }}
-                      >
-                        {cancellingId === booking.id ? 'Annullamento…' : 'Annulla richiesta'}
-                      </button>
-                      {cancelErrors[booking.id] && (
-                        <p style={{ fontSize: 10, color: TOKENS.critical, margin: '4px 0 0', fontFamily: FONT }}>
-                          {cancelErrors[booking.id]}
+
+                      {CANCELLABLE_STATUSES.has(booking.status) && (
+                        <div data-testid={`worker-booking-cancel-section-${booking.id}`} style={{ display: 'grid', gap: SPACE.xs, justifyItems: 'start' }}>
+                          <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkSecondary }}>
+                            Puoi annullare una richiesta finché non è stata completata.
+                          </p>
+                          <button
+                            data-testid={`worker-booking-cancel-btn-${booking.id}`}
+                            disabled={cancellingId === booking.id}
+                            onClick={() => void handleCancel(booking.id)}
+                            style={{
+                              ...typeStyle('caption', { weight: 600 }),
+                              padding:      `${SPACE.xs}px ${SPACE.md}px`,
+                              borderRadius: 7,
+                              border:       '1px solid rgba(158,59,47,0.25)',
+                              background:   'rgba(158,59,47,0.06)',
+                              color:        TOKENS.critical,
+                              cursor:       cancellingId === booking.id ? 'not-allowed' : 'pointer',
+                            }}
+                          >
+                            {cancellingId === booking.id ? 'Annullamento…' : 'Annulla richiesta'}
+                          </button>
+                          {cancelErrors[booking.id] && (
+                            <p style={{ margin: 0, ...typeStyle('caption', { weight: 600 }), color: TOKENS.critical }} role="alert">
+                              {cancelErrors[booking.id]}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {booking.status === 'cancelled' && (
+                        <p
+                          data-testid={`worker-booking-cancelled-reopen-notice-${booking.id}`}
+                          style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkSecondary }}
+                        >
+                          Per una nuova richiesta sulla stessa iniziativa, contatta KORA/Admin.
+                        </p>
+                      )}
+
+                      {booking.status === 'attended' && (
+                        <div data-testid="worker-booking-attended-trace-notice" style={{ display: 'grid', gap: SPACE.xs }}>
+                          <p style={{ margin: 0, ...typeStyle('meta'), color: BADGE_TOKENS.info.text }}>
+                            Traccia privata My KORA
+                          </p>
+                          <p style={{ margin: 0, ...typeStyle('caption'), color: BADGE_TOKENS.info.text }}>
+                            Questa partecipazione è una traccia privata del tuo percorso My KORA.
+                            Il datore di lavoro non vede il tuo percorso individuale.
+                            Eventuali segnali verso l&apos;organizzazione sono aggregati.
+                            La partecipazione completata può contribuire al tuo Personal Impact Balance quando disponibile.
+                          </p>
+                          <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkHint }}>
+                            Non tutta la partecipazione in KORA Space entra nel Dynamic Impact CV.
+                            Solo le esperienze idonee secondo la Dynamic Impact CV policy possono diventare esperienze CV.
+                            Il lavoratore controlla cosa rendere condivisibile.
+                          </p>
+                        </div>
+                      )}
+
+                      {!initiative && (
+                        <p style={{ margin: 0, ...typeStyle('caption'), fontFamily: 'ui-monospace, monospace', color: TOKENS.inkMeta }}>
+                          ref: {booking.post_id.slice(0, 16)}…
                         </p>
                       )}
                     </div>
-                  )}
-
-                  {booking.status === 'cancelled' && (
-                    <p
-                      data-testid={`worker-booking-cancelled-reopen-notice-${booking.id}`}
-                      style={{ fontSize: 10, color: TOKENS.inkSecondary, margin: '8px 0 0', lineHeight: 1.5, fontFamily: FONT }}
-                    >
-                      Per una nuova richiesta sulla stessa iniziativa, contatta KORA/Admin.
-                    </p>
-                  )}
-
-                  {booking.status === 'attended' && (
-                    <div
-                      data-testid="worker-booking-attended-trace-notice"
-                      style={{
-                        marginTop: 10,
-                        background: 'rgba(59,110,186,0.05)',
-                        border: '1px solid rgba(59,110,186,0.16)',
-                        borderRadius: 8,
-                        padding: '10px 14px',
-                      }}
-                    >
-                      <p style={{ fontSize: 11, fontWeight: 700, color: BADGE_TOKENS.info.text, margin: '0 0 6px', fontFamily: FONT }}>
-                        Traccia privata My KORA
-                      </p>
-                      <p style={{ fontSize: 11, color: BADGE_TOKENS.info.text, margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
-                        Questa partecipazione è una traccia privata del tuo percorso My KORA.
-                      </p>
-                      <p style={{ fontSize: 11, color: BADGE_TOKENS.info.text, margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
-                        Il datore di lavoro non vede il tuo percorso individuale.
-                        Eventuali segnali verso l&apos;organizzazione sono aggregati.
-                      </p>
-                      <p style={{ fontSize: 11, color: BADGE_TOKENS.info.text, margin: '0 0 6px', lineHeight: 1.6, fontFamily: FONT }}>
-                        La partecipazione completata può contribuire al tuo Personal Impact Balance quando disponibile.
-                      </p>
-                      <p style={{ fontSize: 10, color: 'rgba(59,110,186,0.65)', margin: 0, lineHeight: 1.55, fontFamily: FONT }}>
-                        Non tutta la partecipazione in KORA Space entra nel Dynamic Impact CV.
-                        Solo le esperienze idonee secondo la Dynamic Impact CV policy possono diventare esperienze CV.
-                        Il lavoratore controlla cosa rendere condivisibile.
-                      </p>
-                    </div>
-                  )}
-
-                  {!initiative && (
-                    <p style={{ fontSize: 9, fontFamily: 'monospace', color: TOKENS.inkMeta, margin: '4px 0 0' }}>
-                      ref: {booking.post_id.slice(0, 16)}…
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      <div style={{ borderRadius: TOKENS.cardRadius, border: TOKENS.cardBorder, background: TOKENS.surface, padding: '14px 18px', marginBottom: 16 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Stati prenotazione
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {([
-            ['pending',   'Richiesta inviata'],
-            ['approved',  'Partecipazione confermata'],
-            ['rejected',  'Richiesta non approvata'],
-            ['attended',  'Partecipazione completata'],
-            ['cancelled', 'Annullata'],
-          ] as const).map(([key, label]) => {
-            const { color } = statusMeta(key);
-            return (
-              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{
-                  fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
-                  background: `${color}14`, color, border: `1px solid ${color}33`,
-                }}>
-                  {label}
-                </span>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
-      </div>
+            )}
+          </Region>
+        </Col>
 
-      <div
-        data-testid="worker-bookings-empty-state"
-        style={{ borderRadius: TOKENS.cardRadius, border: TOKENS.cardBorder, background: TOKENS.taupe, padding: '28px 24px', textAlign: 'center', marginBottom: 16 }}
-      >
-        <p style={{ fontSize: '13px', color: TOKENS.inkHint, lineHeight: 1.6, margin: 0 }}>
-          {mode === 'live'
-            ? 'Vai a KORA Space per scoprire nuove iniziative e prenotare la partecipazione.'
-            : 'Le tue prenotazioni KORA Space appariranno qui dopo la conferma da parte dell\'admin.'}
-        </p>
-        <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '10px', color: TOKENS.inkMeta, marginTop: 12 }}>
-          booking_requests: live · authenticated · no_pricing
-        </p>
-      </div>
+        {/* Reference and next step — subordinate to the record itself. */}
+        <Col span="rail">
+          <Region label="Stati prenotazione" tone="inset">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: SPACE.sm, alignItems: 'flex-start' }}>
+              {([
+                ['pending',   'Richiesta inviata'],
+                ['approved',  'Partecipazione confermata'],
+                ['rejected',  'Richiesta non approvata'],
+                ['attended',  'Partecipazione completata'],
+                ['cancelled', 'Annullata'],
+              ] as const).map(([key, label]) => (
+                <Status key={key} tone={statusMeta(key).tone}>{label}</Status>
+              ))}
+            </div>
+          </Region>
 
-      <div style={{ borderRadius: TOKENS.cardRadiusSm, border: TOKENS.cardBorder, padding: '12px 16px' }}>
-        <p style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
-          Le prenotazioni in KORA non sono un marketplace. Ogni richiesta genera solo uno stato request/confirm —
-          la partecipazione confermata contribuisce alla tua timeline personale e, in forma aggregata, alla KORA Contribution.
-        </p>
-      </div>
+          <Region label="Prossimo passo">
+            <p style={{ margin: 0, ...typeStyle('secondary'), color: TOKENS.inkSecondary }}>
+              {mode === 'live'
+                ? 'Vai a KORA Space per scoprire nuove iniziative e prenotare la partecipazione.'
+                : 'Le tue prenotazioni KORA Space appariranno qui dopo la conferma da parte dell\'admin.'}
+            </p>
+            <p style={{ margin: `${SPACE.sm}px 0 0`, ...typeStyle('meta'), color: TOKENS.inkMeta }}>
+              booking_requests: live · authenticated · no_pricing
+            </p>
+          </Region>
+
+          <Region label="Come funzionano le prenotazioni" tone="inset">
+            <p style={{ margin: 0, ...typeStyle('caption'), color: TOKENS.inkSecondary }}>
+              Le prenotazioni in KORA non sono un marketplace. Ogni richiesta genera solo uno stato request/confirm —
+              la partecipazione confermata contribuisce alla tua timeline personale e, in forma aggregata, alla KORA Contribution.
+            </p>
+          </Region>
+        </Col>
+      </Workspace>
     </div>
   );
 }

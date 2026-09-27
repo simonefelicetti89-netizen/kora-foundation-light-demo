@@ -16,7 +16,8 @@ import { getCurrentWorkerUser, requireKoraAdmin, isKoraAuthError } from '@/lib/a
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PartnerCatalogClient } from './_components/PartnerCatalogClient';
-import { BADGE_TOKENS, TOKENS } from '@/lib/design/kora-design-tokens';
+import { PageHead, Workspace, Col, Notice } from '@/components/ui/px';
+import { TOKENS, SPACE, typeStyle, TYPE_FAMILY } from '@/lib/design/kora-design-tokens';
 
 export type PartnerItem = {
   id:            string;
@@ -63,46 +64,41 @@ export default async function WorkerOpportunitiesPage() {
     <>
       <div
         data-testid="worker-opportunities-page"
-        style={{ maxWidth: 660, margin: '0 auto', padding: '40px 24px', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}
+        style={{ maxWidth: 1180, margin: '0 auto', padding: `${SPACE.lg}px ${SPACE.md}px ${SPACE['2xl']}px`, fontFamily: TYPE_FAMILY }}
       >
-        {/* Header */}
-        <div style={{ marginBottom: 28 }}>
-          <a
-            href="/worker/workspace"
-            style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', textDecoration: 'none', display: 'inline-block', marginBottom: 12 }}
-          >
-            ← Il mio spazio
-          </a>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: 0, marginBottom: 6 }}>
-            Opportunità & Partner
-          </h1>
-          <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.55)', margin: 0 }}>
-            Partner della rete KORA organizzati per pillar — informativo, non una prenotazione.
-          </p>
-        </div>
-
-        {/* Privacy notice — non-suppressible */}
-        <div
-          data-testid="partner-privacy-notice"
-          style={{
-            background: 'rgba(47,125,85,0.06)', border: '1px solid rgba(47,125,85,0.20)',
-            borderRadius: 10, padding: '14px 18px', marginBottom: 24,
-          }}
+        <a
+          href="/worker/workspace"
+          style={{ ...typeStyle('caption'), color: TOKENS.inkHint, textDecoration: 'none', display: 'inline-block', marginBottom: SPACE.sm }}
         >
-          <p style={{ fontSize: 12, color: BADGE_TOKENS.eligible.text, margin: 0, lineHeight: 1.6 }}>
+          ← Il mio spazio
+        </a>
+
+        <PageHead
+          eyebrow="My KORA · Opportunità"
+          title="Opportunità & Partner"
+          lead="Partner della rete KORA organizzati per pillar — informativo, non una prenotazione."
+        />
+
+        {/* Privacy notice — non-suppressible. Now the governed system message,
+            with role="status"; copy unchanged. */}
+        <div data-testid="partner-privacy-notice">
+          <Notice tone="ok">
             <strong>Privacy:</strong>{' '}
             La tua navigazione tra i partner non viene mostrata al datore di lavoro.
             L&apos;azienda vede solo dati aggregati anonimi, non le tue scelte individuali.
             Questa sezione è informativa — non genera prenotazioni, non traccia click individuali.
-          </p>
+          </Notice>
         </div>
 
-        {/* Partner catalog */}
-        <PartnerCatalogClient partners={partners} />
+        <Workspace style={{ marginTop: SPACE.lg }}>
+          <Col span="full">
+            <PartnerCatalogClient partners={partners} />
+          </Col>
+        </Workspace>
 
-        <div style={{ marginTop: 32, fontSize: 10, color: 'rgba(6,3,43,0.30)', lineHeight: 1.5 }}>
+        <p style={{ marginTop: SPACE.lg, ...typeStyle('caption'), color: TOKENS.inkHint }}>
           KORA Foundation Light · Opportunità & Partner · Nessun marketplace, nessuna prenotazione, nessun ranking.
-        </div>
+        </p>
       </div>
     </>
   );
