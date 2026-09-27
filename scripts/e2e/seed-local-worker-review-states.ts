@@ -22,12 +22,15 @@
 //   a second, NON-ONBOARDED worker         -> /worker/onboarding
 //
 // WHAT IT DELIBERATELY DOES NOT PROVISION:
-//   personal.worker_pib. A PIB row's iu_value must come from the canonical
-//   methodology (WorkerIUComputationService.computeBaseWorkerPIBRows, which
-//   requires an analytics.uef_record produced by the ingestion pipeline), not
-//   from a number chosen here. Inventing iu_value would fabricate Product
-//   behaviour. /worker/personal-impact-balance therefore remains BLOCKED for
-//   populated review until the canonical UEF chain is seeded — see the report.
+//   Nothing. PIB is provisioned, but ONLY through the real methodology:
+//   scripts/koratest-canonical-seed.ts is invoked with a generated fixture
+//   carrying THIS tenant's own tenant_code, which makes the canonical ingestion
+//   pipeline produce real analytics.uef_record rows (that script reuses an
+//   existing tenant by code and never updates it, so the golden-path tenant row
+//   is untouched). Every personal.worker_pib row is then computed by
+//   WorkerIUComputationService.computeBaseWorkerPIBRows — no iu_value is ever
+//   chosen here. If the pipeline yields no approved UEF record, PIB is skipped
+//   and reported, never faked.
 //
 // SAFETY GATES — identical model to seed-local-golden-path.ts:
 //   1. E2E_LOCAL_SEED_CONFIRM must be exactly 'YES'.
@@ -45,8 +48,10 @@
 import { createClient } from '@supabase/supabase-js';
 import { Client } from 'pg';
 import { randomBytes } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
+import { computeBaseWorkerPIBRows } from '@/services/worker-iu-computation/WorkerIUComputationService';
 
 const ALLOWED_LOCAL_HOSTS = ['127.0.0.1', 'localhost', '::1'];
 const KNOWN_NON_LOCAL_REFS = ['azdnepfmwrmacruykskm', 'haqflkurpmeaxpikozjl'];
@@ -145,13 +150,16 @@ async function main(): Promise<void> {
     console.log(`Would create: ${partners.length} partner_profile, ${genericPosts.length} generic post, ` +
       `${initiativePosts.length} initiative post, 1 booking, ${workerInitiatives.length} worker_initiative, ` +
       `${workerInitiatives.length} attended participation, 1 non-onboarded worker.`);
-    console.log('Would NOT create: personal.worker_pib (requires the canonical UEF chain — see the script header).');
+    console.log('Would also run the canonical seed for this tenant to produce real UEF records, then compute personal.worker_pib via computeBaseWorkerPIBRows.');
     await pg.end();
     return;
   }
 
+  const suffixSeed = randomBytes(4).toString('hex');
+
   // Idempotency: remove any prior fixture rows carrying the marker, so a re-run
   // converges instead of accumulating. Only marked rows are ever touched.
+  await pg.query(`delete from personal.worker_pib where source_participation_id in (select p.id from personal.worker_participation p join personal.worker_initiative i on i.id = p.initiative_id where i.title like $1)`, [`[${MARK}]%`]);
   await pg.query(`delete from commons.booking where post_id in (select id from commons.post where title like $1)`, [`[${MARK}]%`]);
   await pg.query(`delete from personal.worker_participation where initiative_id in (select id from personal.worker_initiative where title like $1)`, [`[${MARK}]%`]);
   await pg.query(`delete from personal.worker_initiative where title like $1`, [`[${MARK}]%`]);
@@ -216,6 +224,99 @@ async function main(): Promise<void> {
   console.log(`  personal.worker_initiative     +${workerInitiatives.length}`);
   console.log(`  personal.worker_participation  +${workerInitiatives.length} (attended)`);
 
+  // ── 4b. PIB — computed by the canonical methodology, never invented ──
+  // Step 1: make the real ingestion pipeline produce UEF records for THIS
+  // tenant, by handing the governed canonical seed a fixture with its code.
+  const tmpFixture = join(process.cwd(), `.w129-review-fixture-${suffixSeed}.json`);
+  writeFileSync(tmpFixture, JSON.stringify({
+    _comment: 'KORA-WP-129 review fixture input — generated, disposable, synthetic.',
+    company_name:         'E2E Local Golden Path Synthetic Tenant',
+    tenant_code:          tenantCode,
+    reporting_period:     '2026-Q1',
+    workforce_population: 120,
+    segment_breakdown:    { Operations: 60, Engineering: 40, Sales: 20 },
+    rows: [
+      { row_id: 'W129-R1', initiative_name: 'Screening prevenzione sintetico', category: 'salute',     type: 'servizio',  amount: 9000,  participants: 60, department_group: 'Operations' },
+      { row_id: 'W129-R2', initiative_name: 'Percorso digitale sintetico',     category: 'formazione', type: 'formazione', amount: 12000, participants: 40, department_group: 'Engineering' },
+    ],
+  }, null, 2), { mode: 0o600 });
+
+  try {
+    execFileSync('npx', ['tsx', 'scripts/koratest-canonical-seed.ts', `--fixture=${tmpFixture}`, '--apply'], {
+      stdio: 'pipe', encoding: 'utf8',
+      env: { ...process.env, NEXT_PUBLIC_SUPABASE_URL: url, SUPABASE_SERVICE_ROLE_KEY: srk },
+    });
+    console.log('  analytics.uef_record            via canonical pipeline (tenant reused, not modified)');
+  } catch (e) {
+    const err = e as { stdout?: string; stderr?: string; message?: string };
+    const detail = `${err.stdout ?? ''}${err.stderr ?? ''}`.trim() || err.message || String(e);
+    console.log(`  analytics.uef_record            canonical seed reported an error; continuing on whatever it committed.`);
+    console.log(`    ${detail.split('\n').filter(Boolean).slice(-3).join(' | ').slice(0, 300)}`);
+  } finally {
+    rmSync(tmpFixture, { force: true });
+  }
+
+  // Step 2: compute PIB from a real approved UEF record + the real attended
+  // participations. Every value below comes out of the Product methodology.
+  // personal.worker_pib carries a UNIQUE (source_uef_record_id, pillar)
+  // invariant, so each participation must be paired with its OWN UEF record.
+  // Whatever the pipeline produced is what gets used — never more.
+  const uef = await pg.query(
+    `select id, eligibility, action_family, event_nature, primary_pillar, missing_fields,
+            approved_for_impact_units, payload
+       from analytics.uef_record
+      where tenant_id = $1 and approved_for_impact_units = true and primary_pillar is not null
+      order by created_at`,
+    [tenantId],
+  );
+
+  if (uef.rowCount === 0) {
+    console.log('  personal.worker_pib            SKIPPED — no approved UEF record; PIB is never fabricated.');
+  } else {
+    const parts = await pg.query(
+      `select p.id from personal.worker_participation p
+         join personal.worker_initiative i on i.id = p.initiative_id
+        where p.worker_id = $1 and p.status = 'attended' and i.title like $2
+        order by p.created_at`,
+      [workerIdentityId, `[${MARK}]%`],
+    );
+    let inserted = 0;
+    const pairs = Math.min(parts.rows.length, uef.rows.length);
+    for (let i = 0; i < pairs; i += 1) {
+      const part = parts.rows[i];
+      const rec  = uef.rows[i];
+      const pibRows = computeBaseWorkerPIBRows({
+        workerIdentityId,
+        reportingPeriod: '2026-Q1',
+        sourceKind:      'company_sourced',
+        participationId: part.id,
+        uefRecord: {
+          id:                        rec.id,
+          eligibility:               rec.eligibility,
+          action_family:             rec.action_family,
+          event_nature:              rec.event_nature,
+          primary_pillar:            rec.primary_pillar,
+          missing_fields:            (rec.missing_fields ?? []) as string[],
+          approved_for_impact_units: rec.approved_for_impact_units,
+          payload:                   (rec.payload ?? {}) as Record<string, unknown>,
+        },
+      });
+      for (const r of pibRows) {
+        await pg.query(
+          `insert into personal.worker_pib
+             (worker_identity_id, reporting_period, pillar, iu_value, verification_status,
+              is_exportable, source_kind, source_uef_record_id, source_participation_id, computed_at)
+           values ($1,$2,$3,$4,$5,$6,$7,$8,$9, now())
+           on conflict do nothing`,
+          [r.worker_identity_id, r.reporting_period, r.pillar, r.iu_value, r.verification_status,
+           r.is_exportable, r.source_kind, r.source_uef_record_id, r.source_participation_id],
+        );
+        inserted += 1;
+      }
+    }
+    console.log(`  personal.worker_pib            +${inserted} (computed by computeBaseWorkerPIBRows, ${pairs} participation/UEF pair(s))`);
+  }
+
   // ── 5. A second worker who has NOT completed onboarding ──
   // /worker/onboarding redirects to the workspace when onboarding_done is true,
   // so reviewing it needs a worker for whom it is false.
@@ -260,7 +361,7 @@ async function main(): Promise<void> {
      ''].join('\n'), { mode: 0o600 });
 
   console.log(`\nReview fixture applied. Credentials written to ${out} (gitignored, never printed).`);
-  console.log('NOT provisioned: personal.worker_pib — requires the canonical UEF chain.');
+
   await pg.end();
 }
 
