@@ -17,7 +17,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { SPACE, PX } from '@/lib/design/kora-design-tokens';
 import { PageHead, Region, Notice, Caption, Secondary } from '@/components/ui/px';
-import { ENTRY_MEASURE, Field, PrimaryAction, Requirement, entryInputStyle } from '../_entry/entry-ui';
+import { Field, PrimaryAction, Requirement, entryInputStyle } from '../_entry/entry-ui';
 
 /** The one place the invite policy is stated. Used by the guard and the reader. */
 const MIN_LENGTH = 8;
@@ -40,7 +40,11 @@ export function WorkerSetupPasswordForm() {
       : null;
 
     return (
-      <div style={{ maxWidth: ENTRY_MEASURE }}>
+      // W3A remediation: the entry shell now owns the reading measure and the
+    // centring (components/layout/entry-shell.module.css). Keeping a second
+    // cap here stranded the column inside its own container on a narrow
+    // viewport, which is the defect the shell change was meant to remove.
+    <div>
         <PageHead
           eyebrow="My KORA · Primo accesso"
           title="Link non valido o scaduto"
@@ -100,7 +104,11 @@ export function WorkerSetupPasswordForm() {
   const matching   = confirm.length === 0 ? null : password === confirm;
 
   return (
-    <div style={{ maxWidth: ENTRY_MEASURE }}>
+    // W3A remediation: the entry shell now owns the reading measure and the
+    // centring (components/layout/entry-shell.module.css). Keeping a second
+    // cap here stranded the column inside its own container on a narrow
+    // viewport, which is the defect the shell change was meant to remove.
+    <div>
       <PageHead
         eyebrow="My KORA · Primo accesso"
         title="Imposta la tua password"
@@ -187,8 +195,9 @@ export function WorkerSetupPasswordForm() {
         </Region>
       )}
 
+      {/* W3A remediation — see the matching note in the onboarding flow. */}
       <Caption style={{ margin: '16px 0 0', color: PX.ink3 }}>
-        KORA Foundation Light · Il tuo datore di lavoro non può vedere questi dati
+        Il tuo datore di lavoro non può vedere questi dati.
       </Caption>
     </div>
   );

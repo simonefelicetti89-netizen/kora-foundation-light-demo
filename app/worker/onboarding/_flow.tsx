@@ -16,7 +16,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SPACE, PILLAR_COLORS, PX, typeStyle } from '@/lib/design/kora-design-tokens';
 import { PageHead, Region, Notice, Body, Secondary, Meta, Section } from '@/components/ui/px';
-import { ENTRY_MEASURE, Field, PrimaryAction, SecondaryAction, entryInputStyle } from '../_entry/entry-ui';
+import { Field, PrimaryAction, SecondaryAction, entryInputStyle } from '../_entry/entry-ui';
 
 const TOTAL_STEPS = 5;
 
@@ -455,7 +455,11 @@ export function OnboardingFlow({ reviewMode, initialDisplayName, initialLang }: 
 
   if (reviewMode) {
     return (
-      <div style={{ maxWidth: ENTRY_MEASURE }}>
+      // W3A remediation: the entry shell now owns the reading measure and the
+    // centring (components/layout/entry-shell.module.css). Keeping a second
+    // cap here stranded the column inside its own container on a narrow
+    // viewport, which is the defect the shell change was meant to remove.
+    <div>
         <PageHead eyebrow="My KORA · Privacy" title="Revisione del boundary privacy" />
         <Region>
           <ReviewMode />
@@ -465,7 +469,11 @@ export function OnboardingFlow({ reviewMode, initialDisplayName, initialLang }: 
   }
 
   return (
-    <div style={{ maxWidth: ENTRY_MEASURE }}>
+    // W3A remediation: the entry shell now owns the reading measure and the
+    // centring (components/layout/entry-shell.module.css). Keeping a second
+    // cap here stranded the column inside its own container on a narrow
+    // viewport, which is the defect the shell change was meant to remove.
+    <div>
       <PageHead
         eyebrow="My KORA · Primo accesso"
         title="Benvenuto in KORA"
@@ -500,8 +508,15 @@ export function OnboardingFlow({ reviewMode, initialDisplayName, initialLang }: 
         )}
       </Region>
 
+      {/* W3A remediation — trust, not build metadata. `Privacy Consent v1.0`
+          was a version label that did not even match the canonical value the
+          server records (`B113-v1.0`, app/api/worker/onboarding/route.ts), and
+          the consent version is persisted server-side regardless of what this
+          line says. `KORA Foundation Light` is a build label, required on KORA
+          Index surfaces (CLAUDE.md §6) and not on this one. Neither is pinned
+          by any test. What remains is the sentence that is Product truth. */}
       <Secondary style={{ margin: '16px 0 0', color: PX.ink3 }}>
-        KORA Foundation Light · Privacy Consent v1.0 · Il tuo datore di lavoro non vede questi dati
+        Il tuo datore di lavoro non vede questi dati.
       </Secondary>
     </div>
   );

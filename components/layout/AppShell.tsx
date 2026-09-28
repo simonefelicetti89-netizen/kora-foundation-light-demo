@@ -18,6 +18,8 @@ import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { SidebarDrawerProvider } from '@/components/layout/SidebarDrawerContext';
 import { usePxShellState } from '@/components/layout/usePxShellState';
+import { isFirstAccessRoute } from '@/components/layout/first-access-routes';
+import { EntryShell } from '@/components/layout/EntryShell';
 
 // Route che non ricevono il chrome AppShell (sidebar + header + banner).
 // /pilot è pubblico come la landing.
@@ -42,6 +44,13 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
         {children}
       </div>
     );
+  }
+
+  // KORA-WP-129 W3A: first access is authenticated but pre-account — the full
+  // workspace directory is not yet usable, so it is not offered. Presentation
+  // only; the WORKER gate in app/worker/layout.tsx is untouched.
+  if (isFirstAccessRoute(pathname)) {
+    return <EntryShell>{children}</EntryShell>;
   }
 
   return (

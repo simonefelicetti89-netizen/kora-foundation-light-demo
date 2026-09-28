@@ -1,0 +1,46 @@
+/* KORA-WP-129 Wave 4b (W3A remediation) — first-access shell geometry.
+ *
+ * A CSS module, not globals.css: these rules ship only with the component that
+ * imports them, so no other surface can inherit them by accident. Nothing here
+ * uses :global — the entry shell styles only its own elements. */
+
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--px-l0);
+}
+
+/* One identity lockup, once. No workspace chip, no breadcrumb, no drawer
+   toggle — nothing that implies navigation the worker cannot yet use. */
+.top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  min-height: 56px;
+  padding: 0 24px;
+  background: var(--px-l1);
+  border-bottom: 1px solid var(--px-line);
+}
+
+.product {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.main {
+  flex: 1 1 auto;
+  min-height: 0;
+  /* Centred, because there is no rail to balance against: a column left at the
+     sidebar's former x with nothing beside it reads as a missing panel. */
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+@media (max-width: 767px) {
+  .top  { padding: 0 16px; }
+  .main { padding: 32px 16px 48px; max-width: none; }
+}
