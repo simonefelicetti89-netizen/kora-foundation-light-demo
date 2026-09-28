@@ -16,23 +16,15 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { DynamicCVResponse, CVPillarEntry } from '@/app/api/worker/dynamic-cv/route';
 import type { SharesResponse, ShareLinkItem } from '@/app/api/worker/dynamic-cv/shares/route';
-import { BADGE_TOKENS, PILLAR_SURFACE, TOKENS } from '@/lib/design/kora-design-tokens';
+import { PILLAR_COLORS, PX, SPACE, typeStyle } from '@/lib/design/kora-design-tokens';
+import {
+  PageHead, Workspace, Col, Region, Metric, MetricStrip, StateBlock,
+  Notice, Status, Chip, Body, Secondary, Caption, Meta, Loading, ErrorState,
+} from '@/components/ui/px';
+import { PillarDistribution } from './PillarDistribution';
 
-const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
-const PILLAR_META: Record<string, { color: string; bg: string; border: string }> = {
-  LIFE:       { color: PILLAR_SURFACE.LIFE.color, bg: PILLAR_SURFACE.LIFE.bg, border: PILLAR_SURFACE.LIFE.border },
-  GROWTH:     { color: PILLAR_SURFACE.GROWTH.color, bg: PILLAR_SURFACE.GROWTH.bg, border: PILLAR_SURFACE.GROWTH.border },
-  CONNECTION: { color: PILLAR_SURFACE.CONNECTION.color, bg: PILLAR_SURFACE.CONNECTION.bg, border: PILLAR_SURFACE.CONNECTION.border },
-  IMPACT:     { color: PILLAR_SURFACE.IMPACT.color, bg: PILLAR_SURFACE.IMPACT.bg, border: PILLAR_SURFACE.IMPACT.border },
-  LEGACY:     { color: PILLAR_SURFACE.LEGACY.color, bg: PILLAR_SURFACE.LEGACY.bg, border: PILLAR_SURFACE.LEGACY.border },
-};
 
-const STATUS_STYLE: Record<string, { color: string; bg: string }> = {
-  attended:   { color: TOKENS.success, bg: 'rgba(47,125,85,0.10)'  },
-  registered: { color: TOKENS.info.base, bg: 'rgba(59,110,186,0.10)' },
-  interested: { color: BADGE_TOKENS.limited.text, bg: 'rgba(192,125,42,0.10)' },
-};
 
 interface DynamicCVClientProps {
   userEmail: string;
@@ -107,22 +99,23 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '60px 0', fontFamily: FONT, fontSize: 13, color: 'rgba(6,3,43,0.40)' }}>
-        Caricamento Dynamic Impact CV…
-      </div>
+      <Workspace>
+        <Col span="full"><Region><Loading label="Caricamento del Dynamic Impact CV." /></Region></Col>
+      </Workspace>
     );
   }
 
   if (error || !data) {
     return (
-      <div style={{ textAlign: 'center', padding: '60px 0', fontFamily: FONT, fontSize: 13, color: TOKENS.critical }}>
-        {error ?? 'Errore nel caricamento del CV.'}
-      </div>
+      <Workspace>
+        <Col span="full">
+          <Region><ErrorState what={error ?? 'Errore nel caricamento del CV.'} /></Region>
+        </Col>
+      </Workspace>
     );
   }
 
   const { profile, summary, pillars, experiences, badgeItems, privateItems, excludedCount, narrative } = data;
-  const activePillarList  = pillars.filter((p: CVPillarEntry) => p.total_active > 0);
   const missingPillarList = pillars.filter((p: CVPillarEntry) => p.total_active === 0);
   const hasExperiences    = experiences.length > 0;
   const hasBadgeItems     = (badgeItems ?? []).length > 0;
@@ -132,607 +125,308 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
   const activeShares   = shares.filter(s => s.status === 'active' && !s.isExpired);
   const inactiveShares = shares.filter(s => s.status !== 'active' || s.isExpired);
 
+  // W3B: badge eligibility is a PROPERTY OF AN EXPERIENCE, so it is read on the
+  // experience. The legacy surface repeated the same titles in a second list,
+  // which made one record look like two and doubled the page for no new fact.
+  const badgeIds = new Set((badgeItems ?? []).map(b => b.initiative_id));
+
   return (
-    <div
-      data-testid="dynamic-cv-container"
-      style={{ maxWidth: 800, margin: '0 auto', padding: '32px 24px', fontFamily: FONT }}
-    >
-      {/* Back link */}
-      <a
-        href="/worker/workspace"
-        style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', textDecoration: 'none', display: 'inline-block', marginBottom: 20 }}
-      >
-        ← Workspace
-      </a>
+    <Workspace data-testid="dynamic-cv-container">
+      <Col span="full">
+        <PageHead
+          eyebrow="My KORA · Dynamic Impact CV"
+          title={profile.displayName ?? 'Il tuo profilo'}
+          lead={narrative.headline}
+          meta={<Status tone="idle">{profile.roleLabel} · {profile.tenantName}</Status>}
+        />
+      </Col>
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div
-        data-testid="dynamic-cv-hero"
-        style={{
-          background:   TOKENS.ink,
-          borderRadius: 16,
-          padding:      '28px 32px',
-          marginBottom: 20,
-        }}
-      >
-        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', margin: '0 0 8px' }}>
-          Dynamic Impact CV
-        </p>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#FFFFFF', margin: '0 0 4px', letterSpacing: '-0.025em' }}>
-          {profile.displayName ?? 'Il tuo profilo'}
-        </h1>
-        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.40)', margin: '0 0 14px' }}>
-          {profile.roleLabel} · {profile.tenantName}
-        </p>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.60)', margin: 0, lineHeight: 1.6, fontStyle: 'italic' }}>
-          &ldquo;{narrative.headline}&rdquo;
-        </p>
-      </div>
+      {/* ── Privacy and selectivity — both non-suppressible, read as one ──── */}
+      <Col span="full">
+        <Region label="Cosa contiene questo CV, e chi lo vede">
+          <div style={{ display: 'grid', gap: SPACE.md }}>
+            <div data-testid="dynamic-cv-privacy-banner">
+              <Body style={{ margin: 0, color: PX.ink }}>
+                <strong>Il tuo datore di lavoro non vede questo CV.</strong>
+              </Body>
+              <Secondary style={{ margin: `${SPACE.xs}px 0 0`, color: PX.ink2 }}>
+                Questo CV non è una valutazione individuale. Non contiene ranking o confronto con colleghi.
+                Le esperienze derivano dalla tua partecipazione volontaria alle iniziative KORA Space —{' '}
+                <a href="/worker/commons" style={{ color: PX.violet, fontWeight: 600 }}>esplora KORA Space</a>{' '}
+                per aggiungerne altre.
+              </Secondary>
+            </div>
 
-      {/* ── Selectivity notice — non-suppressible ─────────────────────────── */}
-      <div
-        data-testid="dynamic-cv-selectivity-notice"
-        style={{
-          background:   'rgba(59,110,186,0.05)',
-          border:       '1px solid rgba(59,110,186,0.16)',
-          borderRadius: 12,
-          padding:      '12px 18px',
-          marginBottom: 14,
-        }}
-      >
-        <p style={{ fontSize: 12, fontWeight: 700, color: TOKENS.info.base, margin: '0 0 3px' }}>
-          Il Dynamic Impact CV non contiene tutte le Impact Units.
-        </p>
-        <p style={{ fontSize: 11, color: 'rgba(59,110,186,0.75)', margin: 0, lineHeight: 1.5 }}>
-          Mostra solo esperienze selezionabili, verificabili e controllate dal lavoratore.
-          Il lavoratore decide cosa condividere. Alcune esperienze restano private e non sono suggerite per la condivisione.
-        </p>
-        {excluded > 0 && (
-          <p style={{ fontSize: 10, color: 'rgba(59,110,186,0.55)', margin: '4px 0 0', fontStyle: 'italic' }}>
-            {excluded} {excluded === 1 ? 'esperienza non inclusa' : 'esperienze non incluse'}: compliance, sollievo economico, o categoria sensibile.
-          </p>
-        )}
-      </div>
-
-      {/* ── Privacy banner — non-suppressible ─────────────────────────────── */}
-      <div
-        data-testid="dynamic-cv-privacy-banner"
-        style={{
-          background:   'rgba(47,125,85,0.07)',
-          border:       '1px solid rgba(47,125,85,0.20)',
-          borderRadius: 12,
-          padding:      '14px 18px',
-          marginBottom: 20,
-          display:      'flex',
-          flexDirection: 'column',
-          gap:           4,
-        }}
-      >
-        <p style={{ fontSize: 12, fontWeight: 700, color: TOKENS.success, margin: 0 }}>
-          Il tuo datore di lavoro non vede questo CV.
-        </p>
-        <p style={{ fontSize: 11, color: 'rgba(47,125,85,0.80)', margin: 0, lineHeight: 1.5 }}>
-          Questo CV non è una valutazione individuale. Non contiene ranking o confronto con colleghi.
-          Le esperienze derivano dalla tua partecipazione volontaria alle iniziative KORA Space —{' '}
-          <a href="/worker/commons" style={{ color: TOKENS.success, fontWeight: 600, textDecoration: 'underline' }}>
-            esplora KORA Space
-          </a>{' '}
-          per aggiungerne altre.
-        </p>
-      </div>
+            <div data-testid="dynamic-cv-selectivity-notice">
+              <Secondary style={{ margin: 0, color: PX.ink2 }}>
+                <strong style={{ color: PX.ink }}>Il Dynamic Impact CV non contiene tutte le Impact Units.</strong>{' '}
+                Mostra solo esperienze selezionabili, verificabili e controllate dal lavoratore.
+                Il lavoratore decide cosa condividere. Alcune esperienze restano private e non sono suggerite per la condivisione.
+              </Secondary>
+              {excluded > 0 && (
+                <Caption style={{ margin: `${SPACE.xs}px 0 0`, color: PX.ink3 }}>
+                  {excluded} {excluded === 1 ? 'esperienza non inclusa' : 'esperienze non incluse'}: compliance, sollievo economico, o categoria sensibile.
+                </Caption>
+              )}
+            </div>
+          </div>
+        </Region>
+      </Col>
 
       {/* ── Summary ───────────────────────────────────────────────────────── */}
-      <div
-        data-testid="dynamic-cv-summary"
-        style={{
-          display:       'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap:           12,
-          marginBottom:  20,
-        }}
-      >
-        {[
-          { label: 'Attività tracciate',    value: summary.totalActivities  },
-          { label: 'Pillar attivi',          value: summary.activePillars    },
-          { label: 'Partecipazioni verify.',  value: summary.totalAttended    },
-        ].map(({ label, value }) => (
-          <div
-            key={label}
-            style={{
-              border:       '1px solid rgba(6,3,43,0.08)',
-              borderRadius: 12,
-              padding:      '16px 18px',
-              background:   TOKENS.surface,
-            }}
-          >
-            <p style={{ fontSize: 24, fontWeight: 900, color: TOKENS.ink, margin: '0 0 4px', letterSpacing: '-0.03em' }}>
-              {value}
-            </p>
-            <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.40)', margin: 0 }}>
-              {label}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Pillar profile ─────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 20 }}>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: '0 0 12px' }}>
-          Profilo pillar
-        </p>
-        <div
-          data-testid="dynamic-cv-pillar-profile"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}
-        >
-          {pillars.map((p: CVPillarEntry) => {
-            const meta = PILLAR_META[p.pillar];
-            return (
-              <div
-                key={p.pillar}
-                data-testid={`dynamic-cv-pillar-${p.pillar.toLowerCase()}`}
-                style={{
-                  border:       `1px solid ${meta?.border ?? '#ddd'}`,
-                  borderRadius: 10,
-                  padding:      '12px 12px',
-                  background:   p.total_active > 0 ? (meta?.bg ?? TOKENS.surface) : 'rgba(6,3,43,0.02)',
-                  opacity:      p.total_active > 0 ? 1 : 0.5,
-                }}
-              >
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta?.color ?? TOKENS.ink, margin: '0 0 6px' }}>
-                  {p.pillar}
-                </p>
-                <p style={{ fontSize: '1.25rem', fontWeight: 900, color: p.total_active > 0 ? (meta?.color ?? TOKENS.ink) : 'rgba(6,3,43,0.25)', margin: '0 0 2px', letterSpacing: '-0.02em' }}>
-                  {p.total_active}
-                </p>
-                <p style={{ fontSize: 9, color: 'rgba(6,3,43,0.40)', margin: 0 }}>
-                  {p.total_active === 0 ? 'non esplorato' : 'attività'}
-                </p>
-              </div>
-            );
-          })}
+      <Col span="full">
+        <div data-testid="dynamic-cv-summary">
+          <MetricStrip>
+            <Metric label="Attività tracciate" value={summary.totalActivities} />
+            <Metric label="Pillar attivi" value={`${summary.activePillars} / 5`} />
+            <Metric label="Partecipazioni registrate" value={summary.totalAttended} />
+          </MetricStrip>
         </div>
-      </div>
+      </Col>
 
-      {/* ── Narrative ─────────────────────────────────────────────────────── */}
-      {(narrative.strengths.length > 0 || narrative.emergingAreas.length > 0) && (
-        <div
-          data-testid="dynamic-cv-narrative"
-          style={{ marginBottom: 20 }}
-        >
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: '0 0 12px' }}>
-            Il tuo profilo
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {narrative.strengths.map((s, i) => (
-              <NarrativeCard key={i} label="Aree più attive" text={s} color={TOKENS.success} />
-            ))}
-            {narrative.emergingAreas.map((e, i) => (
-              <NarrativeCard key={i} label="Aree in esplorazione" text={e} color={BADGE_TOKENS.limited.text} />
-            ))}
-            {missingPillarList.length > 0 && (
-              <NarrativeCard
-                label="Aree non ancora esplorate"
-                text={`${missingPillarList.map(p => p.pillar).join(', ')}`}
-                color="rgba(6,3,43,0.35)"
+      {/* ── Pillar reading ────────────────────────────────────────────────── */}
+      <Col span="main">
+        <div style={{ display: 'grid', gap: SPACE.lg }}>
+          <Region label="Profilo pillar">
+            <div data-testid="dynamic-cv-pillar-profile">
+              <PillarDistribution
+                rows={pillars.map(p => ({
+                  pillar: p.pillar, active: p.total_active,
+                  attended: p.attended, registered: p.registered, interested: p.interested,
+                }))}
               />
+            </div>
+          </Region>
+
+          {/* ── Experiences ───────────────────────────────────────────────── */}
+          <Region label="Esperienze">
+            {!hasExperiences && (
+              <div data-testid="dynamic-cv-empty-state">
+                <StateBlock
+                  title="Nessuna esperienza ancora"
+                  body="Partecipa alle iniziative disponibili per costruire il tuo profilo KORA."
+                  action={
+                    <a href="/worker/opportunities" style={{ fontSize: 14, fontWeight: 600, color: PX.violet, textDecoration: 'none' }}>
+                      Esplora iniziative →
+                    </a>
+                  }
+                />
+              </div>
             )}
-          </div>
-        </div>
-      )}
 
-      {/* ── Experiences ───────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 20 }}>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: '0 0 12px' }}>
-          Esperienze
-        </p>
-
-        {!hasExperiences && (
-          <div
-            data-testid="dynamic-cv-empty-state"
-            style={{
-              border:       '1px dashed rgba(6,3,43,0.12)',
-              borderRadius: 12,
-              padding:      '32px 24px',
-              textAlign:    'center',
-            }}
-          >
-            <p style={{ fontSize: 14, fontWeight: 700, color: TOKENS.ink, margin: '0 0 8px' }}>
-              Nessuna esperienza ancora
-            </p>
-            <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}>
-              Partecipa alle iniziative disponibili per costruire il tuo profilo KORA.
-            </p>
-            <a
-              href="/worker/opportunities"
-              style={{
-                display:        'inline-block',
-                marginTop:      16,
-                fontSize:       12,
-                fontWeight:     600,
-                color:          TOKENS.info.base,
-                textDecoration: 'none',
-                padding:        '7px 14px',
-                border:         '1px solid rgba(59,110,186,0.28)',
-                borderRadius:   8,
-              }}
-            >
-              Esplora iniziative →
-            </a>
-          </div>
-        )}
-
-        {hasExperiences && (
-          <div
-            data-testid="dynamic-cv-experiences"
-            style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-          >
-            {experiences.map(exp => {
-              const meta   = PILLAR_META[exp.pillar];
-              const style  = STATUS_STYLE[exp.status] ?? { color: TOKENS.ink, bg: 'rgba(6,3,43,0.06)' };
-              return (
-                <div
-                  key={exp.initiative_id}
-                  style={{
-                    border:       '1px solid rgba(6,3,43,0.08)',
-                    borderRadius: 10,
-                    padding:      '12px 16px',
-                    display:      'flex',
-                    alignItems:   'flex-start',
-                    gap:          12,
-                  }}
-                >
-                  <div
+            {hasExperiences && (
+              <ul data-testid="dynamic-cv-experiences" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                {experiences.map((exp, i) => (
+                  <li
+                    key={exp.initiative_id}
                     style={{
-                      minWidth:   36,
-                      height:     36,
-                      borderRadius: 8,
-                      background: meta?.bg ?? 'rgba(6,3,43,0.05)',
-                      display:    'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      display: 'grid', gap: SPACE.xs, padding: `${SPACE.md}px 0`,
+                      borderTop: i === 0 ? 'none' : `1px solid ${PX.line}`, minWidth: 0,
                     }}
                   >
-                    <span style={{ fontSize: 8, fontWeight: 800, color: meta?.color ?? TOKENS.ink, letterSpacing: '0.06em' }}>
-                      {exp.pillar.slice(0, 2)}
-                    </span>
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 2 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: TOKENS.ink }}>
-                        {exp.title}
-                      </span>
-                      <span
-                        style={{
-                          fontSize:      9,
-                          fontWeight:    700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.08em',
-                          padding:       '2px 7px',
-                          borderRadius:  999,
-                          color:         style.color,
-                          background:    style.bg,
-                        }}
-                      >
-                        {exp.statusLabel}
-                      </span>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: SPACE.sm, flexWrap: 'wrap' }}>
+                      <Body as="span" style={{ margin: 0, color: PX.ink, fontWeight: 600, minWidth: 0 }}>{exp.title}</Body>
+                      {badgeIds.has(exp.initiative_id) && <Chip>Idonea al badge</Chip>}
                     </div>
-                    <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>
-                      {exp.pillar}
-                      {exp.date && ` · ${exp.date}`}
-                      {exp.mode && ` · ${exp.mode}`}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* ── Badge-ready experiences ───────────────────────────────────────── */}
-      {hasBadgeItems && (
-        <div
-          data-testid="dynamic-cv-badge-section"
-          style={{ marginBottom: 20 }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: 0 }}>
-              Esperienze badge-ready
-            </p>
-            <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'rgba(192,125,42,0.10)', color: BADGE_TOKENS.limited.text, border: '1px solid rgba(192,125,42,0.22)' }}>
-              {(badgeItems ?? []).length} idonee al badge
-            </span>
-          </div>
-          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.45)', margin: '0 0 10px', lineHeight: 1.5 }}>
-            Queste esperienze soddisfano i requisiti di categoria e livello di evidenza per un badge o credenziale.
-            Il badge non viene emesso automaticamente — richiedilo su tua iniziativa.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {(badgeItems ?? []).map(exp => (
-              <div key={exp.initiative_id} style={{ border: '1px solid rgba(192,125,42,0.25)', borderRadius: 8, padding: '10px 14px', background: 'rgba(192,125,42,0.04)' }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: TOKENS.ink, margin: '0 0 2px' }}>{exp.title}</p>
-                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>{exp.pillar} · {exp.date}</p>
-              </div>
-            ))}
-          </div>
-          <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.38)', margin: '8px 0 0', fontStyle: 'italic' }}>
-            Badge e credenziali: In arrivo · Pianificato — non attivo in Foundation Light.
-          </p>
-        </div>
-      )}
-
-      {/* ── Private-only experiences ───────────────────────────────────────── */}
-      {hasPrivateItems && (
-        <div
-          data-testid="dynamic-cv-private-section"
-          style={{ marginBottom: 20 }}
-        >
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: '0 0 6px' }}>
-            Esperienze private
-          </p>
-          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.45)', margin: '0 0 10px', lineHeight: 1.5 }}>
-            Queste esperienze sono incluse nel tuo PIB personale ma non sono suggerite per la condivisione.
-            Restano visibili solo a te.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {(privateItems ?? []).map(exp => (
-              <div key={exp.initiative_id} style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 8, padding: '10px 14px', background: 'rgba(6,3,43,0.02)', opacity: 0.75 }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: TOKENS.ink, margin: '0 0 2px' }}>{exp.title}</p>
-                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>{exp.pillar} · {exp.date} · Privata</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Future sharing options — planned, not active ───────────────────── */}
-      <div
-        data-testid="dynamic-cv-future-sharing"
-        style={{
-          border:       '1px solid rgba(6,3,43,0.08)',
-          borderRadius: 12,
-          padding:      '16px 18px',
-          marginBottom: 20,
-          background:   'rgba(6,3,43,0.02)',
-        }}
-      >
-        <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(6,3,43,0.55)', margin: '0 0 6px' }}>
-          Opzioni di condivisione future
-        </p>
-        <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: '0 0 12px', fontStyle: 'italic' }}>
-          Nessuna condivisione attiva in Foundation Light. Il lavoratore deciderà cosa condividere in Pilot+.
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {[
-            { label: 'Badge KORA verificato', desc: 'In arrivo · Pianificato' },
-            { label: 'Link di verifica pubblica', desc: 'In arrivo · Pianificato' },
-            { label: 'Esporta PDF', desc: 'In arrivo · Pianificato' },
-            { label: 'LinkedIn badge / credenziale verificabile', desc: 'In arrivo · Pianificato' },
-          ].map(({ label, desc }) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-              <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.52)', margin: 0 }}>{label}</p>
-              <span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(6,3,43,0.35)', background: 'rgba(6,3,43,0.05)', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 4, padding: '2px 7px', whiteSpace: 'nowrap' }}>{desc}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Export & condivisione — B126 ───────────────────────────────────── */}
-      <div
-        data-testid="dynamic-cv-export-section"
-        style={{
-          border:       '1px solid rgba(6,3,43,0.08)',
-          borderRadius: 12,
-          padding:      '18px 20px',
-          marginBottom: 20,
-        }}
-      >
-        <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px' }}>
-          Esporta e condividi
-        </p>
-        <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 14px', lineHeight: 1.5 }}>
-          La condivisione è volontaria, revocabile e non viene inviata al tuo datore di lavoro.
-          KORA non crea CV employer-facing.
-        </p>
-
-        {/* Action buttons */}
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
-          <a
-            data-testid="dynamic-cv-print-link"
-            href="/worker/dynamic-cv/print"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              fontFamily:     FONT,
-              fontSize:       12,
-              fontWeight:     600,
-              padding:        '8px 16px',
-              borderRadius:   8,
-              border:         '1px solid rgba(6,3,43,0.18)',
-              background:     TOKENS.ink,
-              color:          '#fff',
-              cursor:         'pointer',
-              textDecoration: 'none',
-              display:        'inline-block',
-            }}
-          >
-            Stampa / Salva PDF
-          </a>
-
-          <button
-            data-testid="dynamic-cv-share-link-btn"
-            onClick={handleCreateShare}
-            disabled={creating}
-            style={{
-              fontFamily:   FONT,
-              fontSize:     12,
-              fontWeight:   600,
-              padding:      '8px 16px',
-              borderRadius: 8,
-              border:       '1px solid rgba(59,110,186,0.30)',
-              background:   'rgba(59,110,186,0.08)',
-              color:        TOKENS.info.base,
-              cursor:       creating ? 'not-allowed' : 'pointer',
-              opacity:      creating ? 0.6 : 1,
-            }}
-          >
-            {creating ? 'Creazione…' : 'Crea link condivisibile'}
-          </button>
-        </div>
-
-        {/* New share link created — show URL once */}
-        {newShareUrl && (
-          <div
-            data-testid="dynamic-cv-new-share-url"
-            style={{
-              background:   'rgba(47,125,85,0.06)',
-              border:       '1px solid rgba(47,125,85,0.25)',
-              borderRadius: 8,
-              padding:      '12px 16px',
-              marginBottom: 12,
-            }}
-          >
-            <p style={{ fontSize: 11, fontWeight: 700, color: BADGE_TOKENS.eligible.text, margin: '0 0 6px' }}>
-              Link creato — copialo ora, non verrà mostrato di nuovo.
-            </p>
-            <code
-              style={{
-                display:      'block',
-                fontSize:     11,
-                color:        BADGE_TOKENS.eligible.text,
-                wordBreak:    'break-all',
-                marginBottom: 4,
-              }}
-            >
-              {newShareUrl}
-            </code>
-            {newShareExpires && (
-              <p style={{ fontSize: 10, color: 'rgba(26,71,49,0.60)', margin: 0 }}>
-                Scade: {new Date(newShareExpires).toLocaleDateString('it-IT')}
-              </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: SPACE.sm, flexWrap: 'wrap' }}>
+                      <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: PX.rPill, flex: 'none', background: PILLAR_COLORS[exp.pillar as keyof typeof PILLAR_COLORS] ?? PX.inkMute }} />
+                      <Caption as="span" style={{ margin: 0, color: PX.ink3 }}>{exp.pillar}</Caption>
+                      <Caption as="span" style={{ margin: 0, color: PX.ink3 }}>·</Caption>
+                      <Caption as="span" style={{ margin: 0, color: PX.ink3 }}>{exp.statusLabel}</Caption>
+                      <Caption as="span" style={{ margin: 0, color: PX.ink3 }}>·</Caption>
+                      <Caption as="span" style={{ margin: 0, color: PX.ink3 }}>{exp.date}</Caption>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
-          </div>
-        )}
+          </Region>
+        </div>
+      </Col>
 
-        {/* Active share links */}
-        {sharesLoading && (
-          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.35)', margin: 0 }}>Caricamento link…</p>
-        )}
+      <Col span="rail">
+        <div style={{ display: 'grid', gap: SPACE.lg }}>
+          {/* ── Reading of the profile ──────────────────────────────────── */}
+          {(narrative.strengths.length > 0 || narrative.emergingAreas.length > 0 || missingPillarList.length > 0) && (
+            <Region label="Il tuo profilo">
+              <div data-testid="dynamic-cv-narrative" style={{ display: 'grid', gap: SPACE.sm }}>
+                {narrative.strengths.map((s, i) => (
+                  <Secondary key={`s${i}`} style={{ margin: 0, color: PX.ink2 }}>{s}</Secondary>
+                ))}
+                {narrative.emergingAreas.map((e, i) => (
+                  <Secondary key={`e${i}`} style={{ margin: 0, color: PX.ink2 }}>{e}</Secondary>
+                ))}
+                {missingPillarList.length > 0 && (
+                  <Caption style={{ margin: 0, color: PX.ink3 }}>
+                    Aree non ancora esplorate: {missingPillarList.map(p => p.pillar).join(', ')}.
+                  </Caption>
+                )}
+              </div>
+            </Region>
+          )}
 
-        {!sharesLoading && activeShares.length > 0 && (
-          <div
-            data-testid="dynamic-cv-active-shares"
-            style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-          >
-            <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: 'rgba(6,3,43,0.35)', margin: '0 0 4px' }}>
-              Link attivi
-            </p>
-            {activeShares.map(s => (
-              <div
-                key={s.id}
-                data-testid="dynamic-cv-share-item"
-                style={{
-                  border:       '1px solid rgba(6,3,43,0.08)',
-                  borderRadius: 8,
-                  padding:      '10px 14px',
-                  display:      'flex',
-                  alignItems:   'center',
-                  gap:          12,
-                  flexWrap:     'wrap',
-                }}
-              >
-                <div style={{ flex: 1, minWidth: 160 }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: TOKENS.ink, margin: '0 0 2px' }}>
-                    Creato {new Date(s.created_at).toLocaleDateString('it-IT')}
-                  </p>
-                  <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>
-                    Scade {new Date(s.expires_at).toLocaleDateString('it-IT')} &middot; {s.access_count} accessi
-                  </p>
-                </div>
-                <button
-                  data-testid="dynamic-cv-revoke-btn"
-                  onClick={() => handleRevoke(s.id)}
-                  disabled={revoking === s.id}
+          {/* ── Badge eligibility — stated once, read on each experience ──── */}
+          {hasBadgeItems && (
+            <Region label="Badge e credenziali">
+              <div data-testid="dynamic-cv-badge-section" style={{ display: 'grid', gap: SPACE.sm }}>
+                <Secondary style={{ margin: 0, color: PX.ink2 }}>
+                  {(badgeItems ?? []).length} idonee al badge
+                </Secondary>
+                <Secondary style={{ margin: 0, color: PX.ink3 }}>
+                  Queste esperienze soddisfano i requisiti di categoria e livello di evidenza per un badge o credenziale.
+                  Il badge non viene emesso automaticamente — richiedilo su tua iniziativa.
+                </Secondary>
+                <Caption style={{ margin: 0, color: PX.ink3 }}>
+                  Badge e credenziali: In arrivo · Pianificato — non attivo in Foundation Light.
+                </Caption>
+              </div>
+            </Region>
+          )}
+
+          {/* ── Private-only experiences ──────────────────────────────────── */}
+          {hasPrivateItems && (
+            <Region label="Esperienze private">
+              <div data-testid="dynamic-cv-private-section" style={{ display: 'grid', gap: SPACE.sm }}>
+                <Secondary style={{ margin: 0, color: PX.ink3 }}>
+                  Queste esperienze sono incluse nel tuo PIB personale ma non sono suggerite per la condivisione.
+                  Restano visibili solo a te.
+                </Secondary>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: SPACE.sm }}>
+                  {(privateItems ?? []).map(exp => (
+                    <li key={exp.initiative_id} style={{ minWidth: 0 }}>
+                      <Secondary as="span" style={{ color: PX.ink, fontWeight: 600 }}>{exp.title}</Secondary>
+                      <Caption style={{ margin: '2px 0 0', color: PX.ink3 }}>{exp.pillar} · {exp.date} · Privata</Caption>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Region>
+          )}
+
+          {/* ── Export & condivisione — B126 ──────────────────────────────── */}
+          <Region label="Esporta e condividi">
+            <div data-testid="dynamic-cv-export-section" style={{ display: 'grid', gap: SPACE.md }}>
+              <Secondary style={{ margin: 0, color: PX.ink2 }}>
+                La condivisione è volontaria, revocabile e non viene inviata al tuo datore di lavoro.
+                KORA non crea CV employer-facing.
+              </Secondary>
+
+              <div style={{ display: 'flex', gap: SPACE.sm, flexWrap: 'wrap' }}>
+                <a
+                  data-testid="dynamic-cv-print-link"
+                  href="/worker/dynamic-cv/print"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   style={{
-                    fontFamily:   FONT,
-                    fontSize:     10,
-                    fontWeight:   700,
-                    padding:      '5px 12px',
-                    borderRadius: 6,
-                    border:       '1px solid rgba(158,59,47,0.28)',
-                    background:   'rgba(158,59,47,0.06)',
-                    color:        TOKENS.critical,
-                    cursor:       revoking === s.id ? 'not-allowed' : 'pointer',
-                    opacity:      revoking === s.id ? 0.6 : 1,
+                    ...typeStyle('secondary', { weight: 700 }), background: PX.ink, color: '#fff',
+                    borderRadius: PX.rCtl, padding: '11px 20px', minHeight: 44, display: 'inline-flex',
+                    alignItems: 'center', textDecoration: 'none',
                   }}
                 >
-                  {revoking === s.id ? 'Revoca…' : 'Revoca'}
+                  Stampa / Salva PDF
+                </a>
+                <button
+                  data-testid="dynamic-cv-share-link-btn"
+                  onClick={handleCreateShare}
+                  disabled={creating}
+                  style={{
+                    ...typeStyle('secondary', { weight: 600 }), background: PX.l1, color: PX.ink2,
+                    border: `1px solid ${PX.line2}`, borderRadius: PX.rCtl, padding: '11px 20px',
+                    minHeight: 44, cursor: creating ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {creating ? 'Creazione…' : 'Crea link condivisibile'}
                 </button>
               </div>
-            ))}
-          </div>
-        )}
 
-        {/* Revoked/expired share links */}
-        {!sharesLoading && inactiveShares.length > 0 && (
-          <div
-            data-testid="dynamic-cv-inactive-shares"
-            style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}
-          >
-            <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: 'rgba(6,3,43,0.25)', margin: '0 0 2px' }}>
-              Link revocati / scaduti
-            </p>
-            {inactiveShares.map(s => (
-              <div
-                key={s.id}
-                data-testid="dynamic-cv-inactive-share-item"
-                style={{
-                  border:       '1px solid rgba(6,3,43,0.05)',
-                  borderRadius: 8,
-                  padding:      '8px 14px',
-                  display:      'flex',
-                  alignItems:   'center',
-                  gap:          10,
-                  opacity:      0.5,
-                }}
-              >
-                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0, flex: 1 }}>
-                  {s.status === 'revoked' ? 'Revocato' : 'Scaduto'} &middot; creato {new Date(s.created_at).toLocaleDateString('it-IT')}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              {newShareUrl && (
+                <div data-testid="dynamic-cv-new-share-url">
+                  <Notice tone="ok">Link creato — copialo ora, non verrà mostrato di nuovo.</Notice>
+                  <code style={{ display: 'block', marginTop: SPACE.sm, ...typeStyle('caption'), fontFamily: 'ui-monospace, monospace', color: PX.ink2, overflowWrap: 'anywhere' }}>
+                    {newShareUrl}
+                  </code>
+                  {newShareExpires && (
+                    <Caption style={{ margin: `${SPACE.xs}px 0 0`, color: PX.ink3 }}>
+                      Scade: {new Date(newShareExpires).toLocaleDateString('it-IT')}
+                    </Caption>
+                  )}
+                </div>
+              )}
+
+              {sharesLoading && <Caption style={{ margin: 0, color: PX.ink3 }}>Caricamento link…</Caption>}
+
+              {!sharesLoading && activeShares.length > 0 && (
+                <div data-testid="dynamic-cv-active-shares" style={{ display: 'grid', gap: SPACE.sm }}>
+                  <Meta style={{ color: PX.ink3 }}>Link attivi</Meta>
+                  {activeShares.map(s => (
+                    <div key={s.id} data-testid="dynamic-cv-share-item" style={{ display: 'flex', alignItems: 'center', gap: SPACE.sm, flexWrap: 'wrap' }}>
+                      <div style={{ flex: '1 1 180px', minWidth: 0 }}>
+                        <Secondary style={{ margin: 0, color: PX.ink }}>
+                          Creato {new Date(s.created_at).toLocaleDateString('it-IT')}
+                        </Secondary>
+                        <Caption style={{ margin: 0, color: PX.ink3 }}>
+                          Scade {new Date(s.expires_at).toLocaleDateString('it-IT')} &middot; {s.access_count} accessi
+                        </Caption>
+                      </div>
+                      <button
+                        data-testid="dynamic-cv-revoke-btn"
+                        onClick={() => handleRevoke(s.id)}
+                        disabled={revoking === s.id}
+                        style={{
+                          ...typeStyle('caption', { weight: 600 }), background: 'transparent', color: PX.risk,
+                          border: `1px solid ${PX.line2}`, borderRadius: PX.rCtl, padding: '9px 14px',
+                          minHeight: 44, cursor: revoking === s.id ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        {revoking === s.id ? 'Revoca…' : 'Revoca'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!sharesLoading && inactiveShares.length > 0 && (
+                <div data-testid="dynamic-cv-inactive-shares" style={{ display: 'grid', gap: SPACE.xs }}>
+                  <Meta style={{ color: PX.ink3 }}>Link non più attivi</Meta>
+                  {inactiveShares.map(s => (
+                    <Caption key={s.id} data-testid="dynamic-cv-inactive-share-item" style={{ margin: 0, color: PX.ink3 }}>
+                      {s.status === 'revoked' ? 'Revocato' : 'Scaduto'} &middot; creato {new Date(s.created_at).toLocaleDateString('it-IT')}
+                    </Caption>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Region>
+
+          {/* ── Future sharing options — planned, not active ──────────────── */}
+          <Region label="Opzioni di condivisione future">
+            <div data-testid="dynamic-cv-future-sharing" style={{ display: 'grid', gap: SPACE.sm }}>
+              <Secondary style={{ margin: 0, color: PX.ink3 }}>
+                Nessuna condivisione attiva in Foundation Light. Il lavoratore deciderà cosa condividere in Pilot+.
+              </Secondary>
+              {/* W3B: four rows each carrying the identical badge "In arrivo ·
+                  Pianificato" said one thing four times. The status is stated
+                  once and the capabilities are named once. */}
+              <Caption style={{ margin: 0, color: PX.ink3 }}>
+                In arrivo · Pianificato: Badge KORA verificato · Link di verifica pubblica · Esporta PDF · LinkedIn badge / credenziale verificabile.
+              </Caption>
+            </div>
+          </Region>
+        </div>
+      </Col>
 
       {/* ── Privacy footer — non-suppressible ─────────────────────────────── */}
-      <div
-        data-testid="dynamic-cv-privacy-footer"
-        style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 14 }}
-      >
-        <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(6,3,43,0.45)', margin: '0 0 2px' }}>
-          Il Dynamic Impact CV è privato. L&apos;azienda non vede questo CV.
-        </p>
-        <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.28)', margin: 0, lineHeight: 1.5 }}>
-          KORA misura l&apos;organizzazione, non valuta il singolo lavoratore. Questo CV non è un ranking
-          e non contiene confronti con colleghi.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ── Sub-components ─────────────────────────────────────────────────────────────
-
-function NarrativeCard({ label, text, color }: { label: string; text: string; color: string }) {
-  return (
-    <div style={{ border: '1px solid rgba(6,3,43,0.07)', borderRadius: 10, padding: '12px 16px' }}>
-      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color, margin: '0 0 4px' }}>
-        {label}
-      </p>
-      <p style={{ fontSize: 12, color: TOKENS.ink, margin: 0, lineHeight: 1.6 }}>
-        {text}
-      </p>
-    </div>
+      <Col span="full">
+        <div data-testid="dynamic-cv-privacy-footer" style={{ paddingTop: SPACE.md, borderTop: `1px solid ${PX.line}` }}>
+          <Secondary style={{ margin: 0, color: PX.ink3 }}>
+            Il Dynamic Impact CV è privato. L&apos;azienda non vede questo CV.
+          </Secondary>
+          <Caption style={{ margin: `${SPACE.xs}px 0 0`, color: PX.ink3 }}>
+            KORA misura l&apos;organizzazione, non valuta il singolo lavoratore. Questo CV non è un ranking
+            e non contiene confronti con colleghi.
+          </Caption>
+        </div>
+      </Col>
+    </Workspace>
   );
 }

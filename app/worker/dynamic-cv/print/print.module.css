@@ -1,25 +1,140 @@
-/* KORA-WP-129 — Dynamic CV print composition (Defect B).
+/* KORA-WP-129 — Dynamic CV print composition.
  *
- * WHY THIS FILE EXISTS: these rules used to live in a <style> tag inside a
- * <head> that this page declared itself, nested inside the root layout's
- * document. The browser's parser discards a second <html>/<head>/<body>, so
- * the rules never reached the CSSOM and Cmd+P printed the application shell
- * over a blank sheet. A route-scoped CSS module is the repo's existing
- * mechanism for page-owned styling (app/landing.module.css,
- * app/pilot/pilot.module.css) and is the smallest one that actually ships.
+ * WHY THIS FILE EXISTS (Defect B, published): these rules used to live in a
+ * <style> tag inside a <head> this page declared itself, nested inside the root
+ * layout's document. The browser's parser discards a second <html>/<head>/<body>,
+ * so the rules never reached the CSSOM and Cmd+P printed the application shell
+ * over a blank sheet. A route-scoped CSS module is the repo's existing mechanism
+ * for page-owned styling and is the smallest one that actually ships.
  *
- * Every rule below is inside @media print except the screen sheet geometry,
- * so nothing here can alter how any other route renders on screen.
+ * W3B adds the artifact's own composition and its pagination discipline. Every
+ * :global selector still sits inside @media print, so no other route can inherit
+ * anything from here on screen.
+ *
+ * Type sizes below are the KORA-WP-139 roles (title 32 / section 20 / body 15 /
+ * secondary 14 / label 13 / caption 12 / meta 11). Nothing renders below 11.
  */
 
-/* Screen: the printable sheet, centred inside the Product canvas. */
 .page {
-  max-width: 760px;
+  max-width: 820px;
   margin: 0 auto;
-  padding: 40px 24px;
-  background: #fff;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  padding: 40px 24px 64px;
+  background: var(--px-l1);
+  color: var(--px-ink);
 }
+
+/* ── Screen-only controls ──────────────────────────────────────────────── */
+.noPrint {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.back {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--px-ink-3);
+  text-decoration: none;
+}
+
+/* ── Masthead ──────────────────────────────────────────────────────────── */
+.masthead {
+  border-bottom: 2px solid var(--px-ink);
+  padding-bottom: 16px;
+  margin-bottom: 32px;
+}
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+  color: var(--px-ink-3);
+}
+.name {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.org {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--px-ink-2);
+}
+
+.block { margin-bottom: 32px; }
+
+.section {
+  margin: 0 0 16px;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+}
+
+/* ── Summary facts ─────────────────────────────────────────────────────── */
+.facts { display: flex; gap: 48px; margin: 0; flex-wrap: wrap; }
+.fact  { margin: 0; }
+.fact dt {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.075em;
+  text-transform: uppercase; color: var(--px-ink-3);
+}
+.fact dd {
+  margin: 4px 0 0; font-size: 32px; font-weight: 700;
+  letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
+}
+
+/* ── Pillar reading — one per row, so nothing compresses ───────────────── */
+.pillars { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.pillars { max-width: 560px; }
+.pillarRow {
+  display: grid;
+  grid-template-columns: 104px 1fr 88px;
+  align-items: center;
+  gap: 16px;
+}
+.pillarName {
+  font-size: 13px; font-weight: 700; letter-spacing: 0.02em;
+}
+.pillarTrack {
+  height: 8px; border-radius: 999px; background: var(--px-ink-wash);
+  overflow: hidden; display: block;
+}
+.pillarBar { display: block; height: 100%; border-radius: 999px; }
+.pillarCount {
+  font-size: 13px; color: var(--px-ink-2); text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Experiences ───────────────────────────────────────────────────────── */
+.table { width: 100%; border-collapse: collapse; }
+.table th {
+  text-align: left;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.075em;
+  text-transform: uppercase; color: var(--px-ink-3);
+  padding: 0 12px 8px 0;
+  border-bottom: 1px solid var(--px-line);
+}
+.table tr:last-child td { border-bottom: none; }
+.table td {
+  padding: 10px 12px 10px 0;
+  border-bottom: 1px solid var(--px-line);
+  vertical-align: top;
+}
+.cellPillar { font-size: 12px; font-weight: 700; white-space: nowrap; }
+.cellTitle  { font-size: 14px; color: var(--px-ink); }
+.cellMeta   { font-size: 12px; color: var(--px-ink-3); white-space: nowrap; }
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
+.footer { border-top: 1px solid var(--px-line); padding-top: 16px; }
+.footerPrimary {
+  margin: 0; font-size: 12px; line-height: 1.6; color: var(--px-ink-3); max-width: 78ch;
+}
+
+@page { margin: 16mm; }
 
 @media print {
   /* The shell is chrome; the CV is the artifact. */
@@ -27,8 +142,8 @@
   :global(.px-nav),
   .noPrint { display: none !important; }
 
-  /* The shell's flex + scrollport model exists to keep the nav pinned against
-     a fixed viewport. Paged media has no viewport to pin against: left as-is,
+  /* The shell's flex + scrollport model exists to keep the nav pinned against a
+     fixed viewport. Paged media has no viewport to pin against: left as-is,
      .px-main's own scrollport clips the artifact to a single page. */
   :global(.px-shell) { display: block !important; min-height: 0 !important; }
   :global(.px-main)  { display: block !important; overflow: visible !important; padding: 0 !important; }
@@ -36,14 +151,23 @@
      reserves a full blank page after short content. */
   :global(.px-main) > * { min-height: 0 !important; }
 
-  :global(html), :global(body) {
-    height: auto !important;
-    background: #fff !important;
-  }
+  :global(html), :global(body) { height: auto !important; background: #fff !important; }
 
-  .page {
-    max-width: none;
-    margin: 0;
-    padding: 24px 32px;
-  }
+  /* @page owns the sheet margin; the block must not add a second one. */
+  .page { max-width: none; margin: 0; padding: 0; }
+
+  /* Pagination discipline. A record split across a page boundary and a heading
+     stranded at the foot of a page are the two ways a printed list stops being
+     readable; both are cheap to prevent and neither is browser-specific. */
+  .table thead { display: table-header-group; }
+  .table tr    { break-inside: avoid; page-break-inside: avoid; }
+  .section     { break-after: avoid; page-break-after: avoid; }
+  .masthead    { break-after: avoid; page-break-after: avoid; }
+  .block       { break-inside: auto; }
+  .pillarRow   { break-inside: avoid; page-break-inside: avoid; }
+  .footer      { break-before: avoid; page-break-before: avoid; }
+
+  /* Semantic information must survive weak colour reproduction: the pillar name
+     is always a word, never only a bar or only a hue. */
+  .pillarTrack { border: 1px solid var(--px-line); }
 }

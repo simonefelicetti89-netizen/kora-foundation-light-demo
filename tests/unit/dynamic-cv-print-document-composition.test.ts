@@ -83,7 +83,13 @@ describe('Dynamic CV print route — owns no document of its own', () => {
     expect(src).toMatch(/data-testid="dynamic-cv-print-view"/);
     expect(src).toMatch(/Dynamic Impact CV/);
     expect(src).toMatch(/Esperienze/);
-    expect(src).toMatch(/Profilo Pillar/);
+    // KORA-WP-129 W3B — NARROWLY SUPERSEDED casing only. This pinned
+    // `Profilo Pillar` because the legacy section label was uppercased by CSS
+    // and written title-case in source. W3B maps section headings to the
+    // canonical `section` role, where `meta` is the only uppercase role, so the
+    // source now reads `Profilo pillar`. The Product truth asserted here is
+    // that the pillar section exists and is named — not how it is capitalised.
+    expect(src).toMatch(/Profilo pillar/i);
     // The privacy footer is non-suppressible on this surface.
     expect(src).toMatch(/Il datore di lavoro non vede questo CV/);
   });

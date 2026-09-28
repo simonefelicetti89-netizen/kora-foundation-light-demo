@@ -186,6 +186,17 @@ export const ROUTE_ARCHETYPE: Record<string, Archetype> = {
   // onboarding is there to be acted on, not filed.
   '/worker/onboarding':                'OPERATIONAL_WORKSPACE',
   '/worker/setup-password':            'OPERATIONAL_WORKSPACE',
+
+  // KORA-WP-129 Wave 4b (W3B) — the Dynamic Impact CV.
+  //   /worker/dynamic-cv       — one record and everything true about it: the
+  //                              worker's own CV. It is read, not worked through,
+  //                              and it is not a judgment — RECORD_DETAIL.
+  //   /worker/dynamic-cv/print — a printed output that must carry its evidence in
+  //                              full; its length is the record's length, and
+  //                              shortening it by dropping experiences would be a
+  //                              falsification — REPORT_EXPORT.
+  '/worker/dynamic-cv':                'RECORD_DETAIL',
+  '/worker/dynamic-cv/print':          'REPORT_EXPORT',
   // Partner
   '/partner/workspace':            'OPERATIONAL_WORKSPACE',
   // Public

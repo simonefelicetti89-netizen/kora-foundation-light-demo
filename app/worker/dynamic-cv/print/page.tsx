@@ -17,12 +17,11 @@ import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PrintButton } from './_print-button';
-import { TOKENS, PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
+import { PILLAR_SURFACE } from '@/lib/design/kora-design-tokens';
 import styles from './print.module.css';
 
 export const metadata = { title: 'Stampa Dynamic Impact CV · KORA' };
 
-const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
 const PILLAR_META: Record<string, { color: string }> = {
   LIFE:       { color: PILLAR_SURFACE.LIFE.color },
@@ -102,135 +101,93 @@ export default async function DynamicCVPrintPage() {
 
   const totalActivities = experiences.length;
   const activePillarsCount = ALL_PILLARS.filter(p => pillarCounts[p] > 0).length;
-  const printDate = new Date().toLocaleDateString('it-IT');
+  const maxPillar = Math.max(...ALL_PILLARS.map(p => pillarCounts[p]), 1);
 
   return (
-    <div
-      className={styles.page}
-      data-testid="dynamic-cv-print-view"
-    >
+    <div className={styles.page} data-testid="dynamic-cv-print-view">
       {/* Print controls — hidden in print */}
-      <div
-        className={styles.noPrint}
-        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}
-      >
-        <a
-          href="/worker/dynamic-cv"
-          style={{ fontSize: 12, color: 'rgba(6,3,43,0.40)', textDecoration: 'none' }}
-        >
-          &#8592; Torna al CV
-        </a>
+      <div className={styles.noPrint}>
+        <a href="/worker/dynamic-cv" className={styles.back}>&#8592; Torna al CV</a>
         <PrintButton />
       </div>
 
-      {/* Hero */}
-      <div style={{ borderBottom: `2px solid ${TOKENS.ink}`, paddingBottom: 20, marginBottom: 24 }}>
-        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.40)', margin: '0 0 6px' }}>
-          Dynamic Impact CV &middot; KORA Foundation Light
-        </p>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: TOKENS.ink, margin: '0 0 4px', letterSpacing: '-0.03em' }}>
-          {displayName}
-        </h1>
-        {tenantName && (
-          <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px' }}>
-            {tenantName}
-          </p>
-        )}
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-          <Stat label="Attività tracciate" value={totalActivities} />
-          <Stat label="Pillar attivi"       value={activePillarsCount} />
-          <Stat label="Data stampa"         value={printDate} />
-        </div>
-      </div>
+      <header className={styles.masthead}>
+        <p className={styles.eyebrow}>Dynamic Impact CV</p>
+        <h1 className={styles.name}>{displayName}</h1>
+        {tenantName && <p className={styles.org}>{tenantName}</p>}
+      </header>
 
-      {/* Pillar profile */}
-      <div style={{ marginBottom: 24 }}>
-        <SectionLabel>Profilo Pillar</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+      <section className={styles.block}>
+        <dl className={styles.facts}>
+          <div className={styles.fact}>
+            <dt>Attività tracciate</dt>
+            <dd>{totalActivities}</dd>
+          </div>
+          <div className={styles.fact}>
+            <dt>Pillar attivi</dt>
+            <dd>{activePillarsCount} / {ALL_PILLARS.length}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section className={styles.block}>
+        <h2 className={styles.section}>Profilo pillar</h2>
+        <ul className={styles.pillars}>
           {ALL_PILLARS.map(p => {
-            const meta  = PILLAR_META[p];
             const count = pillarCounts[p];
+            const meta  = PILLAR_META[p];
             return (
-              <div
-                key={p}
-                style={{
-                  border:       `1px solid ${meta?.color ?? '#ddd'}`,
-                  borderRadius: 8,
-                  padding:      '10px 10px',
-                  opacity:      count > 0 ? 1 : 0.35,
-                  textAlign:    'center',
-                }}
-              >
-                <p style={{ fontSize: 7, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta?.color ?? TOKENS.ink, margin: '0 0 4px' }}>
-                  {p}
-                </p>
-                <p style={{ fontSize: '1.25rem', fontWeight: 900, color: meta?.color ?? TOKENS.ink, margin: 0 }}>
-                  {count}
-                </p>
-              </div>
+              <li key={p} className={styles.pillarRow}>
+                <span className={styles.pillarName}>{p}</span>
+                <span className={styles.pillarTrack}>
+                  {count > 0 && (
+                    <span
+                      className={styles.pillarBar}
+                      style={{ width: `${Math.round((count / maxPillar) * 100)}%`, background: meta?.color }}
+                    />
+                  )}
+                </span>
+                <span className={styles.pillarCount}>
+                  {count === 0 ? 'non esplorato' : count}
+                </span>
+              </li>
             );
           })}
-        </div>
-      </div>
+        </ul>
+      </section>
 
-      {/* Experiences */}
       {experiences.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <SectionLabel>Esperienze</SectionLabel>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <section className={styles.block}>
+          <h2 className={styles.section}>Esperienze</h2>
+          <table className={styles.table}>
             <thead>
-              <tr style={{ borderBottom: '1px solid rgba(6,3,43,0.12)' }}>
-                {['Pillar', 'Titolo', 'Stato', 'Data'].map(h => (
-                  <th scope="col" key={h} style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.35)', textAlign: 'left', padding: '0 8px 6px 0' }}>
-                    {h}
-                  </th>
-                ))}
+              <tr>
+                <th scope="col">Pillar</th>
+                <th scope="col">Titolo</th>
+                <th scope="col">Stato</th>
+                <th scope="col">Data</th>
               </tr>
             </thead>
             <tbody>
-              {experiences.map((exp, i) => {
-                const meta = PILLAR_META[exp.pillar];
-                return (
-                  <tr key={i} style={{ borderBottom: '1px solid rgba(6,3,43,0.05)' }}>
-                    <td style={{ fontSize: 10, fontWeight: 700, color: meta?.color ?? TOKENS.ink, padding: '7px 8px 7px 0', whiteSpace: 'nowrap' }}>{exp.pillar}</td>
-                    <td style={{ fontSize: 12, color: TOKENS.ink, padding: '7px 8px 7px 0' }}>{exp.title}</td>
-                    <td style={{ fontSize: 10, color: 'rgba(6,3,43,0.55)', padding: '7px 8px 7px 0', whiteSpace: 'nowrap' }}>{exp.statusLabel}</td>
-                    <td style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', padding: '7px 0', whiteSpace: 'nowrap' }}>{exp.date}</td>
-                  </tr>
-                );
-              })}
+              {experiences.map((exp, i) => (
+                <tr key={i}>
+                  <td className={styles.cellPillar} style={{ color: PILLAR_META[exp.pillar]?.color }}>{exp.pillar}</td>
+                  <td className={styles.cellTitle}>{exp.title}</td>
+                  <td className={styles.cellMeta}>{exp.statusLabel}</td>
+                  <td className={styles.cellMeta}>{exp.date}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
-        </div>
+        </section>
       )}
 
-      {/* Privacy footer — non-suppressible */}
-      <div style={{ borderTop: '1px solid rgba(6,3,43,0.10)', paddingTop: 14, marginTop: 8 }}>
-        <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: '0 0 4px', lineHeight: 1.6 }}>
+      <footer className={styles.footer}>
+        <p className={styles.footerPrimary}>
           Questo CV non &egrave; una valutazione della performance individuale. Non contiene
           ranking, score o confronto con colleghi. Il datore di lavoro non vede questo CV.
         </p>
-        <p style={{ fontSize: 9, color: 'rgba(6,3,43,0.25)', margin: 0 }}>
-          KORA Foundation Light &middot; Metodologia v0.1 pre-empirical calibration &middot; {printDate}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: '0 0 10px' }}>
-      {children}
-    </p>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div>
-      <p style={{ fontSize: 18, fontWeight: 900, color: TOKENS.ink, margin: '0 0 2px', letterSpacing: '-0.02em' }}>{value}</p>
-      <p style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.40)', margin: 0 }}>{label}</p>
+      </footer>
     </div>
   );
 }
