@@ -1,0 +1,49 @@
+/* KORA-WP-129 — Dynamic CV print composition (Defect B).
+ *
+ * WHY THIS FILE EXISTS: these rules used to live in a <style> tag inside a
+ * <head> that this page declared itself, nested inside the root layout's
+ * document. The browser's parser discards a second <html>/<head>/<body>, so
+ * the rules never reached the CSSOM and Cmd+P printed the application shell
+ * over a blank sheet. A route-scoped CSS module is the repo's existing
+ * mechanism for page-owned styling (app/landing.module.css,
+ * app/pilot/pilot.module.css) and is the smallest one that actually ships.
+ *
+ * Every rule below is inside @media print except the screen sheet geometry,
+ * so nothing here can alter how any other route renders on screen.
+ */
+
+/* Screen: the printable sheet, centred inside the Product canvas. */
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  background: #fff;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+@media print {
+  /* The shell is chrome; the CV is the artifact. */
+  :global(.px-top),
+  :global(.px-nav),
+  .noPrint { display: none !important; }
+
+  /* The shell's flex + scrollport model exists to keep the nav pinned against
+     a fixed viewport. Paged media has no viewport to pin against: left as-is,
+     .px-main's own scrollport clips the artifact to a single page. */
+  :global(.px-shell) { display: block !important; min-height: 0 !important; }
+  :global(.px-main)  { display: block !important; overflow: visible !important; padding: 0 !important; }
+  /* app/worker/layout.tsx sets min-height:100vh inline; in paged media that
+     reserves a full blank page after short content. */
+  :global(.px-main) > * { min-height: 0 !important; }
+
+  :global(html), :global(body) {
+    height: auto !important;
+    background: #fff !important;
+  }
+
+  .page {
+    max-width: none;
+    margin: 0;
+    padding: 24px 32px;
+  }
+}
