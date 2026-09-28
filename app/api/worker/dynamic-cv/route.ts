@@ -172,8 +172,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   // ── 2. Participation history — exclude private_note from CV output ─────────
   // RLS worker_participation_worker_own_all (mig 008) isola via auth.uid() — nessun filtro worker_id.
-  // Extend worker_initiative select to include action_family and eligibility_class for policy classification.
-  // These fields may not exist on all initiative rows — safe nullish fallback applied below.
+  // Only real personal.worker_initiative columns may appear in this embedded
+  // select. `delivery_mode`, `action_family` and `is_mandatory` were previously
+  // requested here and none of them is a column of that table — `delivery_mode`
+  // belongs to network.partner_profile (migration 010), `action_family` to the
+  // UEF/ingestion domain (migration 001), and `is_mandatory` exists in no
+  // migration at all. PostgREST rejects the WHOLE embedded resource when a named
+  // column is absent, so this query returned 500 for every worker with at least
+  // one participation row. The nullish fallbacks below were written for missing
+  // VALUES and could never protect against a missing COLUMN.
   const { data: rows, error } = await db
     .schema('personal')
     .from('worker_participation')
@@ -185,10 +192,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       worker_initiative:initiative_id (
         title,
         pillar,
-        delivery_mode,
-        action_family,
-        eligibility_class,
-        is_mandatory
+        mode,
+        eligibility_class
       )
     `)
     .order('updated_at', { ascending: false });
@@ -239,9 +244,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Apply Dynamic Impact CV policy classification
     const classification = classifyForDynamicCV({
       eligibility_class: (init.eligibility_class as string | null) ?? null,
-      category:          (init.action_family as string | null) ?? (init.title as string) ?? '',
+      // CVClassificationInput documents `category` as "action_family or
+      // initiative title". action_family is not available on this table, so the
+      // contract's title branch is the one that applies.
+      category:          (init.title as string) ?? '',
       pillar,
-      is_mandatory:      (init.is_mandatory as boolean | undefined) ?? false,
+      // `is_mandatory` is optional in CVClassificationInput and is read at a
+      // single falsy-guarded site. It is not persisted anywhere, so it is omitted
+      // rather than asserted false — behaviourally identical, and honest about
+      // what is unknown.
       evidence_level:    status === 'attended' ? 'high' : status === 'registered' ? 'medium' : 'low',
     });
 
@@ -252,7 +263,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       status,
       statusLabel:      STATUS_LABELS[status],
       date:             (row.updated_at as string).slice(0, 10),
-      mode:             (init.delivery_mode as string | null) ?? null,
+      mode:             (init.mode as string | null) ?? null,
       provider:         null,
       cvEligible:       classification.cvEligible,
       badgeEligible:    classification.badgeEligible,
