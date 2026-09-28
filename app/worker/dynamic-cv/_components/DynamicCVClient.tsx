@@ -247,7 +247,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
       <Col span="rail">
         <div style={{ display: 'grid', gap: SPACE.lg }}>
           {/* ── Reading of the profile ──────────────────────────────────── */}
-          {(narrative.strengths.length > 0 || narrative.emergingAreas.length > 0 || missingPillarList.length > 0) && (
+          {(narrative.strengths.length > 0 || narrative.emergingAreas.length > 0 || missingPillarList.length > 0 || hasBadgeItems) && (
             <Region label="Il tuo profilo">
               <div data-testid="dynamic-cv-narrative" style={{ display: 'grid', gap: SPACE.sm }}>
                 {narrative.strengths.map((s, i) => (
@@ -261,24 +261,15 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
                     Aree non ancora esplorate: {missingPillarList.map(p => p.pillar).join(', ')}.
                   </Caption>
                 )}
-              </div>
-            </Region>
-          )}
-
-          {/* ── Badge eligibility — stated once, read on each experience ──── */}
-          {hasBadgeItems && (
-            <Region label="Badge e credenziali">
-              <div data-testid="dynamic-cv-badge-section" style={{ display: 'grid', gap: SPACE.sm }}>
-                <Secondary style={{ margin: 0, color: PX.ink2 }}>
-                  {(badgeItems ?? []).length} idonee al badge
-                </Secondary>
-                <Secondary style={{ margin: 0, color: PX.ink3 }}>
-                  Queste esperienze soddisfano i requisiti di categoria e livello di evidenza per un badge o credenziale.
-                  Il badge non viene emesso automaticamente — richiedilo su tua iniziativa.
-                </Secondary>
-                <Caption style={{ margin: 0, color: PX.ink3 }}>
-                  Badge e credenziali: In arrivo · Pianificato — non attivo in Foundation Light.
-                </Caption>
+                {/* W3B remediation — badge eligibility is a FACT ABOUT THE RECORD,
+                    and it already reads on each experience as a chip. What stood
+                    here was a region whose main message was a roadmap disclaimer.
+                    The fact stays, stated once; the disclaimer goes. */}
+                {hasBadgeItems && (
+                  <Caption data-testid="dynamic-cv-badge-section" style={{ margin: 0, color: PX.ink3 }}>
+                    {(badgeItems ?? []).length} esperienze soddisfano i requisiti di idoneità al badge.
+                  </Caption>
+                )}
               </div>
             </Region>
           )}
@@ -398,20 +389,6 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
             </div>
           </Region>
 
-          {/* ── Future sharing options — planned, not active ──────────────── */}
-          <Region label="Opzioni di condivisione future">
-            <div data-testid="dynamic-cv-future-sharing" style={{ display: 'grid', gap: SPACE.sm }}>
-              <Secondary style={{ margin: 0, color: PX.ink3 }}>
-                Nessuna condivisione attiva in Foundation Light. Il lavoratore deciderà cosa condividere in Pilot+.
-              </Secondary>
-              {/* W3B: four rows each carrying the identical badge "In arrivo ·
-                  Pianificato" said one thing four times. The status is stated
-                  once and the capabilities are named once. */}
-              <Caption style={{ margin: 0, color: PX.ink3 }}>
-                In arrivo · Pianificato: Badge KORA verificato · Link di verifica pubblica · Esporta PDF · LinkedIn badge / credenziale verificabile.
-              </Caption>
-            </div>
-          </Region>
         </div>
       </Col>
 
