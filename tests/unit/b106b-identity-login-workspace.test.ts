@@ -324,16 +324,30 @@ describe('B106-B — /worker/setup-password: password setup per worker', () => {
 
   const form = read('app/worker/setup-password/_form.tsx');
 
-  it('form redirige a /worker/workspace dopo password set', () => {
-    expect(form).toContain('/worker/workspace');
+  // KORA-WP-129 W3A — NARROWLY SUPERSEDED, and the reason matters.
+  // This asserted toContain('/worker/workspace') against the whole file. The
+  // code has pushed '/worker/onboarding' since long before W3A; the only
+  // '/worker/workspace' in the file was a HEADER COMMENT that contradicted it,
+  // so the assertion was passing on a stale comment rather than on behaviour.
+  // W3A corrected that comment to state the real destination, which is what
+  // surfaced the false positive. The redirect itself is unchanged. The guard's
+  // real intent — the worker lands in the WORKER space, never the company one —
+  // is preserved here and by the untouched negative assertion below.
+  it('form redirige nello spazio worker dopo password set', () => {
+    expect(form).toContain("router.push('/worker/onboarding')");
   });
 
   it('form non redirige a /company/workspace', () => {
     expect(form).not.toContain('/company/workspace');
   });
 
-  it('form usa design system KORA (TOKENS)', () => {
-    expect(form).toContain('TOKENS');
+  // KORA-WP-129 W3A — NARROWLY SUPERSEDED. This pinned the legacy `TOKENS`
+  // object, which is a visual implementation detail, not Product truth. The
+  // canonical token object for a migrated surface is `PX` from the same module
+  // (KORA-WP-125/139). The assertion keeps its real intent: this form takes its
+  // design values from the KORA design system and never hardcodes its own.
+  it('form usa design system KORA (PX)', () => {
+    expect(form).toContain('PX');
     expect(form).toContain('kora-design-tokens');
   });
 

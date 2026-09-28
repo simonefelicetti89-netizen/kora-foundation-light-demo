@@ -3,15 +3,24 @@
 // app/worker/setup-password/_form.tsx
 // Password setup form for workers accepting a KORA invite.
 // Session is already established by /auth/callback before this page renders.
-// On success: redirects to /worker/workspace.
+// On success: redirects to /worker/onboarding.
+//
+// KORA-WP-129 Wave 4b (W3A) — migrated onto the Product Experience system.
+// No auth, token, redirect, policy or error semantics changed: the minimum
+// length, the match check, updateUser(), the invite-link failure copy and the
+// destination are all exactly as before. What changed is composition — this
+// surface renders inside the Worker shell, so it no longer paints a
+// full-viewport dark frame and a second KORA logo inside the shell's own canvas.
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { SPACE, PX } from '@/lib/design/kora-design-tokens';
+import { PageHead, Region, Notice, Caption, Secondary } from '@/components/ui/px';
+import { ENTRY_MEASURE, Field, PrimaryAction, Requirement, entryInputStyle } from '../_entry/entry-ui';
 
-const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
+/** The one place the invite policy is stated. Used by the guard and the reader. */
+const MIN_LENGTH = 8;
 
 export function WorkerSetupPasswordForm() {
   const router       = useRouter();
@@ -31,18 +40,21 @@ export function WorkerSetupPasswordForm() {
       : null;
 
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: TOKENS.ink, padding: '24px' }}>
-        <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 400, background: TOKENS.surface, border: TOKENS.cardBorderStrong, borderRadius: TOKENS.cardRadius, boxShadow: '0 24px 80px rgba(6,3,43,0.35)', padding: '36px 32px', textAlign: 'center' }}>
-          <p style={{ fontFamily: FONT, fontWeight: 800, fontSize: '1.1rem', color: TOKENS.ink, marginBottom: 12 }}>
-            Link non valido o scaduto
-          </p>
-          <p style={{ fontFamily: FONT, fontSize: 13, color: TOKENS.inkSecondary, lineHeight: 1.6, marginBottom: 12 }}>
-            Il link di invito non è più valido. Contatta il tuo responsabile KORA per ricevere un nuovo invito.
-          </p>
-          {description && (
-            <p style={{ fontFamily: FONT, fontSize: 11, color: TOKENS.inkHint }}>{description}</p>
-          )}
-        </div>
+      <div style={{ maxWidth: ENTRY_MEASURE }}>
+        <PageHead
+          eyebrow="My KORA · Primo accesso"
+          title="Link non valido o scaduto"
+        />
+        <Region>
+          <div style={{ display: 'grid', gap: SPACE.md }}>
+            <Notice tone="risk">
+              Il link di invito non è più valido. Contatta il tuo responsabile KORA per ricevere un nuovo invito.
+            </Notice>
+            {description && (
+              <Caption style={{ margin: 0, color: PX.ink3 }}>{description}</Caption>
+            )}
+          </div>
+        </Region>
       </div>
     );
   }
@@ -51,7 +63,7 @@ export function WorkerSetupPasswordForm() {
     e.preventDefault();
     setErrorMsg(null);
 
-    if (password.length < 8) {
+    if (password.length < MIN_LENGTH) {
       setErrorMsg('La password deve essere di almeno 8 caratteri.');
       return;
     }
@@ -81,152 +93,103 @@ export function WorkerSetupPasswordForm() {
     }
   }
 
-  const inputStyle: React.CSSProperties = {
-    fontFamily:   FONT,
-    fontSize:     14,
-    color:        TOKENS.ink,
-    background:   TOKENS.surface,
-    border:       TOKENS.cardBorderStrong,
-    borderRadius: 10,
-    padding:      '11px 14px',
-    width:        '100%',
-    outline:      'none',
-    transition:   'border-color 200ms ease',
-    display:      'block',
-  };
+  const busy = status === 'loading';
+  // Requirements read the SAME predicates the submit guard uses, so the page
+  // can never promise something the guard would then refuse.
+  const longEnough = password.length === 0 ? null : password.length >= MIN_LENGTH;
+  const matching   = confirm.length === 0 ? null : password === confirm;
 
   return (
-    <div
-      style={{
-        minHeight:      '100vh',
-        display:        'flex',
-        alignItems:     'center',
-        justifyContent: 'center',
-        background:     TOKENS.ink,
-        padding:        '24px',
-      }}
-    >
-      <div
-        style={{
-          position:     'relative',
-          zIndex:       1,
-          width:        '100%',
-          maxWidth:     400,
-          background:   TOKENS.surface,
-          border:       TOKENS.cardBorderStrong,
-          borderRadius: TOKENS.cardRadius,
-          boxShadow:    '0 24px 80px rgba(6,3,43,0.35)',
-          padding:      '36px 32px',
-        }}
-      >
-        <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'center' }}>
-          <Image src="/kora/logo-dark.png" alt="KORA" width={110} height={34} priority style={{ height: 30, width: 'auto' }} />
-        </div>
+    <div style={{ maxWidth: ENTRY_MEASURE }}>
+      <PageHead
+        eyebrow="My KORA · Primo accesso"
+        title="Imposta la tua password"
+        lead="Crea la password con cui accederai al tuo spazio personale KORA."
+      />
 
-        <div style={{ marginBottom: 28, textAlign: 'center' }}>
-          <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 8 }}>
-            My KORA · Primo accesso
-          </p>
-          <h1 style={{ fontFamily: FONT, fontWeight: 800, fontSize: '1.375rem', letterSpacing: '-0.025em', lineHeight: 1.1, color: TOKENS.ink, marginBottom: 6 }}>
-            Imposta la tua password
-          </h1>
-          <p style={{ fontFamily: FONT, fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
-            Benvenuto in KORA. Crea la tua password per accedere al tuo spazio personale.
-          </p>
-        </div>
-
-        {status === 'success' ? (
-          <p style={{ fontFamily: FONT, fontSize: 13, color: TOKENS.success, textAlign: 'center' }}>
-            Password impostata. Accesso in corso…
-          </p>
-        ) : (
+      {status === 'success' ? (
+        <Region>
+          <Notice tone="ok">Password impostata. Accesso in corso…</Notice>
+        </Region>
+      ) : (
+        <Region>
           <form onSubmit={handleSubmit} noValidate>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label htmlFor="password" style={{ fontFamily: FONT, fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  disabled={status === 'loading'}
-                  placeholder="Almeno 8 caratteri"
-                  style={inputStyle}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = TOKENS.accent; }}
-                  onBlur={(e)  => { e.currentTarget.style.borderColor = ''; }}
-                />
+            <div style={{ display: 'grid', gap: SPACE.lg }}>
+              <div style={{ display: 'grid', gap: SPACE.md }}>
+                <Field id="password" label="Password">
+                  {({ id, invalid }) => (
+                    <input
+                      id={id}
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={MIN_LENGTH}
+                      autoComplete="new-password"
+                      disabled={busy}
+                      aria-describedby="password-requirements"
+                      style={entryInputStyle(invalid)}
+                      onFocus={(e) => { e.currentTarget.style.borderColor = PX.violet; }}
+                      onBlur={(e)  => { e.currentTarget.style.borderColor = PX.line2; }}
+                    />
+                  )}
+                </Field>
+
+                <Field id="confirm" label="Conferma password">
+                  {({ id, invalid }) => (
+                    <input
+                      id={id}
+                      type="password"
+                      value={confirm}
+                      onChange={(e) => setConfirm(e.target.value)}
+                      required
+                      autoComplete="new-password"
+                      disabled={busy}
+                      aria-describedby="password-requirements"
+                      style={entryInputStyle(invalid)}
+                      onFocus={(e) => { e.currentTarget.style.borderColor = PX.violet; }}
+                      onBlur={(e)  => { e.currentTarget.style.borderColor = PX.line2; }}
+                    />
+                  )}
+                </Field>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label htmlFor="confirm" style={{ fontFamily: FONT, fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
-                  Conferma password
-                </label>
-                <input
-                  id="confirm"
-                  type="password"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                  disabled={status === 'loading'}
-                  style={inputStyle}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = TOKENS.accent; }}
-                  onBlur={(e)  => { e.currentTarget.style.borderColor = ''; }}
-                />
+              {/* The requirements were previously only in a placeholder, which
+                  disappears exactly when the reader starts typing. */}
+              <div id="password-requirements">
+                <Secondary
+                  as="p"
+                  style={{ margin: '0 0 8px', color: PX.ink3, fontWeight: 600 }}
+                >
+                  Requisiti
+                </Secondary>
+                <ul style={{ display: 'grid', gap: 6, margin: 0, padding: 0 }}>
+                  <Requirement met={longEnough}>Almeno {MIN_LENGTH} caratteri</Requirement>
+                  <Requirement met={matching}>Le due password coincidono</Requirement>
+                </ul>
               </div>
 
               {errorMsg && (
-                <div
-                  role="alert"
-                  aria-live="polite"
-                  style={{
-                    borderRadius: 10,
-                    border:       `1px solid ${TOKENS.safeguard.cap.dot}40`,
-                    background:   TOKENS.safeguard.cap.bg,
-                    padding:      '10px 14px',
-                    fontSize:     '12.5px',
-                    color:        TOKENS.safeguard.cap.text,
-                    fontFamily:   FONT,
-                    lineHeight:   1.5,
-                  }}
-                >
-                  {errorMsg}
+                <div role="alert" aria-live="polite">
+                  <Notice tone="risk">{errorMsg}</Notice>
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={status === 'loading'}
-                style={{
-                  fontFamily:   FONT,
-                  fontWeight:   700,
-                  fontSize:     '13.5px',
-                  borderRadius: 12,
-                  padding:      '12px 20px',
-                  background:   status === 'loading' ? 'rgba(6,3,43,0.40)' : TOKENS.ink,
-                  color:        '#FFFFFF',
-                  border:       'none',
-                  cursor:       status === 'loading' ? 'not-allowed' : 'pointer',
-                  width:        '100%',
-                  transition:   'background 150ms ease',
-                  minHeight:    48,
-                }}
-              >
-                {status === 'loading' ? 'Impostazione in corso…' : 'Imposta password e accedi →'}
-              </button>
+              <div style={{ display: 'flex' }}>
+                <div style={{ flex: '0 1 280px', minWidth: 200 }}>
+                  <PrimaryAction type="submit" busy={busy} full>
+                    {busy ? 'Impostazione in corso…' : 'Imposta password e accedi'}
+                  </PrimaryAction>
+                </div>
+              </div>
             </div>
           </form>
-        )}
+        </Region>
+      )}
 
-        <p style={{ fontFamily: FONT, fontSize: '10.5px', color: TOKENS.inkMeta, textAlign: 'center', marginTop: 20, lineHeight: 1.5 }}>
-          KORA Foundation Light · Il tuo datore di lavoro non può vedere questi dati
-        </p>
-      </div>
+      <Caption style={{ margin: '16px 0 0', color: PX.ink3 }}>
+        KORA Foundation Light · Il tuo datore di lavoro non può vedere questi dati
+      </Caption>
     </div>
   );
 }

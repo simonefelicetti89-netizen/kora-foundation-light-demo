@@ -177,6 +177,15 @@ export const ROUTE_ARCHETYPE: Record<string, Archetype> = {
   '/worker/commons':                   'DIRECTORY_INDEX',
   '/worker/opportunities':             'DIRECTORY_INDEX',
   '/worker/personal-impact-balance':   'RECORD_DETAIL',
+
+  // KORA-WP-129 Wave 4b (W3A) — the Worker ENTRY surfaces. Both are surfaces
+  // the worker WORKS THROUGH rather than reads: onboarding is a five-step
+  // sequence ending in a consent and a form, and setup-password is a single
+  // task with a pass/fail outcome. Neither is a directory, a record, or a
+  // judgment, and neither is disclosure text — the privacy explanation inside
+  // onboarding is there to be acted on, not filed.
+  '/worker/onboarding':                'OPERATIONAL_WORKSPACE',
+  '/worker/setup-password':            'OPERATIONAL_WORKSPACE',
   // Partner
   '/partner/workspace':            'OPERATIONAL_WORKSPACE',
   // Public

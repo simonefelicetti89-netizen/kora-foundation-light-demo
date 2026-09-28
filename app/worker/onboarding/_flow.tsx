@@ -5,15 +5,22 @@
 // Pure display and interaction — no employer-visible data.
 // NEVER shows rankings, comparisons, or individual data to employer.
 // Privacy boundary is explained clearly before any consent is recorded.
+//
+// KORA-WP-129 Wave 4b (W3A) — migrated onto the Product Experience system.
+// The five steps, their order, their copy, the consent gate, the API call and
+// every redirect are unchanged: this is a presentation migration. What changed
+// is that the surface now composes inside the Worker shell using the canonical
+// type roles and spacing scale instead of a floating card with its own scale.
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BADGE_TOKENS, PILLAR_COLORS, TOKENS } from '@/lib/design/kora-design-tokens';
-
-const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
-const INK = TOKENS.ink;
+import { SPACE, PILLAR_COLORS, PX, typeStyle } from '@/lib/design/kora-design-tokens';
+import { PageHead, Region, Notice, Body, Secondary, Meta, Section } from '@/components/ui/px';
+import { ENTRY_MEASURE, Field, PrimaryAction, SecondaryAction, entryInputStyle } from '../_entry/entry-ui';
 
 const TOTAL_STEPS = 5;
+
+const STEP_NAMES = ['Benvenuto', "Cosa vede l'azienda", 'Cosa vedi tu', 'Consenso privacy', 'Il tuo profilo'] as const;
 
 // ── Pillar colors (informational, not scoring) ────────────────────────────────
 
@@ -27,80 +34,64 @@ const PILLAR_ITEMS = [
 
 // ── Shared UI atoms ───────────────────────────────────────────────────────────
 
-function StepProgress({ current, total }: { current: number; total: number }) {
+/** Progress the reader can locate themselves in, without a stepper competing
+ *  with the step's own heading for attention. */
+function StepProgress({ current }: { current: number }) {
   return (
-    <div style={{ display: 'flex', gap: 4, marginBottom: 28 }}>
-      {Array.from({ length: total }, (_, i) => (
-        <div
-          key={i}
-          style={{
-            flex: 1,
-            height: 3,
-            borderRadius: 99,
-            background: i < current ? INK : 'rgba(6,3,43,0.12)',
-            transition: 'background 300ms ease',
-          }}
-        />
-      ))}
+    <div style={{ display: 'grid', gap: 10, marginBottom: SPACE.lg }}>
+      <Meta style={{ color: PX.ink3 }}>
+        Passo {current} di {TOTAL_STEPS} · {STEP_NAMES[current - 1]}
+      </Meta>
+      <div
+        role="progressbar"
+        aria-valuemin={1}
+        aria-valuemax={TOTAL_STEPS}
+        aria-valuenow={current}
+        aria-label="Avanzamento onboarding"
+        style={{ display: 'flex', gap: SPACE.xs }}
+      >
+        {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+          <div
+            key={i}
+            style={{
+              flex: 1, height: 3, borderRadius: PX.rPill,
+              background: i < current ? PX.ink : PX.inkWash,
+              transition: `background ${PX.t3} ${PX.ease}`,
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }
 
-function StepLabel({ n, label }: { n: number; label: string }) {
+/** A line of the privacy boundary. The mark carries the sense, not the colour. */
+function BoundaryLine({ text, positive }: { text: string; positive: boolean }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
-      <span style={{
-        fontFamily: 'ui-monospace, monospace',
-        fontSize: 10,
-        fontWeight: 700,
-        color: 'rgba(6,3,43,0.35)',
-        background: 'rgba(6,3,43,0.05)',
-        borderRadius: 4,
-        padding: '2px 7px',
-        flexShrink: 0,
-      }}>
-        {String(n).padStart(2, '0')}/{String(TOTAL_STEPS).padStart(2, '0')}
+    <li style={{ display: 'flex', alignItems: 'flex-start', gap: 10, listStyle: 'none', margin: 0 }}>
+      <span
+        aria-hidden="true"
+        style={{ flex: 'none', width: 16, textAlign: 'center', fontWeight: 700, lineHeight: 1.5, color: positive ? PX.ok : PX.inkMute }}
+      >
+        {positive ? '✓' : '·'}
       </span>
-      <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: 'rgba(6,3,43,0.38)' }}>
-        {label}
-      </span>
+      <Secondary as="span" style={{ color: PX.ink2 }}>{text}</Secondary>
+    </li>
+  );
+}
+
+function BoundaryList({ label, items, positive }: { label: string; items: string[]; positive: boolean }) {
+  return (
+    <div style={{ display: 'grid', gap: SPACE.sm }}>
+      <Meta style={{ color: PX.ink3 }}>{label}</Meta>
+      <ul style={{ display: 'grid', gap: SPACE.sm, margin: 0, padding: 0 }}>
+        {items.map((t) => <BoundaryLine key={t} text={t} positive={positive} />)}
+      </ul>
     </div>
   );
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 style={{ fontFamily: FONT, fontWeight: 800, fontSize: '1.35rem', letterSpacing: '-0.025em', color: INK, marginBottom: 12, lineHeight: 1.2 }}>
-      {children}
-    </h2>
-  );
-}
-
-function BodyText({ children }: { children: React.ReactNode }) {
-  return (
-    <p style={{ fontFamily: FONT, fontSize: 13, color: 'rgba(6,3,43,0.65)', lineHeight: 1.65, margin: 0 }}>
-      {children}
-    </p>
-  );
-}
-
-function PrivacyChip({ text, positive }: { text: string; positive: boolean }) {
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'flex-start', gap: 8,
-      background: positive ? 'rgba(22,101,52,0.07)' : 'rgba(6,3,43,0.04)',
-      border: positive ? '1px solid rgba(22,101,52,0.18)' : '1px solid rgba(6,3,43,0.09)',
-      borderRadius: 8, padding: '10px 12px',
-    }}>
-      <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{positive ? '✓' : '·'}</span>
-      <span style={{ fontFamily: FONT, fontSize: 12, color: positive ? BADGE_TOKENS.eligible.text : 'rgba(6,3,43,0.60)', lineHeight: 1.5 }}>
-        {text}
-      </span>
-    </div>
-  );
-}
-
-function NavButtons({
+function StepNav({
   onBack, onNext, nextLabel, nextDisabled, loading,
 }: {
   onBack?: () => void;
@@ -110,36 +101,16 @@ function NavButtons({
   loading?: boolean;
 }) {
   return (
-    <div style={{ display: 'flex', gap: 10, marginTop: 28 }}>
-      {onBack && (
-        <button
-          type="button"
-          onClick={onBack}
-          style={{
-            fontFamily: FONT, fontSize: 13, fontWeight: 600,
-            background: 'none', border: '1px solid rgba(6,3,43,0.14)',
-            borderRadius: 10, padding: '11px 20px',
-            color: 'rgba(6,3,43,0.55)', cursor: 'pointer',
-            transition: 'border-color 150ms ease',
-          }}
-        >
-          ← Indietro
-        </button>
-      )}
-      <button
-        type="button"
-        onClick={onNext}
-        disabled={nextDisabled || loading}
-        style={{
-          flex: 1, fontFamily: FONT, fontWeight: 700, fontSize: 13,
-          background: (nextDisabled || loading) ? 'rgba(6,3,43,0.30)' : INK,
-          color: '#fff', border: 'none', borderRadius: 10,
-          padding: '12px 20px', cursor: (nextDisabled || loading) ? 'not-allowed' : 'pointer',
-          transition: 'background 150ms ease', minHeight: 44,
-        }}
-      >
-        {loading ? 'Salvataggio…' : (nextLabel ?? 'Continua →')}
-      </button>
+    <div style={{ display: 'flex', gap: SPACE.sm, marginTop: SPACE.xl, flexWrap: 'wrap' }}>
+      {onBack && <SecondaryAction onClick={onBack}>Indietro</SecondaryAction>}
+      {/* The primary is sized, not stretched: a button that grows to fill the
+          row reads as a bar, and stops reading as a decision. It still shrinks
+          to share the row with Indietro on a narrow viewport. */}
+      <div style={{ flex: '0 1 280px', minWidth: 200 }}>
+        <PrimaryAction onClick={onNext} disabled={nextDisabled} busy={loading} full>
+          {loading ? 'Salvataggio…' : (nextLabel ?? 'Continua')}
+        </PrimaryAction>
+      </div>
     </div>
   );
 }
@@ -149,36 +120,31 @@ function NavButtons({
 function Step1Benvenuto({ onNext }: { onNext: () => void }) {
   return (
     <div>
-      <StepLabel n={1} label="Benvenuto" />
-      <SectionTitle>Il tuo spazio privato di attivazione</SectionTitle>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 18 }}>
-        <BodyText>
-          <strong style={{ color: INK }}>KORA è una piattaforma di intelligenza organizzativa.</strong>{' '}
+      <Section style={{ margin: '0 0 12px' }}>Il tuo spazio privato di attivazione</Section>
+      <div style={{ display: 'grid', gap: SPACE.md }}>
+        <Body style={{ margin: 0, color: PX.ink2 }}>
+          <strong style={{ color: PX.ink }}>KORA è una piattaforma di intelligenza organizzativa.</strong>{' '}
           Aiuta la tua azienda a capire come si attiva collettivamente — non a valutare singoli lavoratori.
-        </BodyText>
-        <BodyText>
-          Il tuo spazio in KORA è <strong style={{ color: INK }}>privato</strong>. Puoi registrare le iniziative a cui partecipi,
+        </Body>
+        <Body style={{ margin: 0, color: PX.ink2 }}>
+          Il tuo spazio in KORA è <strong style={{ color: PX.ink }}>privato</strong>. Puoi registrare le iniziative a cui partecipi,
           tenere note personali e costruire un profilo di attivazione per pillar.
-        </BodyText>
-        <div style={{
-          background: 'rgba(6,3,43,0.03)', border: '1px solid rgba(6,3,43,0.08)',
-          borderRadius: 10, padding: '16px 18px', marginTop: 4,
-        }}>
-          <p style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.40)', marginBottom: 10 }}>
-            I 5 pillar KORA
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            {PILLAR_ITEMS.map(p => (
-              <div key={p.code} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: p.color, flexShrink: 0, display: 'inline-block' }} />
-                <span style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, color: INK, flexShrink: 0 }}>{p.label}</span>
-                <span style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(6,3,43,0.45)' }}>{p.desc}</span>
-              </div>
+        </Body>
+
+        <div style={{ display: 'grid', gap: SPACE.sm, marginTop: SPACE.sm }}>
+          <Meta style={{ color: PX.ink3 }}>I 5 pillar KORA</Meta>
+          <ul style={{ display: 'grid', gap: SPACE.sm, margin: 0, padding: 0 }}>
+            {PILLAR_ITEMS.map((p) => (
+              <li key={p.code} style={{ display: 'flex', alignItems: 'baseline', gap: 10, listStyle: 'none', margin: 0 }}>
+                <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: PX.rPill, background: p.color, flex: 'none', display: 'inline-block' }} />
+                <Secondary as="span" style={{ color: PX.ink, fontWeight: 600, flex: 'none' }}>{p.label}</Secondary>
+                <Secondary as="span" style={{ color: PX.ink3 }}>{p.desc}</Secondary>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </div>
-      <NavButtons onNext={onNext} />
+      <StepNav onNext={onNext} />
     </div>
   );
 }
@@ -188,38 +154,36 @@ function Step1Benvenuto({ onNext }: { onNext: () => void }) {
 function Step2CosaVedeAzienda({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
   return (
     <div>
-      <StepLabel n={2} label="Cosa vede l'azienda" />
-      <SectionTitle>Il tuo datore di lavoro vede solo aggregati anonimi</SectionTitle>
-      <BodyText>
+      <Section style={{ margin: '0 0 12px' }}>Il tuo datore di lavoro vede solo aggregati anonimi</Section>
+      <Body style={{ margin: 0, color: PX.ink2 }}>
         L&apos;azienda riceve dati collettivi sull&apos;organizzazione — mai dati individuali su di te.
-      </BodyText>
+      </Body>
 
-      <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <p style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.40)', marginBottom: 4 }}>
-          L&apos;azienda vede
-        </p>
-        {[
-          'Solo dati aggregati — mai dati individuali',
-          'Solo se ci sono almeno 10 lavoratori nel conteggio (soglia privacy)',
-          'Quote di partecipazione per pillar — senza nomi né identificativi',
-        ].map(t => <PrivacyChip key={t} text={t} positive={true} />)}
+      <div style={{ display: 'grid', gap: SPACE.lg, marginTop: SPACE.lg }}>
+        <BoundaryList
+          label="L'azienda vede"
+          positive
+          items={[
+            'Solo dati aggregati — mai dati individuali',
+            'Solo se ci sono almeno 10 lavoratori nel conteggio (soglia privacy)',
+            'Quote di partecipazione per pillar — senza nomi né identificativi',
+          ]}
+        />
+        <BoundaryList
+          label="L'azienda non vede mai"
+          positive={false}
+          items={[
+            'Il tuo profilo individuale',
+            'Le tue scelte e partecipazioni specifiche',
+            'Le tue note private',
+            'Il tuo storico personale',
+            'Nessun ranking o confronto tra lavoratori',
+            'Dati sotto soglia — se il gruppo è troppo piccolo, il dato viene soppresso',
+          ]}
+        />
       </div>
 
-      <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <p style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.40)', marginBottom: 4 }}>
-          L&apos;azienda non vede mai
-        </p>
-        {[
-          'Il tuo profilo individuale',
-          'Le tue scelte e partecipazioni specifiche',
-          'Le tue note private',
-          'Il tuo storico personale',
-          'Nessun ranking o confronto tra lavoratori',
-          'Dati sotto soglia — se il gruppo è troppo piccolo, il dato viene soppresso',
-        ].map(t => <PrivacyChip key={t} text={t} positive={false} />)}
-      </div>
-
-      <NavButtons onBack={onBack} onNext={onNext} />
+      <StepNav onBack={onBack} onNext={onNext} />
     </div>
   );
 }
@@ -229,35 +193,34 @@ function Step2CosaVedeAzienda({ onBack, onNext }: { onBack: () => void; onNext: 
 function Step3CosaVediTu({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
   return (
     <div>
-      <StepLabel n={3} label="Cosa vedi tu" />
-      <SectionTitle>Il tuo spazio — tutto tuo, sempre privato</SectionTitle>
-      <BodyText>
+      <Section style={{ margin: '0 0 12px' }}>Il tuo spazio — tutto tuo, sempre privato</Section>
+      <Body style={{ margin: 0, color: PX.ink2 }}>
         Il tuo workspace KORA è il tuo spazio di attivazione personale.
         Puoi esplorare le iniziative disponibili nella tua azienda e tenere traccia della tua partecipazione.
-      </BodyText>
+      </Body>
 
-      <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {[
-          'Le iniziative pubblicate dalla tua azienda',
-          'Il tuo storico personale di partecipazione',
-          'Il tuo profilo privato per pillar (visibile solo a te)',
-          'Le tue note personali (mai visibili all\'azienda)',
-          'Il tuo Dynamic Impact CV e la rete partner — disponibili nel tuo spazio',
-        ].map(t => <PrivacyChip key={t} text={t} positive={true} />)}
+      <div style={{ marginTop: SPACE.lg }}>
+        <BoundaryList
+          label="Nel tuo spazio trovi"
+          positive
+          items={[
+            'Le iniziative pubblicate dalla tua azienda',
+            'Il tuo storico personale di partecipazione',
+            'Il tuo profilo privato per pillar (visibile solo a te)',
+            'Le tue note personali (mai visibili all\'azienda)',
+            'Il tuo Dynamic Impact CV e la rete partner — disponibili nel tuo spazio',
+          ]}
+        />
       </div>
 
-      <div style={{
-        marginTop: 18,
-        background: 'rgba(6,3,43,0.03)', border: '1px solid rgba(6,3,43,0.08)',
-        borderRadius: 8, padding: '12px 14px',
-      }}>
-        <p style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(6,3,43,0.55)', lineHeight: 1.6, margin: 0 }}>
-          <strong style={{ color: INK }}>Importante:</strong> il tuo profilo per pillar non è una valutazione individuale.
+      <div style={{ marginTop: SPACE.lg }}>
+        <Notice tone="info">
+          <strong>Importante:</strong> il tuo profilo per pillar non è una valutazione individuale.
           Non genera ranking, non viene confrontato con altri lavoratori e non viene condiviso con l&apos;azienda.
-        </p>
+        </Notice>
       </div>
 
-      <NavButtons onBack={onBack} onNext={onNext} />
+      <StepNav onBack={onBack} onNext={onNext} />
     </div>
   );
 }
@@ -274,48 +237,43 @@ function Step4Consenso({
 }) {
   return (
     <div>
-      <StepLabel n={4} label="Consenso privacy" />
-      <SectionTitle>Prima di iniziare</SectionTitle>
-      <BodyText>
+      <Section style={{ margin: '0 0 12px' }}>Prima di iniziare</Section>
+      <Body style={{ margin: 0, color: PX.ink2 }}>
         Conferma di aver compreso come funziona il boundary privacy di KORA.
         Non è un documento legale — è una dichiarazione di comprensione operativa.
-      </BodyText>
+      </Body>
 
-      <div style={{ marginTop: 22 }}>
+      <div style={{ marginTop: SPACE.lg }}>
         <label
           style={{
             display: 'flex', alignItems: 'flex-start', gap: 14, cursor: 'pointer',
-            background: accepted ? 'rgba(22,101,52,0.06)' : 'rgba(6,3,43,0.03)',
-            border: accepted ? '1.5px solid rgba(22,101,52,0.25)' : '1.5px solid rgba(6,3,43,0.12)',
-            borderRadius: 10, padding: '16px 16px',
-            transition: 'background 200ms ease, border-color 200ms ease',
+            background: accepted ? PX.okTint : PX.l2,
+            border: `1px solid ${accepted ? PX.ok : PX.l2Edge}`,
+            borderRadius: PX.rInner, padding: SPACE.md,
+            transition: `background ${PX.t3} ${PX.ease}, border-color ${PX.t3} ${PX.ease}`,
           }}
         >
           <input
             type="checkbox"
             checked={accepted}
             onChange={(e) => setAccepted(e.target.checked)}
-            style={{ width: 18, height: 18, accentColor: BADGE_TOKENS.eligible.text, marginTop: 2, flexShrink: 0, cursor: 'pointer' }}
+            style={{ width: 18, height: 18, accentColor: PX.ok, marginTop: 2, flexShrink: 0, cursor: 'pointer' }}
             aria-label="Accetta il boundary privacy KORA"
           />
-          <span style={{ fontFamily: FONT, fontSize: 13, color: INK, lineHeight: 1.65 }}>
+          <Body as="span" style={{ margin: 0, color: PX.ink }}>
             Ho compreso che il mio profilo individuale resta privato e che l&apos;azienda vede solo dati aggregati anonimi.
             Capisco che KORA misura l&apos;organizzazione, non valuta me come individuo.
-          </span>
+          </Body>
         </label>
       </div>
 
       {!accepted && (
-        <p style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(6,3,43,0.45)', marginTop: 10, lineHeight: 1.5 }}>
+        <Secondary style={{ margin: '12px 0 0', color: PX.ink3 }}>
           È necessario confermare la comprensione del boundary privacy per accedere al tuo spazio KORA.
-        </p>
+        </Secondary>
       )}
 
-      <NavButtons
-        onBack={onBack}
-        onNext={onNext}
-        nextDisabled={!accepted}
-      />
+      <StepNav onBack={onBack} onNext={onNext} nextDisabled={!accepted} />
     </div>
   );
 }
@@ -323,14 +281,7 @@ function Step4Consenso({
 // ── Step 5 — Profilo minimo ───────────────────────────────────────────────────
 
 function Step5Profilo({
-  onBack,
-  onComplete,
-  displayName,
-  setDisplayName,
-  lang,
-  setLang,
-  loading,
-  error,
+  onBack, onComplete, displayName, setDisplayName, lang, setLang, loading, error,
 }: {
   onBack: () => void;
   onComplete: () => void;
@@ -341,49 +292,40 @@ function Step5Profilo({
   loading: boolean;
   error: string | null;
 }) {
-  const inputStyle: React.CSSProperties = {
-    fontFamily: FONT, fontSize: 14, color: INK,
-    background: '#fff', border: '1px solid rgba(6,3,43,0.14)',
-    borderRadius: 10, padding: '11px 14px', width: '100%',
-    outline: 'none', display: 'block',
-    transition: 'border-color 200ms ease',
-  };
-
   return (
     <div>
-      <StepLabel n={5} label="Il tuo profilo" />
-      <SectionTitle>Un ultimo passo</SectionTitle>
-      <BodyText>
+      <Section style={{ margin: '0 0 12px' }}>Un ultimo passo</Section>
+      <Body style={{ margin: 0, color: PX.ink2 }}>
         Puoi personalizzare come appari nel tuo spazio. Tutto è facoltativo.
-      </BodyText>
+      </Body>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 22 }}>
-        <div>
-          <label style={{ display: 'block', fontFamily: FONT, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)', marginBottom: 6 }}>
-            Nome visualizzato (opzionale)
-          </label>
-          <input
-            type="text"
-            placeholder="Es. Mario R."
-            aria-label="Nome visualizzato (opzionale)"
-            maxLength={80}
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            disabled={loading}
-            style={inputStyle}
-            onFocus={(e) => { e.currentTarget.style.borderColor = TOKENS.accent; }}
-            onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(6,3,43,0.14)'; }}
-          />
-          <p style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(6,3,43,0.35)', marginTop: 5 }}>
-            Non visibile all&apos;azienda. Usato solo nel tuo spazio personale.
-          </p>
-        </div>
+      <div style={{ display: 'grid', gap: SPACE.lg, marginTop: SPACE.lg }}>
+        <Field
+          id="display-name"
+          label="Nome visualizzato (opzionale)"
+          hint="Non visibile all'azienda. Usato solo nel tuo spazio personale."
+        >
+          {({ id, describedBy, invalid }) => (
+            <input
+              id={id}
+              type="text"
+              placeholder="Es. Mario R."
+              aria-label="Nome visualizzato (opzionale)"
+              aria-describedby={describedBy}
+              maxLength={80}
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              disabled={loading}
+              style={entryInputStyle(invalid)}
+              onFocus={(e) => { e.currentTarget.style.borderColor = PX.violet; }}
+              onBlur={(e)  => { e.currentTarget.style.borderColor = PX.line2; }}
+            />
+          )}
+        </Field>
 
-        <div>
-          <label style={{ display: 'block', fontFamily: FONT, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(6,3,43,0.50)', marginBottom: 6 }}>
-            Lingua preferita
-          </label>
-          <div role="group" aria-label="Lingua preferita" style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'grid', gap: SPACE.sm }}>
+          <Meta style={{ color: PX.ink3 }}>Lingua preferita</Meta>
+          <div role="group" aria-label="Lingua preferita" style={{ display: 'flex', gap: SPACE.sm }}>
             {(['it', 'en'] as const).map((l) => (
               <button
                 key={l}
@@ -392,94 +334,72 @@ function Step5Profilo({
                 disabled={loading}
                 aria-pressed={lang === l}
                 style={{
-                  fontFamily: FONT, fontSize: 12, fontWeight: 600,
-                  padding: '8px 18px', borderRadius: 8, cursor: 'pointer',
-                  border: lang === l ? `2px solid ${INK}` : '1.5px solid rgba(6,3,43,0.14)',
-                  background: lang === l ? INK : '#fff',
-                  color: lang === l ? '#fff' : 'rgba(6,3,43,0.60)',
-                  transition: 'all 150ms ease',
+                  ...typeStyle('secondary', { weight: 600 }),
+                  padding: '10px 20px', minHeight: 44, borderRadius: PX.rCtl, cursor: 'pointer',
+                  border: `1px solid ${lang === l ? PX.ink : PX.line2}`,
+                  background: lang === l ? PX.ink : PX.l1,
+                  color: lang === l ? '#fff' : PX.ink2,
+                  transition: `background ${PX.t2} ${PX.ease}, border-color ${PX.t2} ${PX.ease}`,
                 }}
               >
-                {l === 'it' ? '🇮🇹 Italiano' : '🇬🇧 English'}
+                {l === 'it' ? 'Italiano' : 'English'}
               </button>
             ))}
           </div>
         </div>
 
         {error && (
-          <div
-            role="alert"
-            style={{
-              borderRadius: 8, border: '1px solid rgba(158,59,47,0.30)',
-              background: 'rgba(158,59,47,0.07)', padding: '10px 14px',
-              fontFamily: FONT, fontSize: 12, color: TOKENS.critical, lineHeight: 1.5,
-            }}
-          >
-            {error}
+          <div role="alert">
+            <Notice tone="risk">{error}</Notice>
           </div>
         )}
       </div>
 
-      <NavButtons
-        onBack={onBack}
-        onNext={onComplete}
-        nextLabel="Accedi al mio spazio →"
-        loading={loading}
-      />
+      <StepNav onBack={onBack} onNext={onComplete} nextLabel="Accedi al mio spazio" loading={loading} />
     </div>
   );
 }
 
 // ── Review mode — already completed ──────────────────────────────────────────
 
-function ReviewMode({ initialDisplayName }: { initialDisplayName: string | null }) {
+function ReviewMode() {
   const router = useRouter();
 
   return (
     <div>
-      <div style={{
-        background: 'rgba(22,101,52,0.07)', border: '1px solid rgba(22,101,52,0.20)',
-        borderRadius: 8, padding: '12px 16px', marginBottom: 24,
-      }}>
-        <p style={{ fontFamily: FONT, fontSize: 12, color: BADGE_TOKENS.eligible.text, lineHeight: 1.5, margin: 0 }}>
-          <strong>Privacy boundary attivo.</strong> Hai già completato l&apos;onboarding KORA.
-          Questa è una revisione del boundary privacy — nessun nuovo consenso richiesto.
-        </p>
+      <Notice tone="ok">
+        <strong>Privacy boundary attivo.</strong> Hai già completato l&apos;onboarding KORA.
+        Questa è una revisione del boundary privacy — nessun nuovo consenso richiesto.
+      </Notice>
+
+      <div style={{ marginTop: SPACE.lg }}>
+        <Section style={{ margin: '0 0 16px' }}>Il boundary privacy KORA</Section>
+
+        <div style={{ display: 'grid', gap: SPACE.lg }}>
+          <BoundaryList
+            label="Cosa vede l'azienda"
+            positive
+            items={[
+              'Solo dati aggregati — mai dati individuali',
+              'Solo se ci sono almeno 10 lavoratori nel conteggio',
+              'Quote di partecipazione per pillar — senza identificativi',
+            ]}
+          />
+          <BoundaryList
+            label="L'azienda non vede mai"
+            positive={false}
+            items={[
+              'Il tuo profilo individuale, storico o note private',
+              'Nessun ranking o confronto tra lavoratori',
+            ]}
+          />
+        </div>
       </div>
 
-      <SectionTitle>Il boundary privacy KORA</SectionTitle>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18 }}>
-        <p style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.40)', marginBottom: 4 }}>
-          Cosa vede l&apos;azienda
-        </p>
-        {[
-          'Solo dati aggregati — mai dati individuali',
-          'Solo se ci sono almeno 10 lavoratori nel conteggio',
-          'Quote di partecipazione per pillar — senza identificativi',
-        ].map(t => <PrivacyChip key={t} text={t} positive={true} />)}
-
-        <p style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.40)', marginTop: 10, marginBottom: 4 }}>
-          L&apos;azienda non vede mai
-        </p>
-        {[
-          'Il tuo profilo individuale, storico o note private',
-          'Nessun ranking o confronto tra lavoratori',
-        ].map(t => <PrivacyChip key={t} text={t} positive={false} />)}
-      </div>
-
-      <div style={{ marginTop: 24 }}>
-        <button
-          type="button"
-          onClick={() => router.push('/worker/workspace')}
-          style={{
-            width: '100%', fontFamily: FONT, fontWeight: 700, fontSize: 13,
-            background: INK, color: '#fff', border: 'none',
-            borderRadius: 10, padding: '12px 20px', cursor: 'pointer', minHeight: 44,
-          }}
-        >
-          ← Torna al tuo spazio
-        </button>
+      <div style={{ marginTop: SPACE.xl }}>
+        <PrimaryAction onClick={() => router.push('/worker/workspace')} full>
+          Torna al tuo spazio
+        </PrimaryAction>
       </div>
     </div>
   );
@@ -535,30 +455,26 @@ export function OnboardingFlow({ reviewMode, initialDisplayName, initialLang }: 
 
   if (reviewMode) {
     return (
-      <div style={{ maxWidth: 600, margin: '0 auto', padding: '40px 24px' }}>
-        <ReviewMode initialDisplayName={initialDisplayName} />
+      <div style={{ maxWidth: ENTRY_MEASURE }}>
+        <PageHead eyebrow="My KORA · Privacy" title="Revisione del boundary privacy" />
+        <Region>
+          <ReviewMode />
+        </Region>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: '40px 24px', fontFamily: FONT }}>
-      <div style={{ marginBottom: 20 }}>
-        <p style={{ fontFamily: FONT, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: TOKENS.accent, marginBottom: 4 }}>
-          My KORA · Primo accesso
-        </p>
-        <h1 style={{ fontFamily: FONT, fontSize: '1.8rem', fontWeight: 800, color: INK, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 4 }}>
-          Benvenuto in KORA
-        </h1>
-      </div>
+    <div style={{ maxWidth: ENTRY_MEASURE }}>
+      <PageHead
+        eyebrow="My KORA · Primo accesso"
+        title="Benvenuto in KORA"
+        lead="Cinque passaggi per capire cosa vede la tua azienda, cosa resta privato e come impostare il tuo spazio."
+      />
 
-      <StepProgress current={step} total={TOTAL_STEPS} />
+      <StepProgress current={step} />
 
-      <div style={{
-        background: '#fff', border: '1px solid rgba(6,3,43,0.09)',
-        borderRadius: 14, padding: '28px 28px',
-        boxShadow: '0 2px 16px rgba(6,3,43,0.06)',
-      }}>
+      <Region>
         {step === 1 && <Step1Benvenuto onNext={() => setStep(2)} />}
         {step === 2 && <Step2CosaVedeAzienda onBack={() => setStep(1)} onNext={() => setStep(3)} />}
         {step === 3 && <Step3CosaVediTu onBack={() => setStep(2)} onNext={() => setStep(4)} />}
@@ -582,11 +498,11 @@ export function OnboardingFlow({ reviewMode, initialDisplayName, initialLang }: 
             error={error}
           />
         )}
-      </div>
+      </Region>
 
-      <p style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(6,3,43,0.30)', textAlign: 'center', marginTop: 20, lineHeight: 1.5 }}>
+      <Secondary style={{ margin: '16px 0 0', color: PX.ink3 }}>
         KORA Foundation Light · Privacy Consent v1.0 · Il tuo datore di lavoro non vede questi dati
-      </p>
+      </Secondary>
     </div>
   );
 }
