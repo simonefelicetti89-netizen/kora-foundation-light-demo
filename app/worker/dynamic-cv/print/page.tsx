@@ -53,10 +53,14 @@ export default async function DynamicCVPrintPage() {
       .select('company_name')
       .eq('id', tenantId)
       .maybeSingle(),
+    // PostgREST rejects the ENTIRE embedded resource if one named column is absent,
+    // so this select must name only real personal.worker_initiative columns. It names
+    // exactly the two this page reads; `delivery_mode` is a network.partner_profile
+    // column and was never consumed here.
     db.schema('personal').from('worker_participation')
       .select(`
         initiative_id, status, updated_at,
-        worker_initiative:initiative_id ( title, pillar, delivery_mode )
+        worker_initiative:initiative_id ( title, pillar )
       `)
       .eq('worker_id', workerId)
       .order('updated_at', { ascending: false }),
