@@ -32,6 +32,17 @@ import { checkPageLength, checkMobileRatio, checkRouteArchetypeDeclared } from '
 export interface CaptureSurface {
   readonly route: string;
   readonly readiness: SurfaceReadiness;
+  /**
+   * The URL to navigate to, when reaching `route` needs a query string. The
+   * EVIDENCE stays attributed to `route`: the archetype contract, the landing
+   * check and the filename all use `route`, and KORA-WP-126's landing check
+   * compares PATHNAMES, so a query string cannot smuggle in a different
+   * surface. Added for `/worker/onboarding`, which redirects to the workspace
+   * for a worker who has completed onboarding and therefore presents its
+   * reviewable state only under `?mode=review` — the state W3A was accepted
+   * on. Omit it and navigation uses `route` unchanged.
+   */
+  readonly navigateTo?: string;
 }
 
 export interface CaptureCredentials {
@@ -94,7 +105,7 @@ export async function captureSurface(
         suppressed: SUPPRESSED_NONDETERMINISM,
       });
 
-      await page.goto(surface.route, { waitUntil: 'domcontentloaded' });
+      await page.goto(surface.navigateTo ?? surface.route, { waitUntil: 'domcontentloaded' });
       await settle(page, readiness);
 
       const documentHeight = await page.evaluate(() => document.documentElement.scrollHeight);

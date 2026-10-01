@@ -1,0 +1,594 @@
+{
+  "wp": "KORA-WP-129",
+  "kind": "product",
+  "generatedBy": "tests/e2e/kora-wp-129-worker-capture.spec.ts",
+  "captureSpecSha256": "83bd5e0199c03c2744e06ad5729c7e226a59011c84c4e6c7353d165ea928c284",
+  "harnessSha256": "de26ea8b20d3273e6293e2b70ec1bb766e96264bf3fd24ce308f53cf19c79cb1",
+  "productSha": "2fd03eab3b1290a8c9e480229b6e35ddadd21e75",
+  "governanceAuthoritySha": "a1a7797bc3b9bc0ba51b55b24b0ed110798feb3e",
+  "governanceAuthority": "Registry 219 \u00a7 B KORA-WP-129 (DELTA 5, resolved by AN.10) + \u00a7 B KORA-WP-126 taxonomy",
+  "viewportMatrix": [
+    {
+      "id": "desktop",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "id": "rail",
+      "width": 1200,
+      "height": 900
+    },
+    {
+      "id": "mobile",
+      "width": 767,
+      "height": 812
+    }
+  ],
+  "acceptance": "NOT ACCEPTED \u2014 capture is evidence, never Founder acceptance",
+  "reproducibility": {
+    "runs": 2,
+    "identicalDigests": 39,
+    "total": 39
+  },
+  "surfaces": [
+    {
+      "route": "/worker/activity-discovery",
+      "archetype": "DIRECTORY_INDEX",
+      "wp126Category": "DIRECTORY_INDEX",
+      "state": "default authenticated state",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-activity-discovery__desktop.png",
+          "digest": "e6f1dcfa984ec794c9eb5adced660adac7ebe3440f907e63b833cfd939f61c6d",
+          "documentHeightPx": 2308,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-activity-discovery__rail.png",
+          "digest": "09217d86d874bcac2f24df99311e4e6f84bbc1828145ee9196ed7605f5783558",
+          "documentHeightPx": 2500,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-activity-discovery__mobile.png",
+          "digest": "caf535bcb82dd079d035a91a59915896fe5114d0ade2eb9379627c9343631675",
+          "documentHeightPx": 2840,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "warn",
+        "detail": "/worker/activity-discovery is 2308px against a 2000px DIRECTORY_INDEX warn threshold \u2014 the surface may be doing too much"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/activity-discovery desktop\u2192mobile ratio 1.231 (acceptable) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/activity-discovery/detail",
+      "archetype": "RECORD_DETAIL",
+      "wp126Category": "RECORD_DETAIL",
+      "state": "default authenticated state",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-activity-discovery-detail__desktop.png",
+          "digest": "1476b36c592edfdb1e38244166bda13fd553b6994603ba290f83451c4e14ccd6",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-activity-discovery-detail__rail.png",
+          "digest": "9a54d3927d5aaaacb853f398196920d01286a9195abfbd31b21245c6ccb4b36d",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-activity-discovery-detail__mobile.png",
+          "digest": "6167c50dd09f60bd6a373a142b800ce8d9c1eb8692c99f192c97c13d1b5074bf",
+          "documentHeightPx": 1042,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/activity-discovery/detail at 1018px is within the 2500px RECORD_DETAIL threshold"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/activity-discovery/detail desktop\u2192mobile ratio 1.024 (acceptable) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/bookings",
+      "archetype": "OPERATIONAL_WORKSPACE",
+      "wp126Category": "OPERATIONAL_WORKSPACE",
+      "state": "loaded, no booking in the local seed",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-bookings__desktop.png",
+          "digest": "9258516770ed03f8b82b379c666faf9894ea7ed283113e33345310ea7ae65a24",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-bookings__rail.png",
+          "digest": "43a9f4ae9379e62cb373013f451fb4fbf6702913fa399f58baea322492dfc5c7",
+          "documentHeightPx": 1156,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-bookings__mobile.png",
+          "digest": "010d75de7a5300f4c39de505bb2dbd7548d46fb2f274842ccefb93c7a183bb19",
+          "documentHeightPx": 1193,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/bookings at 1018px is within the 3000px OPERATIONAL_WORKSPACE threshold"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/bookings desktop\u2192mobile ratio 1.172 (acceptable) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/commons",
+      "archetype": "DIRECTORY_INDEX",
+      "wp126Category": "DIRECTORY_INDEX",
+      "state": "loaded, local-seed initiative set",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-commons__desktop.png",
+          "digest": "9059b3459361b95a0337c81192bba8b90ec7b2f075a58e763e2b0eac5d5cfda1",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-commons__rail.png",
+          "digest": "c0a9f14f4ba94dd61179f5ce9f0c6967e31ec099d7a4f2c151c7ae616bfb7d33",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-commons__mobile.png",
+          "digest": "71b6cd6c66c221b23b675e633cf3e603e8c10f0a0e8a8900831b7a14521c5bcf",
+          "documentHeightPx": 930,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/commons at 1018px is within the 2000px DIRECTORY_INDEX threshold"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/commons desktop\u2192mobile ratio 0.914 (acceptable) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/dynamic-cv",
+      "archetype": "RECORD_DETAIL",
+      "wp126Category": "RECORD_DETAIL",
+      "state": "loaded, zero tracked experiences (analytics.impact_unit = 0 in the local seed)",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-dynamic-cv__desktop.png",
+          "digest": "7cb77ab897465c1fdc05b97c4cc8a903575f3136121e44eda6a3f76ea8be5bd0",
+          "documentHeightPx": 1251,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-dynamic-cv__rail.png",
+          "digest": "f1c5690f09b56e11572eabfb3346fbe7c7b60d87e8ff220a436914c07a20728f",
+          "documentHeightPx": 1525,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-dynamic-cv__mobile.png",
+          "digest": "f524743fda83edb2209c70118ca4c0757b22be23f1d6757e4d879dc113cc84b4",
+          "documentHeightPx": 1606,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/dynamic-cv at 1251px is within the 2500px RECORD_DETAIL threshold"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/dynamic-cv desktop\u2192mobile ratio 1.284 (acceptable) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/dynamic-cv/print",
+      "archetype": "REPORT_EXPORT",
+      "wp126Category": "REPORT_EXPORT",
+      "state": "loaded, zero tracked experiences",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-dynamic-cv-print__desktop.png",
+          "digest": "911a3ee01d415038caaf4012a23051396021e3e20bd469a5ad41ff09c43b86c5",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-dynamic-cv-print__rail.png",
+          "digest": "e35668c22d6d7caf1d239cc9d1e0f91f512bd64e8060610b612a22cb487e1499",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-dynamic-cv-print__mobile.png",
+          "digest": "b5cfdd908a2d892e99847561ad982000c8156952e7612dec7bf8a849eb0752e9",
+          "documentHeightPx": 930,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/dynamic-cv/print at 1018px is within the 4000px REPORT_EXPORT threshold"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/dynamic-cv/print desktop\u2192mobile ratio 0.914 (acceptable) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/kora-link/activate",
+      "archetype": "DISCLOSURE_STATIC",
+      "wp126Category": "DISCLOSURE_STATIC",
+      "state": "default authenticated state",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-kora-link-activate__desktop.png",
+          "digest": "e3af761045118122d34a8e22cf020b1c91f7c968e51b1e857277490f8dff94ba",
+          "documentHeightPx": 1940,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-kora-link-activate__rail.png",
+          "digest": "7e32673a7f09b039efe0e0af646573c500ca9735f7068b45f6f196ab7d332efd",
+          "documentHeightPx": 2046,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-kora-link-activate__mobile.png",
+          "digest": "819beedc7719d70bfa1f57bdfa9698cecb9d2956feaaddd05f82b61477743846",
+          "documentHeightPx": 2098,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/kora-link/activate at 1940px is within the 6000px DISCLOSURE_STATIC threshold"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/kora-link/activate desktop\u2192mobile ratio 1.081 (acceptable) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/onboarding",
+      "archetype": "OPERATIONAL_WORKSPACE",
+      "wp126Category": "OPERATIONAL_WORKSPACE",
+      "state": "review (?mode=review) \u2014 the seeded worker has completed onboarding",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-onboarding__desktop.png",
+          "digest": "7a75eaa22c58436ba375f41dcf8d92280f2461046e18ee3eb173656665f54cd0",
+          "documentHeightPx": 1068,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-onboarding__rail.png",
+          "digest": "92a1a9116efea70898946c947306c7b29be2135fe19576e447a8a09ad2fc4f9a",
+          "documentHeightPx": 1068,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-onboarding__mobile.png",
+          "digest": "42041d3d6ab671f0dc2b2c6f3ddcdc124f6ea1accb0c5a0c9d34fcebf3911c7a",
+          "documentHeightPx": 948,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/onboarding at 1068px is within the 3000px OPERATIONAL_WORKSPACE threshold"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/onboarding desktop\u2192mobile ratio 0.888 (acceptable) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/opportunities",
+      "archetype": "DIRECTORY_INDEX",
+      "wp126Category": "DIRECTORY_INDEX",
+      "state": "default authenticated state",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-opportunities__desktop.png",
+          "digest": "1a53c5985219303a452d50bd89b50e2b8ba76c0ef990281897028ea326f5e58d",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-opportunities__rail.png",
+          "digest": "eeaef10bd2ae118358bcb27ef2102227ba6d616d26349e933c9aae2867e2474e",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-opportunities__mobile.png",
+          "digest": "4ae269104b5743159e097e7b8b2ad68e209c3af5890afb03410dcc87320407c5",
+          "documentHeightPx": 1014,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/opportunities at 1018px is within the 2000px DIRECTORY_INDEX threshold"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/opportunities desktop\u2192mobile ratio 0.996 (acceptable) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/personal-impact-balance",
+      "archetype": "RECORD_DETAIL",
+      "wp126Category": "RECORD_DETAIL",
+      "state": "zero state (no Impact Unit in the local seed)",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-personal-impact-balance__desktop.png",
+          "digest": "cfac181481875e632be18c44aaf99dd3c7501d8a103487a18fd3e7cf050092cf",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-personal-impact-balance__rail.png",
+          "digest": "9015f4a3cf8ff3afb4c4a619aca97364d245347b01a1311761cba904958e57a2",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-personal-impact-balance__mobile.png",
+          "digest": "4dd7759490452f431ca552ec792f0757f9eaff263c00d149e13943d888ae1877",
+          "documentHeightPx": 930,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/personal-impact-balance at 1018px is within the 2500px RECORD_DETAIL threshold"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/personal-impact-balance desktop\u2192mobile ratio 0.914 (acceptable) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/privacy",
+      "archetype": "DISCLOSURE_STATIC",
+      "wp126Category": "DISCLOSURE_STATIC",
+      "state": "default authenticated state",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-privacy__desktop.png",
+          "digest": "2d0cf971fc5befee87a8ea03e82b8e8bfbe6e21502118ca15adf59ffb865901b",
+          "documentHeightPx": 1332,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-privacy__rail.png",
+          "digest": "899c82adebb12cd9d42896d785c76df0c2d4799cf32028d87b0ba2e65e04c8ae",
+          "documentHeightPx": 1316,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-privacy__mobile.png",
+          "digest": "f4a20b0075534ab761ff21a41e2679006101a36788c1a4dfc268313fe82aafe6",
+          "documentHeightPx": 2022,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/privacy at 1332px is within the 6000px DISCLOSURE_STATIC threshold"
+      },
+      "mobileRatio": {
+        "verdict": "warn",
+        "detail": "/worker/privacy desktop\u2192mobile ratio 1.518 (warning) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/setup-password",
+      "archetype": "OPERATIONAL_WORKSPACE",
+      "wp126Category": "OPERATIONAL_WORKSPACE",
+      "state": "form branch (no error query parameter)",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-setup-password__desktop.png",
+          "digest": "bbecd008ba5802b07c1184183296af171139c63e6660598cbba76245df874c46",
+          "documentHeightPx": 1068,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-setup-password__rail.png",
+          "digest": "3ce09691eab37bdb1ae0c1f90486d294389073e9a74b1ad1204ebefd812d1ff8",
+          "documentHeightPx": 1068,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-setup-password__mobile.png",
+          "digest": "b69c8414f4d290e6abd68e4cd36157d6ae556dc4dfa0d7ca1584b94eb477964d",
+          "documentHeightPx": 948,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/setup-password at 1068px is within the 3000px OPERATIONAL_WORKSPACE threshold"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/setup-password desktop\u2192mobile ratio 0.888 (acceptable) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/workspace",
+      "archetype": "EXECUTIVE_JUDGMENT",
+      "wp126Category": "EXECUTIVE_JUDGMENT",
+      "state": "default authenticated state",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-workspace__desktop.png",
+          "digest": "3d506d636bbb2a30ab9c9f370de4957c61dfcd3b7e114bb68069240f8decbf84",
+          "documentHeightPx": 1628,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-workspace__rail.png",
+          "digest": "90d37b66c8d7908ac5b8fd289327a8ebbb54901af66f7f7c2a1bdf935f9e7a67",
+          "documentHeightPx": 2485,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-workspace__mobile.png",
+          "digest": "f6368914ff4a1c5b9ffb394157fb151339f186c6f70478b9565b578930ac9716",
+          "documentHeightPx": 2592,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/workspace at 1628px is within the 2500px EXECUTIVE_JUDGMENT threshold"
+      },
+      "mobileRatio": {
+        "verdict": "warn",
+        "detail": "/worker/workspace desktop\u2192mobile ratio 1.592 (warning) \u2014 a detector, never a target"
+      }
+    }
+  ]
+}
