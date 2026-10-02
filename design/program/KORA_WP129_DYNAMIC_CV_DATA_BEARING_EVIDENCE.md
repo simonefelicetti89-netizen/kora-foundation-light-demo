@@ -2,7 +2,7 @@
 
 **Modalità:** completamento di evidenza. Nessun redesign, nessuna implementazione di prodotto, nessuna
 modifica alla Registry, **nessuna chiusura formale**.
-**Data:** 2026-10-02
+**Data:** 2026-10-02 · **aggiornato** con l'adjudication finale di L1-r e l'igiene della fixture
 
 | | |
 |---|---|
@@ -288,3 +288,155 @@ Le immagini **data-bearing** non hanno l'indicatore di sviluppo; quelle **minima
 | **F6** | `koratest-canonical-seed.ts` riporta `permission denied for table methodology_snapshot` dopo aver committato i record UEF | dichiarata | **NO** |
 
 **Difetti di implementazione di prodotto: 0.**
+
+---
+
+## 11. Adjudication finale di L1-r — report 282
+
+### Il report 282 è accettato a QUESTO stesso SHA
+
+| | |
+|---|---|
+| File | `.kora-audit/output/282_KORA_WP129_W3B_PUBLICATION_AND_FOUNDER_ACCEPTANCE.md`, blob `1002f439503b83c6` |
+| **Product SHA accettato** | **`2fd03eab3b1290a8c9e480229b6e35ddadd21e75`** — citato 6 volte nel report |
+| Baseline di questo lavoro | `2fd03eab3b1290a8c9e480229b6e35ddadd21e75` |
+| Relazione | **IDENTITÀ, non equivalenza: è lo stesso commit** |
+| Founder ruling, verbatim | «**W3B VISUAL ACCEPTANCE — GRANTED**, material and exact-SHA bound» |
+| Prova CI | KORA CI #362 run `36477773252` (proof) e #363 run `36478306009` (canonica), quattro job verdi |
+
+**Classificazione §3: CODE-EQUIVALENT per identità.** Non c'è un delta da valutare su `DynamicCVClient`,
+sulla route, sui wrapper di layout, sul CSS responsive, sul rendering di esperienze e pillar, sulla stampa,
+sul mapping dati o sui componenti condivisi — perché non esiste alcun commit fra lo SHA accettato e il
+nostro.
+
+### Il contenuto lungo era un requisito di acceptance o evidenza di supporto?
+
+**EVIDENZA DI SUPPORTO, e per di più già adjudicata come residuo accettato.**
+
+Il report `282` §12 «Residuals carried into the WP129 OVERALL CLOSURE review», voce 2, verbatim:
+
+> «Desktop populated Dynamic CV length can exceed the `RECORD_DETAIL` warn threshold — **2730px against
+> 2500 with 20 real experiences**. It is the real length of the record; shortening it would mean hiding
+> experiences. **Same precedent as W1's accepted `activity-discovery` length WARN.**»
+
+Le misure di contenuto lungo compaiono nel §3 come **descrizione del prima → dopo della remediation**
+(4104 → 2730 px, 103 elementi sotto-floor → 0, lint 150 → 5), non come criterio da soddisfare.
+
+**Il report `282` non contiene alcun requisito di screenshot.** Ricerca su `screenshot`, `visual evidence`,
+`png`, `capture`: **zero occorrenze**. La §11 «Local validation at the accepted candidate» elenca TypeScript
+exit 0, 32 file / 1284 test, 10 file / 414 test, suite completa 446 file / 14 130 test, lint 0 errori, build
+di produzione exit 0 — **nessuna immagine**. La visual acceptance fu concessa su prova DOM, misure e test.
+
+### Verdetto
+
+## **L1-r = RESOLVED BY REPORT-282 CURRENTLY-VALID EVIDENCE**
+
+Il criterio che il contenuto lungo avrebbe dovuto provare è **già stato accettato dal Founder, a questo
+stesso SHA, e registrato come residuo accettato** con lo stesso precedente del WARN di lunghezza di W1.
+Nessuna nuova evidenza a contenuto lungo è richiesta, e **non ho costruito una fixture da 20 esperienze**:
+sarebbe stato fabbricare un numero per soddisfare un requisito che non esiste.
+
+L'evidenza data-bearing a 2 esperienze resta preziosa per ciò che aggiunge — barre pillar in funzione, badge
+come chip, split privato/condivisibile, tabella di stampa con entrambe le righe — e non per colmare un vuoto
+di acceptance che il `282` aveva già chiuso.
+
+---
+
+## 12. Igiene della fixture — esito
+
+### F5 · worker non-onboadrded accumulato — **CORRETTO**
+
+**Causa.** Il blocco di delete idempotente copre le righe che portano il marcatore `[W129-REVIEW-FIXTURE]`.
+Il worker non-onboarded creato al passo 5 ha invece `worker_ref` con **suffisso casuale**
+(`W129-REVIEW-FIXTURE-ONBOARDING-<suffix>`), quindi non rientrava in alcun `like` del blocco e ogni
+esecuzione ne lasciava uno. Misurato: tre esecuzioni, tre worker residui.
+
+**Quando si verificava.** Sia su successo sia su fallimento tardivo: la creazione avviene verso la fine, e
+nulla la rimuoveva né a fine run né all'inizio del successivo. L'isolamento per tenant non è mai stato
+compromesso — i worker appartengono tutti al tenant golden-path.
+
+**Correzione — solo nella fixture di evidenza, nessun comportamento di Prodotto toccato.** Il blocco
+idempotente ora rimuove per prefisso `worker_ref` il profilo, l'identità **e l'utente auth**.
+
+**Un secondo residuo, trovato correggendo il primo.** Lo sweep è indicizzato su `worker_identity`: un utente
+auth la cui identità fosse già stata rimossa per altra via diventa irraggiungibile e si accumula.
+**Ne sono stati trovati 13**, prodotti anche dal mio stesso cleanup manuale della sessione precedente, che
+cancellava le identità senza i rispettivi utenti. La fixture ora spazza anche per forma dell'email
+(`e2e-worker-onboarding-%@e2e-local.test`), così la pulizia smette di dipendere da quale riga sia stata
+cancellata per prima.
+
+**Risultato misurato su due run consecutivi finali:**
+
+| | RUN A | RUN B |
+|---|---|---|
+| worker non-onboarded di run precedenti rimossi | 1 | 1 |
+| utenti auth orfani rimossi | **13** | 0 |
+| **utenti auth orfani residui** | **0** | **0** |
+| worker non-onboarded presenti a fine run | 1 — **lo stato corrente, che la fixture provvede apposta** per `/worker/onboarding` | 1 |
+| tenant non correlati alterati | 0 | 0 |
+| worker golden-path alterati | 0 | 0 |
+
+**Residui da esecuzioni precedenti: 0.** L'unico worker presente è quello della run corrente, che è lo scopo
+dichiarato del passo 5, non residuo.
+
+### F6 · `methodology_snapshot` — **AUTHORIZATION BUG (di Prodotto), non soppresso**
+
+**Causa esatta.** `supabase/migrations/049_methodology_snapshot.sql` crea
+`analytics.methodology_snapshot`, abilita RLS, e concede **`GRANT SELECT ... TO authenticated`** — e
+**nulla a `service_role`**. Il commento della migrazione stessa dichiara: «only KORA_ADMIN (via
+`service_role` in application code) ever inserts». **`service_role` bypassa RLS ma non i GRANT di tabella**,
+quindi l'insert in `lib/live/persistence.ts:147` fallisce.
+
+**Verificato sul database reale**, non dedotto:
+
+| Tabella | `authenticated` | `service_role` |
+|---|---|---|
+| `analytics.uef_record` | SELECT | **DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE** |
+| `analytics.methodology_snapshot` | SELECT | **nessun grant** |
+
+| Domanda §7 | Risposta |
+|---|---|
+| Chiamante esatto | `lib/live/persistence.ts` § «0. methodology_snapshot — B-SNAP / CC-015», insert via client service-role |
+| Ruolo atteso | `service_role`, come dichiara il commento della migrazione 049 |
+| Operazione necessaria? | **sì in Prodotto** — ogni risultato persistito vi si lega via `methodology_snapshot_id`; **no per questa evidenza** |
+| Prima o dopo lo stato di evidenza richiesto? | **dopo** — i 2 record UEF sono già committati e auto-approvati quando l'errore scatta |
+| Transazione parziale? | sì: UEF committati, snapshot no. Non è un rollback atomico |
+| Viola il fail-closed? | **no per la fixture**, che ora si ferma su qualunque altro errore; **sì come difetto di Prodotto**: una capability dichiarata nella migrazione non è concessa al ruolo che deve usarla |
+
+**Classificazione: AUTHORIZATION BUG.** Non un bug dell'harness, non della fixture, non «atteso e non fatale».
+È una `GRANT` mancante nello schema di Prodotto.
+
+**Non l'ho corretto** — nessuna modifica di Prodotto, nessuna migrazione. **E non l'ho soppresso**: la
+fixture ora riconosce *questa specifica* condizione classificata e **fallisce su qualunque altro errore**,
+invece di tollerarne uno qualsiasi. Un errore inatteso adesso ferma il run.
+
+> **Da portare alla WP129 OVERALL CLOSURE come item di Prodotto, separato dall'evidenza.** L'impatto non è
+> limitato alla fixture: ogni persistenza di `runKoraPipeline` che passa dal client service-role incontra la
+> stessa mancanza.
+
+---
+
+## 13. Run di evidenza finale a zero errori
+
+Sequenza completa eseguita **due volte**, contro il build di produzione dello SHA esatto.
+
+| | RUN A | RUN B |
+|---|---|---|
+| **Exit del seed** | **0** | **0** |
+| **stderr inatteso** | **0 byte** | **0 byte** |
+| **Exit della cattura** | **0** | **0** |
+| Catture | 6 | 6 |
+| **Record fixture residui da run precedenti** | **0** | **0** |
+| **Dati non correlati modificati** | **0** | **0** |
+| **Byte-identiche fra A e B** | colspan | **6 / 6** |
+
+I sei digest sono inoltre **identici a quelli della sessione precedente** — l'igiene della fixture non ha
+alterato l'evidenza.
+
+**Invarianti:** `PRODUCT IMPLEMENTATION FILES CHANGED: 0` · `PRIVACY GUARD FILES CHANGED: 0` ·
+`REGISTRY FILES CHANGED: 0` · `AL.2 FILES CHANGED: 0`.
+
+**Test dopo l'igiene:** `tsc --noEmit` exit 0 · suite unit **415 file / 14 022 passati / 0 falliti** ·
+frontiera **338/338** · guard privacy **482/482** · validazione cohort **14/14** ·
+`checkRouteArchetypeDeclared` **13/13** · `checkSevenStateResolution` **PASS**. Nessun test indebolito.
+

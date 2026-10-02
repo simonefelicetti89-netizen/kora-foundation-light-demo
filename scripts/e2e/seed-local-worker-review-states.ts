@@ -166,6 +166,53 @@ async function main(): Promise<void> {
   await pg.query(`delete from commons.post where title like $1`, [`[${MARK}]%`]);
   await pg.query(`delete from network.partner_profile where name like $1`, [`[${MARK}]%`]);
 
+  // The non-onboarded worker created in step 5 carries a random suffix, so it is
+  // NOT covered by the marked-row deletes above, and every run used to leave one
+  // behind — measured: three runs, three residual workers. Cleanup is therefore
+  // by worker_ref prefix, and the auth user goes too: an orphaned auth user with
+  // no identity row is still residue.
+  const stale = await pg.query(
+    `select id, auth_user_id from personal.worker_identity where worker_ref like $1`,
+    [`${MARK}-ONBOARDING-%`],
+  );
+  if (stale.rowCount) {
+    await pg.query(
+      `delete from personal.worker_profile_private where worker_id in
+         (select id from personal.worker_identity where worker_ref like $1)`,
+      [`${MARK}-ONBOARDING-%`],
+    );
+    await pg.query(`delete from personal.worker_identity where worker_ref like $1`, [`${MARK}-ONBOARDING-%`]);
+    const cleanupAdmin = createClient(url, srk, { auth: { autoRefreshToken: false, persistSession: false } });
+    for (const row of stale.rows) {
+      if (!row.auth_user_id) continue;
+      const del = await cleanupAdmin.auth.admin.deleteUser(row.auth_user_id as string);
+      if (del.error) fail(`failed to remove a prior fixture auth user: ${del.error.message}`);
+    }
+    console.log(`  prior non-onboarded workers    -${stale.rowCount} (identity + profile + auth user)`);
+  }
+
+  // ORPHANED AUTH USERS. The sweep above is keyed on worker_identity, so an auth
+  // user whose identity row was already removed by some other path is
+  // unreachable through it and simply accumulates — 13 were found this way. The
+  // fixture owns every account matching its own generated email shape, so it
+  // sweeps them by that shape too and the cleanup stops depending on which row
+  // happened to be deleted first.
+  {
+    const orphans = await pg.query(
+      `select u.id from auth.users u
+        where u.email like 'e2e-worker-onboarding-%@e2e-local.test'
+          and not exists (select 1 from personal.worker_identity i where i.auth_user_id = u.id)`,
+    );
+    if (orphans.rowCount) {
+      const sweepAdmin = createClient(url, srk, { auth: { autoRefreshToken: false, persistSession: false } });
+      for (const row of orphans.rows) {
+        const del = await sweepAdmin.auth.admin.deleteUser(row.id as string);
+        if (del.error) fail(`failed to remove an orphaned fixture auth user: ${del.error.message}`);
+      }
+      console.log(`  orphaned fixture auth users    -${orphans.rowCount}`);
+    }
+  }
+
   for (const p of partners) {
     await pg.query(
       `insert into network.partner_profile (name, description, pillar, category, website_url, city, country, delivery_mode, status)
@@ -250,8 +297,25 @@ async function main(): Promise<void> {
   } catch (e) {
     const err = e as { stdout?: string; stderr?: string; message?: string };
     const detail = `${err.stdout ?? ''}${err.stderr ?? ''}`.trim() || err.message || String(e);
-    console.log(`  analytics.uef_record            canonical seed reported an error; continuing on whatever it committed.`);
-    console.log(`    ${detail.split('\n').filter(Boolean).slice(-3).join(' | ').slice(0, 300)}`);
+
+    // KNOWN AND CLASSIFIED, not tolerated generically. Migration 049 creates
+    // analytics.methodology_snapshot, grants SELECT to `authenticated` and
+    // grants NOTHING to `service_role`, while its own comment states that
+    // "only KORA_ADMIN (via service_role in application code) ever inserts".
+    // service_role bypasses RLS but NOT table grants, so the snapshot insert in
+    // lib/live/persistence.ts fails. Verified against the local database:
+    // service_role holds full DML on analytics.uef_record and no grant at all on
+    // analytics.methodology_snapshot. It is a Product authorization defect,
+    // reported and NOT fixed here, and it strictly follows the UEF commit — so
+    // the evidence state this fixture needs already exists when it fires.
+    // Any OTHER failure is unexplained and must stop the run.
+    const KNOWN_SNAPSHOT_GRANT_DEFECT =
+      /methodology_snapshot: permission denied for table methodology_snapshot/;
+    if (!KNOWN_SNAPSHOT_GRANT_DEFECT.test(detail)) {
+      fail(`canonical seed failed with an unexpected error:\n${detail.slice(0, 1200)}`);
+    }
+    console.log('  analytics.uef_record            committed; the snapshot persist hit the KNOWN migration-049');
+    console.log('                                 service_role grant defect. Classified, not suppressed.');
   } finally {
     rmSync(tmpFixture, { force: true });
   }

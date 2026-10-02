@@ -202,7 +202,9 @@ lavoratori dichiarata nel corpo. **Verdetto: PASS.** Non ottimizzata solo perch�
 | | Limitazione | Classificazione | Bloccante |
 |---|---|---|---|
 | **L1** | ~~Dynamic CV evidenziata solo a zero esperienze~~ → **RISOLTA**: esiste ora evidenza data-bearing riproducibile (6 catture, 6/6 byte-identiche su due cicli completi seed→capture→hash), prodotta dalla fixture canonica del progetto in runtime di produzione | **RESOLVED** | — |
-| **L1-r** | Residuo di L1: la fixture produce **2 esperienze**, non le 20 del report `282`; il comportamento a contenuto molto lungo resta non riprodotto perché nessun meccanismo nel repository genera quel volume | limitazione dichiarata | **NO** |
+| **L1-r** | ~~La fixture produce 2 esperienze, non 20~~ → **RISOLTA dal report `282`**: quel report è accettato **a questo stesso SHA** («material and exact-SHA bound»), non richiede alcuno screenshot, e registra la lunghezza a contenuto pieno (2730 px con 20 esperienze) come **residuo già accettato**, con lo stesso precedente del WARN di W1. Nessuna nuova evidenza a contenuto lungo è richiesta | **RESOLVED** | — |
+| **F5** | La fixture accumulava un worker non-onboarded per esecuzione, più 13 utenti auth orfani | **CORRETTA** nella sola fixture di evidenza; due run finali lasciano **0 residui** | **NO** |
+| **F6** | `analytics.methodology_snapshot`: la migrazione 049 concede `SELECT` ad `authenticated` e **nulla a `service_role`**, che deve inserirvi. Verificato sul DB | **AUTHORIZATION BUG di Prodotto** — classificato, non corretto, non soppresso; da portare alla OVERALL CLOSURE | **NO** |
 | **L2** | `/worker/onboarding` evidenziata nello stato **review**, non primo accesso | ACCEPTABLE DECLARED LIMITATION | **NO** — lo stato review è dentro l'ambito accettato da W3A |
 | **F1** | `/worker/workspace` ratio 1.592, oltre il bound 1.35 del suo archetipo | FOUNDER REVIEW REQUIRED | **NO** |
 | **F3** | `data-testid="dynamic-cv-container"` scartato da `<Workspace>`, non raggiunge il DOM | TEST AFFORDANCE DEFECT | **NO** |
