@@ -165,12 +165,26 @@ Aggiungere una riga alla tabella «Evidence basis»:
 
 ### M4 · Sezione F — aggregato corrente
 
-Unica occorrenza in grassetto:
+**Attenzione a quale riga.** Nel file esistono **due** aggregati in grassetto, non uno:
+
+| Riga | Testo | Sezione | Natura |
+|---|---|---|---|
+| **508** | `**COMPLETE 64 · READY 35 · BLOCKED 39 · TOTAL 138**` | **E** — attivazione dello scope trigger Partner, report `264`, 2026-09-24 | **storico, ma in grassetto** — **NON toccare** |
+| **518** | `**COMPLETE 70 · READY 39 · BLOCKED 35 · TOTAL 144**` | **F** — statuti meccanici, ri-derivati 2026-09-27 | **corrente — è questo il bersaglio** |
 
 | | |
 |---|---|
+| Bersaglio | **riga 518, Sezione F** |
 | Da | `**COMPLETE 70 · READY 39 · BLOCKED 35 · TOTAL 144**` |
 | A | `**COMPLETE 71 · READY 38 · BLOCKED 35 · TOTAL 144**` |
+
+> **Reperto di igiene della registry, pre-esistente e non corretto qui.** `AL.3` avverte esplicitamente che
+> «**the checker reads a bolded total as current truth**» e dichiara che il proprio aggregato storico
+> 64/35/39/138 è «deliberately left unbolded». Quell'istanza in `AL.3` lo è davvero — ma **la riga 508 in
+> Sezione E porta lo stesso aggregato storico in grassetto**, e un verificatore che cercasse «il totale in
+> grassetto» ne troverebbe due, uno dei quali fermo al 2026-09-24. Non l'ho modificato: non è parte della
+> chiusura di `129` e toccarlo richiederebbe una decisione a sé. Va però saputo prima di applicare M4, e
+> vale come voce di igiene per la registry.
 
 con la nota di derivazione: una sola transizione `129` READY → COMPLETE; nessuna conseguenza meccanica,
 perché l'unico dipendente `131` attende anche `127` e `128`; archi, trigger e cicli invariati. L'aggregato
