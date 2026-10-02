@@ -98,8 +98,9 @@ Dettaglio completo in `KORA_WP129_FOUNDER_VISUAL_REVIEW_INDEX.md`. Ordine:
 |---|---|---|---|
 | **1** | `/worker/workspace` | mai evidenziata prima **e** ratio **1.592** | `worker-workspace__{desktop,rail,mobile}` |
 | **2** | `/worker/privacy` | mai evidenziata prima, parte esplicita dell'acceptance WP129 | `worker-privacy__{…}` |
-| **3** | `/worker/dynamic-cv` | nuova evidenza **a zero esperienze** + le 3 `diagnostic__` storiche come **contrasto**, non come complemento | `worker-dynamic-cv__{…}` + `diagnostic__worker-dynamic-cv__{…}` |
-| **4** | `/worker/dynamic-cv/print` | mai evidenziata prima | `worker-dynamic-cv-print__{…}` |
+| **2b** | `/worker/dynamic-cv` **data-bearing mobile**, poi **desktop** | prova la UI rimediata sotto contenuto reale — barre pillar, badge come chip, split privato/condivisibile | `data-bearing/worker-dynamic-cv__{mobile,desktop,rail}` |
+| **3** | `/worker/dynamic-cv` **minimal** | stato base a 0 esperienze; le 3 `diagnostic__` storiche restano come **contrasto pre-remediation**, non come complemento | `worker-dynamic-cv__{…}` + `diagnostic__worker-dynamic-cv__{…}` |
+| **4** | `/worker/dynamic-cv/print` **data-bearing**, poi minimal | la tabella con entrambe le righe e il pillar come parola | `data-bearing/worker-dynamic-cv-print__{…}` + `worker-dynamic-cv-print__{…}` |
 | **5** | `/worker/onboarding` | mai evidenziata; limitazione L2 dichiarata | `worker-onboarding__{…}` |
 | **6** | `/worker/setup-password` | mai evidenziata | `worker-setup-password__{…}` |
 | 7 | `/worker/activity-discovery` | WARN di lunghezza accettato, **riprodotto al pixel** (2308 px) | `worker-activity-discovery__{…}` |
@@ -112,41 +113,62 @@ Dettaglio completo in `KORA_WP129_FOUNDER_VISUAL_REVIEW_INDEX.md`. Ordine:
 
 Tutti in `docs/product/visual-evidence/kora-wp-129/`, prefisso `kora-wp-129__product__`.
 
-> **Prima di guardare.** Ogni immagine dell'archivio — **incluse quelle storiche già passate sotto Founder
-> review** — contiene un badge circolare scuro con la «N» di Next.js, indicatore della modalità sviluppo,
-> che nella cattura a pagina intera finisce in mezzo al documento. Nella `worker-workspace__mobile` copre
-> «IL» di «IL MIO STORICO». **Non è Product.** È un effetto di `playwright.config.ts`, che avvia il server
-> con `npm run dev`. Sistemico e pre-esistente, non introdotto ora.
+> **Prima di guardare.** Le immagini dell'archivio **minimal** — **incluse quelle storiche già passate sotto
+> Founder review** — contengono un badge circolare scuro con la «N» di Next.js, **indicatore della modalità di
+> sviluppo**, che nella cattura a pagina intera finisce in mezzo al documento. Nella `worker-workspace__mobile`
+> copre «IL» di «IL MIO STORICO». **Non è Product.** È un effetto di `playwright.config.ts`, che avvia il
+> server con `npm run dev`. Sistemico e pre-esistente, non introdotto ora.
+>
+> Le catture **data-bearing** sono invece prese contro il **build di produzione** dello stesso SHA
+> (`next build` + `next start`) e **non hanno il badge**. L'equivalenza fra i due runtime è stata provata
+> prima di usarla, su `/worker/privacy`: dimensioni di viewport e altezze di documento identiche
+> (1332 / 1316 / 2022 px in entrambi), unica differenza il badge stesso.
 
 ---
 
 ## 8. Dynamic CV full-state evidence
 
-**Non esiste, e non è mai esistita.**
+**Risolta.** Esistono ora **due stati**, e provano cose diverse.
 
-Verificato su tutta la storia del repository: **un solo commit** (`099b5d5`) ha mai archiviato immagini del
-Dynamic CV — 3 file `diagnostic__`, una kind che il protocollo (`EvidenceKind = 'product' | 'mockup'`) non
-può esprimere. Lette direttamente, mostrano **2 esperienze**, non 20, altezza **1933 px**, non 4104, e la UI
-**pre-remediation** con tutte le regioni che W3B dichiara rimosse.
+| Stato | Archivio | Runtime | `/worker/dynamic-cv` | `/worker/dynamic-cv/print` |
+|---|---|---|---|---|
+| **MINIMAL** — 0 esperienze | `kora-wp-129/` | development | desktop 1251 px · rail 1525 · mobile 1606 · ratio 1.284 | desktop 1018 · rail 1018 · mobile 930 · ratio 0.914 |
+| **DATA-BEARING** — 2 partecipazioni | `kora-wp-129/data-bearing/` | **production** | desktop **1397 px** · rail 1731 · mobile 1832 · ratio **1.311** | desktop 1018 · rail 1018 · mobile **984** · ratio 0.967 |
 
-Fra quella cattura e `2fd03ea`, `DynamicCVClient.tsx` è cambiato di **875 righe**. **Classificazione:
-STALE.**
+**Lo stato minimal prova il rendering base a vuoto; lo stato data-bearing prova la stessa UI rimediata sotto
+contenuto reale.** Entrambi `length` pass e `ratio` pass.
 
-Le misure del report `282` — 2730 px, 20 esperienze, 103 elementi sotto-floor azzerati, ratio 1.254 — sono
-**misurazioni di sessione provate nel DOM, mai archiviate come immagini**.
+**File da guardare** (`docs/product/visual-evidence/kora-wp-129/`):
+`kora-wp-129__product__worker-dynamic-cv__{desktop,rail,mobile}.png` ·
+`kora-wp-129__product__worker-dynamic-cv-print__{desktop,rail,mobile}.png`
+e gli stessi nomi sotto **`data-bearing/`**.
 
-**Cosa la nuova evidenza prova comunque**, per differenza contro la `diagnostic__`: rail da 5 regioni a 3
-gruppi semantici, «Opzioni di condivisione future» assente, «In arrivo»/«Pianificato» assenti, «Badge e
-credenziali» come regione autonoma assente, lista esperienze duplicata assente, un pillar per riga senza
-percentuali né ranking. **Cosa non prova:** il comportamento a contenuto lungo.
+### Cosa lo stato popolato aggiunge, che quello vuoto non poteva mostrare
 
-**Il meccanismo per produrla esiste ma non è pubblicato:**
-`scripts/e2e/seed-local-worker-review-states.ts`, introdotto da `3b324c6` ed esteso da `1b327c0` — il commit
-che la Registry dichiara **«excluded from Product publication — not an ancestor, 0 remote refs»**. È ciò che
-generò le voci `[W129-REVIEW-FIXTURE]` visibili nelle immagini storiche. **Non l'ho pubblicato, copiato o
-eseguito, e non ho creato alcun dato sintetico di partecipazione.**
+- **Barre del profilo pillar in funzione**: Life 1 attività, Growth 1 attività, le altre tre «non esplorato» —
+  conteggio e barra scalata al massimo, **nessuna percentuale, nessun ranking**, il trattamento scoped che W3B
+  ha scelto per conformità privacy invece di `KORA-WP-142`;
+- **l'idoneità al badge letta SULL'esperienza come chip** («Idonea al badge» accanto a *Percorso dati e
+  digitale*) anziché come regione autonoma — la correzione centrale di W3B;
+- **la separazione esperienze condivisibili / esperienze private** nel rail;
+- **la tabella della stampa con entrambe le righe**, intestazioni `PILLAR · TITOLO · STATO · DATA`, e il nome
+  del pillar **sempre come parola** («GROWTH», «LIFE»), mai solo come tinta.
 
----
+### Provenienza dello stato, e il numero che non coincide
+
+Prodotto dalla fixture del progetto `scripts/e2e/seed-local-worker-review-states.ts`, portata su questo branch
+con i suoi due commit originali intatti (`3b324c6`, `1b327c0`). **Non sono dati UI scritti a mano**: le
+partecipazioni sono righe reali e ogni valore PIB è calcolato da `computeBaseWorkerPIBRows`, la metodologia
+di Prodotto.
+
+**La fixture produce 2 esperienze, non le 20 citate dal report `282`.** Non ho forzato il conteggio per
+inseguire un numero: 2 è lo stato canonico della fixture, ed è anche esattamente ciò che mostrano le uniche
+immagini storiche archiviate. Il numero 20 del report `282` non è riproducibile da alcun meccanismo presente
+nel repository.
+
+**Conseguenza da pesare:** a 2 esperienze la pagina misura 1397 px, ben dentro la soglia 2500 px di
+`RECORD_DETAIL`. Il comportamento a **contenuto lungo** descritto da `282` — 4104 → 2730 px, 103 elementi
+sotto-floor azzerati — resta non riprodotto, perché nessuna fixture disponibile genera quel volume.
 
 ## 9. Workspace ratio finding
 
@@ -179,7 +201,8 @@ lavoratori dichiarata nel corpo. **Verdetto: PASS.** Non ottimizzata solo perch�
 
 | | Limitazione | Classificazione | Bloccante |
 |---|---|---|---|
-| **L1** | `/worker/dynamic-cv` e `/worker/dynamic-cv/print` evidenziate a **zero esperienze**; nessuna evidenza storica a stato pieno esiste; il fixture che la produrrebbe **non è pubblicato** | REQUIRES NEW DATA-BEARING EVIDENCE | **NO** — 2 su 13 |
+| **L1** | ~~Dynamic CV evidenziata solo a zero esperienze~~ → **RISOLTA**: esiste ora evidenza data-bearing riproducibile (6 catture, 6/6 byte-identiche su due cicli completi seed→capture→hash), prodotta dalla fixture canonica del progetto in runtime di produzione | **RESOLVED** | — |
+| **L1-r** | Residuo di L1: la fixture produce **2 esperienze**, non le 20 del report `282`; il comportamento a contenuto molto lungo resta non riprodotto perché nessun meccanismo nel repository genera quel volume | limitazione dichiarata | **NO** |
 | **L2** | `/worker/onboarding` evidenziata nello stato **review**, non primo accesso | ACCEPTABLE DECLARED LIMITATION | **NO** — lo stato review è dentro l'ambito accettato da W3A |
 | **F1** | `/worker/workspace` ratio 1.592, oltre il bound 1.35 del suo archetipo | FOUNDER REVIEW REQUIRED | **NO** |
 | **F3** | `data-testid="dynamic-cv-container"` scartato da `<Workspace>`, non raggiunge il DOM | TEST AFFORDANCE DEFECT | **NO** |
@@ -201,15 +224,16 @@ Allo SHA Product esatto, con `npm ci` sul lockfile Product (`next 16.3.3`, `vite
 | Verifica | Esito |
 |---|---|
 | `npx tsc --noEmit` | **exit 0** |
-| Suite unit completa | **415 file · 14 018 passati · 0 falliti** |
+| Suite unit completa | **415 file · 14 022 passati · 0 falliti** |
 | Suite di frontiera (`125` `126` `127` `128` `129`×2 `139`–`142`) | **338 / 338** |
 | Guard privacy Worker + confine website | **482 / 482** |
 | `checkRouteArchetypeDeclared` sulle 13 route | **13 / 13 PASS** |
 | `checkSevenStateResolution` | **PASS** |
-| Validazione del cohort di evidenza (nuova) | **10 / 10** |
-| Cattura | **14 / 14**, ripetuta due volte |
+| Validazione del cohort di evidenza | **14 / 14** (10 minimal + 4 data-bearing) |
+| Cattura cohort minimal | **14 / 14**, ripetuta due volte, 39/39 byte-identiche |
+| Cattura data-bearing | **2 / 2**, ciclo completo ripetuto due volte, **6/6 byte-identiche** |
 
-Baseline pre-modifica 414 file / 14 008 → 415 / 14 018: il delta è esattamente il test di validazione.
+Baseline 414 file / 14 008 → 415 / 14 022: il delta è esattamente la validazione del cohort (10 test) più quella dello stato data-bearing (4 test).
 **Zero regressioni. Nessun test di prodotto modificato.**
 
 **CURRENT LOCAL VERIFICATION, non CI.** `gh` è assente: **non affermo che alcun check GitHub sia verde

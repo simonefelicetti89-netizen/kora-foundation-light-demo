@@ -3,7 +3,7 @@
   "kind": "product",
   "generatedBy": "tests/e2e/kora-wp-129-worker-capture.spec.ts",
   "captureSpecSha256": "83bd5e0199c03c2744e06ad5729c7e226a59011c84c4e6c7353d165ea928c284",
-  "harnessSha256": "de26ea8b20d3273e6293e2b70ec1bb766e96264bf3fd24ce308f53cf19c79cb1",
+  "harnessSha256": "fe90cc27adc355160f6a78f32dbf29df77c035da1a3627faa8b443ad754c458d",
   "productSha": "2fd03eab3b1290a8c9e480229b6e35ddadd21e75",
   "governanceAuthoritySha": "a1a7797bc3b9bc0ba51b55b24b0ed110798feb3e",
   "governanceAuthority": "Registry 219 \u00a7 B KORA-WP-129 (DELTA 5, resolved by AN.10) + \u00a7 B KORA-WP-126 taxonomy",
@@ -28,14 +28,20 @@
   "reproducibility": {
     "runs": 2,
     "identicalDigests": 39,
-    "total": 39
+    "total": 39,
+    "dataBearing": {
+      "runs": 2,
+      "identicalDigests": 6,
+      "total": 6,
+      "sequence": "seed \u2192 capture \u2192 hash, twice, with the fixture's own idempotent delete as the clean step"
+    }
   },
   "surfaces": [
     {
       "route": "/worker/activity-discovery",
       "archetype": "DIRECTORY_INDEX",
       "wp126Category": "DIRECTORY_INDEX",
-      "state": "default authenticated state",
+      "state": "minimal \u2014 default authenticated state",
       "captures": [
         {
           "viewport": "desktop",
@@ -72,13 +78,15 @@
       "mobileRatio": {
         "verdict": "pass",
         "detail": "/worker/activity-discovery desktop\u2192mobile ratio 1.231 (acceptable) \u2014 a detector, never a target"
-      }
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
     },
     {
       "route": "/worker/activity-discovery/detail",
       "archetype": "RECORD_DETAIL",
       "wp126Category": "RECORD_DETAIL",
-      "state": "default authenticated state",
+      "state": "minimal \u2014 default authenticated state",
       "captures": [
         {
           "viewport": "desktop",
@@ -115,13 +123,15 @@
       "mobileRatio": {
         "verdict": "pass",
         "detail": "/worker/activity-discovery/detail desktop\u2192mobile ratio 1.024 (acceptable) \u2014 a detector, never a target"
-      }
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
     },
     {
       "route": "/worker/bookings",
       "archetype": "OPERATIONAL_WORKSPACE",
       "wp126Category": "OPERATIONAL_WORKSPACE",
-      "state": "loaded, no booking in the local seed",
+      "state": "minimal \u2014 loaded, no booking in the local seed",
       "captures": [
         {
           "viewport": "desktop",
@@ -158,13 +168,15 @@
       "mobileRatio": {
         "verdict": "pass",
         "detail": "/worker/bookings desktop\u2192mobile ratio 1.172 (acceptable) \u2014 a detector, never a target"
-      }
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
     },
     {
       "route": "/worker/commons",
       "archetype": "DIRECTORY_INDEX",
       "wp126Category": "DIRECTORY_INDEX",
-      "state": "loaded, local-seed initiative set",
+      "state": "minimal \u2014 loaded, local-seed initiative set",
       "captures": [
         {
           "viewport": "desktop",
@@ -201,13 +213,15 @@
       "mobileRatio": {
         "verdict": "pass",
         "detail": "/worker/commons desktop\u2192mobile ratio 0.914 (acceptable) \u2014 a detector, never a target"
-      }
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
     },
     {
       "route": "/worker/dynamic-cv",
       "archetype": "RECORD_DETAIL",
       "wp126Category": "RECORD_DETAIL",
-      "state": "loaded, zero tracked experiences (analytics.impact_unit = 0 in the local seed)",
+      "state": "minimal \u2014 loaded, zero tracked experiences (analytics.impact_unit = 0 in the local seed)",
       "captures": [
         {
           "viewport": "desktop",
@@ -244,13 +258,15 @@
       "mobileRatio": {
         "verdict": "pass",
         "detail": "/worker/dynamic-cv desktop\u2192mobile ratio 1.284 (acceptable) \u2014 a detector, never a target"
-      }
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
     },
     {
       "route": "/worker/dynamic-cv/print",
       "archetype": "REPORT_EXPORT",
       "wp126Category": "REPORT_EXPORT",
-      "state": "loaded, zero tracked experiences",
+      "state": "minimal \u2014 loaded, zero tracked experiences",
       "captures": [
         {
           "viewport": "desktop",
@@ -287,13 +303,15 @@
       "mobileRatio": {
         "verdict": "pass",
         "detail": "/worker/dynamic-cv/print desktop\u2192mobile ratio 0.914 (acceptable) \u2014 a detector, never a target"
-      }
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
     },
     {
       "route": "/worker/kora-link/activate",
       "archetype": "DISCLOSURE_STATIC",
       "wp126Category": "DISCLOSURE_STATIC",
-      "state": "default authenticated state",
+      "state": "minimal \u2014 default authenticated state",
       "captures": [
         {
           "viewport": "desktop",
@@ -330,13 +348,15 @@
       "mobileRatio": {
         "verdict": "pass",
         "detail": "/worker/kora-link/activate desktop\u2192mobile ratio 1.081 (acceptable) \u2014 a detector, never a target"
-      }
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
     },
     {
       "route": "/worker/onboarding",
       "archetype": "OPERATIONAL_WORKSPACE",
       "wp126Category": "OPERATIONAL_WORKSPACE",
-      "state": "review (?mode=review) \u2014 the seeded worker has completed onboarding",
+      "state": "minimal \u2014 review (?mode=review) \u2014 the seeded worker has completed onboarding",
       "captures": [
         {
           "viewport": "desktop",
@@ -373,13 +393,15 @@
       "mobileRatio": {
         "verdict": "pass",
         "detail": "/worker/onboarding desktop\u2192mobile ratio 0.888 (acceptable) \u2014 a detector, never a target"
-      }
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
     },
     {
       "route": "/worker/opportunities",
       "archetype": "DIRECTORY_INDEX",
       "wp126Category": "DIRECTORY_INDEX",
-      "state": "default authenticated state",
+      "state": "minimal \u2014 default authenticated state",
       "captures": [
         {
           "viewport": "desktop",
@@ -416,13 +438,15 @@
       "mobileRatio": {
         "verdict": "pass",
         "detail": "/worker/opportunities desktop\u2192mobile ratio 0.996 (acceptable) \u2014 a detector, never a target"
-      }
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
     },
     {
       "route": "/worker/personal-impact-balance",
       "archetype": "RECORD_DETAIL",
       "wp126Category": "RECORD_DETAIL",
-      "state": "zero state (no Impact Unit in the local seed)",
+      "state": "minimal \u2014 zero state (no Impact Unit in the local seed)",
       "captures": [
         {
           "viewport": "desktop",
@@ -459,13 +483,15 @@
       "mobileRatio": {
         "verdict": "pass",
         "detail": "/worker/personal-impact-balance desktop\u2192mobile ratio 0.914 (acceptable) \u2014 a detector, never a target"
-      }
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
     },
     {
       "route": "/worker/privacy",
       "archetype": "DISCLOSURE_STATIC",
       "wp126Category": "DISCLOSURE_STATIC",
-      "state": "default authenticated state",
+      "state": "minimal \u2014 default authenticated state",
       "captures": [
         {
           "viewport": "desktop",
@@ -502,13 +528,15 @@
       "mobileRatio": {
         "verdict": "warn",
         "detail": "/worker/privacy desktop\u2192mobile ratio 1.518 (warning) \u2014 a detector, never a target"
-      }
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
     },
     {
       "route": "/worker/setup-password",
       "archetype": "OPERATIONAL_WORKSPACE",
       "wp126Category": "OPERATIONAL_WORKSPACE",
-      "state": "form branch (no error query parameter)",
+      "state": "minimal \u2014 form branch (no error query parameter)",
       "captures": [
         {
           "viewport": "desktop",
@@ -545,13 +573,15 @@
       "mobileRatio": {
         "verdict": "pass",
         "detail": "/worker/setup-password desktop\u2192mobile ratio 0.888 (acceptable) \u2014 a detector, never a target"
-      }
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
     },
     {
       "route": "/worker/workspace",
       "archetype": "EXECUTIVE_JUDGMENT",
       "wp126Category": "EXECUTIVE_JUDGMENT",
-      "state": "default authenticated state",
+      "state": "minimal \u2014 default authenticated state",
       "captures": [
         {
           "viewport": "desktop",
@@ -588,7 +618,119 @@
       "mobileRatio": {
         "verdict": "warn",
         "detail": "/worker/workspace desktop\u2192mobile ratio 1.592 (warning) \u2014 a detector, never a target"
+      },
+      "captureRuntime": "development",
+      "archive": "docs/product/visual-evidence/kora-wp-129"
+    },
+    {
+      "route": "/worker/dynamic-cv",
+      "archetype": "RECORD_DETAIL",
+      "wp126Category": "RECORD_DETAIL",
+      "state": "data-bearing \u2014 2 attended participations, 2 PIB rows computed by computeBaseWorkerPIBRows",
+      "archive": "docs/product/visual-evidence/kora-wp-129/data-bearing",
+      "captureRuntime": "production",
+      "fixtureSource": "scripts/e2e/seed-local-worker-review-states.ts",
+      "fixtureSourceCommit": "1b327c0",
+      "fixtureOriginCommits": [
+        "3b324c6",
+        "1b327c0"
+      ],
+      "fixtureSha256": "6cd97c7bdee86dcbe999bb1c34c9aba3534e342cb19530d1972c89cec39ab5e9",
+      "captureSpecSha256": "18d14b19403d919a2a34f6d541ecc23eb765545035b496a4ef1234374b20d5e3",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-dynamic-cv__desktop.png",
+          "digest": "93f4ef7f83ef119a5227e4b4b873536e66f157138c70b4c91dd24e518aba2b78",
+          "documentHeightPx": 1397,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-dynamic-cv__rail.png",
+          "digest": "1eb36b0490f527ba8ce63ccc271f0707c7873b089001be53b5ed5bc362d0b545",
+          "documentHeightPx": 1731,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-dynamic-cv__mobile.png",
+          "digest": "4f99da9f3562f5fc7496dc64c806a39a9cae593bb7d6b961f4abaf1789896efd",
+          "documentHeightPx": 1832,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/dynamic-cv at 1397px is within the 2500px RECORD_DETAIL threshold"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/dynamic-cv desktop\u2192mobile ratio 1.311 (acceptable) \u2014 a detector, never a target"
+      }
+    },
+    {
+      "route": "/worker/dynamic-cv/print",
+      "archetype": "REPORT_EXPORT",
+      "wp126Category": "REPORT_EXPORT",
+      "state": "data-bearing \u2014 2 attended participations, 2 PIB rows computed by computeBaseWorkerPIBRows",
+      "archive": "docs/product/visual-evidence/kora-wp-129/data-bearing",
+      "captureRuntime": "production",
+      "fixtureSource": "scripts/e2e/seed-local-worker-review-states.ts",
+      "fixtureSourceCommit": "1b327c0",
+      "fixtureOriginCommits": [
+        "3b324c6",
+        "1b327c0"
+      ],
+      "fixtureSha256": "6cd97c7bdee86dcbe999bb1c34c9aba3534e342cb19530d1972c89cec39ab5e9",
+      "captureSpecSha256": "18d14b19403d919a2a34f6d541ecc23eb765545035b496a4ef1234374b20d5e3",
+      "captures": [
+        {
+          "viewport": "desktop",
+          "width": 1440,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-dynamic-cv-print__desktop.png",
+          "digest": "1447c8a093381cafbbdeec3cccd18e1ffca79659d1430d90b68abc220dfeee1d",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "rail",
+          "width": 1200,
+          "height": 900,
+          "file": "kora-wp-129__product__worker-dynamic-cv-print__rail.png",
+          "digest": "87372051430c2456d097e03c6a2e4a6928fc9bc523c6dcb67e4dd3532423fe85",
+          "documentHeightPx": 1018,
+          "byteIdenticalOnRerun": true
+        },
+        {
+          "viewport": "mobile",
+          "width": 767,
+          "height": 812,
+          "file": "kora-wp-129__product__worker-dynamic-cv-print__mobile.png",
+          "digest": "a23f3679bd0aed18a6b88930dea2a8e215d7c3e22fd79b477d19960e1c5f0d25",
+          "documentHeightPx": 984,
+          "byteIdenticalOnRerun": true
+        }
+      ],
+      "pageLength": {
+        "verdict": "pass",
+        "detail": "/worker/dynamic-cv/print at 1018px is within the 4000px REPORT_EXPORT threshold"
+      },
+      "mobileRatio": {
+        "verdict": "pass",
+        "detail": "/worker/dynamic-cv/print desktop\u2192mobile ratio 0.967 (acceptable) \u2014 a detector, never a target"
       }
     }
-  ]
+  ],
+  "states": {
+    "minimal": "golden-path seed only \u2014 the state a worker with no tracked activity sees",
+    "data-bearing": "golden-path seed + scripts/e2e/seed-local-worker-review-states.ts --apply"
+  }
 }

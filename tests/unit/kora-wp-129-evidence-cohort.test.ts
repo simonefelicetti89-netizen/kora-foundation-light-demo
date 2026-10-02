@@ -134,9 +134,19 @@ describe('KORA-WP-129 — the manifest describes the archive it ships with', () 
     expect(m.productSha).not.toBe(m.governanceAuthoritySha);
   });
 
-  it('names one entry per declared surface, each with every canonical viewport', () => {
+  it('covers every declared surface, each entry with every canonical viewport', () => {
     const m = JSON.parse(readFileSync(manifestPath, 'utf8'));
-    expect(m.surfaces.map((s: { route: string }) => s.route).sort()).toEqual(declaredWorkerRoutes());
+    // One entry PER STATE, not per route: a surface evidenced in more than one
+    // legitimate Product state appears once for each. The set of routes must
+    // still be exactly the declared surfaces, and each must carry a minimal
+    // entry — the data-bearing state supplements it, never replaces it.
+    const routes: string[] = m.surfaces.map((s: { route: string }) => s.route);
+    expect([...new Set(routes)].sort()).toEqual(declaredWorkerRoutes());
+    const minimal = m.surfaces
+      .filter((s: { state: string }) => /minimal/.test(s.state))
+      .map((s: { route: string }) => s.route)
+      .sort();
+    expect(minimal, 'every declared surface needs its minimal-state entry').toEqual(declaredWorkerRoutes());
     for (const s of m.surfaces) {
       expect(s.archetype, `${s.route} must carry its archetype`).toBeTruthy();
       expect(s.captures.map((c: { viewport: string }) => c.viewport).sort())
@@ -159,3 +169,65 @@ describe('KORA-WP-129 — the manifest describes the archive it ships with', () 
     expect(m.acceptance).toMatch(/NOT ACCEPTED/);
   });
 });
+
+/**
+ * The data-bearing state. `/worker/dynamic-cv` is a RECORD_DETAIL whose whole
+ * W3B remediation concerns long-content behaviour, so a zero-experience
+ * capture cannot stand alone. The populated state lives under a `data-bearing/`
+ * root with the SAME canonical filenames — one naming convention, two states —
+ * and the manifest must say which is which.
+ */
+describe('KORA-WP-129 — the data-bearing state is present and distinguished', () => {
+  const DATA_BEARING_ROUTES = ['/worker/dynamic-cv', '/worker/dynamic-cv/print'] as const;
+  const DB_DIR = join(DIR, 'data-bearing');
+
+  it('both Dynamic CV surfaces carry populated evidence at every canonical viewport', () => {
+    const missing: string[] = [];
+    for (const route of DATA_BEARING_ROUTES) {
+      for (const vp of CANONICAL_VIEWPORTS) {
+        const file = evidenceName({ wp: WP, kind: 'product', route, viewport: vp.id });
+        if (!existsSync(join(DB_DIR, file))) missing.push(file);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('the data-bearing archive holds nothing but those two surfaces', () => {
+    const allowed = new Set<string>();
+    for (const route of DATA_BEARING_ROUTES) {
+      for (const vp of CANONICAL_VIEWPORTS) {
+        allowed.add(evidenceName({ wp: WP, kind: 'product', route, viewport: vp.id }));
+      }
+    }
+    const extra = readdirSync(DB_DIR).filter((f) => f.endsWith('.png') && !allowed.has(f));
+    expect(extra, 'a populated capture of a surface the state does not claim').toEqual([]);
+  });
+
+  it('the minimal state is NOT overwritten — both states coexist with distinct digests', () => {
+    const m = JSON.parse(readFileSync(join(DIR, 'manifest.json'), 'utf8'));
+    for (const route of DATA_BEARING_ROUTES) {
+      for (const vp of CANONICAL_VIEWPORTS) {
+        const file = evidenceName({ wp: WP, kind: 'product', route, viewport: vp.id });
+        expect(existsSync(join(DIR, file)), `${file} minimal state must survive`).toBe(true);
+        expect(existsSync(join(DB_DIR, file))).toBe(true);
+      }
+      const entries = m.surfaces.filter((s: { route: string }) => s.route === route);
+      const states = entries.map((s: { state: string }) => s.state).sort();
+      expect(states.length, `${route} must appear once per state`).toBe(2);
+      expect(states.some((x: string) => /data-bearing/.test(x))).toBe(true);
+      expect(states.some((x: string) => /minimal/.test(x))).toBe(true);
+    }
+  });
+
+  it('the manifest records the fixture provenance and the capture runtime of the populated state', () => {
+    const m = JSON.parse(readFileSync(join(DIR, 'manifest.json'), 'utf8'));
+    const db = m.surfaces.filter((s: { state: string }) => /data-bearing/.test(s.state));
+    expect(db.length).toBe(DATA_BEARING_ROUTES.length);
+    for (const s of db) {
+      expect(s.fixtureSourceCommit).toMatch(/^[0-9a-f]{7,40}$/);
+      expect(s.fixtureSha256).toMatch(/^[0-9a-f]{64}$/);
+      expect(s.captureRuntime).toBe('production');
+    }
+  });
+});
+

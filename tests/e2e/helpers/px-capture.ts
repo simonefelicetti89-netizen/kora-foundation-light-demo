@@ -19,7 +19,7 @@
 import { expect, type Browser, type Page } from 'playwright/test';
 import { createHash } from 'crypto';
 import { mkdirSync, writeFileSync } from 'fs';
-import { dirname } from 'path';
+import { dirname, basename, join } from 'path';
 import { readLocalSessionConfig, installLocalSession, type LocalSessionConfig } from './local-session';
 import { CANONICAL_VIEWPORTS, canonicalViewport } from '../../../lib/px-acceptance/viewport-matrix';
 import {
@@ -28,6 +28,21 @@ import {
 } from '../../../lib/px-acceptance/evidence-protocol';
 import { compareToBaseline, type CaptureResult } from '../../../lib/px-acceptance/baseline-store';
 import { checkPageLength, checkMobileRatio, checkRouteArchetypeDeclared } from '../../../lib/px-acceptance/benchmark-checks';
+
+/**
+ * A state-scoped archive root, for a surface that must be evidenced in more
+ * than one legitimate Product state.
+ *
+ * `/worker/dynamic-cv` is a `RECORD_DETAIL` whose whole W3B remediation is
+ * about LONG-CONTENT behaviour, so a zero-experience capture and a populated
+ * one prove different things and both are needed. `evidenceName()` is
+ * deterministic by contract — same descriptor, same name — so the two states
+ * would collide on one filename. Rather than invent a second naming
+ * convention or widen `EvidenceDescriptor` (KORA-WP-126 is COMPLETE and is
+ * not reopened), the canonical NAME is kept and the ARCHIVE ROOT carries the
+ * state. Omit it and evidence lands exactly where it always did.
+ */
+export type ArchiveState = 'data-bearing';
 
 export interface CaptureSurface {
   readonly route: string;
@@ -82,6 +97,7 @@ export async function captureSurface(
   surface: CaptureSurface,
   localConfig: LocalSessionConfig,
   creds: CaptureCredentials,
+  archiveState?: ArchiveState,
 ): Promise<SurfaceMeasurement> {
   // An undeclared archetype has no length or ratio contract, so it cannot be
   // measured and must not be captured as acceptance evidence.
@@ -115,7 +131,10 @@ export async function captureSurface(
       });
 
       const descriptor: EvidenceDescriptor = { wp, kind: 'product', route: surface.route, viewport: vp.id };
-      const target = evidencePath(descriptor);
+      const canonical = evidencePath(descriptor);
+      const target = archiveState
+        ? join(dirname(canonical), archiveState, basename(canonical))
+        : canonical;
       const buffer = await page.screenshot({ fullPage: true });
       mkdirSync(dirname(target), { recursive: true });
       writeFileSync(target, buffer);
