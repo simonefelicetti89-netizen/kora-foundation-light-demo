@@ -271,6 +271,7 @@ const ALLOWLIST: ReadonlyArray<{ path: string; reason: string }> = [
   // both KORA_ADMIN-only under RLS and structurally unreachable by a
   // Company session any other way.
   { path: 'lib/living-koral-mark/edition-lineage-service.ts', reason: 'documented server-only service — Edition-bounded ledger/material-change lineage replay (Level A continuity), KORA-WP-117' },
+  { path: 'lib/living-koral-mark/canonical-morphology-service.ts', reason: 'documented server-only service — Canonical Morphology Engine v2 event fetch (ledger, consolidation sources, M1 area backfill — all KORA_ADMIN-only under RLS) + set-once Edition crystallisation RPC, explicitly tenant-scoped, KORA-WP-145' },
 
   // KORA-WP-066 — Saved Mappings. Server-only module, reached exclusively from
   // requireKoraAdmin-guarded Admin Data Intake paths. It needs the service

@@ -26,6 +26,8 @@ import type {
   LivingKoralMaterialChangeRecognitionSource,
 } from './types';
 import type { MaterialChangeTaxonomyEntry } from '@/lib/living-koral-config/types';
+import type { MorphologyAreaCode } from '@/lib/living-koral-morphology-config/types';
+import { isMorphologyAreaCode } from '@/lib/living-koral-morphology-config/v1';
 
 function toRecord(row: Record<string, unknown>): LivingKoralMaterialChangeRecord {
   return {
@@ -34,6 +36,7 @@ function toRecord(row: Record<string, unknown>): LivingKoralMaterialChangeRecord
     status: row.status as LivingKoralMaterialChangeRecord['status'],
     category: row.category as MaterialChangeTaxonomyEntry['category'],
     affectedDomain: row.affected_domain as LivingKoralMaterialChangeAffectedDomain,
+    affectedArea: isMorphologyAreaCode(row.affected_area) ? row.affected_area : null,
     sourceEntityType: row.source_entity_type as LivingKoralMaterialChangeSourceEntityType,
     sourceEntityId: row.source_entity_id as string,
     occurredAt: row.occurred_at as string,
@@ -54,6 +57,8 @@ export interface CreateMaterialChangeCandidateParams {
   tenantId: string;
   category: MaterialChangeTaxonomyEntry['category'];
   affectedDomain: LivingKoralMaterialChangeAffectedDomain;
+  /** KORA-WP-145 — morphology area snapshotted from the REAL source row by the calling adapter. Optional for backward compatibility. */
+  affectedArea?: MorphologyAreaCode | null;
   sourceEntityType: LivingKoralMaterialChangeSourceEntityType;
   sourceEntityId: string;
   occurredAt: string;
@@ -179,6 +184,7 @@ export async function createMaterialChangeCandidate(params: CreateMaterialChange
       status: 'CANDIDATE',
       category: params.category,
       affected_domain: params.affectedDomain,
+      affected_area: params.affectedArea ?? null,
       source_entity_type: params.sourceEntityType,
       source_entity_id: params.sourceEntityId,
       occurred_at: params.occurredAt,
@@ -293,4 +299,38 @@ export async function listMaterialChangesForTenant(tenantId: string): Promise<Li
   const { data, error } = await db.schema('gov').from('living_koral_material_change').select().eq('tenant_id', tenantId).order('created_at', { ascending: false });
   if (error) throw new Error(`[KORA] listMaterialChangesForTenant failed: ${error.message}`);
   return (data ?? []).map((row) => toRecord(row as Record<string, unknown>));
+}
+
+export interface RecordConsolidationSourcesParams {
+  tenantId: string;
+  /** A Consolidation CANDIDATE — sources are declared before recognition (migration 092 enforces both). */
+  materialChangeId: string;
+  sourceEntityIds: readonly string[];
+}
+
+/**
+ * KORA-WP-145 — records the consolidated source lineages of one
+ * Consolidation candidate (gov.living_koral_consolidation_source, migration
+ * 092). Idempotent: an already-recorded (material change, source) pair is a
+ * no-op. At least two distinct sources are required; the database
+ * independently refuses to record a `fuse` with fewer.
+ */
+export async function recordConsolidationSources(params: RecordConsolidationSourcesParams): Promise<void> {
+  const distinct = [...new Set(params.sourceEntityIds)].sort();
+  if (distinct.length < 2) {
+    throw new Error('[KORA] recordConsolidationSources rejected: a Consolidation requires at least two distinct source lineages.');
+  }
+  const db = getSupabaseServiceClient();
+  const { error } = await db
+    .schema('gov').from('living_koral_consolidation_source')
+    .upsert(
+      distinct.map((sourceEntityId) => ({
+        tenant_id: params.tenantId,
+        material_change_id: params.materialChangeId,
+        source_entity_type: 'initiative',
+        source_entity_id: sourceEntityId,
+      })),
+      { onConflict: 'material_change_id,source_entity_id', ignoreDuplicates: true },
+    );
+  if (error) throw new Error(`[KORA] recordConsolidationSources failed: ${error.message}`);
 }

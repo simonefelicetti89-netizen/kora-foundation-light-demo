@@ -444,7 +444,18 @@ describe('gate2-3-030 — migration file count', () => {
     const numbers = migrationNumbers();
     const highest = numbers[numbers.length - 1];
     const RETIRED_NUMBERS = new Set([29, 37, 38, 40, 41, 43, 44]);
-    const expected = Array.from({ length: highest }, (_, i) => i + 1).filter((n) => !RETIRED_NUMBERS.has(n));
+    // KORA-WP-145 (2026-10-03): 089 and 090 are NOT retired — they are already
+    // taken on the canonical Product line (integration/kora-canonical-product-
+    // 2026-09-22: 089_investment_source_attributes_flexible_edge.sql,
+    // 090_saved_column_mapping_tenant_scoped.sql), which this branch does not
+    // yet contain. WP-145's own migrations were therefore numbered 091–094 to
+    // avoid a collision on integration. A reserved number may be absent here,
+    // and is expected to be present once the lines are integrated; it may
+    // never be reused for a different file.
+    const RESERVED_ON_CANONICAL_PRODUCT_LINE = new Set([89, 90]);
+    const expected = Array.from({ length: highest }, (_, i) => i + 1)
+      .filter((n) => !RETIRED_NUMBERS.has(n))
+      .filter((n) => !RESERVED_ON_CANONICAL_PRODUCT_LINE.has(n) || numbers.includes(n));
     expect(numbers).toEqual(expected);
   });
 

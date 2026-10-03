@@ -23,6 +23,8 @@ export interface LivingKoralTransformationLedgerRecord {
   readonly materialChangeId: string;
   readonly category: MaterialChangeTaxonomyEntry['category'];
   readonly affectedDomain: 'initiative';
+  /** KORA-WP-145 (migration 091): copied from the Material Change by the recording RPC. null on pre-WP-145 rows. */
+  readonly affectedArea?: string | null;
   readonly taxonomyConfigVersion: string;
   readonly morphogenesisEngineVersion: string;
   readonly operation: LivingKoralMorphogenesisOperation;

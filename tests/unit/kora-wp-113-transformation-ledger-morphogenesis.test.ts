@@ -65,14 +65,17 @@ describe('KORA-WP-113 — Morphogenesis Engine v1 config: KORAL Morphology Packa
     expect(getMorphogenesisOperationForCategory('Stabilization')).toBe('stabilize');
   });
 
-  it('getMorphogenesisOperationForCategory throws for the one remaining dormant category, Consolidation (Package B, later, still no live producer or mapping)', async () => {
+  // Superseded by KORA-WP-145 (2026-10-03): Package B is absorbed into
+  // KORA-WP-145 and Consolidation now maps to the multi-source `fuse`
+  // operation (migrations 089/090). No category is dormant any more.
+  it('KORA-WP-145: Consolidation maps to the multi-source `fuse` operation (Package B absorbed into KORA-WP-145)', async () => {
     const { getMorphogenesisOperationForCategory } = await import('@/lib/living-koral-morphogenesis-config/v1');
-    expect(() => getMorphogenesisOperationForCategory('Consolidation')).toThrow(/no live Morphogenesis Engine v1 operation mapping/);
+    expect(getMorphogenesisOperationForCategory('Consolidation')).toBe('fuse');
   });
 
-  it('engineVersion was bumped to morphogenesis-v1.1 — a real capability change (four categories dormant->live), not a fake pre-commit version bump', async () => {
+  it('engineVersion is morphogenesis-v1.2 — bumped by KORA-WP-145 for the real capability change (Consolidation dormant -> live), after Package A\'s own v1.1', async () => {
     const { getMorphogenesisEngineVersion } = await import('@/lib/living-koral-morphogenesis-config/v1');
-    expect(getMorphogenesisEngineVersion()).toBe('morphogenesis-v1.1');
+    expect(getMorphogenesisEngineVersion()).toBe('morphogenesis-v1.2');
   });
 
   it('the config carries all seven taxonomy categories (legal semantic input) — none silently dropped', async () => {
@@ -181,7 +184,8 @@ describe('KORA-WP-113 — no migration beyond 082 was introduced BY THIS WP (a l
     const { readdirSync } = await import('node:fs');
     const files = readdirSync('supabase/migrations').filter((f) => /^\d+_/.test(f));
     const numbers = files.map((f) => parseInt(f.split('_')[0], 10));
-    expect(Math.max(...numbers)).toBeGreaterThanOrEqual(89); // KORA-WP-016 raised the ceiling to 089 (analytics.observed_investment_fact flexible edge — a later, unrelated WP; this assertion's own intent is unaffected) // KORA-WP-066 raised the ceiling to 090 (analytics.saved_column_mapping — a later, unrelated WP; this assertion's own intent is unaffected). CONVERTED FROM EQUALITY TO >= BY KORA-WP-066: INTENTIONAL TEST-MECHANISM SUPERSESSION, SEMANTIC GUARANTEE PRESERVED. The guarantee is "THIS WP introduced no migration of its own", never "no later WP may add one" — the equality form had already been hand-edited by several successive WPs, which is the failure mode the repository's own documented remedy (see tests/unit/kora-wp-029-manual-remap-governance.test.ts, "never equality, same disclosed pattern already fixed for WP-011/WP-120/WP-013/WP-046") exists to end.
+    // KORA-WP-145 raised the floor to 094 (091–094 — Canonical Morphology Engine v2, after canonical 089/090); future-safe, this assertion's own intent is unaffected.
+    expect(Math.max(...numbers)).toBeGreaterThanOrEqual(94); // KORA-WP-016 raised the ceiling to 089 (analytics.observed_investment_fact flexible edge — a later, unrelated WP; this assertion's own intent is unaffected) // KORA-WP-066 raised the ceiling to 090 (analytics.saved_column_mapping — a later, unrelated WP; this assertion's own intent is unaffected). CONVERTED FROM EQUALITY TO >= BY KORA-WP-066: INTENTIONAL TEST-MECHANISM SUPERSESSION, SEMANTIC GUARANTEE PRESERVED. The guarantee is "THIS WP introduced no migration of its own", never "no later WP may add one" — the equality form had already been hand-edited by several successive WPs, which is the failure mode the repository's own documented remedy (see tests/unit/kora-wp-029-manual-remap-governance.test.ts, "never equality, same disclosed pattern already fixed for WP-011/WP-120/WP-013/WP-046") exists to end.
     expect(numbers).toContain(82);
   });
 });

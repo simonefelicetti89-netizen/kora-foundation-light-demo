@@ -35,6 +35,9 @@ export interface LivingKoralEditionRecord {
   readonly actorRole: 'COMPANY_ADMIN';
   readonly actorId: string;
   readonly createdAt: string;
+  /** KORA-WP-145 (migration 093): Morphology Engine v2 crystallisation, recorded once. Absent/null for an Edition reconstructed under v1. Optional at the type level so pre-WP-145 fixtures stay valid. */
+  readonly morphologyEngineVersion?: string | null;
+  readonly morphologyStateHash?: string | null;
 }
 
 export interface CreateLivingKoralEditionParams {

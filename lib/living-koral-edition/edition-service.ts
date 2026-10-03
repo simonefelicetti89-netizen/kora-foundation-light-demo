@@ -44,6 +44,8 @@ interface EditionRow {
   recognized_at: string;
   source_label: string | null;
   created_at: string;
+  morphology_engine_version?: string | null;
+  morphology_state_hash?: string | null;
   tenant_id?: string;
   actor_role?: 'COMPANY_ADMIN';
   actor_id?: string;
@@ -66,6 +68,8 @@ function toRecord(row: EditionRow, tenantId: string): LivingKoralEditionRecord {
     actorRole: 'COMPANY_ADMIN',
     actorId: row.actor_id ?? '',
     createdAt: row.created_at,
+    morphologyEngineVersion: row.morphology_engine_version ?? null,
+    morphologyStateHash: row.morphology_state_hash ?? null,
   };
 }
 
@@ -80,7 +84,7 @@ export async function listLivingKoralEditionsForTenant(tenantId: string): Promis
 
   const { data, error } = await db
     .schema('analytics').from('living_koral_edition')
-    .select('id, name, ledger_id, category, affected_domain, taxonomy_config_version, morphogenesis_engine_version, resulting_state_revision, occurred_at, recognized_at, source_label, actor_id, created_at')
+    .select('id, name, ledger_id, category, affected_domain, taxonomy_config_version, morphogenesis_engine_version, resulting_state_revision, occurred_at, recognized_at, source_label, actor_id, created_at, morphology_engine_version, morphology_state_hash')
     .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false });
 
@@ -104,7 +108,7 @@ export async function getLivingKoralEditionById(tenantId: string, editionId: str
 
   const { data, error } = await db
     .schema('analytics').from('living_koral_edition')
-    .select('id, name, ledger_id, category, affected_domain, taxonomy_config_version, morphogenesis_engine_version, resulting_state_revision, occurred_at, recognized_at, source_label, actor_id, created_at')
+    .select('id, name, ledger_id, category, affected_domain, taxonomy_config_version, morphogenesis_engine_version, resulting_state_revision, occurred_at, recognized_at, source_label, actor_id, created_at, morphology_engine_version, morphology_state_hash')
     .eq('tenant_id', tenantId).eq('id', editionId).maybeSingle();
 
   if (error) throw new Error(`[KORA] getLivingKoralEditionById failed: ${error.message}`);

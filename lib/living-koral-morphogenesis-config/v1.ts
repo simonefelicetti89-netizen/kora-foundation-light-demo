@@ -40,6 +40,11 @@
 // still require a future domain adapter this task does not build
 // (report 183's own explicit "NO FAKE LIVE PRODUCERS" boundary).
 //
+// KORA-WP-145 (2026-10-03): Consolidation -> `fuse` is now live (Package B
+// absorbed into KORA-WP-145, migration 092); engineVersion bumped to
+// 'morphogenesis-v1.2' under the same in-place precedent Package A set. No
+// category is dormant any more. The paragraph below is the pre-WP-145 record.
+//
 // Consolidation remains the ONE dormant category — `operation: null`, a
 // deliberate, documented absence (Package B, later, separate scope,
 // report 182 §10) — keeping unsupported live production structurally
@@ -58,13 +63,13 @@ function deepFreeze<T>(value: T): T {
 }
 
 const rawConfig: LivingKoralMorphogenesisConfig = {
-  engineVersion: 'morphogenesis-v1.1',
+  engineVersion: 'morphogenesis-v1.2',
   operationMappings: [
     { category: 'Emergence', operation: 'add_element', notes: 'Live — KORA-WP-112 initiative-adapter.ts, draft->published.' },
     { category: 'Disappearance', operation: 'remove_element', notes: 'Live — KORA-WP-112 initiative-adapter.ts, any->closed.' },
     { category: 'Strengthening', operation: 'increase_extent', notes: 'Live (Package A, migration 087) — deterministic single-lineage extent step-up. No live domain producer exists yet (no CANDIDATE-creating adapter) — the operation mapping is live; production candidate creation for this category remains a future, separate adapter task.' },
     { category: 'Weakening', operation: 'decrease_extent', notes: 'Live (Package A, migration 087) — deterministic single-lineage extent step-down, no floor at zero, never causes disappearance. No live domain producer exists yet — see Strengthening\'s own note.' },
-    { category: 'Consolidation', operation: null, notes: 'Dormant — no live producer exists; multi-source identity (Package B, later, report 182 §7/§10-§13) needs its own new persistence model (a dedicated join table) this migration deliberately does not build — not resolved by Package A.' },
+    { category: 'Consolidation', operation: 'fuse', notes: 'Live (KORA-WP-145, migration 092) — multi-source: one result lineage, two or more source lineages recorded in gov.living_koral_consolidation_source. Package B (report 182 §10-§13) absorbed into KORA-WP-145.' },
     { category: 'Reorientation', operation: 'reorient', notes: 'Live (Package A, migration 087) — deterministic single-lineage direction-ordinal increment. No live domain producer exists yet — see Strengthening\'s own note.' },
     { category: 'Stabilization', operation: 'stabilize', notes: 'Live (Package A, migration 087) — deterministic single-lineage one-way UNSETTLED->SETTLED transition. No live domain producer exists yet — see Strengthening\'s own note.' },
   ],

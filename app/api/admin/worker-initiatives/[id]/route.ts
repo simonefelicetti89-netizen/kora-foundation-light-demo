@@ -17,7 +17,7 @@ import { assertSameOrigin } from '@/lib/security/origin';
 // Change layer. Never alters this route's own existing behavior/response
 // shape; a failure here never blocks or changes the update's own result
 // (see the try/catch around the call below).
-import { observeInitiativeTransition } from '@/lib/living-koral-material-change/initiative-adapter';
+import { observeInitiativeTransition, observeInitiativePillarChange } from '@/lib/living-koral-material-change/initiative-adapter';
 
 const STATUSES: WorkerInitiativeRow['status'][] = ['draft', 'published', 'closed'];
 const PILLARS: WorkerInitiativeRow['pillar'][] = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'];
@@ -77,7 +77,7 @@ export async function PATCH(
   // now, never reconstructable after. Read-only, additive; does not
   // change this route's own existing behavior on any failure path below.
   const { data: before } = await db
-    .schema('personal').from('worker_initiative').select('tenant_id, status').eq('id', id).maybeSingle();
+    .schema('personal').from('worker_initiative').select('tenant_id, status, pillar').eq('id', id).maybeSingle();
 
   const { data: updated, error } = await db
     .schema('personal')
@@ -112,6 +112,26 @@ export async function PATCH(
       });
     } catch (koralError) {
       console.error('[worker-initiatives PATCH] KORA-WP-112 Material Change observation failed (non-blocking):', koralError);
+    }
+  }
+
+  // KORA-WP-145 (Founder X1): a pillar change of an initiative that was and
+  // remains published is a Reorientation CANDIDATE — recognized only through
+  // an Advisor's interpretive confirmation. Additive and non-blocking, same
+  // contract as the status observation above.
+  const remainsPublished = before?.status === 'published' && (update.status === undefined || update.status === 'published');
+  if (before && remainsPublished && update.pillar !== undefined && before.pillar !== update.pillar) {
+    try {
+      await observeInitiativePillarChange({
+        tenantId: before.tenant_id as string,
+        initiativeId: id,
+        previousPillar: before.pillar as WorkerInitiativeRow['pillar'],
+        newPillar: update.pillar,
+        actorRole: auth.koraRole,
+        actorId: auth.email,
+      });
+    } catch (koralError) {
+      console.error('[worker-initiatives PATCH] KORA-WP-145 Reorientation observation failed (non-blocking):', koralError);
     }
   }
 

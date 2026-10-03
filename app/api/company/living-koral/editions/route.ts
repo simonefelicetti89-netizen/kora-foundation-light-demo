@@ -27,6 +27,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { listLivingKoralEditionsForTenant, createLivingKoralEdition } from '@/lib/living-koral-edition/edition-service';
 import { toEditionView } from '@/lib/living-koral-edition/edition-view';
+import { recordEditionMorphology } from '@/lib/living-koral-mark/canonical-morphology-service';
 
 export async function GET(request: NextRequest) {
   const auth = await requireCompanyUser(request);
@@ -61,6 +62,19 @@ export async function POST(request: NextRequest) {
   }
 
   const result = await createLivingKoralEdition({ tenantId: auth.tenantId, name, idempotencyKey });
+
+  // KORA-WP-145: crystallise the Edition under Morphology Engine v2 — engine
+  // version + canonical rebuilt-state hash, recorded once (set-once,
+  // service-role-only, migration 093). Non-visual and non-blocking: a
+  // failure is logged and the same call is retried safely by a replayed
+  // request, since recording is idempotent.
+  if (result.kind === 'created' || result.kind === 'replayed') {
+    try {
+      await recordEditionMorphology({ tenantId: auth.tenantId, editionId: result.edition.id, boundaryRevision: result.edition.resultingStateRevision });
+    } catch (morphologyError) {
+      console.error('[living-koral editions POST] KORA-WP-145 Edition morphology record failed (non-blocking):', morphologyError);
+    }
+  }
 
   switch (result.kind) {
     case 'created':

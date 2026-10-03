@@ -29,7 +29,10 @@ import type { MaterialChangeTaxonomyEntry } from '@/lib/living-koral-config/type
  * 182 §10). Never extended silently; a new operation requires a new
  * migration widening the DB CHECK constraint.
  */
-export type LivingKoralMorphogenesisOperation = 'add_element' | 'remove_element' | 'increase_extent' | 'decrease_extent' | 'reorient' | 'stabilize';
+// KORA-WP-145 (2026-10-03, migration 092): `fuse` (Consolidation) joins.
+// Package B is absorbed into KORA-WP-145; fuse is multi-source, its sources
+// recorded in gov.living_koral_consolidation_source.
+export type LivingKoralMorphogenesisOperation = 'add_element' | 'remove_element' | 'increase_extent' | 'decrease_extent' | 'reorient' | 'stabilize' | 'fuse';
 
 /**
  * One taxonomy category's mapping to a deterministic operation —

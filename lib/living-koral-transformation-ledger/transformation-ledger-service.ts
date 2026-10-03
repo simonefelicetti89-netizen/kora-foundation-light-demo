@@ -39,6 +39,7 @@ function toLedgerRecord(row: Record<string, unknown>): LivingKoralTransformation
     materialChangeId: row.material_change_id as string,
     category: row.category as MaterialChangeTaxonomyEntry['category'],
     affectedDomain: row.affected_domain as 'initiative',
+    affectedArea: (row.affected_area as string | null | undefined) ?? null,
     taxonomyConfigVersion: row.taxonomy_config_version as string,
     morphogenesisEngineVersion: row.morphogenesis_engine_version as string,
     operation: row.operation as LivingKoralMorphogenesisOperation,

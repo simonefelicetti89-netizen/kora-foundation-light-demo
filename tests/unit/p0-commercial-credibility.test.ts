@@ -381,8 +381,19 @@ describe('Regression — constraints from sprint', () => {
     expect(new Set(migNumbers).size).toBe(migNumbers.length); // no duplicate numbering
     const highest = migNumbers[migNumbers.length - 1];
     const RETIRED_NUMBERS = new Set([29, 37, 38, 40, 41, 43, 44]);
-    const expectedNumbers = Array.from({ length: highest }, (_, i) => i + 1).filter((n) => !RETIRED_NUMBERS.has(n));
-    expect(migNumbers).toEqual(expectedNumbers); // contiguous except the retired numbers
+    // KORA-WP-145 (2026-10-03): 089 and 090 are NOT retired — they are already
+    // taken on the canonical Product line (integration/kora-canonical-product-
+    // 2026-09-22: 089_investment_source_attributes_flexible_edge.sql,
+    // 090_saved_column_mapping_tenant_scoped.sql), which this branch does not
+    // yet contain. WP-145's own migrations were therefore numbered 091–094 to
+    // avoid a collision on integration. A reserved number may be absent here,
+    // and is expected to be present once the lines are integrated; it may
+    // never be reused for a different file.
+    const RESERVED_ON_CANONICAL_PRODUCT_LINE = new Set([89, 90]);
+    const expectedNumbers = Array.from({ length: highest }, (_, i) => i + 1)
+      .filter((n) => !RETIRED_NUMBERS.has(n))
+      .filter((n) => !RESERVED_ON_CANONICAL_PRODUCT_LINE.has(n) || migNumbers.includes(n));
+    expect(migNumbers).toEqual(expectedNumbers); // contiguous except the retired numbers and the canonical-line reservations
   });
 
   it('Existing Gate 2 external review doc still exists', () => {

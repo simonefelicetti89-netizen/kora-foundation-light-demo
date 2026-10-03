@@ -14,6 +14,7 @@
 // page data.
 
 import type { MaterialChangeTaxonomyEntry } from '@/lib/living-koral-config/types';
+import type { MorphologyAreaCode } from '@/lib/living-koral-morphology-config/types';
 
 export type LivingKoralMaterialChangeStatus = 'CANDIDATE' | 'RECOGNIZED' | 'SUPERSEDED';
 
@@ -39,6 +40,8 @@ export interface LivingKoralMaterialChangeRecord {
   readonly status: LivingKoralMaterialChangeStatus;
   readonly category: MaterialChangeTaxonomyEntry['category'];
   readonly affectedDomain: LivingKoralMaterialChangeAffectedDomain;
+  /** KORA-WP-145 (migration 091): morphology area (pillar) snapshotted at observation; for Reorientation the destination area. null on pre-WP-145 rows. */
+  readonly affectedArea: MorphologyAreaCode | null;
   readonly sourceEntityType: LivingKoralMaterialChangeSourceEntityType;
   readonly sourceEntityId: string;
   readonly occurredAt: string;
@@ -66,3 +69,31 @@ export interface ObserveInitiativeTransitionParams {
 
 /** Result of observing a transition — null when the transition is not canonically eligible (no candidate is created). */
 export type ObserveInitiativeTransitionResult = LivingKoralMaterialChangeRecord | null;
+
+/** KORA-WP-145 — pillar change of a PUBLISHED initiative, observed by the initiative-lifecycle writer. */
+export interface ObserveInitiativePillarChangeParams {
+  readonly tenantId: string;
+  readonly initiativeId: string;
+  readonly previousPillar: MorphologyAreaCode;
+  readonly newPillar: MorphologyAreaCode;
+  readonly actorRole: string;
+  readonly actorId: string;
+}
+
+/**
+ * KORA-WP-145 (Founder K1) — one organisation-approved consolidation: a new
+ * initiative consolidates >= 2 existing initiatives, recorded by KORA_ADMIN
+ * as one verifiable action. KORA_ADMIN records the relationship; it never
+ * decides on its own that a transformation occurred.
+ */
+export interface ObserveInitiativeConsolidationParams {
+  readonly tenantId: string;
+  readonly resultInitiativeId: string;
+  /** Status the result initiative had before this action ('draft' when it is published by it). */
+  readonly resultPreviousStatus: 'draft' | 'published';
+  readonly sourceInitiativeIds: readonly string[];
+  /** Status each source had before this action, keyed by source initiative id. */
+  readonly sourcePreviousStatus: Readonly<Record<string, 'draft' | 'published'>>;
+  readonly actorRole: string;
+  readonly actorId: string;
+}
