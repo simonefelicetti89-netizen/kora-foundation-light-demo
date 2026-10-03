@@ -244,6 +244,78 @@ describe('KORA-WP-145 — reorientation: transformation-driven, bounded branchin
   });
 });
 
+describe('KORA-WP-145 — member cap (Founder, final): cap hit = no new geometry, no eviction, memory only', () => {
+  // seed:0 LIFE, seed:1 GROWTH, bud CONNECTION, grown:3 IMPACT + two redirected-growth branches = 6 active members
+  const atCap = () => history()
+    .P('1', 'LIFE').P('2', 'GROWTH').P('3', 'CONNECTION').P('4', 'IMPACT')
+    .P('5', 'IMPACT').X('5', 'LIFE')
+    .P('6', 'IMPACT').X('6', 'GROWTH');
+
+  it('setup reaches the cap: exactly 6 active members, two branches', () => {
+    const s = atCap().state();
+    expect(active(s)).toEqual(['seed:0', 'seed:1', 'seed:bud', 'grown:3', 'branch:seed:0', 'branch:seed:1']);
+  });
+
+  it('A — a new area at the cap: existing branches unchanged, no seventh member, memory recorded', () => {
+    const before = atCap().state();
+    const after = atCap().P('7', 'LEGACY').state();
+    expect(active(after)).toEqual(active(before));
+    expect(after.elements.filter((e) => e.active)).toHaveLength(6);
+    expect(after.elements.find((e) => e.id === 'grown:4')).toBeUndefined();
+    for (const id of ['branch:seed:0', 'branch:seed:1']) {
+      expect(el(after, id)).toEqual(el(before, id));
+    }
+    const legacy = after.areas.find((a) => a.areaId === 'LEGACY');
+    expect(legacy?.present).toBe(true);
+    expect(legacy?.primaryId).toBeNull();
+    // exactly one new memory trace (visible traces may be merged at the cap of 8; totals are exact)
+    expect(after.memoryTraceTotal).toBe(before.memoryTraceTotal + 1);
+    const newest = after.memoryTraces.at(-1)!;
+    expect([newest.kind, newest.host.elementId, newest.subject.type]).toEqual(['growth', 'core', 'area']);
+  });
+
+  it('C — the cap event creates no withdrawal scar for any otherwise valid branch', () => {
+    const before = atCap().state();
+    const after = atCap().P('7', 'LEGACY').state();
+    // the single added trace is the growth memory — so no scar was written
+    expect(after.memoryTraceTotal).toBe(before.memoryTraceTotal + 1);
+    expect(after.memoryTraces.at(-1)!.kind).toBe('growth');
+    expect(after.areas.filter((a) => a.branchId).map((a) => a.branchId)).toEqual(before.areas.filter((a) => a.branchId).map((a) => a.branchId));
+  });
+
+  it('at the cap a further reorientation into a geometry-less area is memory only (no branch, no member)', () => {
+    const s = atCap().P('7', 'LEGACY').P('8', 'IMPACT').X('8', 'LEGACY').state();
+    expect(s.elements.filter((e) => e.active)).toHaveLength(6);
+    expect(s.elements.some((e) => e.id.startsWith('branch:') && e.parentId === 'core')).toBe(false);
+    expect(kinds(s).at(-1)).toBe('reorientation');
+  });
+
+  it('B — a branch with no remaining redirected initiative retires, with exactly one retirement scar', () => {
+    const before = atCap().state();
+    const after = atCap().C('5').state();
+    expect(el(after, 'branch:seed:0').assignment).toBe('retired');
+    expect(after.areas.find((a) => a.areaId === 'LIFE')?.branchId).toBeNull();
+    expect(after.memoryTraceTotal).toBe(before.memoryTraceTotal + 1);
+    expect(after.memoryTraces.at(-1)!.kind).toBe('scar');
+    expect(el(after, 'branch:seed:1').assignment).toBe('adopted'); // the other branch is untouched
+  });
+
+  it('room freed by a legitimate retirement is not back-filled retroactively; a later arrival uses it normally', () => {
+    const s = atCap().P('7', 'LEGACY').C('5').state();
+    expect(s.areas.find((a) => a.areaId === 'LEGACY')?.primaryId).toBeNull(); // no retroactive geometry
+    const t = atCap().C('5').P('7', 'LEGACY').state();
+    expect(t.areas.find((a) => a.areaId === 'LEGACY')?.primaryId).toBe('grown:4');
+  });
+
+  it('a geometry-less area that later loses its last initiative withdraws with one scar and no geometry change', () => {
+    const before = atCap().P('7', 'LEGACY').state();
+    const after = atCap().P('7', 'LEGACY').C('7').state();
+    expect(active(after)).toEqual(active(before));
+    expect(after.memoryTraceTotal).toBe(before.memoryTraceTotal + 1);
+    expect(after.memoryTraces.at(-1)!.kind).toBe('scar');
+  });
+});
+
 describe('KORA-WP-145 — fusion and consolidation', () => {
   it('same-area consolidation densifies the result member, leaves one consolidation trace, no joint and no cavity', () => {
     const s = history().P('1', 'GROWTH').P('2', 'GROWTH').K(['1', '2'], '3', 'GROWTH').state();

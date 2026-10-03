@@ -148,7 +148,7 @@ class Fold {
   }
 
   // ── area presence (R2-alpha) ──────────────────────────────────────────
-  /** Makes an absent area present: adopts its seed element by rank, or grows a primary from the core. One `growth` trace. */
+  /** Makes an absent area present: adopts its seed element by rank, or grows a primary from the core. One `growth` trace. At the member cap: present without geometry, memory only. */
   private emergeArea(area: MorphologyAreaCode, rev: number): AreaState {
     let state = this.areas.get(area);
     if (!state) {
@@ -160,6 +160,18 @@ class Fold {
 
     const seedDef = CFG.seed.elements[state.rank];
     const seedEl = seedDef ? this.elements.get(seedDef.id) : undefined;
+    const adoptsSeed = Boolean(seedEl && seedEl.assignment === 'unassigned');
+    const addsMember = !adoptsSeed || seedEl?.kind === 'bud'; // seed:0/seed:1 are already active members
+    if (addsMember && this.activeMemberCount() + 1 > CFG.bounds.maxActiveMembers) {
+      // Member cap reached (Founder, final): the area is canonically present,
+      // but no geometry is created and nothing established is evicted —
+      // the arrival is memory only.
+      state.present = true;
+      state.primaryId = '';
+      state.branchId = null;
+      this.trace('growth', { type: 'area', id: `rank:${state.rank}` }, CORE, 'attachment', rev);
+      return state;
+    }
     let primary: ElementState;
     if (seedEl && seedEl.assignment === 'unassigned') {
       primary = seedEl;
@@ -186,21 +198,7 @@ class Fold {
     state.primaryId = primary.id;
     state.branchId = null;
     this.trace('growth', { type: 'element', id: primary.id }, primary.id, 'attachment', rev);
-    this.enforceMemberCap(rev);
     return state;
-  }
-
-  /** Caps hold for primaries too: if a new primary pushes the form over the member cap, the lowest-priority branch withdraws (deterministic, one scar). */
-  private enforceMemberCap(rev: number): void {
-    while (this.activeMemberCount() > CFG.bounds.maxActiveMembers) {
-      const branches = [...this.areas.values()]
-        .filter((a) => a.present && a.branchId)
-        .map((a) => ({ area: a, branch: this.el(a.branchId as string) }))
-        .sort((x, y) => (y.area.rank - x.area.rank) || (y.branch.createdAtRevision - x.branch.createdAtRevision));
-      const victim = branches[0];
-      if (!victim) break;
-      this.retireBranch(victim.area, rev, true);
-    }
   }
 
   private retireBranch(area: AreaState, rev: number, scar: boolean): void {
@@ -215,6 +213,11 @@ class Fold {
 
   /** Withdraws a present area. The structural loss is ONE scar; releasing its seed element adds no further trace. */
   private withdrawArea(area: AreaState, rev: number, viaFusionInto: string | null): void {
+    if (!area.primaryId) {
+      area.present = false;
+      this.trace('scar', { type: 'area', id: `rank:${area.rank}` }, CORE, 'attachment', rev);
+      return;
+    }
     if (area.branchId) this.retireBranch(area, rev, false);
     const primary = this.el(area.primaryId);
     this.closeCavitiesBoundedBy(primary.id, rev);
@@ -274,7 +277,7 @@ class Fold {
     if (l.branchId) return l.branchId;
     if (!l.area) return null;
     const a = this.areas.get(l.area);
-    return a && a.present ? a.primaryId : null;
+    return a && a.present && a.primaryId ? a.primaryId : null;
   }
 
   // ── event handlers ────────────────────────────────────────────────────
@@ -365,8 +368,10 @@ class Fold {
     }
 
     // reorientation effects
-    if (!destinationWasPresent) {
-      this.trace('reorientation', { type: 'element', id: target.primaryId }, target.primaryId, 'terminal', rev);
+    if (!destinationWasPresent || !target.primaryId) {
+      // a newly present area, or one present without geometry (member cap): memory only, no branch
+      const hostId = target.primaryId || CORE;
+      this.trace('reorientation', { type: target.primaryId ? 'element' : 'area', id: target.primaryId || `rank:${target.rank}` }, hostId, 'terminal', rev);
       return;
     }
     if (target.branchId) {
@@ -416,6 +421,17 @@ class Fold {
       if (s.area && !sourceAreas.includes(s.area)) sourceAreas.push(s.area);
     }
     const target = (this.areas.get(t)?.present ? this.areas.get(t) : this.emergeArea(t, rev)) as AreaState;
+    if (!target.primaryId) {
+      // result area present without geometry (member cap): no joint, no cavity, no mass step.
+      // Sources still end: an area left with no present lineage withdraws through its normal rule.
+      for (const code of sourceAreas) {
+        const s = this.areas.get(code);
+        if (s && s.present && code !== t && this.presentLineagesIn(code) === 0) this.withdrawArea(s, rev, null);
+      }
+      for (const e of emptiedBranches) if (e.present && e.branchId) this.retireBranch(e, rev, true);
+      this.trace('consolidation', { type: 'area', id: `rank:${target.rank}` }, CORE, 'along', rev);
+      return;
+    }
     const host = this.el(target.primaryId);
 
     // cross-area fusion, in area-rank order
@@ -426,6 +442,10 @@ class Fold {
       .filter((s) => s && s.present && this.presentLineagesIn(s.areaId) === 0)
       .sort((x, y) => x.rank - y.rank);
     for (const s of ordered) {
+      if (!s.primaryId) {
+        this.withdrawArea(s, rev, null); // a source area without geometry has nothing to fuse; it withdraws by its normal rule
+        continue;
+      }
       const absorbedId = s.primaryId;
       this.withdrawArea(s, rev, host.id);
       crossAreaFusion = true;
@@ -533,7 +553,7 @@ class Fold {
     });
     const areas: CanonicalArea[] = [...this.areas.values()]
       .sort((a, b) => a.rank - b.rank)
-      .map((a) => ({ areaId: a.areaId, rank: a.rank, present: a.present, primaryId: a.primaryId, branchId: a.branchId }));
+      .map((a) => ({ areaId: a.areaId, rank: a.rank, present: a.present, primaryId: a.primaryId || null, branchId: a.branchId }));
     const withdrawn = [...this.areas.values()].filter((a) => !a.present).length;
     const b = CFG.bounds;
     const massShare = Math.max(b.coreMassShareMin, Math.min(b.coreMassShareMax, CFG.seed.coreMassShare + withdrawn * b.coreMassShareStepPerWithdrawnArea));

@@ -65,7 +65,8 @@ export interface CanonicalArea {
   readonly areaId: MorphologyAreaCode;
   readonly rank: number;
   readonly present: boolean;
-  readonly primaryId: string;
+  /** null when the area is present without geometry because the member cap was reached (memory only). */
+  readonly primaryId: string | null;
   readonly branchId: string | null;
 }
 
