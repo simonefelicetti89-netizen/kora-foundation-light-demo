@@ -20,6 +20,7 @@ import { join } from 'node:path';
 import pg from 'pg';
 import {
   foldCanonicalMorphology, canonicalSeedState, hashCanonicalMorphologyState, projectCanonicalMorphologyForExpression,
+  assertCanonicalMorphologyInvariants,
 } from '@/lib/living-koral-mark/canonical-morphology';
 import { foldLineage } from '@/lib/living-koral-mark/lineage-fold';
 import { getCanonicalMorphologyConfig, getMorphologyEngineVersion } from '@/lib/living-koral-morphology-config/v1';
@@ -559,6 +560,175 @@ describe('KORA-WP-145 — bounds hold under fixed-seed fuzzed histories', () => 
       }
       expect(hashCanonicalMorphologyState(h.state())).toBe(hashCanonicalMorphologyState(foldCanonicalMorphology([...h.events])));
     }
+  });
+});
+
+describe('KORA-WP-145 erratum E1 — an absorbed element is never reused as independent geometry', () => {
+  // §10 regression: IMPACT's grown primary is absorbed into seed:0 (active joint, open cavity), then IMPACT returns.
+  const absorbed = () => history().P('1', 'LIFE').P('2', 'GROWTH').P('3', 'CONNECTION').P('4', 'IMPACT').K(['1', '4'], 'k', 'LIFE');
+  const returned = () => absorbed().P('5', 'IMPACT');
+  const JOINT = 'fusion:5:grown:3+seed:0';
+  const CAVITY = 'fusion-enclosed:grown:3+seed:0';
+
+  it('setup: grown:3 absorbed into seed:0 through an active cross-area joint enclosing an open cavity', () => {
+    const s = absorbed().state();
+    expect([el(s, 'grown:3').assignment, el(s, 'grown:3').fusedInto]).toEqual(['fused', 'seed:0']);
+    expect(activeJoints(s).map((j) => j.fusionId)).toEqual([JOINT]);
+    expect(openCavities(s).map((c) => c.cavityId)).toEqual([CAVITY]);
+  });
+
+  it('A — the absorbed primary is not re-adopted when its area returns', () => {
+    const g = el(returned().state(), 'grown:3');
+    expect([g.assignment, g.fusedInto, g.active, g.areaId]).toEqual(['fused', 'seed:0', false, null]);
+  });
+
+  it('B — the returning area receives a NEW deterministic generation primary', () => {
+    const s = returned().state();
+    expect(s.areas.find((a) => a.areaId === 'IMPACT')).toMatchObject({ present: true, primaryId: 'grown:3:g2' });
+    expect(el(s, 'grown:3:g2')).toMatchObject({ assignment: 'adopted', active: true, origin: 'core', parentId: 'core', fusedInto: null });
+    expect(hashCanonicalMorphologyState(returned().state())).toBe(hashCanonicalMorphologyState(s));
+    // a second absorb-and-return cycle allocates the third generation
+    const t = returned().K(['k', '5'], 'k2', 'LIFE').P('6', 'IMPACT').state();
+    expect(el(t, 'grown:3:g2').assignment).toBe('fused');
+    expect(t.areas.find((a) => a.areaId === 'IMPACT')?.primaryId).toBe('grown:3:g3');
+  });
+
+  it('C/D — the original joint and its fusion-enclosed cavity are unchanged', () => {
+    const before = absorbed().state();
+    const after = returned().state();
+    expect(after.fusions.find((j) => j.fusionId === JOINT)).toEqual(before.fusions.find((j) => j.fusionId === JOINT));
+    expect(after.cavities.find((c) => c.cavityId === CAVITY)).toEqual(before.cavities.find((c) => c.cavityId === CAVITY));
+    expect(after.cavities.find((c) => c.cavityId === CAVITY)).toMatchObject({ open: true, closedAtRevision: null });
+  });
+
+  it('memory: the return records exactly the ordinary single growth trace, on the new generation', () => {
+    const before = absorbed().state();
+    const after = returned().state();
+    expect(after.memoryTraceTotal).toBe(before.memoryTraceTotal + 1);
+    const t = after.memoryTraces.at(-1)!;
+    expect([t.kind, t.subject.type, t.subject.id, t.host.elementId]).toEqual(['growth', 'element', 'grown:3:g2', 'grown:3:g2']);
+  });
+
+  // cap variant: the same absorption, then the member cap is filled before IMPACT returns
+  const absorbedAtCap = () => absorbed().P('6', 'LEGACY').P('7', 'GROWTH').X('7', 'LIFE').P('8', 'LIFE').X('8', 'GROWTH');
+
+  it('E/F — at the member cap the returning area is present with no geometry: no seventh member, no phantom, fusion intact', () => {
+    const before = absorbedAtCap().state();
+    expect(active(before)).toHaveLength(getCanonicalMorphologyConfig().bounds.maxActiveMembers);
+    const after = absorbedAtCap().P('9', 'IMPACT').state();
+    expect(after.areas.find((a) => a.areaId === 'IMPACT')).toMatchObject({ present: true, primaryId: null });
+    expect(active(after)).toEqual(active(before));
+    expect(after.elements.map((e) => e.id)).toEqual(before.elements.map((e) => e.id)); // no element created, none resurrected
+    expect([el(after, 'grown:3').assignment, el(after, 'grown:3').fusedInto]).toEqual(['fused', 'seed:0']);
+    expect(after.fusions).toEqual(before.fusions);
+    expect(after.cavities).toEqual(before.cavities);
+    expect(after.memoryTraceTotal).toBe(before.memoryTraceTotal + 1);
+    const t = after.memoryTraces.at(-1)!;
+    expect([t.kind, t.subject.type, t.host.elementId]).toEqual(['growth', 'area', 'core']);
+  });
+
+  it('G — an UNASSIGNED, non-fused seed element is still re-adopted; a RETIRED grown id is still reused', () => {
+    const seed = history().P('1', 'LIFE').C('1').P('2', 'LIFE').state();
+    expect(seed.areas.find((a) => a.areaId === 'LIFE')?.primaryId).toBe('seed:0');
+    expect(seed.elements.some((e) => e.id.includes(':g'))).toBe(false);
+    const retired = history().P('1', 'LIFE').P('2', 'GROWTH').P('3', 'CONNECTION').P('4', 'IMPACT').C('4').P('5', 'IMPACT').state();
+    expect(retired.areas.find((a) => a.areaId === 'IMPACT')?.primaryId).toBe('grown:3');
+    expect(retired.elements.some((e) => e.id.includes(':g'))).toBe(false);
+  });
+
+  it('H — the A–D golden states are byte-identical to the accepted WP145 closure (aa94f8b)', () => {
+    expect(hashCanonicalMorphologyState(scenarioA().state())).toBe('0909b971badb9fdaad59b9bf9684f66896867118fb60ee35f33892316e23367c');
+    expect(hashCanonicalMorphologyState(scenarioB().state())).toBe('e01c8c02db768e64072c044e92a01385362d9cab0a6821d04c554714428b3d1b');
+    expect(hashCanonicalMorphologyState(scenarioC().state())).toBe('7b2d11e028a5f5f5f8af3fc8ddb4e81f4105f817d35ad9cab77b0e7f167b7c76');
+    expect(hashCanonicalMorphologyState(scenarioD().state())).toBe('ed88caabcab2bd11644b693c0b001e5be47c5ca691745ab34caae2a6f60f0cc7');
+  });
+
+  it('I — the fold fails closed on an invalid fusion/cavity state', () => {
+    const s = absorbed().state();
+    const resurrected = { ...s, elements: s.elements.map((e) => (e.id === 'grown:3' ? { ...e, assignment: 'adopted' as const, active: true, fusedInto: null } : e)) };
+    expect(() => assertCanonicalMorphologyInvariants(resurrected)).toThrow(/erratum E1/);
+    const orphanCavity = { ...s, fusions: s.fusions.map((j) => ({ ...j, active: false })) };
+    expect(() => assertCanonicalMorphologyInvariants(orphanCavity)).toThrow(/open cavity/);
+    const fusedActive = { ...s, elements: s.elements.map((e) => (e.id === 'grown:3' ? { ...e, active: true } : e)) };
+    expect(() => assertCanonicalMorphologyInvariants(fusedActive)).toThrow(/fused and active/);
+    expect(() => assertCanonicalMorphologyInvariants(s)).not.toThrow();
+  });
+
+  it('J — branch instance: an absorbed branch is not overwritten; a new redirected growth gets the next branch generation', () => {
+    const fusedBranch = () => history().P('1', 'LIFE').P('2', 'GROWTH').X('2', 'LIFE').K(['1', '2'], 'k', 'LIFE');
+    const before = fusedBranch().state();
+    expect([el(before, 'branch:seed:0').assignment, el(before, 'branch:seed:0').fusedInto]).toEqual(['fused', 'seed:0']);
+    const intra = activeJoints(before).find((j) => j.kind === 'intra-area')!;
+    const after = fusedBranch().P('3', 'GROWTH').X('3', 'LIFE').state();
+    expect(el(after, 'branch:seed:0')).toEqual(el(before, 'branch:seed:0'));
+    expect(after.fusions.find((j) => j.fusionId === intra.fusionId)).toEqual(intra);
+    expect(el(after, 'branch:seed:0:g2')).toMatchObject({ kind: 'branch', assignment: 'adopted', active: true, parentId: 'seed:0' });
+    expect(after.areas.find((a) => a.areaId === 'LIFE')?.branchId).toBe('branch:seed:0:g2');
+    // memory exactly as the pre-E1 engine recorded it (GROWTH withdrawal scar + branch growth + reorientation); only the host id is new
+    expect(after.memoryTraceTotal).toBe(fusedBranch().P('3', 'GROWTH').state().memoryTraceTotal + 3);
+    expect(after.memoryTraces.slice(-3).map((t) => [t.kind, t.subject.id, t.host.elementId])).toEqual([
+      ['scar', 'rank:1', 'core'], ['growth', 'branch:seed:0:g2', 'branch:seed:0:g2'], ['reorientation', 'branch:seed:0:g2', 'branch:seed:0:g2'],
+    ]);
+  });
+
+  it('K — a member absorbed WITHOUT a joint (joint cap saturated) is still absorbed and its id is never reused', () => {
+    // three cross-area absorptions into seed:0; maxActiveFusionJoints = 2, so the third (grown:4) has no joint
+    const h = () => history().P('1', 'LIFE').P('2', 'GROWTH').P('3', 'CONNECTION').P('4', 'IMPACT').P('5', 'LEGACY')
+      .K(['1', '3'], 'k1', 'LIFE').K(['k1', '4'], 'k2', 'LIFE').K(['k2', '5'], 'k3', 'LIFE');
+    const s = h().state();
+    expect([el(s, 'grown:4').assignment, el(s, 'grown:4').fusedInto]).toEqual(['fused', 'seed:0']);
+    expect(s.fusions.some((j) => j.memberIds.includes('grown:4'))).toBe(false);
+    const t = h().P('6', 'LEGACY').state();
+    expect([el(t, 'grown:4').assignment, el(t, 'grown:4').active]).toEqual(['fused', false]);
+    expect(t.areas.find((a) => a.areaId === 'LEGACY')?.primaryId).toBe('grown:4:g2');
+  });
+
+  it('L — two generations of one neutral rank share the canonical slot reference and remain distinct elements', () => {
+    const s = returned().state();
+    const [g1, g2] = [el(s, 'grown:3'), el(s, 'grown:3:g2')];
+    expect(g1.id).not.toBe(g2.id);
+    expect(g1.heading.slot).toBe(g2.heading.slot);
+    expect([g1.assignment, g2.assignment]).toEqual(['fused', 'adopted']);
+    expect(JSON.stringify(projectCanonicalMorphologyForExpression(s))).not.toMatch(/LIFE|GROWTH|CONNECTION|IMPACT|LEGACY/);
+  });
+
+  it('M + fuzz — no element is ever fused+active, fused+adopted or fused+unassigned; every open cavity has active fusion topology', () => {
+    function prng(seed: number) {
+      let x = seed >>> 0;
+      return () => { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 0x100000000; };
+    }
+    const AREAS: MorphologyAreaCode[] = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'];
+    let generations = 0;
+    for (let run = 0; run < 120; run++) {
+      const rnd = prng(5000 + run);
+      const h = history();
+      const live: string[] = [];
+      let n = 0;
+      for (let step = 0; step < 50; step++) {
+        const r = rnd();
+        const area = AREAS[Math.floor(rnd() * AREAS.length)];
+        if (r < 0.4 || live.length < 2) { const id = `i${n++}`; h.P(id, area); live.push(id); }
+        else if (r < 0.6) h.C(live.splice(Math.floor(rnd() * live.length), 1)[0]);
+        else if (r < 0.85) h.X(live[Math.floor(rnd() * live.length)], area);
+        else if (live.length >= 3) {
+          const a = live.splice(Math.floor(rnd() * live.length), 1)[0];
+          const b = live.splice(Math.floor(rnd() * live.length), 1)[0];
+          const id = `i${n++}`; h.K([a, b], id, area); live.push(id);
+        }
+        const s = h.state(); // the fold itself also asserts the invariant and would throw
+        for (const e of s.elements) {
+          if (e.assignment === 'fused') expect([e.active, e.fusedInto === null]).toEqual([false, false]);
+          else expect(e.fusedInto).toBeNull();
+        }
+        for (const c of openCavities(s)) {
+          const j = s.fusions.find((f) => f.fusionId === c.fusionId);
+          expect(j?.active).toBe(true);
+          for (const id of j!.memberIds) if (id !== j!.resultMemberId) expect(el(s, id).fusedInto).toBe(j!.resultMemberId);
+        }
+      }
+      generations += h.state().elements.filter((e) => /:g\d+$/.test(e.id)).length;
+    }
+    expect(generations).toBeGreaterThan(0); // the fuzz really exercises E1
   });
 });
 

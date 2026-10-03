@@ -21,6 +21,11 @@
 //   - Memory only from recognized structural transformation. An area
 //     withdrawal leaves ONE scar; the seed element it releases adds none.
 //   - Pure and deterministic: no clock, no randomness, no I/O.
+//   - Erratum E1: an absorbed (fused) element is never reused as independent
+//     geometry. A returning area or redirected growth whose identity is
+//     absorbed gets the next generation id (`<base>:g<n>`); the only way out
+//     of absorption is dissolveJoint() on host withdrawal. Checked at the end
+//     of every fold — a violation is an engine defect and fails closed.
 
 import { createHash } from 'node:crypto';
 import { getCanonicalMorphologyConfig } from '@/lib/living-koral-morphology-config/v1';
@@ -104,6 +109,20 @@ class Fold {
     this.elementOrder.push(e.id);
   }
 
+  /**
+   * E1 generational identity: `<base>`, `<base>:g2`, `<base>:g3`, ... The latest
+   * generation is reused unless it is absorbed; then the next one is allocated.
+   * Derived from folded history only — generation 1 keeps every pre-E1 id.
+   */
+  private generation(base: string): { reusable: ElementState | null; id: string } {
+    const idOf = (g: number) => (g === 1 ? base : `${base}:g${g}`);
+    let g = 1;
+    while (this.elements.has(idOf(g))) g++;
+    if (g === 1) return { reusable: null, id: base };
+    const latest = this.el(idOf(g - 1));
+    return latest.assignment === 'fused' ? { reusable: null, id: idOf(g) } : { reusable: latest, id: latest.id };
+  }
+
   private el(id: string): ElementState {
     const e = this.elements.get(id);
     if (!e) throw new Error(`[KORA] canonical-morphology invariant: unknown element ${id}`);
@@ -178,8 +197,7 @@ class Fold {
       primary.assignment = 'adopted';
       primary.areaId = area;
     } else {
-      const id = `grown:${state.rank}`;
-      const existing = this.elements.get(id);
+      const { reusable: existing, id } = this.generation(`grown:${state.rank}`);
       if (existing) {
         primary = existing;
         primary.assignment = 'adopted';
@@ -382,12 +400,12 @@ class Fold {
     }
     if (this.activeMemberCount() + 1 <= CFG.bounds.maxActiveMembers) {
       const host = this.el(target.primaryId);
+      const { reusable: existing, id } = this.generation(`branch:${host.id}`);
       const branch: ElementState = {
-        id: `branch:${host.id}`, kind: 'branch', origin: 'branch', parentId: host.id, depth: 2, angularSlot: host.angularSlot,
+        id, kind: 'branch', origin: 'branch', parentId: host.id, depth: 2, angularSlot: host.angularSlot,
         extentRank: null, areaId: target.areaId, assignment: 'adopted', fusedInto: null, massClass: 'slender', createdAtRevision: rev,
         hostsFusion: false, confirmed: false,
       };
-      const existing = this.elements.get(branch.id);
       if (existing) {
         Object.assign(existing, { ...branch, createdAtRevision: rev });
       } else {
@@ -633,7 +651,44 @@ export function foldCanonicalMorphology(events: readonly CanonicalLedgerEvent[])
     lastSeq = ev.seq;
     fold.apply(ev);
   }
-  return fold.toState();
+  const state = fold.toState();
+  assertCanonicalMorphologyInvariants(state);
+  return state;
+}
+
+/**
+ * E1 fail-closed structural invariant. A violation is an engine defect, never
+ * a valid state, so no renderer is ever handed one:
+ *   - absorbed (fused) <=> fusedInto set; a fused element is never active;
+ *   - every non-result member of an active joint is fused into its result,
+ *     and the result is itself not absorbed or retired;
+ *   - every open cavity is enclosed by an active joint over the same members.
+ */
+export function assertCanonicalMorphologyInvariants(state: CanonicalMorphologyState): void {
+  const fail = (why: string) => {
+    throw new Error(`[KORA] canonical-morphology invariant violated (WP145 erratum E1): ${why}`);
+  };
+  const byId = new Map(state.elements.map((e) => [e.id, e]));
+  for (const e of state.elements) {
+    if ((e.assignment === 'fused') !== (e.fusedInto !== null)) fail(`${e.id} assignment=${e.assignment} fusedInto=${e.fusedInto}`);
+    if (e.assignment === 'fused' && e.active) fail(`${e.id} is fused and active`);
+  }
+  for (const j of state.fusions) {
+    if (!j.active) continue;
+    const result = byId.get(j.resultMemberId);
+    if (!result || result.assignment === 'fused' || result.assignment === 'retired') fail(`joint ${j.fusionId} result ${j.resultMemberId} is not a standing member`);
+    for (const id of j.memberIds) {
+      if (id === j.resultMemberId) continue;
+      const m = byId.get(id);
+      if (!m || m.assignment !== 'fused' || m.fusedInto !== j.resultMemberId) fail(`joint ${j.fusionId} member ${id} is not absorbed into ${j.resultMemberId}`);
+    }
+  }
+  for (const c of state.cavities) {
+    if (!c.open) continue;
+    const j = state.fusions.find((f) => f.fusionId === c.fusionId);
+    if (!j || !j.active) fail(`open cavity ${c.cavityId} has no active fusion joint`);
+    else if ([...c.boundingMemberIds].sort().join('+') !== [...j.memberIds].sort().join('+')) fail(`open cavity ${c.cavityId} is not bounded by its joint's members`);
+  }
 }
 
 function canonicalJson(value: unknown): string {
