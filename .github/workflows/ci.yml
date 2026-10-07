@@ -343,6 +343,7 @@ jobs:
           WP113_ALLOW_RUN=true WP113_PG_URL="$SB_DB_URL" WP113_SUPABASE_URL="$SB_API_URL" WP113_SERVICE_ROLE_KEY="$SB_SRK" \
           WP116_ALLOW_RUN=true WP116_PG_URL="$SB_DB_URL" WP116_SUPABASE_URL="$SB_API_URL" WP116_SERVICE_ROLE_KEY="$SB_SRK" \
           WP117_ALLOW_RUN=true WP117_PG_URL="$SB_DB_URL" WP117_SUPABASE_URL="$SB_API_URL" WP117_SERVICE_ROLE_KEY="$SB_SRK" \
+          WP145_ALLOW_RUN=true WP145_PG_URL="$SB_DB_URL" WP145_SUPABASE_URL="$SB_API_URL" WP145_SERVICE_ROLE_KEY="$SB_SRK" \
           npx vitest run \
             tests/integration/commons-schema-usage-grant.test.ts \
             tests/integration/wp-045-first-pilot-e2e-scenario.test.ts \
@@ -350,6 +351,7 @@ jobs:
             tests/unit/kora-wp-113-transformation-ledger-morphogenesis.test.ts \
             tests/unit/kora-wp-116-koral-review.test.ts \
             tests/unit/kora-wp-117-koral-mark-substrate.test.ts \
+            tests/unit/kora-wp-145-canonical-morphology-engine.test.ts \
             --reporter=json --outputFile=r0a-db-gate-report.json
 
       # Same machine-readable discipline the RLS gate uses: a skipped suite
