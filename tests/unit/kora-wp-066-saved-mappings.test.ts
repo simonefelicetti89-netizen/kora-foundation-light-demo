@@ -82,9 +82,12 @@ describe('KORA-WP-066 (A) — persistence: a saved mapping survives across sessi
     const nums = readdirSync(join(ROOT, 'supabase/migrations'))
       .filter((f) => /^\d{3}_.*\.sql$/.test(f))
       .map((f) => Number.parseInt(f.slice(0, 3), 10));
-    expect(Math.max(...nums)).toBe(90);
+    // Future-safe (Founder authorization, canonical-line reconciliation 2026-10-07): later
+    // migrations (091–094, KORA-WP-145) may follow; 090 itself must stay this package's.
+    expect(Math.max(...nums)).toBeGreaterThanOrEqual(90);
     // 090 is exactly one beyond the baseline high-water, not a reused number.
     expect(nums.filter((n) => n === 90)).toHaveLength(1);
+    expect(readdirSync(join(ROOT, 'supabase/migrations')).filter((f) => f.startsWith('090_'))).toEqual(['090_saved_column_mapping_tenant_scoped.sql']);
   });
 
   it('persistence is a dedicated table — never an existing table repurposed', () => {
