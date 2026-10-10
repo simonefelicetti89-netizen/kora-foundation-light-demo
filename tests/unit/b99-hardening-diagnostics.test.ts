@@ -195,12 +195,14 @@ describe('DryCheckButton — _dry-check-button.tsx', () => {
 
 describe('Provision route — redirectTo must be /auth/callback', () => {
   const route = read('app/api/admin/companies/provision/route.ts');
+  // Auth invite convergence (2026-10-10): the callback URL is built once, in getAuthCallbackUrl().
+  const helper = read('lib/auth/auth-callback-url.ts');
 
   it('redirectTo is /auth/callback', () => {
-    expect(route).toContain('/auth/callback');
+    expect(helper).toContain('/auth/callback');
     const line = route.split('\n').find((l) => l.includes('redirectTo:'));
     expect(line).toBeDefined();
-    expect(line).toContain('/auth/callback');
+    expect(line).toContain('getAuthCallbackUrl()');
     expect(line).not.toContain('/company/workspace');
   });
 
@@ -211,8 +213,8 @@ describe('Provision route — redirectTo must be /auth/callback', () => {
   });
 
   it('uses NEXT_PUBLIC_SITE_URL env var for base URL', () => {
-    expect(route).toContain('NEXT_PUBLIC_SITE_URL');
-    expect(route).toContain('siteUrl');
+    expect(helper).toContain('NEXT_PUBLIC_SITE_URL');
+    expect(route).toContain("from '@/lib/auth/auth-callback-url'");
   });
 });
 

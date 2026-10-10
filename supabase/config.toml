@@ -271,10 +271,16 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# Auth-completion templates (local CLI only — the hosted projects are configured
+# separately in the Supabase dashboard). Both links land on /auth/callback with a
+# token_hash, the single completion path for invite and recovery.
+[auth.email.template.invite]
+subject = "Il tuo accesso a KORA"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.recovery]
+subject = "Reimposta la password di KORA"
+content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]

@@ -37,7 +37,8 @@ KORA_ADMIN provisions user
   → app_metadata.kora_tenant_id assigned (server-side, non-writable by client)
   → kora_status = 'active'
   → User receives email invite
-  → User clicks link → /auth/callback → /auth/set-password (first login)
+  → User clicks link → /auth/callback (token_hash verified) → first password:
+    WORKER /worker/setup-password · COMPANY_ADMIN /company/setup-password · PARTNER /auth/reset-password
   → First login = activation, not registration
 ```
 

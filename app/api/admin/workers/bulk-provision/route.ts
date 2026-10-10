@@ -40,6 +40,7 @@ import { insertWorkerIdentity } from '@/lib/supabase/worker-provisioning-service
 import { MAX_BULK_BATCH_SIZE, validateWorkerBatch, type ParsedWorkerInput } from '@/lib/admin/bulk-worker-parser';
 import { assertSameOrigin } from '@/lib/security/origin';
 import { assertRateLimit } from '@/lib/security/rate-limit';
+import { getAuthCallbackUrl } from '@/lib/auth/auth-callback-url';
 
 const WorkerInputSchema = z.object({
   firstName: z.string().max(100).optional(),
@@ -125,10 +126,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
   const tenantCode = t.tenant_code as string;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000');
-
   const results: BulkRowResult[] = [];
 
   // Sequential processing — safe for pilot batch sizes (<= MAX_BULK_BATCH_SIZE),
@@ -140,7 +137,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     try {
       const { data: inviteData, error: inviteErr } = await db.auth.admin.inviteUserByEmail(email, {
-        redirectTo: `${siteUrl}/auth/callback`,
+        redirectTo: getAuthCallbackUrl(),
         data: {
           kora_role:      'WORKER',
           kora_tenant_id: tenantId,

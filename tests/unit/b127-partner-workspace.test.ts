@@ -261,11 +261,12 @@ describe('B127 -- admin invite-user API', () => {
   });
 
   it('invite-user does NOT set kora_tenant_id (partners are not company-scoped)', () => {
-    // kora_tenant_id may appear in comments but must never be assigned in options.data
-    const optionsDataBlock = inviteUser.slice(inviteUser.indexOf('options: {'));
-    const firstClosingBrace = optionsDataBlock.indexOf('},\n    } as');
-    const optionsStr = optionsDataBlock.slice(0, firstClosingBrace);
-    expect(optionsStr).not.toContain('kora_tenant_id:');
+    // kora_tenant_id may appear in comments but must never be assigned in app_metadata
+    const start = inviteUser.indexOf('app_metadata: {\n');
+    expect(start).toBeGreaterThan(-1);
+    const metadataBlock = inviteUser.slice(start, inviteUser.indexOf('},', start));
+    expect(metadataBlock).toContain("kora_role:       'PARTNER'");
+    expect(metadataBlock).not.toContain('kora_tenant_id');
   });
 
   it('invite-user creates network.partner_identity record', () => {

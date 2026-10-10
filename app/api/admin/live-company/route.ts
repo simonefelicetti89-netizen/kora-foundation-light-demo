@@ -29,6 +29,7 @@ import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { persistWorkforceBaseline } from '@/lib/live/workforce-baseline';
 import { assertSameOrigin } from '@/lib/security/origin';
 import { assertRateLimit } from '@/lib/security/rate-limit';
+import { getAuthCallbackUrl } from '@/lib/auth/auth-callback-url';
 
 // ── Tenant code generation ────────────────────────────────────────────────────
 // Generates uppercase slug from company name: "Acme S.p.A." → "ACME-S-P-A"
@@ -267,12 +268,11 @@ export async function POST(request: NextRequest) {
     }
   } else {
     // Invite new user
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
     let inviteSucceeded = false;
 
     if (sendInvite) {
       const { data: inviteData, error: inviteErr } = await db.auth.admin.inviteUserByEmail(adminEmail, {
-        redirectTo: `${siteUrl}/company/workspace`,
+        redirectTo: getAuthCallbackUrl(),
         data: {
           admin_name: adminName ?? '',
           company_name: companyName,

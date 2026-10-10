@@ -20,6 +20,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { assertSameOrigin } from '@/lib/security/origin';
 import { assertRateLimit } from '@/lib/security/rate-limit';
+import { getAuthCallbackUrl } from '@/lib/auth/auth-callback-url';
 
 // Canonical key — must match kora-session.ts and migration 006.
 const TENANT_META_KEY = 'kora_tenant_id' as const;
@@ -151,7 +152,6 @@ export async function POST(request: NextRequest) {
   }
 
   // ── Punto 1.5 + 1.6: Create auth user (idempotent on email) ──────────────
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
   let adminUserId!: string;
   let inviteStatus: 'sent' | 'existing' | 'not_sent';
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
     // ── LIVE — unchanged from prior behavior ──────────────────────────────────
     // Attempt invite — Supabase returns 422 / "already registered" if email exists.
     const { data: inviteData, error: inviteErr } = await db.auth.admin.inviteUserByEmail(adminEmail, {
-      redirectTo: `${siteUrl}/auth/callback`,
+      redirectTo: getAuthCallbackUrl(),
       data: { admin_name: adminName ?? '', company_name: companyName },
     });
 
