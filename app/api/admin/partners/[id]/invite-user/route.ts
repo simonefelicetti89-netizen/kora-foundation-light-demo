@@ -17,6 +17,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { assertSameOrigin } from '@/lib/security/origin';
 import { assertRateLimit } from '@/lib/security/rate-limit';
+import { getAuthCallbackUrl } from '@/lib/auth/auth-callback-url';
 
 interface InvitePartnerUserBody {
   email: string;
@@ -67,21 +68,12 @@ export async function POST(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const partner = partnerRow as any;
 
-  // Invite user via Supabase Admin API
-  // Sets app_metadata directly during invite — PARTNER role, partner_id, no tenant
+  // Invite user via Supabase Admin API. inviteUserByEmail accepts only top-level
+  // { data, redirectTo } and `data` becomes user_metadata, so the role cannot be
+  // set here — it is written to app_metadata below, before the link can be used.
   const { data: inviteData, error: inviteError } = await db.auth.admin.inviteUserByEmail(email, {
-    data: {
-      // user_metadata (non-authoritative — for display only)
-    },
-    options: {
-      data: {
-        kora_role:       'PARTNER',
-        kora_partner_id: partnerId,
-        kora_status:     'active',
-      },
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/partner/workspace`,
-    },
-  } as Parameters<typeof db.auth.admin.inviteUserByEmail>[1]);
+    redirectTo: getAuthCallbackUrl(),
+  });
 
   if (inviteError) {
     // Supabase may return error if email sending is not configured or user already exists
@@ -99,6 +91,23 @@ export async function POST(
   if (!authUserId) {
     return NextResponse.json(
       { ok: false, error: 'Invito creato ma user ID non disponibile. Verifica in Supabase Auth.' },
+      { status: 500 },
+    );
+  }
+
+  // Set app_metadata — ALWAYS via Admin API (server-controlled, user cannot write this).
+  // PARTNER role and partner_id only; never kora_tenant_id.
+  const { error: metadataError } = await db.auth.admin.updateUserById(authUserId, {
+    app_metadata: {
+      kora_role:       'PARTNER',
+      kora_partner_id: partnerId,
+      kora_status:     'active',
+    },
+  });
+
+  if (metadataError) {
+    return NextResponse.json(
+      { ok: false, error: `Invito inviato ma ruolo Partner non assegnato: ${metadataError.message}` },
       { status: 500 },
     );
   }

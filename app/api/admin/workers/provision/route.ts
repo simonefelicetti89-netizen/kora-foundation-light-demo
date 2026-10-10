@@ -20,6 +20,7 @@ import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { insertWorkerIdentity } from '@/lib/supabase/worker-provisioning-service-key';
 import { assertSameOrigin } from '@/lib/security/origin';
 import { assertRateLimit } from '@/lib/security/rate-limit';
+import { getAuthCallbackUrl } from '@/lib/auth/auth-callback-url';
 
 const ProvisionWorkerSchema = z.object({
   tenantCode: z.string().min(1, 'tenantCode is required').max(32),
@@ -72,13 +73,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const t = tenantRow as any;
   const tenantId = t.id as string;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000';
-
   // ── 2. Invite via Supabase Admin API ────────────────────────────────────────
   const { data: inviteData, error: inviteErr } = await db.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${siteUrl}/auth/callback`,
+    redirectTo: getAuthCallbackUrl(),
     data: {
       kora_role:      'WORKER',
       kora_tenant_id: tenantId,

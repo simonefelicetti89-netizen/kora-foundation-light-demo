@@ -322,11 +322,11 @@ describe('Provision route — redirectTo points to auth callback', () => {
   const route = read('app/api/admin/companies/provision/route.ts');
 
   it('redirectTo uses /auth/callback (not /company/workspace directly)', () => {
-    expect(route).toContain('/auth/callback');
-    // Find the redirectTo line and verify it points to the callback
+    // Auth invite convergence (2026-10-10): the callback URL is built once, in getAuthCallbackUrl().
+    expect(read('lib/auth/auth-callback-url.ts')).toContain('/auth/callback');
     const redirectLine = route.split('\n').find((l) => l.includes('redirectTo:'));
     expect(redirectLine).toBeDefined();
-    expect(redirectLine).toContain('/auth/callback');
+    expect(redirectLine).toContain('getAuthCallbackUrl()');
     expect(redirectLine).not.toContain('/company/workspace');
   });
 });

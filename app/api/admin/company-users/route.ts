@@ -24,6 +24,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { assertSameOrigin } from '@/lib/security/origin';
 import { assertRateLimit } from '@/lib/security/rate-limit';
+import { getAuthCallbackUrl } from '@/lib/auth/auth-callback-url';
 
 const COMPANY_ROLES = ['COMPANY_ADMIN'] as const;
 type CompanyRole = (typeof COMPANY_ROLES)[number];
@@ -170,9 +171,8 @@ export async function POST(request: NextRequest) {
     }
   } else {
     // Invite new user via Supabase Auth Admin API
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
     const { data: inviteData, error: inviteErr } = await db.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${siteUrl}/company/workspace`,
+      redirectTo: getAuthCallbackUrl(),
     });
 
     if (inviteErr || !inviteData?.user) {
