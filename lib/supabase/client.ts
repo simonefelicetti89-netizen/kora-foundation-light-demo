@@ -10,6 +10,7 @@
 
 import { createBrowserClient } from '@supabase/ssr';
 import type { Database } from './types';
+import { SUPABASE_AUTH_COOKIE_OPTIONS } from './cookie-options';
 
 // Singleton to avoid creating a new client on every render.
 let _client: ReturnType<typeof createBrowserClient<Database>> | null = null;
@@ -39,7 +40,9 @@ export function getSupabaseBrowserClient(): ReturnType<typeof createBrowserClien
     );
   }
 
-  _client = createBrowserClient<Database>(url, key);
+  _client = createBrowserClient<Database>(url, key, {
+    cookieOptions: SUPABASE_AUTH_COOKIE_OPTIONS,
+  });
 
   return _client;
 }
