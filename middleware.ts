@@ -19,6 +19,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 import { canAccess } from '@/lib/auth/access-matrix';
+import { SUPABASE_AUTH_COOKIE_OPTIONS } from '@/lib/supabase/cookie-options';
 
 // PUBLIC-PRIVACY-FOUNDATION-05A: paths that are always public, for every
 // role (anonymous, COMPANY_ADMIN, WORKER, PARTNER, KORA_ADMIN)
@@ -119,6 +120,7 @@ export async function middleware(request: NextRequest) {
 
   try {
     const supabase = createServerClient(supabaseUrl, supabaseAnon, {
+      cookieOptions: SUPABASE_AUTH_COOKIE_OPTIONS,
       cookies: {
         getAll() {
           return request.cookies.getAll();
